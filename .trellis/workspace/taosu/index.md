@@ -9,7 +9,7 @@
 <!-- @@@auto:current-status -->
 
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 1
+- **Total Sessions**: 2
 - **Last Active**: 2026-01-31
 <!-- @@@/auto:current-status -->
 
@@ -21,7 +21,7 @@
 
 | File           | Lines | Status |
 | -------------- | ----- | ------ |
-| `journal-1.md` | ~82   | Active |
+| `journal-1.md` | ~153  | Active |
 
 <!-- @@@/auto:active-documents -->
 

@@ -81,3 +81,71 @@ staged files → lint-staged (markdownlint/eslint + prettier) → verify-docs.py
 ### Next Steps
 
 - None - task complete
+
+## Session 2: Setup docs site structure and marketplace
+
+**Date**: 2026-01-31
+**Task**: Setup docs site structure and marketplace
+
+### Summary
+
+(Add summary)
+
+### Main Changes
+
+## Summary
+
+Set up Trellis documentation site project structure, including marketplace configuration for Claude Code plugin distribution.
+
+## Key Changes
+
+| Category        | Changes                                             |
+| --------------- | --------------------------------------------------- |
+| Core Scripts    | Updated trellis hooks, scripts, and settings        |
+| Thinking Guides | Added cross-platform guide, updated existing guides |
+| Slash Commands  | Added before-_-dev and check-_ commands             |
+| Marketplace     | Added .claude-plugin/ and marketplace/ directories  |
+| Tasks           | Archived bootstrap task, created docs-site task     |
+
+## Project Structure
+
+```
+docs/
+├── .claude-plugin/        # Claude Code plugin config
+├── marketplace/           # Downloadable templates
+│   ├── skills/
+│   ├── commands/
+│   ├── agents/
+│   └── specs/
+├── .mintignore            # Exclude non-doc dirs
+└── docs.json              # Updated with exclude config
+```
+
+## Next Steps
+
+- Phase 1: Write core content (index, quickstart, concepts/)
+- Phase 2: Write guides/
+- Phase 3: Write templates/ and fill marketplace/
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `1cedf78` | (see git log) |
+| `5992d9e` | (see git log) |
+| `0656390` | (see git log) |
+| `341b755` | (see git log) |
+| `1d1fc5b` | (see git log) |
+| `4933abc` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
