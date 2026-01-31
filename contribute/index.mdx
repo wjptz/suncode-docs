@@ -1,0 +1,117 @@
+---
+title: 'Contributing'
+description: 'How to contribute to Trellis'
+---
+
+## Ways to contribute
+
+Trellis is open source. Contributions welcome.
+
+### Report bugs
+
+Found something broken? Open an issue on GitHub:
+
+https://github.com/mindfold-ai/Trellis/issues
+
+Include:
+
+- What you did
+- What you expected
+- What happened instead
+- Trellis version (`trellis --version`)
+- OS and Claude Code version
+
+### Suggest features
+
+Have an idea? Open a discussion:
+
+https://github.com/mindfold-ai/Trellis/discussions
+
+Describe the problem you're trying to solve, not just the solution. Maybe there's a better way, or maybe it already exists.
+
+### Share templates
+
+Made a useful spec, command, or skill? Share it.
+
+1. Fork the repo
+2. Add your template to the appropriate `templates/` folder
+3. Include a README explaining what it does
+4. Open a PR
+
+We review templates for quality. Good templates are:
+
+- Specific and actionable
+- Well-documented
+- Tested on real projects
+
+### Improve documentation
+
+Docs live in the `docs/` folder. Fix typos, clarify confusing sections, add examples.
+
+Small fixes: edit directly on GitHub.
+Larger changes: fork and PR.
+
+### Code contributions
+
+For code changes:
+
+1. Check existing issues to avoid duplicate work
+2. Open an issue describing what you want to change
+3. Wait for feedback before starting (saves time if the approach needs adjustment)
+4. Fork, branch, code, test
+5. Open a PR
+
+## Code style
+
+Trellis uses:
+
+- TypeScript for the CLI
+- Python for hooks
+- Markdown for docs and specs
+
+Follow existing patterns. Run linters before committing.
+
+## Testing
+
+Run tests before submitting:
+
+```bash
+npm test
+```
+
+If adding a feature, add tests for it.
+
+## Documentation
+
+If you change behavior, update the docs. Outdated docs are worse than no docs.
+
+## Commit messages
+
+Use conventional commits:
+
+```
+feat: add support for custom hook scripts
+fix: resolve path issues on Windows
+docs: clarify spec loading order
+```
+
+## PR process
+
+1. Create a PR with a clear description
+2. Wait for review
+3. Address feedback
+4. Merge after approval
+
+PRs are usually reviewed within a few days. If yours sits longer, ping in the PR comments.
+
+## Code of conduct
+
+Be respectful. This is a small project maintained by humans. Assume good intent. Disagree constructively.
+
+## License
+
+Contributions are licensed under the same license as Trellis (MIT). By contributing, you agree to this.
+
+## Questions?
+
+Open a discussion or email taosu@mindfold.ai.
