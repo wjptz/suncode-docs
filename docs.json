@@ -11,50 +11,86 @@
   "favicon": "/favicon.svg",
   "navigation": {
     "languages": [
-      { "code": "en", "name": "English" },
-      { "code": "zh", "name": "中文" }
-    ],
-    "tabs": [
       {
-        "tab": "Guides",
-        "groups": [
+        "language": "en",
+        "tabs": [
           {
-            "group": "Getting started",
-            "pages": ["index", "quickstart", "development"]
-          },
-          {
-            "group": "Customization",
-            "pages": ["essentials/settings", "essentials/navigation"]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Getting started",
+                "pages": ["index", "quickstart"]
+              },
+              {
+                "group": "Core concepts",
+                "pages": ["concepts/overview"]
+              },
+              {
+                "group": "How to use",
+                "pages": [
+                  "guides/specs",
+                  "guides/tasks",
+                  "guides/commands",
+                  "guides/multi-agent",
+                  "guides/faq"
+                ]
+              },
+              {
+                "group": "Templates",
+                "pages": [
+                  "templates/index",
+                  "templates/specs",
+                  "templates/commands",
+                  "templates/skills",
+                  "templates/customizing"
+                ]
+              },
+              {
+                "group": "Community",
+                "pages": ["showcase/index", "contribute/index"]
+              }
             ]
-          },
-          {
-            "group": "AI tools",
-            "pages": ["ai-tools/cursor", "ai-tools/claude-code", "ai-tools/windsurf"]
           }
         ]
       },
       {
-        "tab": "API reference",
-        "groups": [
+        "language": "zh",
+        "tabs": [
           {
-            "group": "API documentation",
-            "pages": ["api-reference/introduction"]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+            "tab": "指南",
+            "groups": [
+              {
+                "group": "开始使用",
+                "pages": ["zh/index", "zh/quickstart"]
+              },
+              {
+                "group": "核心概念",
+                "pages": ["zh/concepts/overview"]
+              },
+              {
+                "group": "使用方法",
+                "pages": [
+                  "zh/guides/specs",
+                  "zh/guides/tasks",
+                  "zh/guides/commands",
+                  "zh/guides/multi-agent",
+                  "zh/guides/faq"
+                ]
+              },
+              {
+                "group": "模板",
+                "pages": [
+                  "zh/templates/index",
+                  "zh/templates/specs",
+                  "zh/templates/commands",
+                  "zh/templates/skills",
+                  "zh/templates/customizing"
+                ]
+              },
+              {
+                "group": "社区",
+                "pages": ["zh/showcase/index", "zh/contribute/index"]
+              }
             ]
           }
         ]
@@ -63,14 +99,9 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "GitHub",
+          "href": "https://github.com/mindfold-ai/Trellis",
+          "icon": "github"
         }
       ]
     }
@@ -83,7 +114,7 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:taosu@mindfold.ai"
       }
     ],
     "primary": {
@@ -97,7 +128,7 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mindfoldhq",
+      "x": "https://x.com/mindfold_ai",
       "github": "https://github.com/mindfold-ai/Trellis"
     }
   }
