@@ -1,56 +1,50 @@
 ---
-title: 'Introduction'
-description: 'Welcome to the new home for your documentation'
+title: 'Trellis'
+description: '面向 Claude Code 和 Cursor 的 AI 工作流系统'
 ---
 
-## Setting up
+## Trellis 是什么？
 
-Get your documentation site up and running in minutes.
+Trellis 是一个工作流系统，让 AI 编程助手能写出更符合你项目风格的代码。
 
-<Card title="Start here" icon="rocket" href="/quickstart" horizontal>
-  Follow our three step quickstart guide.
+它解决的问题：AI 助手很聪明，但它不了解你的代码库规范。它不知道你们团队用 `snake_case` 命名数据库字段，不知道错误处理要按特定模式来写。每次新会话都是从零开始。
+
+Trellis 通过给 AI 助手提供持久化的项目上下文来解决这个问题。你把规范写一次，之后每个 AI 会话都能自动获取这些信息。
+
+## 工作原理
+
+1. **Specs** - 在 `.trellis/spec/` 里写你的编码规范。这些会自动注入到 AI 的上下文中。
+
+2. **Tasks** - 在 `.trellis/tasks/` 里跟踪工作进度。每个任务可以有自己的上下文文件，告诉 AI 哪些内容是相关的。
+
+3. **Workspace** - `.trellis/workspace/` 里的会话日志让你能接着上次的进度继续工作。
+
+<Card title="开始使用" icon="terminal" href="/zh/quickstart" horizontal>
+  安装 Trellis，5 分钟搭建你的第一个项目。
 </Card>
 
-## Make it yours
+## 适合谁用？
 
-Design a docs site that looks great and empowers your users.
+Trellis 适合这些场景：
 
-<Columns cols={2}>
-  <Card title="Edit locally" icon="pen-to-square" href="/development">
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card title="Customize your site" icon="palette" href="/essentials/settings">
-    Customize the design and colors of your site to match your brand.
-  </Card>
-  <Card title="Set up navigation" icon="map" href="/essentials/navigation">
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card title="API documentation" icon="terminal" href="/api-reference/introduction">
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+- 日常开发用 Claude Code 或 Cursor
+- 代码库有明确的规范约定
+- 希望 AI 遵循团队的模式，而不是写通用代码
+- 在意 AI 会话之间的一致性
 
-## Create beautiful pages
+如果只是写一次性脚本，或者项目刚起步还没有规范，Trellis 就有点杀鸡用牛刀了。
 
-Everything you need to create world-class documentation.
+## Trellis 不是什么
+
+Trellis 不会替你写代码，也不会替代你的判断。它只是确保 AI 在开始写代码之前有正确的上下文。
+
+把它想成给 AI 助手准备的入职文档。你不会指望一个新人不了解代码库就能写出好代码，道理是一样的。
 
 <Columns cols={2}>
-  <Card title="Write with MDX" icon="pen-fancy" href="/essentials/markdown">
-    Use MDX to style your docs pages.
+  <Card title="核心概念" icon="book" href="/zh/concepts/overview">
+    了解 Specs、Tasks 和 Workspace。
   </Card>
-  <Card title="Code samples" icon="code" href="/essentials/code">
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card title="Images" icon="image" href="/essentials/images">
-    Display images and other media.
-  </Card>
-  <Card title="Reusable snippets" icon="recycle" href="/essentials/reusable-snippets">
-    Write once and reuse across your docs.
+  <Card title="命令参考" icon="terminal" href="/zh/guides/commands">
+    常用工作流的 Slash 命令。
   </Card>
 </Columns>
-
-## Need inspiration?
-
-<Card title="See complete examples" icon="stars" href="https://mintlify.com/customers">
-  Browse our showcase of exceptional documentation sites.
-</Card>

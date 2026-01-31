@@ -1,97 +1,50 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: 'Trellis'
+description: 'AI workflow system for Claude Code and Cursor'
 ---
 
-## Setting up
+## What is Trellis?
 
-Get your documentation site up and running in minutes.
+Trellis is a workflow system that helps AI coding assistants write better code for your project.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
+The problem it solves: AI assistants are smart, but they don't know your codebase conventions. They don't know that your team uses `snake_case` for database columns, or that error handling follows a specific pattern. Every session starts from scratch.
+
+Trellis fixes this by giving AI assistants persistent context about your project. You write down your conventions once, and every AI session gets them automatically.
+
+## How it works
+
+1. **Specs** - You document your coding conventions in `.trellis/spec/`. These get injected into AI context automatically.
+
+2. **Tasks** - You track work in `.trellis/tasks/`. Each task can have its own context files that tell the AI what's relevant.
+
+3. **Workspace** - Session journals in `.trellis/workspace/` let you pick up where you left off.
+
+<Card title="Get started" icon="terminal" href="/quickstart" horizontal>
+  Install Trellis and set up your first project in 5 minutes.
 </Card>
 
-## Make it yours
+## Who is this for?
 
-Design a docs site that looks great and empowers your users.
+Trellis works best if you:
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+- Use Claude Code or Cursor for daily development
+- Work on a codebase with specific conventions
+- Want AI to follow your team's patterns, not generic ones
+- Care about consistency across AI sessions
 
-## Create beautiful pages
+It's overkill for one-off scripts or greenfield projects where conventions don't exist yet.
 
-Everything you need to create world-class documentation.
+## What Trellis is not
+
+Trellis doesn't write code for you. It doesn't replace your judgment. It just makes sure the AI has the right context before it starts writing.
+
+Think of it like onboarding docs for your AI assistant. You wouldn't expect a new hire to write good code without understanding your codebase. Same idea.
 
 <Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+  <Card title="Core concepts" icon="book" href="/concepts/overview">
+    Understand specs, tasks, and workspaces.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Commands" icon="terminal" href="/guides/commands">
+    Slash commands for common workflows.
   </Card>
 </Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
