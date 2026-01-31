@@ -1,0 +1,174 @@
+---
+title: '常见问题'
+description: '关于 Trellis 的常见问题'
+---
+
+## 通用
+
+<AccordionGroup>
+
+<Accordion title="为什么用 Trellis 而不是 Skills？">
+  Skills 是可选的 — AI 可能跳过它们，导致质量不一致。Trellis 通过注入来强制执行规范。不管 AI
+  "想不想"，每次会话都会拿到规范。
+</Accordion>
+
+<Accordion title="规范文件手写还是让 AI 生成？">
+  AI 通常根据你的指示来生成规范。但当你有 AI 无法独立弄明白的架构洞察时，你应该参与进来 —
+  比如"我们用这个错误格式是因为 X 历史原因"或者"这个模式存在是因为 Y 约束"。
+</Accordion>
+
+<Accordion title="跟 CLAUDE.md / AGENTS.md / .cursorrules 有什么区别？">
+那些格式每次都加载全部内容。如果你有 50 页规范，每个会话都读全部 50 页。
+
+Trellis 用分层架构和上下文压缩。JSONL 文件指定哪个任务加载哪些规范。你的认证功能加载认证规范。你的 UI 组件加载前端规范。噪音少，信号多。
+
+</Accordion>
+
+<Accordion title="多人协作会冲突吗？">
+不会。每个团队成员在 `.trellis/workspace/{name}/` 有隔离的工作区。你的日志是你的。队友的日志是他们的。
+
+规范是共享的，这正是重点 — 所有人遵循同样的约定。
+
+</Accordion>
+
+<Accordion title="AI 怎么记住之前的对话？">
+用 `/trellis:record-session` 让 AI 把摘要写到日志文件。下次会话开始时，它读取最近的日志和 git 信息来恢复上下文。
+
+这不是魔法记忆。是明确的日志记录。你控制什么被记住。
+
+</Accordion>
+
+<Accordion title="Trellis 支持 Cursor 吗？">
+核心系统（specs、tasks、workspace）能用。你读规范文件然后遵循它们。
+
+不能用的：hooks。Cursor 不能做 Claude Code 有的自动上下文注入。每次会话开始你得手动引用规范文件。
+
+多 Agent 工作流在 Cursor 里也不支持。
+
+</Accordion>
+
+<Accordion title="三个系统必须都用吗？">
+不用。大多数人从只用 specs 开始。写下你的规范，让 AI 遵循它们。
+
+需要工作项之间的上下文隔离时加 tasks。想要跨会话持久化的历史记录时加 workspace。
+
+</Accordion>
+
+</AccordionGroup>
+
+## Specs 规范
+
+<AccordionGroup>
+
+<Accordion title="规范应该多长？">
+短到能在 30 秒内扫完。如果更久，拆成多个文件。
+
+AI 会读整个规范，但规范太长时每部分得到的注意力就少。
+
+</Accordion>
+
+<Accordion title="我的规范没被遵循，哪里出问题了？">
+常见原因：
+
+1. **太模糊** — "用好的错误处理"没意义。加上带代码例子的具体模式。
+2. **没例子** — 放实际代码。AI 从例子学比从描述学更有效。
+3. **路径过时** — 如果你引用的文件不存在了，规范就让人困惑。
+4. **规则冲突** — 两个规范说了不同的事。选一个。
+
+测一下：开新会话，让它写规范覆盖的代码，看规则有没有被遵循。
+
+</Accordion>
+
+<Accordion title="规范可以覆盖非代码的东西吗？">
+  可以。文档风格、commit message 格式、PR 模板、API 设计模式 — 任何你想保持一致的东西。
+</Accordion>
+
+</AccordionGroup>
+
+## Tasks 和 Workspace
+
+<AccordionGroup>
+
+<Accordion title="每件事都要创建任务吗？">
+  不用。任务在需要追踪和上下文隔离时有帮助。快速修复不需要任务。多天的功能开发有任务会受益。
+</Accordion>
+
+<Accordion title="忘了设置当前任务会怎样？">
+会话在没有任务特定上下文的情况下运行。规范还是会从默认值加载，但 AI 不知道你的 PRD 或任务特定的文件。
+
+做任务相关的工作时，先跑 `trellis task start`。
+
+</Accordion>
+
+<Accordion title="JSONL 上下文文件怎么工作？">
+每行指定一个要包含的文件：
+
+```json
+{"type": "spec", "path": ".trellis/spec/backend/index.md"}
+{"type": "file", "path": "src/api/users.ts"}
+```
+
+不同 agent 拿到不同的文件。implement agent 可能比 check agent 需要更多上下文。
+
+</Accordion>
+
+</AccordionGroup>
+
+## 多 Agent
+
+<AccordionGroup>
+
+<Accordion title="能同时跑多少个 agent？">
+没有硬性限制，但实际受限于：
+
+- API 额度（每个 agent 消耗 token）
+- 你审查输出的能力
+
+3-5 个 agent 可控。再多就难跟踪了。
+
+</Accordion>
+
+<Accordion title="两个 agent 改同一个文件会怎样？">
+它们在不同的 Git worktree 工作。开发过程中不会冲突。
+
+合并 PR 时会有冲突。正常解决就行。为了避免：规划任务时避免重叠。
+
+</Accordion>
+
+</AccordionGroup>
+
+## 问题排查
+
+<AccordionGroup>
+
+<Accordion title="装了 Trellis 但好像没什么不同">
+Trellis 在后台工作。没有 UI 变化。
+
+验证：
+
+1. `.trellis/` 目录存在
+2. `.claude/settings.json` 有 hook 配置
+3. 开个会话 — 规范应该出现在上下文里
+   </Accordion>
+
+<Accordion title="AI 忽略我的规范">
+规范可能没被加载。检查：
+
+1. 规范文件在 `.trellis/spec/`？
+2. JSONL 上下文文件里路径对？
+3. 如果是任务工作，任务设为当前了？
+
+另外：你的规范够具体吗？模糊的规范会被忽略。
+
+</Accordion>
+
+<Accordion title="怎么升级？">
+```bash
+npx @mindfold-ai/trellis update
+```
+
+更新 CLI，迁移文件格式。规范和自定义命令会保留。如果新版本改了 hook 脚本可能需要检查。
+
+</Accordion>
+
+</AccordionGroup>

@@ -1,0 +1,91 @@
+---
+title: 'Multi-agent'
+description: 'Run multiple AI agents in parallel'
+---
+
+## Why multiple agents
+
+Some tasks are independent. Adding a login page doesn't affect adding a settings page. Running one agent on each lets you parallelize.
+
+Trellis supports this through Git worktrees. Each agent works in an isolated copy of your repo. No merge conflicts during development.
+
+## How it works
+
+```
+main repo
+    │
+    ├── worktree-1/  →  Agent 1 (feature-a)
+    ├── worktree-2/  →  Agent 2 (feature-b)
+    └── worktree-3/  →  Agent 3 (feature-c)
+```
+
+Each worktree is a separate checkout on a separate branch. Agents can't interfere with each other.
+
+When done, each agent creates a PR. You review and merge.
+
+## Starting parallel agents
+
+Use the `/trellis:parallel` command in Claude Code. It will guide you through:
+
+- Defining tasks
+- Creating worktrees
+- Spawning agent sessions
+
+This creates:
+
+- Separate worktrees for each task
+- Separate Claude Code sessions
+- Separate branches
+
+Each session runs independently.
+
+## Monitoring progress
+
+Check status with:
+
+```bash
+python .trellis/scripts/multi_agent/status.py
+```
+
+Output shows each task's current phase and branch.
+
+## Agent pipeline
+
+Each agent follows phases:
+
+1. **Plan** - Understand requirements, identify files to modify
+2. **Implement** - Write the code
+3. **Check** - Review against specs, self-fix issues
+4. **PR** - Create pull request
+
+The check phase has a "Ralph Loop" - if issues are found, it goes back to fix them. This prevents sloppy PRs.
+
+## When to use this
+
+Good for:
+
+- Independent features
+- Parallel bug fixes
+- Generating variations (different approaches to same problem)
+
+Not good for:
+
+- Features that depend on each other
+- Work that touches the same files
+- When you need to iterate with the AI
+
+## Cleanup
+
+When done, clean up worktrees:
+
+```bash
+python .trellis/scripts/multi_agent/cleanup.py
+```
+
+This removes worktrees but keeps branches. You can delete merged branches normally.
+
+## Limits
+
+Multi-agent is Claude Code only. Cursor doesn't support the hooks needed for automatic context injection.
+
+You also need enough API credits. Three agents means three times the token usage.

@@ -1,0 +1,127 @@
+---
+title: '斜杠命令'
+description: '把常用工作流做成命令'
+---
+
+## 斜杠命令是干什么的
+
+斜杠命令是快捷方式。不用解释你想做什么，打 `/command`，AI 就知道该怎么做。
+
+Trellis 自带常用任务的命令。你也可以加自己的。
+
+## 内置命令
+
+### 会话管理
+
+| 命令                      | 做什么                                   |
+| ------------------------- | ---------------------------------------- |
+| `/trellis:start`          | 开始工作会话。加载上下文，显示当前任务。 |
+| `/trellis:finish-work`    | 结束会话。跑检查，更新日志。             |
+| `/trellis:record-session` | 把发生的事保存到工作区日志。             |
+
+### 开发工作流
+
+| 命令                           | 做什么               |
+| ------------------------------ | -------------------- |
+| `/trellis:before-backend-dev`  | 编码前加载后端规范。 |
+| `/trellis:before-frontend-dev` | 编码前加载前端规范。 |
+| `/trellis:check-backend`       | 按后端规范审查代码。 |
+| `/trellis:check-frontend`      | 按前端规范审查代码。 |
+| `/trellis:commit`              | 用约定格式准备提交。 |
+
+### 多 Agent
+
+| 命令                | 做什么                    |
+| ------------------- | ------------------------- |
+| `/trellis:parallel` | 启动多个 agent 并行工作。 |
+
+### 维护
+
+| 命令                   | 做什么                 |
+| ---------------------- | ---------------------- |
+| `/trellis:update-spec` | 把学到的东西写进规范。 |
+| `/trellis:break-loop`  | 卡在循环里时调试。     |
+| `/trellis:onboard`     | 给新人介绍项目。       |
+
+## 使用命令
+
+在 Claude Code 里打命令：
+
+```
+/trellis:start
+```
+
+命令会展开成完整的 prompt 告诉 AI 该做什么。你看不到这个 prompt，但 AI 会照做。
+
+## 创建自定义命令
+
+命令是 `.claude/commands/` 里的 markdown 文件。创建新命令：
+
+```bash
+mkdir -p .claude/commands/my-project
+```
+
+创建 `.claude/commands/my-project/deploy-check.md`：
+
+```markdown
+部署前检查：
+
+1. 所有测试通过：`npm test`
+2. 没有 TypeScript 错误：`npm run typecheck`
+3. Lint 通过：`npm run lint`
+4. 构建成功：`npm run build`
+
+跑每个检查，报告结果。如果有失败的，说明哪里错了。
+```
+
+现在 `/my-project:deploy-check` 就能用了。
+
+## 命令结构
+
+命令文件就是一个 prompt。调用命令时，文件内容变成给 AI 的指令。
+
+好命令：
+
+- 有清晰的步骤
+- 包含实际要跑的命令
+- 说明期望什么输出
+- 告诉 AI 失败了怎么办
+
+差命令：
+
+- 模糊（"检查代码"）
+- 不说怎么检查
+- 让 AI 猜
+
+## 命名空间
+
+命令用文件夹名作为命名空间：
+
+```
+.claude/commands/
+├── trellis/           # /trellis:* 命令
+│   ├── start.md
+│   └── commit.md
+└── my-project/        # /my-project:* 命令
+    └── deploy-check.md
+```
+
+把你项目的命令放在跟 Trellis 命令不同的文件夹。这样 Trellis 更新时不会冲突。
+
+## 参数
+
+命令可以接受参数。在命令文件里用 `$ARGUMENTS` 引用：
+
+```markdown
+审查 $ARGUMENTS 这个文件。
+
+检查：
+
+- 类型安全
+- 错误处理
+- 测试覆盖
+```
+
+用法：`/my-project:review src/api/users.ts`
+
+AI 拿到的 prompt 里 `$ARGUMENTS` 会被替换成 `src/api/users.ts`。

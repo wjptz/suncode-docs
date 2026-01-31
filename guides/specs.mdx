@@ -1,0 +1,182 @@
+---
+title: 'Writing specs'
+description: 'How to write specs that AI actually follows'
+---
+
+## What makes a good spec
+
+A spec is only useful if the AI follows it. Vague guidelines get ignored. Specific rules get followed.
+
+Bad spec:
+
+```markdown
+## Error Handling
+
+Use proper error handling throughout the codebase.
+```
+
+Good spec:
+
+````markdown
+## Error Handling
+
+All API endpoints return errors in this format:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Email is required"
+  }
+}
+```
+````
+
+Use `AppError` class from `src/lib/errors.ts`. Don't throw raw Error objects.
+
+Example:
+
+```typescript
+// Wrong
+throw new Error('User not found');
+
+// Right
+throw new AppError('USER_NOT_FOUND', 'User not found', 404);
+```
+
+```
+
+The difference: the good spec includes the exact file path, the exact format, and a concrete example showing right vs wrong.
+
+## Spec structure
+
+Put specs in `.trellis/spec/`. Organize by domain:
+
+```
+
+.trellis/spec/
+├── frontend/
+│ ├── index.md # Main frontend conventions
+│ ├── components.md # Component patterns
+│ └── state.md # State management
+├── backend/
+│ ├── index.md # Main backend conventions
+│ ├── api.md # API design
+│ └── database.md # Database conventions
+└── guides/
+└── index.md # General thinking guides
+
+````
+
+The `index.md` in each folder is the entry point. Keep it focused - link to other files for details.
+
+## Writing rules that stick
+
+### Include file paths
+
+Don't say "the error utility". Say `src/lib/errors.ts`. The AI can then read that file and understand the pattern.
+
+```markdown
+## Database Queries
+
+Use the query builder from `src/db/query.ts`, not raw SQL.
+ORM models are in `src/db/models/`.
+````
+
+### Show real code
+
+Copy actual code from your project. The AI learns patterns better from real examples than from descriptions.
+
+````markdown
+## Component Structure
+
+Follow this pattern (from `src/components/UserCard.tsx`):
+
+```tsx
+interface UserCardProps {
+  user: User;
+  onEdit?: () => void;
+}
+
+export function UserCard({ user, onEdit }: UserCardProps) {
+  // Component logic
+}
+```
+````
+
+Props interface first, then named export. No default exports for components.
+
+````
+
+### Be prescriptive
+
+State what to do, not what's possible. The AI needs direction, not options.
+
+```markdown
+// Weak
+You can use either Redux or Zustand for state management.
+
+// Strong
+Use Zustand for state management. Store definitions go in `src/stores/`.
+Redux is not used in this project.
+````
+
+### Include anti-patterns
+
+Show what NOT to do. This prevents common mistakes.
+
+````markdown
+## API Routes
+
+Always validate input with Zod schemas.
+
+```typescript
+// Wrong - no validation
+app.post('/users', (req, res) => {
+  const user = req.body; // Unvalidated!
+  db.users.create(user);
+});
+
+// Right - validate first
+app.post('/users', (req, res) => {
+  const result = CreateUserSchema.safeParse(req.body);
+  if (!result.success) {
+    throw new ValidationError(result.error);
+  }
+  db.users.create(result.data);
+});
+```
+````
+
+```
+
+## Testing your specs
+
+After writing a spec, test it:
+
+1. Start a new Claude Code session
+2. Ask it to write code that the spec covers
+3. Check if it follows the spec
+
+If it doesn't follow the spec, the spec isn't specific enough. Add more examples, more file paths, more concrete rules.
+
+## Common mistakes
+
+**Too abstract**: "Follow clean code principles" - means nothing to the AI.
+
+**Too long**: A 2000-line spec won't get read carefully. Keep specs focused.
+
+**No examples**: Rules without examples are hard to follow.
+
+**Outdated references**: If you reference `src/utils/old.ts` but that file was deleted, the spec becomes confusing.
+
+## Updating specs
+
+When conventions change:
+
+1. Update the spec file
+2. Commit the change
+3. Next session automatically gets the new rules
+
+Don't try to "tell" the AI about changes mid-session. Update the spec file. That's the source of truth.
+```

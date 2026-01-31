@@ -1,0 +1,127 @@
+---
+title: 'Slash commands'
+description: 'Common workflows as commands'
+---
+
+## What slash commands do
+
+Slash commands are shortcuts. Instead of explaining what you want, you type `/command` and the AI knows the workflow.
+
+Trellis ships with commands for common tasks. You can add your own.
+
+## Built-in commands
+
+### Session management
+
+| Command                   | What it does                                             |
+| ------------------------- | -------------------------------------------------------- |
+| `/trellis:start`          | Start a work session. Loads context, shows current task. |
+| `/trellis:finish-work`    | End a session. Run checks, update journal.               |
+| `/trellis:record-session` | Save what happened to the workspace journal.             |
+
+### Development workflow
+
+| Command                        | What it does                               |
+| ------------------------------ | ------------------------------------------ |
+| `/trellis:before-backend-dev`  | Load backend specs before coding.          |
+| `/trellis:before-frontend-dev` | Load frontend specs before coding.         |
+| `/trellis:check-backend`       | Review code against backend specs.         |
+| `/trellis:check-frontend`      | Review code against frontend specs.        |
+| `/trellis:commit`              | Prepare a commit with conventional format. |
+
+### Multi-agent
+
+| Command             | What it does                               |
+| ------------------- | ------------------------------------------ |
+| `/trellis:parallel` | Start multiple agents working in parallel. |
+
+### Maintenance
+
+| Command                | What it does                              |
+| ---------------------- | ----------------------------------------- |
+| `/trellis:update-spec` | Capture learnings into specs.             |
+| `/trellis:break-loop`  | Debug when stuck in a loop.               |
+| `/trellis:onboard`     | Explain the project to a new team member. |
+
+## Using commands
+
+Type the command in Claude Code:
+
+```
+/trellis:start
+```
+
+The command expands into a full prompt that tells the AI what to do. You don't see this prompt, but the AI follows it.
+
+## Creating custom commands
+
+Commands are markdown files in `.claude/commands/`. Create a new command:
+
+```bash
+mkdir -p .claude/commands/my-project
+```
+
+Create `.claude/commands/my-project/deploy-check.md`:
+
+```markdown
+Before deploying, check:
+
+1. All tests pass: `npm test`
+2. No TypeScript errors: `npm run typecheck`
+3. Lint clean: `npm run lint`
+4. Build succeeds: `npm run build`
+
+Run each check and report results. If any fail, explain what's wrong.
+```
+
+Now `/my-project:deploy-check` is available.
+
+## Command structure
+
+A command file is just a prompt. When you invoke the command, the file contents become instructions for the AI.
+
+Good commands:
+
+- Have clear steps
+- Include actual commands to run
+- Specify what output to expect
+- Tell the AI what to do if something fails
+
+Bad commands:
+
+- Are vague ("check the code")
+- Don't specify how to check
+- Leave the AI guessing
+
+## Namespacing
+
+Commands use the folder name as a namespace:
+
+```
+.claude/commands/
+├── trellis/           # /trellis:* commands
+│   ├── start.md
+│   └── commit.md
+└── my-project/        # /my-project:* commands
+    └── deploy-check.md
+```
+
+Keep your project commands in a separate folder from Trellis commands. This avoids conflicts when Trellis updates.
+
+## Arguments
+
+Commands can accept arguments. Reference them with `$ARGUMENTS` in the command file:
+
+```markdown
+Review the file at $ARGUMENTS.
+
+Check for:
+
+- Type safety
+- Error handling
+- Test coverage
+```
+
+Usage: `/my-project:review src/api/users.ts`
+
+The AI receives the prompt with `$ARGUMENTS` replaced by `src/api/users.ts`.

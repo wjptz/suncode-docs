@@ -1,0 +1,178 @@
+---
+title: 'FAQ'
+description: 'Common questions about Trellis'
+---
+
+## General
+
+<AccordionGroup>
+
+<Accordion title="Why Trellis instead of Skills?">
+  Skills are optional — the AI might skip them, leading to inconsistent quality. Trellis enforces
+  specifications through injection. Every session gets the specs whether the AI "feels like it" or
+  not.
+</Accordion>
+
+<Accordion title="Do I write spec files manually or let AI create them?">
+  AI typically generates specs from your instructions. But you should contribute when you have
+  architectural insights that AI can't figure out on its own — things like "we always use this error
+  format because of X legacy reason" or "this pattern exists because of Y constraint."
+</Accordion>
+
+<Accordion title="How is this different from CLAUDE.md / AGENTS.md / .cursorrules?">
+Those formats load all content every time. If you have 50 pages of specs, every session reads all 50 pages.
+
+Trellis uses layered architecture with context compression. JSONL files specify which specs to load for which task. Your auth feature loads auth specs. Your UI component loads frontend specs. Less noise, more signal.
+
+</Accordion>
+
+<Accordion title="Will multiple people conflict?">
+No. Each team member has an isolated workspace at `.trellis/workspace/{name}/`. Your journals are yours. Your teammate's journals are theirs.
+
+Specs are shared, which is the point — everyone follows the same conventions.
+
+</Accordion>
+
+<Accordion title="How does AI remember previous conversations?">
+Use `/trellis:record-session` to have AI write summaries to journal files. On the next session start, it reads recent journals and git info to restore context.
+
+It's not magic memory. It's explicit journaling. You control what gets remembered.
+
+</Accordion>
+
+<Accordion title="Does Trellis work with Cursor?">
+The core systems (specs, tasks, workspace) work. You read spec files and follow them.
+
+What doesn't work: hooks. Cursor can't do the automatic context injection that Claude Code has. You'll need to manually reference spec files at session start.
+
+Multi-agent workflows also don't work in Cursor.
+
+</Accordion>
+
+<Accordion title="Do I need to use all three systems?">
+No. Most people start with specs only. Write your conventions, let AI follow them.
+
+Add tasks when you need context isolation between work items. Add workspace when you want session history that persists.
+
+</Accordion>
+
+</AccordionGroup>
+
+## Specs
+
+<AccordionGroup>
+
+<Accordion title="How long should specs be?">
+Short enough to skim in 30 seconds. If it takes longer, split into multiple files.
+
+The AI reads the whole spec but pays less attention to each part when specs are long.
+
+</Accordion>
+
+<Accordion title="My spec isn't being followed. What's wrong?">
+Common causes:
+
+1. **Too vague** — "Use good error handling" means nothing. Add specific patterns with code examples.
+2. **No examples** — Show actual code. AI learns better from examples than descriptions.
+3. **Outdated paths** — If you reference files that don't exist, the spec becomes confusing.
+4. **Conflicting rules** — Two specs say different things. Pick one.
+
+Test it: new session, ask for code the spec covers, check if rules are followed.
+
+</Accordion>
+
+<Accordion title="Can specs cover non-code things?">
+  Yes. Documentation style, commit message format, PR templates, API design patterns — anything you
+  want consistent.
+</Accordion>
+
+</AccordionGroup>
+
+## Tasks & Workspace
+
+<AccordionGroup>
+
+<Accordion title="Do I need tasks for everything?">
+  No. Tasks help when you need tracking and context isolation. Quick fixes don't need a task.
+  Multi-day features benefit from one.
+</Accordion>
+
+<Accordion title="What if I forget to set the current task?">
+Session runs without task-specific context. Specs still load from defaults, but the AI won't know your PRD or task-specific files.
+
+For task-specific work, run `trellis task start` first.
+
+</Accordion>
+
+<Accordion title="How do JSONL context files work?">
+Each line specifies a file to include:
+
+```json
+{"type": "spec", "path": ".trellis/spec/backend/index.md"}
+{"type": "file", "path": "src/api/users.ts"}
+```
+
+Different agents get different files. Implement agent might need more context than check agent.
+
+</Accordion>
+
+</AccordionGroup>
+
+## Multi-agent
+
+<AccordionGroup>
+
+<Accordion title="How many agents can run at once?">
+No hard limit, but practically:
+
+- API credits (each agent uses tokens)
+- Your ability to review output
+
+3-5 agents is manageable. More gets hard to track.
+
+</Accordion>
+
+<Accordion title="What if two agents modify the same file?">
+They work in separate Git worktrees. No conflicts during development.
+
+Merge conflicts happen when merging PRs. Resolve normally. To avoid: plan tasks so they don't overlap.
+
+</Accordion>
+
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="Installed Trellis but nothing seems different">
+Trellis works in the background. No UI changes.
+
+Verify:
+
+1. `.trellis/` directory exists
+2. `.claude/settings.json` has hook configs
+3. Start a session — specs should appear in context
+   </Accordion>
+
+<Accordion title="AI is ignoring my specs">
+Specs might not be loading. Check:
+
+1. Spec file is in `.trellis/spec/`?
+2. Paths correct in JSONL context files?
+3. For task work, is the task set as current?
+
+Also: is your spec specific enough? Vague specs get ignored.
+
+</Accordion>
+
+<Accordion title="How do I upgrade?">
+```bash
+npx @mindfold-ai/trellis update
+```
+
+Updates CLI, migrates file formats. Specs and custom commands preserved. Hook scripts might need review if new version changes them.
+
+</Accordion>
+
+</AccordionGroup>
