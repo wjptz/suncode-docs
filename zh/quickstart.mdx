@@ -1,82 +1,85 @@
 ---
-title: 'Quickstart'
-description: 'Start building awesome documentation in minutes'
+title: '快速开始'
+description: '在你的项目中配置 Trellis'
 ---
 
-## Get started in three steps
+## 安装 Trellis
 
-Get your documentation site running locally and make your first customization.
+在项目根目录运行：
 
-### Step 1: Set up your local environment
+```bash
+npx @mindfold-ai/trellis init
+```
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you
-    didn't already have one. You can find a link to this repository in your
-    [dashboard](https://dashboard.mintlify.com). To clone the repository locally so that you can
-    make and preview changes to your docs, follow the [Cloning a
-    repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
-    guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint` 2. Navigate to your docs directory and run: `mint
-    dev` 3. Open `http://localhost:3000` to see your docs live!
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+这会创建一个 `.trellis/` 目录，结构如下：
 
-### Step 2: Deploy your changes
+```
+.trellis/
+├── workflow.md          # 工作流说明
+├── spec/                # 你的编码规范
+│   ├── frontend/
+│   ├── backend/
+│   └── guides/
+├── workspace/           # 会话日志
+└── tasks/               # 任务跟踪
+```
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+如果是 Claude Code 项目，还会配置 `.claude/` 目录，包含 hooks 和命令。
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## 写第一个 Spec
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
+打开 `.trellis/spec/backend/index.md`（如果主要写前端就打开 `frontend/`），填写模板。
 
-  </Accordion>
-</AccordionGroup>
+一个真实的 spec 长这样：
 
-### Step 3: Go live
+<CodeGroup>
+```markdown 后端规范示例
+# 后端开发规范
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes. 2. Your docs will update and be live in moments!
-</Accordion>
+## 错误处理
 
-## Next steps
+所有 API 接口返回错误时用这个格式：
 
-Now that you have your docs running, explore these key features:
+{ "error": { "code": "VALIDATION_ERROR", "message": "邮箱不能为空" } }
+
+使用 src/lib/errors.ts 里的 AppError 类。不要直接 throw Error 对象。
+
+## 数据库
+
+- 表名：snake_case，复数形式（user_sessions 而不是 UserSession）
+- 必须包含 created_at 和 updated_at 时间戳
+- 外键格式：{表名}\_id
+
+```
+</CodeGroup>
+
+写具体一点。带上文件路径。放项目里的真实代码。含糊的规范没用。
+
+## 测试一下
+
+开一个新的 Claude Code 会话，让它写点代码。检查它是不是遵循了你的规范。
+
+如果没有，说明你的规范还不够具体。加更多例子进去。
+
+## 接下来
 
 <CardGroup cols={2}>
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
+<Card title="核心概念" icon="book" href="/zh/concepts/overview">
+  了解 Specs、Tasks 和 Workspace 是怎么配合工作的。
 </Card>
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
+<Card title="写好 Spec" icon="pencil" href="/zh/guides/specs">
+  让 AI 真正遵循规范的写作技巧。
 </Card>
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
+<Card title="命令参考" icon="terminal" href="/zh/guides/commands">
+  常用工作流的 Slash 命令。
 </Card>
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
+<Card title="多 Agent 协作" icon="users" href="/zh/guides/multi-agent">
+  并行运行多个 AI Agent。
 </Card>
 
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our
-  [community](https://mintlify.com/community).
-</Note>
+```
