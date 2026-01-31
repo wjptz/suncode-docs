@@ -1,0 +1,18 @@
+/*
+ * Hide flag icons in language switcher
+ */
+
+/* Hide flag image in the language button (CDN flags) */
+img[src*="cloudfront.net/flags"] {
+  display: none !important;
+}
+
+/* Hide colored circle indicator in the language button */
+button[aria-haspopup="menu"] > div:first-child {
+  display: none !important;
+}
+
+/* Hide colored circle indicators in dropdown menu items */
+[role="menuitem"] > div:first-child {
+  display: none !important;
+}
