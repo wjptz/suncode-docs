@@ -212,6 +212,87 @@ Code block right-click menu options:
 
 ---
 
+## Internationalization (i18n)
+
+### Language-Based Navigation
+
+For multi-language support, use `navigation.languages` instead of `navigation.tabs`:
+
+```json
+{
+  "navigation": {
+    "languages": [
+      {
+        "language": "en",
+        "tabs": [
+          {
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": ["index", "quickstart"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "zh",
+        "tabs": [
+          {
+            "tab": "指南",
+            "groups": [
+              {
+                "group": "开始使用",
+                "pages": ["zh/index", "zh/quickstart"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### i18n File Structure
+
+```
+docs/
+├── index.mdx           # English homepage
+├── quickstart.mdx      # English quickstart
+├── zh/
+│   ├── index.mdx       # Chinese homepage
+│   └── quickstart.mdx  # Chinese quickstart
+└── docs.json           # Both languages configured
+```
+
+> **Important**: Each language needs its own complete navigation structure. Pages in `zh/` must be referenced as `"zh/pagename"` in the navigation.
+
+---
+
+## Custom Styling
+
+### Override Default Styles
+
+Create `styles.css` in project root to customize Mintlify appearance:
+
+```css
+/* Example: Hide language switcher flag icons */
+img[src*='cloudfront.net/flags'] {
+  display: none !important;
+}
+
+/* Example: Customize button styles */
+button[aria-haspopup='menu'] > div:first-child {
+  display: none !important;
+}
+```
+
+> **Tip**: Use browser DevTools to inspect Mintlify elements and find the right selectors.
+
+---
+
 ## Best Practices
 
 ### DO

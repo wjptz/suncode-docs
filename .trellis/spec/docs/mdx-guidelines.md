@@ -181,6 +181,76 @@ Common: `javascript`, `typescript`, `python`, `bash`, `json`, `yaml`, `sql`, `go
 
 ---
 
+## Common Mistakes
+
+### Nested Code Blocks in Templates
+
+**Problem**: Using escaped backticks to show code block syntax renders broken:
+
+```mdx
+<!-- DON'T: This shows escaped backticks literally -->
+
+\`\`\`bash
+npm install
+\`\`\`
+```
+
+**Solution**: Use `<CodeGroup>` component instead:
+
+````mdx
+<!-- DO: Wrap in CodeGroup for proper rendering -->
+
+<CodeGroup>```bash Install npm install ```</CodeGroup>
+````
+
+### Duplicate Headings in Template Examples
+
+**Problem**: Showing multiple template examples with same headings triggers MD024 lint error.
+
+**Solution**: Add lint disable comment at file start:
+
+```mdx
+---
+title: 'Templates'
+---
+
+<!-- markdownlint-disable MD024 -->
+
+## Template 1
+
+### Project structure
+
+...
+
+## Template 2
+
+### Project structure <!-- Same heading, but lint ignored -->
+
+...
+```
+
+### Table Column Alignment
+
+**Problem**: markdownlint MD060 requires consistent table pipe alignment.
+
+**Solution**: Ensure all columns align:
+
+```markdown
+<!-- DON'T: Inconsistent spacing -->
+
+| Command  | What it does                                      |
+| -------- | ------------------------------------------------- |
+| `/start` | Start session. Loads context, shows current task. |
+
+<!-- DO: Align all pipes -->
+
+| Command  | What it does                                      |
+| -------- | ------------------------------------------------- |
+| `/start` | Start session. Loads context, shows current task. |
+```
+
+---
+
 ## Best Practices
 
 ### DO
@@ -190,6 +260,7 @@ Common: `javascript`, `typescript`, `python`, `bash`, `json`, `yaml`, `sql`, `go
 - Keep descriptions under 160 characters for SEO
 - Use appropriate callout types (Note, Warning, Tip)
 - Include code examples with language identifiers
+- Use `<CodeGroup>` when showing code block syntax in examples
 
 ### DON'T
 
@@ -198,3 +269,4 @@ Common: `javascript`, `typescript`, `python`, `bash`, `json`, `yaml`, `sql`, `go
 - Write overly long descriptions
 - Mix component styles inconsistently
 - Leave code blocks without language hints
+- Use escaped backticks to show nested code blocks
