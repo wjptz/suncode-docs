@@ -8,16 +8,21 @@
     "verify": "python3 .trellis/scripts/verify-docs.py",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "lint": "eslint . && markdownlint-cli2 '**/*.{md,mdx}'",
+    "lint:md": "markdownlint-cli2 '**/*.{md,mdx}'",
+    "lint:js": "eslint .",
     "prepare": "husky"
   },
   "lint-staged": {
     "*.{md,mdx}": [
+      "markdownlint-cli2 --fix",
       "prettier --write"
     ],
     "*.{json,yaml,yml}": [
       "prettier --write"
     ],
-    "*.{js,ts,mjs,cjs}": [
+    "*.{js,mjs,cjs}": [
+      "eslint --fix",
       "prettier --write"
     ]
   },
@@ -31,8 +36,11 @@
   "devDependencies": {
     "@commitlint/cli": "^20.4.0",
     "@commitlint/config-conventional": "^20.4.0",
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
+    "markdownlint-cli2": "^0.20.0",
     "prettier": "^3.8.1"
   }
 }

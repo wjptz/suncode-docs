@@ -1,0 +1,20 @@
+{
+  // Configuration for markdownlint-cli2
+  // Extends the base markdownlint config
+  "config": {
+    "extends": "./.markdownlint.jsonc"
+  },
+
+  // Directories and files to ignore
+  "ignores": [
+    "node_modules/**",
+    ".trellis/**",
+    ".claude/**",
+    ".cursor/**",
+    ".husky/**",
+    ".mintlify/**"
+  ],
+
+  // Use .gitignore patterns as well
+  "gitignore": true
+}

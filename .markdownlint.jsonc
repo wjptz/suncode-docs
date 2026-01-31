@@ -1,0 +1,21 @@
+{
+  // Extend prettier-compatible rules
+  "extends": "markdownlint/style/prettier",
+
+  // Disable rules that conflict with Mintlify/MDX
+  "MD033": false, // Allow inline HTML (MDX components)
+  "MD041": false, // First line doesn't need to be H1 (frontmatter)
+  "MD013": false, // Line length (handled by prettier)
+  "MD025": false, // Multiple H1s OK (MDX components may add headings)
+  "MD034": false, // Bare URLs OK (common in MDX)
+  "MD040": false, // Code blocks without language OK (MDX snippets)
+  "MD046": false, // Mixed code block styles OK (MDX Tab components use indented)
+
+  // Customize rules
+  "MD024": {
+    "siblings_only": true // Allow same heading in different sections
+  },
+  "MD048": {
+    "style": "backtick" // Use backticks for code fences
+  }
+}
