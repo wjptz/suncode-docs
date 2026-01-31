@@ -1,0 +1,255 @@
+---
+title: '魔改 Trellis'
+description: '怎么为你的项目修改 Trellis'
+---
+
+## 为什么要定制
+
+Trellis 自带合理的默认值，但你的项目是独特的。你可能想：
+
+- 为你的工作流加专门的 agent
+- 改上下文注入的方式
+- 加项目特定的命令
+- 修改质量检查
+
+这页展示怎么安全地做这些改动。
+
+## 黄金法则
+
+**记录你改了什么。** 创建一个 `trellis-local` 技能来追踪修改：
+
+```bash
+mkdir -p .claude/skills/trellis-local
+```
+
+`.claude/skills/trellis-local/SKILL.md`：
+
+```markdown
+---
+name: trellis-local
+description: |
+  项目特定的 Trellis 定制。
+  记录对原版 Trellis 的所有修改。
+---
+
+# Trellis Local
+
+## 基础版本
+
+Trellis: 0.3.0
+修改日期: 2026-01-31
+
+## 改动
+
+### Agents
+
+- 加了 deploy agent 用于部署工作流
+
+### 命令
+
+- 加了 /project:deploy-check 命令
+
+### Hooks
+
+- 修改了 inject-subagent-context.py 处理 deploy agent
+```
+
+这让升级更容易。你知道改了什么。
+
+---
+
+## 加自定义 Agent
+
+### 1. 创建 agent 定义
+
+`.claude/agents/deploy.md`：
+
+```markdown
+---
+name: deploy
+description: 处理部署工作流
+tools:
+  - Read
+  - Bash
+  - Glob
+  - Grep
+restrictions:
+  - 不能用 Write 或 Edit 工具
+  - 只跑批准的部署命令
+---
+
+你是部署专家。你的工作是：
+
+1. 检查代码库准备好部署了
+2. 跑批准列表里的部署命令
+3. 验证部署成功
+4. 报告问题
+
+## 批准的命令
+
+只跑这些命令：
+
+- npm run build
+- npm test
+- npm run deploy:staging
+- npm run deploy:production
+
+永远不跑任意命令。如果部署步骤不在批准列表里，停下来问。
+```
+
+### 2. 加上下文注入
+
+编辑 `.claude/hooks/inject-subagent-context.py`：
+
+```python
+# 找到 agent 类型映射
+AGENT_CONTEXT_FILES = {
+    "implement": "implement.jsonl",
+    "check": "check.jsonl",
+    "debug": "debug.jsonl",
+    "deploy": "deploy.jsonl",  # 加这行
+}
+```
+
+### 3. 创建上下文文件模板
+
+创建任务时，包含 `deploy.jsonl`：
+
+```jsonl
+{"type": "spec", "path": ".trellis/spec/deployment/index.md"}
+{"type": "file", "path": "scripts/deploy.sh"}
+{"type": "file", "path": ".github/workflows/deploy.yml"}
+```
+
+### 4. 记录改动
+
+用你加了什么更新你的 `trellis-local` 技能。
+
+---
+
+## 修改 Hooks
+
+Hooks 是 `.claude/hooks/` 里的 Python 脚本。小心 - 搞坏 hook 会搞坏工作流。
+
+### Session start hook
+
+`session-start.py` 在 Claude Code 会话开始时运行。修改它来：
+
+- 注入额外上下文
+- 显示自定义欢迎信息
+- 检查环境要求
+
+### 上下文注入 hook
+
+`inject-subagent-context.py` 在子 agent 启动前运行。修改它来：
+
+- 支持新 agent 类型
+- 改哪些规范被加载
+- 根据任务状态加动态上下文
+
+### 质量检查 hook（Ralph Loop）
+
+`ralph-loop.py` 控制质量强制。修改它来：
+
+- 改重试行为
+- 调整质量阈值
+- 加自定义检查
+
+---
+
+## 加工作流阶段
+
+默认阶段：plan → implement → check
+
+加一个阶段：
+
+### 1. 更新 task.json 模板
+
+```json
+{
+  "phases": ["plan", "implement", "review", "check"]
+}
+```
+
+### 2. 为阶段创建 agent
+
+`.claude/agents/review.md` 定义 review agent 做什么。
+
+### 3. 创建上下文文件
+
+`review.jsonl` 模板用于 review 特定的上下文。
+
+### 4. 更新调度逻辑
+
+如果用多 agent 流水线，更新 `dispatch` 处理新阶段。
+
+---
+
+## 改验证命令
+
+check agent 跑验证命令。默认：
+
+- `npm test`
+- `npm run lint`
+- `npm run typecheck`
+
+要改这些，编辑 check agent 定义或控制验证的规范。
+
+`.trellis/spec/guides/verification.md`：
+
+```markdown
+# 验证命令
+
+标记代码完成前，跑：
+
+1. pnpm test（不是 npm）
+2. pnpm lint:fix（自动修能修的）
+3. pnpm typecheck
+4. pnpm build（确保能编译）
+
+任何命令失败，修好再继续。
+```
+
+---
+
+## 可移植 vs 不可移植的改动
+
+有些改动到处都能用。有些只在 Claude Code 能用。
+
+### 可移植（所有平台）
+
+- `.trellis/spec/` 里的规范
+- `.trellis/tasks/` 里的任务
+- `.trellis/workspace/` 里的工作区
+- `.claude/commands/` 里的命令（手动调用）
+
+### 仅 Claude Code
+
+- `.claude/hooks/` 里的 Hooks
+- 自动上下文注入
+- Ralph Loop 质量强制
+- 多 Agent worktree 会话
+
+如果需要 Cursor 兼容性，把定制放在可移植层。
+
+---
+
+## 定制后升级
+
+新 Trellis 版本出来后：
+
+1. 读 changelog
+2. 把你的 `trellis-local` 改动跟新默认值比较
+3. 小心合并
+4. 测试定制还能用
+5. 用迁移说明更新 `trellis-local`
+
+```markdown
+## Changelog
+
+### 2026-02-15 - 升级到 Trellis 0.4.0
+
+- 新 hook 格式需要改 inject-subagent-context.py
+- 保留了自定义 deploy agent
+- 更新上下文文件格式匹配新规范
+```

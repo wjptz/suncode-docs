@@ -1,0 +1,366 @@
+---
+title: 'Spec templates'
+description: 'Coding convention templates for common stacks'
+---
+
+<!-- markdownlint-disable MD024 -->
+
+## Backend templates
+
+### Node.js + Express + TypeScript
+
+```markdown
+# Backend Guidelines
+
+## Project structure
+```
+
+src/
+├── routes/ # Express route handlers
+├── services/ # Business logic
+├── db/
+│ ├── models/ # Database models
+│ └── migrations/ # SQL migrations
+├── lib/ # Shared utilities
+└── types/ # TypeScript types
+
+````
+
+## Error handling
+
+All errors use `AppError` from `src/lib/errors.ts`:
+
+```typescript
+throw new AppError("USER_NOT_FOUND", "User does not exist", 404);
+````
+
+API responses for errors:
+
+```json
+{
+  "error": {
+    "code": "USER_NOT_FOUND",
+    "message": "User does not exist"
+  }
+}
+```
+
+Never throw raw `Error` objects. Never expose stack traces in production.
+
+## Database
+
+- Table names: `snake_case`, plural (`user_sessions`)
+- Column names: `snake_case` (`created_at`)
+- Always include `id`, `created_at`, `updated_at`
+- Foreign keys: `{table_singular}_id` (`user_id`)
+
+Use the query builder from `src/db/query.ts`, not raw SQL.
+
+## API routes
+
+Routes go in `src/routes/`. One file per resource.
+
+```typescript
+// src/routes/users.ts
+import { Router } from 'express';
+import { UserService } from '../services/user';
+
+const router = Router();
+
+router.get('/:id', async (req, res) => {
+  const user = await UserService.findById(req.params.id);
+  res.json(user);
+});
+
+export default router;
+```
+
+Validate input with Zod. Schemas go in `src/types/schemas.ts`.
+
+## Authentication
+
+JWT tokens for auth. Token handling in `src/lib/auth.ts`.
+
+Protected routes use `requireAuth` middleware:
+
+```typescript
+router.get('/profile', requireAuth, async (req, res) => {
+  // req.user is available here
+});
+```
+
+````
+
+---
+
+### Python + FastAPI
+
+```markdown
+# Backend Guidelines
+
+## Project structure
+
+````
+
+app/
+├── api/
+│ └── routes/ # FastAPI route handlers
+├── services/ # Business logic
+├── db/
+│ ├── models/ # SQLAlchemy models
+│ └── migrations/ # Alembic migrations
+├── core/ # Config, security, dependencies
+└── schemas/ # Pydantic schemas
+
+````
+
+## Error handling
+
+Custom exceptions in `app/core/exceptions.py`:
+
+```python
+class AppError(Exception):
+    def __init__(self, code: str, message: str, status: int = 400):
+        self.code = code
+        self.message = message
+        self.status = status
+````
+
+Use the global exception handler. Don't catch and re-raise.
+
+## Database
+
+- Table names: `snake_case`, plural
+- Use SQLAlchemy ORM, not raw SQL
+- Models in `app/db/models/`
+- Each model has `id`, `created_at`, `updated_at`
+
+## API routes
+
+One router per resource in `app/api/routes/`:
+
+```python
+# app/api/routes/users.py
+from fastapi import APIRouter, Depends
+from app.services.user import UserService
+from app.schemas.user import UserResponse
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(user_id: int, service: UserService = Depends()):
+    return await service.get_by_id(user_id)
+```
+
+## Validation
+
+Use Pydantic schemas for all input/output:
+
+```python
+# app/schemas/user.py
+from pydantic import BaseModel, EmailStr
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    name: str
+```
+
+````
+
+---
+
+## Frontend templates
+
+### React + TypeScript
+
+```markdown
+# Frontend Guidelines
+
+## Project structure
+
+````
+
+src/
+├── components/ # Reusable components
+├── pages/ # Route pages
+├── hooks/ # Custom hooks
+├── stores/ # Zustand stores
+├── lib/ # Utilities
+├── types/ # TypeScript types
+└── api/ # API client functions
+
+````
+
+## Components
+
+Named exports only. No default exports.
+
+```tsx
+// src/components/UserCard.tsx
+interface UserCardProps {
+  user: User;
+  onEdit?: () => void;
+}
+
+export function UserCard({ user, onEdit }: UserCardProps) {
+  return (
+    <div className="user-card">
+      <span>{user.name}</span>
+      {onEdit && <button onClick={onEdit}>Edit</button>}
+    </div>
+  );
+}
+````
+
+Props interface defined above the component. No inline types.
+
+## State management
+
+Use Zustand. Store files in `src/stores/`:
+
+```tsx
+// src/stores/user.ts
+import { create } from 'zustand';
+
+interface UserStore {
+  user: User | null;
+  setUser: (user: User) => void;
+  logout: () => void;
+}
+
+export const useUserStore = create<UserStore>((set) => ({
+  user: null,
+  setUser: (user) => set({ user }),
+  logout: () => set({ user: null }),
+}));
+```
+
+## API calls
+
+API functions in `src/api/`. Use the fetch wrapper from `src/lib/fetch.ts`:
+
+```tsx
+// src/api/users.ts
+import { api } from '../lib/fetch';
+
+export async function getUser(id: string): Promise<User> {
+  return api.get(`/users/${id}`);
+}
+```
+
+## Styling
+
+Tailwind CSS. No inline styles. No CSS modules.
+
+For complex components, extract class names:
+
+```tsx
+const cardStyles = 'rounded-lg shadow-md p-4 bg-white';
+const titleStyles = 'text-lg font-semibold text-gray-900';
+```
+
+````
+
+---
+
+## Full-stack templates
+
+### Next.js + tRPC + Prisma
+
+```markdown
+# Full-stack Guidelines
+
+## Project structure
+
+````
+
+src/
+├── app/ # Next.js app router
+├── server/
+│ ├── api/ # tRPC routers
+│ └── db/ # Prisma client
+├── components/ # React components
+├── hooks/ # Custom hooks
+└── lib/ # Shared utilities
+prisma/
+└── schema.prisma # Database schema
+
+````
+
+## API (tRPC)
+
+Routers in `src/server/api/routers/`:
+
+```typescript
+// src/server/api/routers/user.ts
+import { z } from "zod";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
+
+export const userRouter = router({
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      return ctx.db.user.findUnique({ where: { id: input.id } });
+    }),
+
+  update: protectedProcedure
+    .input(z.object({ name: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      return ctx.db.user.update({
+        where: { id: ctx.user.id },
+        data: { name: input.name },
+      });
+    }),
+});
+````
+
+## Database (Prisma)
+
+Models in `prisma/schema.prisma`:
+
+```prisma
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+}
+```
+
+Always run `npx prisma generate` after schema changes.
+
+## Components
+
+Same as React guidelines. Use tRPC hooks:
+
+```tsx
+import { api } from '~/lib/api';
+
+export function UserProfile({ userId }: { userId: string }) {
+  const { data: user, isLoading } = api.user.getById.useQuery({ id: userId });
+
+  if (isLoading) return <Spinner />;
+  return <div>{user?.name}</div>;
+}
+```
+
+```
+
+---
+
+## Using these templates
+
+1. Copy the template to `.trellis/spec/backend/index.md` or `.trellis/spec/frontend/index.md`
+2. Adjust paths to match your project
+3. Add project-specific conventions
+4. Remove sections that don't apply
+
+Templates are starting points. Your spec should reference actual files in your codebase.
+```

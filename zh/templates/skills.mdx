@@ -1,0 +1,203 @@
+---
+title: '技能模板'
+description: '可以安装的复用技能'
+---
+
+## 什么是技能
+
+技能是 Claude 在相关时加载的知识包。跟命令不同（你显式调用），技能在 AI 识别到适用时自动激活。
+
+技能可以覆盖：
+
+- 特定技术（PostgreSQL、Redis）
+- 工作流（代码审查、调试）
+- 领域（API 设计、安全）
+
+## 技能结构
+
+技能在 `.claude/skills/`：
+
+```
+.claude/skills/
+└── my-skill/
+    └── SKILL.md
+```
+
+`SKILL.md` 文件包含 frontmatter 和内容：
+
+```markdown
+---
+name: my-skill
+description: |
+  这个技能覆盖什么的简短描述。
+  Claude 用这个决定什么时候加载技能。
+---
+
+# 技能内容
+
+实际知识写在这里。像给一个有能力的开发者解释一样写。
+```
+
+---
+
+## 模板：数据库技能
+
+`.claude/skills/postgres/SKILL.md`：
+
+<CodeGroup>
+```markdown PostgreSQL 技能
+---
+name: postgres
+description: |
+  PostgreSQL 数据库模式和最佳实践。
+  在处理 Postgres、写 SQL 或数据库迁移时使用。
+---
+
+# PostgreSQL 指南
+
+## 查询模式
+
+用参数化查询。永远不要插值用户输入：
+
+-- 错误
+SELECT \* FROM users WHERE id = '${userId}'
+
+-- 正确
+SELECT \* FROM users WHERE id = $1
+
+## 索引
+
+给这些加索引：
+
+- 外键
+- WHERE 子句里的列
+- ORDER BY 里的列
+
+## 迁移
+
+一个迁移一个改动。让迁移可逆。
+
+## JSON 列
+
+用 jsonb，不是 json。给经常查询的 JSON 路径加索引。
+
+## 事务
+
+相关操作包在事务里。
+
+````
+</CodeGroup>
+
+---
+
+## 模板：安全技能
+
+`.claude/skills/security/SKILL.md`：
+
+<CodeGroup>
+```markdown 安全技能
+---
+name: security
+description: |
+  Web 应用安全实践。
+  在处理认证、用户输入或敏感数据时使用。
+---
+
+# 安全指南
+
+## 输入验证
+
+验证所有用户输入。不要相信客户端来的任何东西。
+
+## SQL 注入
+
+用参数化查询。如果必须构建动态 SQL，白名单允许的值。
+
+## XSS 防护
+
+转义输出。用框架默认值。永远不要用 dangerouslySetInnerHTML 处理用户内容。
+
+## 认证
+
+- 用 bcrypt 哈希密码（cost factor 12+）
+- session 用安全的 httpOnly cookie
+- 登录端点实现限流
+- Token 过期：access token 短（15分钟），refresh token 长（7天）
+
+## 密钥
+
+- 永远不要提交密钥到 git
+- 用环境变量
+- 泄露了就轮换
+- 每个环境不同的密钥
+
+## HTTPS
+
+- 生产环境必须用 HTTPS
+- 设置 HSTS header
+- HTTP 重定向到 HTTPS
+````
+
+</CodeGroup>
+
+---
+
+## 模板：测试技能
+
+`.claude/skills/testing/SKILL.md`：
+
+<CodeGroup>
+```markdown 测试技能
+---
+name: testing
+description: |
+  测试模式和实践。
+  在写测试、搭建测试基础设施或调试测试失败时使用。
+---
+
+# 测试指南
+
+## 测试结构
+
+每个测试一个行为。测试名要清晰。
+
+## Arrange-Act-Assert
+
+按这个模式组织测试代码。
+
+## Mock
+
+mock 外部依赖，不要 mock 内部代码。
+
+## 测试数据
+
+用工厂函数生成测试数据。
+
+## 集成测试
+
+测试真实的数据库操作。用事务做清理。
+
+```
+</CodeGroup>
+
+---
+
+## 安装技能
+
+1. 创建文件夹：`mkdir -p .claude/skills/skill-name`
+2. 创建 `SKILL.md`，包含 frontmatter 和内容
+3. 技能在 Claude 判断相关时自动加载
+
+社区技能需要手动复制到你的 `.claude/skills/` 目录。
+
+---
+
+## 创建你自己的
+
+从上面的模板开始，然后：
+
+1. 专注你项目的特定模式
+2. 包含你代码库的实际代码
+3. 要具体 - 模糊的技能没帮助
+4. 问 Claude 技能覆盖的话题来测试
+```

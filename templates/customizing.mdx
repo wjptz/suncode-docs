@@ -1,0 +1,282 @@
+---
+title: 'Customizing Trellis'
+description: 'How to modify Trellis for your project'
+---
+
+## Why customize
+
+Trellis ships with sensible defaults, but your project is unique. You might want to:
+
+- Add specialized agents for your workflow
+- Change how context gets injected
+- Add project-specific commands
+- Modify the quality checks
+
+This page shows how to make those changes safely.
+
+## The golden rule
+
+**Document what you change.** Create a `trellis-local` skill to track modifications:
+
+```bash
+mkdir -p .claude/skills/trellis-local
+```
+
+`.claude/skills/trellis-local/SKILL.md`:
+
+```markdown
+---
+name: trellis-local
+description: |
+  Project-specific Trellis customizations.
+  Documents all modifications to vanilla Trellis.
+---
+
+# Trellis Local
+
+## Base version
+
+Trellis: 0.3.0
+Modified: 2026-01-31
+
+## Changes
+
+### Agents
+
+- Added `deploy` agent for deployment workflows
+
+### Commands
+
+- Added `/project:deploy-check` command
+
+### Hooks
+
+- Modified `inject-subagent-context.py` to handle deploy agent
+```
+
+This makes upgrades easier. You know exactly what changed.
+
+---
+
+## Adding a custom agent
+
+### 1. Create the agent definition
+
+`.claude/agents/deploy.md`:
+
+```markdown
+---
+name: deploy
+description: Handles deployment workflows
+tools:
+  - Read
+  - Bash
+  - Glob
+  - Grep
+restrictions:
+  - No Write or Edit tools
+  - Only runs approved deployment commands
+---
+
+You are a deployment specialist. Your job is to:
+
+1. Check that the codebase is ready to deploy
+2. Run deployment commands from the approved list
+3. Verify deployment succeeded
+4. Report any issues
+
+## Approved commands
+
+Only run these commands:
+
+- `npm run build`
+- `npm test`
+- `npm run deploy:staging`
+- `npm run deploy:production`
+
+Never run arbitrary commands. If a deployment step isn't in the approved list, stop and ask.
+
+## Checklist before deploying
+
+- [ ] All tests pass
+- [ ] No TypeScript errors
+- [ ] Build succeeds
+- [ ] Environment variables configured
+- [ ] Database migrations run (if needed)
+```
+
+### 2. Add context injection
+
+Edit `.claude/hooks/inject-subagent-context.py`:
+
+```python
+# Find the agent type mapping
+AGENT_CONTEXT_FILES = {
+    "implement": "implement.jsonl",
+    "check": "check.jsonl",
+    "debug": "debug.jsonl",
+    "deploy": "deploy.jsonl",  # Add this line
+}
+```
+
+### 3. Create context file template
+
+When you create tasks, include `deploy.jsonl`:
+
+```jsonl
+{"type": "spec", "path": ".trellis/spec/deployment/index.md"}
+{"type": "file", "path": "scripts/deploy.sh"}
+{"type": "file", "path": ".github/workflows/deploy.yml"}
+```
+
+### 4. Document the change
+
+Update your `trellis-local` skill with what you added.
+
+---
+
+## Modifying hooks
+
+Hooks are Python scripts in `.claude/hooks/`. Be careful - breaking a hook breaks the workflow.
+
+### Session start hook
+
+`session-start.py` runs when a Claude Code session starts. Modify to:
+
+- Inject additional context
+- Show custom welcome messages
+- Check environment requirements
+
+Example: Add project-specific checks:
+
+```python
+# Add to session-start.py
+
+def check_environment():
+    """Check that required tools are available."""
+    required = ["node", "npm", "docker"]
+    missing = []
+    for tool in required:
+        if not shutil.which(tool):
+            missing.append(tool)
+    if missing:
+        print(f"Warning: Missing tools: {', '.join(missing)}")
+
+# Call in main()
+check_environment()
+```
+
+### Context injection hook
+
+`inject-subagent-context.py` runs before sub-agents start. Modify to:
+
+- Support new agent types
+- Change which specs load
+- Add dynamic context based on task state
+
+### Quality check hook (Ralph Loop)
+
+`ralph-loop.py` controls quality enforcement. Modify to:
+
+- Change retry behavior
+- Adjust quality thresholds
+- Add custom checks
+
+---
+
+## Adding workflow phases
+
+Default phases: plan → implement → check
+
+To add a phase:
+
+### 1. Update task.json template
+
+```json
+{
+  "phases": ["plan", "implement", "review", "check"]
+}
+```
+
+### 2. Create agent for the phase
+
+`.claude/agents/review.md` defining what the review agent does.
+
+### 3. Create context file
+
+`review.jsonl` template for review-specific context.
+
+### 4. Update dispatch logic
+
+If using multi-agent pipeline, update `dispatch` to handle the new phase.
+
+---
+
+## Changing verification commands
+
+The check agent runs verification commands. Default:
+
+- `npm test`
+- `npm run lint`
+- `npm run typecheck`
+
+To change these, edit the check agent definition or the spec that controls verification.
+
+`.trellis/spec/guides/verification.md`:
+
+```markdown
+# Verification Commands
+
+Before marking code complete, run:
+
+1. `pnpm test` (not npm)
+2. `pnpm lint:fix` (auto-fix what's possible)
+3. `pnpm typecheck`
+4. `pnpm build` (ensure it compiles)
+
+If any command fails, fix the issue before proceeding.
+```
+
+---
+
+## Portable vs non-portable changes
+
+Some changes work everywhere. Others only work in Claude Code.
+
+### Portable (all platforms)
+
+- Specs in `.trellis/spec/`
+- Tasks in `.trellis/tasks/`
+- Workspace in `.trellis/workspace/`
+- Commands in `.claude/commands/` (manually invoked)
+
+### Claude Code only
+
+- Hooks in `.claude/hooks/`
+- Automatic context injection
+- Ralph Loop quality enforcement
+- Multi-agent worktree sessions
+
+If you need Cursor compatibility, keep customizations in the portable layer.
+
+---
+
+## Upgrading after customization
+
+When a new Trellis version comes out:
+
+1. Read the changelog
+2. Compare your `trellis-local` changes against new defaults
+3. Merge carefully
+4. Test that customizations still work
+5. Update `trellis-local` with any migration notes
+
+```markdown
+## Changelog
+
+### 2026-02-15 - Upgraded to Trellis 0.4.0
+
+- New hook format required changes to inject-subagent-context.py
+- Kept custom deploy agent
+- Updated context file format to match new spec
+```

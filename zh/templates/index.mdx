@@ -1,0 +1,64 @@
+---
+title: '模板'
+description: '现成的规范、命令等模板'
+---
+
+## 这里有什么
+
+可以复制粘贴的模板，快速上手。每个模板都在真实项目上验证过。
+
+<CardGroup cols={2}>
+
+<Card title="规范模板" icon="file-code" href="/zh/templates/specs">
+  常见技术栈的编码规范模板。
+</Card>
+
+<Card title="命令模板" icon="terminal" href="/zh/templates/commands">
+  常用工作流的斜杠命令。
+</Card>
+
+<Card title="技能模板" icon="wand-magic-sparkles" href="/zh/templates/skills">
+  可以安装的复用技能。
+</Card>
+
+<Card title="魔改 Trellis" icon="wrench" href="/zh/templates/customizing">
+  怎么为你的项目修改 Trellis。
+</Card>
+
+</CardGroup>
+
+---
+
+## 怎么用模板
+
+### 规范
+
+1. 选一个匹配你技术栈的模板
+2. 复制到 `.trellis/spec/`
+3. 按你项目的具体规范修改
+4. 删掉不适用的部分
+
+### 命令
+
+1. 复制命令文件到 `.claude/commands/your-project/`
+2. 按需重命名
+3. 用 `/your-project:command-name` 测试
+
+### 技能
+
+1. 复制技能文件夹到 `.claude/skills/`
+2. 技能在相关时自动加载
+3. 有些技能需要配置 - 看 README
+
+---
+
+## 贡献模板
+
+做了有用的东西？分享出来。
+
+1. Fork Trellis 仓库
+2. 把你的模板加到 `templates/`
+3. 包含一个 README
+4. 开 PR
+
+好模板要具体、文档完善、在真实代码上测试过。
