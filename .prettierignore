@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Build output
+.mintlify/
+dist/
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+
+# Trellis runtime
+.trellis/.developer
+.trellis/.current-task
+.trellis/.ralph-state.json

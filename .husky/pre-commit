@@ -1,0 +1,5 @@
+# Format staged files
+npx lint-staged
+
+# Verify documentation quality
+pnpm run verify
