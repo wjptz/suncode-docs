@@ -1,0 +1,16 @@
+{
+  "name": "trellis-templates",
+  "version": "0.1.0",
+  "description": "Trellis workflow templates - specs, skills, commands, and agents for AI-assisted development",
+  "author": "Mindfold",
+  "license": "MIT",
+  "repository": "https://github.com/mindfoldhq/trellis-docs",
+  "categories": ["workflow", "templates"],
+  "tags": ["trellis", "specs", "skills", "commands", "agents", "ai-workflow"],
+  "paths": {
+    "skills": "marketplace/skills",
+    "commands": "marketplace/commands",
+    "agents": "marketplace/agents",
+    "specs": "marketplace/specs"
+  }
+}

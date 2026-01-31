@@ -1,0 +1,11 @@
+{
+  "plugins": [
+    {
+      "name": "trellis-templates",
+      "description": "Complete Trellis workflow templates for AI-assisted development",
+      "author": "Mindfold",
+      "category": "workflow",
+      "tags": ["trellis", "specs", "skills", "commands", "agents"]
+    }
+  ]
+}
