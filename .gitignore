@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Mintlify
+.mintlify/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local

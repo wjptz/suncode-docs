@@ -1,0 +1,38 @@
+{
+  "name": "trellis-docs",
+  "version": "1.0.0",
+  "description": "Trellis Documentation Website - Built with Mintlify",
+  "private": true,
+  "scripts": {
+    "dev": "mintlify dev",
+    "verify": "python3 .trellis/scripts/verify-docs.py",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{md,mdx}": [
+      "prettier --write"
+    ],
+    "*.{json,yaml,yml}": [
+      "prettier --write"
+    ],
+    "*.{js,ts,mjs,cjs}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "trellis",
+    "documentation",
+    "mintlify"
+  ],
+  "author": "Mindfold",
+  "license": "MIT",
+  "devDependencies": {
+    "@commitlint/cli": "^20.4.0",
+    "@commitlint/config-conventional": "^20.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1"
+  }
+}
