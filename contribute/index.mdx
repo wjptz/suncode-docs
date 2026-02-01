@@ -63,17 +63,29 @@ Have an idea for better docs? Open a discussion:
 
 https://github.com/mindfold-ai/docs/discussions
 
-### Share templates
+### Contribute a Claude Code Skill
 
-Made a useful spec template or skill? Add it to the marketplace:
+Skills extend Claude's capabilities. To add a new skill:
 
 1. Fork the repo
-2. Add your template to `marketplace/specs/` or `skills/`
-3. Create documentation pages (both EN and ZH)
+2. Create `skills/your-skill/SKILL.md` with YAML frontmatter
+3. Create documentation pages (`skills-market/your-skill.mdx` + Chinese version)
 4. Update `docs.json` navigation
 5. Open a PR
 
-Good templates are:
+See [Claude Code Skills documentation](https://code.claude.com/docs/en/skills) for SKILL.md format.
+
+### Contribute a Spec Template
+
+Spec templates are Trellis project guidelines (not Claude features). To add one:
+
+1. Fork the repo
+2. Create `marketplace/specs/your-template/` with guideline files
+3. Create documentation pages (`templates/specs-your-template.mdx` + Chinese version)
+4. Update `docs.json` navigation
+5. Open a PR
+
+Good contributions are:
 
 - Specific and actionable
 - Well-documented

@@ -60,17 +60,29 @@ https://github.com/mindfold-ai/docs/issues
 
 https://github.com/mindfold-ai/docs/discussions
 
-### 分享模板
+### 贡献 Claude Code Skill
 
-做了有用的规范模板或 skill？添加到 marketplace：
+Skill 扩展 Claude 的能力。添加新 skill：
 
 1. Fork 仓库
-2. 把模板加到 `marketplace/specs/` 或 `skills/`
-3. 创建文档页面（中英文都要）
+2. 创建 `skills/your-skill/SKILL.md`（含 YAML frontmatter）
+3. 创建文档页面（`skills-market/your-skill.mdx` + 中文版）
 4. 更新 `docs.json` 导航
 5. 开 PR
 
-好模板：
+SKILL.md 格式参考 [Claude Code Skills 文档](https://code.claude.com/docs/en/skills)。
+
+### 贡献 Spec 模板
+
+Spec 模板是 Trellis 项目规范（不是 Claude 功能）。添加新模板：
+
+1. Fork 仓库
+2. 创建 `marketplace/specs/your-template/` 目录和规范文件
+3. 创建文档页面（`templates/specs-your-template.mdx` + 中文版）
+4. 更新 `docs.json` 导航
+5. 开 PR
+
+好的贡献：
 
 - 具体可执行
 - 文档完善
