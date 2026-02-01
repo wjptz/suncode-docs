@@ -1,11 +1,26 @@
 {
+  "name": "mindfold-docs",
+  "owner": {
+    "name": "Mindfold",
+    "email": "hello@mindfold.ai"
+  },
+  "metadata": {
+    "description": "Trellis documentation and skill marketplace - AI workflow system for Claude Code and Cursor"
+  },
   "plugins": [
     {
-      "name": "trellis-templates",
-      "description": "Complete Trellis workflow templates for AI-assisted development",
-      "author": "Mindfold",
+      "name": "trellis-meta",
+      "source": "./marketplace/skills/trellis-meta",
+      "description": "Meta-skill for understanding and customizing Trellis - the AI workflow system for Claude Code and Cursor",
+      "author": {
+        "name": "Mindfold"
+      },
+      "homepage": "https://trellis.mindfold.ai",
+      "repository": "https://github.com/mindfold-ai/docs",
+      "license": "MIT",
+      "keywords": ["trellis", "workflow", "agents", "skills", "specs", "claude-code"],
       "category": "workflow",
-      "tags": ["trellis", "specs", "skills", "commands", "agents"]
+      "tags": ["trellis", "workflow", "agents", "skills", "specs"]
     }
   ]
 }
