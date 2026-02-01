@@ -1,0 +1,4 @@
+# Linguist overrides for GitHub language statistics
+# Mark Trellis system files as vendored (excluded from stats)
+.trellis/scripts/** linguist-vendored
+.claude/hooks/** linguist-vendored
