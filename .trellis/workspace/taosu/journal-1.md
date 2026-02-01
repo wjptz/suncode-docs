@@ -790,3 +790,59 @@ plugins/
 ### Next Steps
 
 - None - task complete
+
+## Session 12: Open-typeless Use Case Tutorial
+
+**Date**: 2026-02-01
+**Task**: Open-typeless Use Case Tutorial
+
+### Summary
+
+(Add summary)
+
+### Main Changes
+
+## Changes Made
+
+| Area         | Change                                                     |
+| ------------ | ---------------------------------------------------------- |
+| Use Cases    | Added open-typeless step-by-step tutorial (EN/ZH)          |
+| Images       | Added 23 screenshots for use case steps                    |
+| Contributing | Linked Trellis contribution page to GitHub CONTRIBUTING.md |
+
+## Use Case Content
+
+Tutorial showing how to use Trellis:
+
+- Step 1: Project initialization (`trellis init`, spec setup)
+- Step 2: Task planning (AI batch breakdown)
+- Step 3: Parallel development (worktree agents)
+- Step 4: Progress monitoring (`status.sh`, `/trellis:record-session`)
+- Step 5: Continue iterating (implement/check agents)
+
+## Files Changed
+
+- `use-cases/open-typeless.mdx` - EN tutorial
+- `zh/use-cases/open-typeless.mdx` - ZH tutorial
+- `images/use-cases/open-typeless/*.png` - 23 screenshots
+- `contribute/trellis.mdx` - Link to GitHub CONTRIBUTING.md
+- `zh/contribute/trellis.mdx` - Link to GitHub CONTRIBUTING_CN.md
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `86fd40b` | (see git log) |
+| `d61748f` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
