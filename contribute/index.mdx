@@ -3,6 +3,44 @@ title: 'Contributing'
 description: 'How to contribute to Trellis'
 ---
 
+## Contribute with AI assistance
+
+The easiest way to contribute is with Claude Code. We have a built-in skill that guides you through the contribution process.
+
+### Step 1: Clone the docs repo
+
+```bash
+git clone https://github.com/mindfold-ai/docs.git
+cd docs
+```
+
+### Step 2: Tell Claude what you want to contribute
+
+Open Claude Code in the project and describe what you want to add:
+
+- "I want to add a new spec template for Next.js projects"
+- "I want to improve the multi-agent documentation"
+
+### Step 3: Claude uses the contribute skill automatically
+
+Claude will read the `contribute` skill and guide you through:
+
+- Where to put your files
+- What related files need updating (docs.json, index pages)
+- Bilingual requirements (EN + ZH)
+- How to test locally
+
+### Step 4: Review and submit PR
+
+Review the changes, test with `pnpm dev`, then submit your PR.
+
+<Tip>
+  The contribute skill knows the project structure and conventions. It handles the details so you
+  can focus on content.
+</Tip>
+
+---
+
 ## Ways to contribute
 
 Trellis is open source. Contributions welcome.
@@ -76,7 +114,7 @@ Follow existing patterns. Run linters before committing.
 Run tests before submitting:
 
 ```bash
-npm test
+pnpm test
 ```
 
 If adding a feature, add tests for it.

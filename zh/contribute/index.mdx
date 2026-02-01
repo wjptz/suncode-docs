@@ -3,6 +3,41 @@ title: '贡献指南'
 description: '如何为 Trellis 做贡献'
 ---
 
+## 用 AI 辅助贡献
+
+最简单的贡献方式是使用 Claude Code。我们内置了一个 skill 来引导你完成贡献流程。
+
+### 第一步：克隆文档仓库
+
+```bash
+git clone https://github.com/mindfold-ai/docs.git
+cd docs
+```
+
+### 第二步：告诉 Claude 你想贡献什么
+
+在项目中打开 Claude Code，描述你想添加的内容：
+
+- "我想添加一个 Next.js 项目的规范模板"
+- "我想改进并行会话的文档"
+
+### 第三步：Claude 自动使用 contribute skill
+
+Claude 会读取 `contribute` skill 并引导你：
+
+- 文件应该放在哪里
+- 哪些关联文件需要更新（docs.json、索引页面）
+- 双语要求（EN + ZH）
+- 如何本地测试
+
+### 第四步：审查并提交 PR
+
+审查修改，用 `pnpm dev` 测试，然后提交 PR。
+
+<Tip>contribute skill 了解项目结构和规范。它处理细节，你只需专注于内容。</Tip>
+
+---
+
 ## 贡献方式
 
 Trellis 是开源项目。欢迎贡献。
@@ -76,7 +111,7 @@ Trellis 用：
 提交前跑测试：
 
 ```bash
-npm test
+pnpm test
 ```
 
 加功能的话也要加测试。
