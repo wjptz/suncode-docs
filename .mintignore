@@ -1,4 +1,5 @@
 .trellis/
 .claude-plugin/
 marketplace/
+plugins/
 AGENTS.md

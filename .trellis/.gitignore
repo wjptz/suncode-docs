@@ -27,3 +27,5 @@
 # Python cache
 **/__pycache__/
 **/*.pyc
+
+workspace/claude-code/
