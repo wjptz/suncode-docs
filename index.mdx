@@ -3,25 +3,29 @@ title: 'Trellis'
 description: 'All-in-one AI framework & toolkit for Claude Code & Cursor'
 ---
 
-## The problem
+## What is Trellis?
 
-AI assistants are smart, but they don't know your codebase. They don't know your team uses `snake_case` for database columns, or that error handling follows a specific pattern. Every session starts from scratch.
+Trellis is a framework that gives AI coding assistants persistent knowledge about your project — coding conventions, task context, and session history.
 
-## The solution
+Think of it like onboarding docs for your AI. New engineers need context to write good code. So does AI.
 
-Trellis gives AI persistent context about your project. Write down your conventions once, every AI session gets them automatically.
+## What you can do
+
+- **Enforce coding standards** — AI follows your patterns, not generic ones
+- **Track task context** — Each feature gets its own relevant files
+- **Continue where you left off** — Session journals preserve history
+
+<Card title="Get started" icon="rocket" href="/quickstart" horizontal>
+  Install Trellis and set up your first project.
+</Card>
 
 ## How it works
 
-1. **Specs** - You document your coding conventions in `.trellis/spec/`. These get injected into AI context automatically.
+1. **Specs** — Document your coding conventions in `.trellis/spec/`. These get injected into AI context automatically.
 
-2. **Tasks** - You track work in `.trellis/tasks/`. Each task can have its own context files that tell the AI what's relevant.
+2. **Tasks** — Track work in `.trellis/tasks/`. Each task can have its own context files that tell the AI what's relevant.
 
-3. **Workspace** - Session journals in `.trellis/workspace/` let you pick up where you left off.
-
-<Card title="Get started" icon="terminal" href="/quickstart" horizontal>
-  Install Trellis and set up your first project in 5 minutes.
-</Card>
+3. **Workspace** — Session journals in `.trellis/workspace/` let you pick up where you left off.
 
 ## Who is this for?
 
@@ -30,21 +34,12 @@ Trellis works best if you:
 - Use Claude Code or Cursor for daily development
 - Work on a codebase with specific conventions
 - Want AI to follow your team's patterns, not generic ones
-- Care about consistency across AI sessions
 
-It's overkill for one-off scripts or greenfield projects where conventions don't exist yet.
-
-## What Trellis is not
-
-Trellis doesn't write code for you. It doesn't replace your judgment. It just makes sure the AI has the right context before it starts writing.
-
-Think of it like onboarding docs for your AI assistant. You wouldn't expect a new hire to write good code without understanding your codebase. Same idea.
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card title="Core concepts" icon="book" href="/concepts/overview">
     Understand specs, tasks, and workspaces.
   </Card>
   <Card title="Commands" icon="terminal" href="/guides/commands">
     Slash commands for common workflows.
   </Card>
-</Columns>
+</CardGroup>

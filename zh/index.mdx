@@ -3,25 +3,29 @@ title: 'Trellis'
 description: '面向 Claude Code 和 Cursor 的一站式 AI 框架和工具集'
 ---
 
-## 痛点
+## Trellis 是什么？
 
-AI 助手很聪明，但它不了解你的代码库。不知道你们团队用 `snake_case` 命名数据库字段，不知道错误处理要按特定模式写。每次新会话都从零开始。
+Trellis 让 AI 编程助手拥有关于你项目的持久知识 — 编码规范、任务上下文、会话历史。
 
-## 方案
+把它想成给 AI 准备的入职文档。新工程师需要了解项目才能写好代码，AI 也一样。
 
-Trellis 给 AI 提供持久化的项目上下文。规范写一次，之后每个 AI 会话都能自动拿到。
+## 你可以用它来
+
+- **统一编码规范** — AI 遵循你的模式，不是通用写法
+- **追踪任务上下文** — 每个功能有自己的相关文件
+- **接续上次进度** — 会话日志保留历史记录
+
+<Card title="开始使用" icon="rocket" href="/zh/quickstart" horizontal>
+  安装 Trellis，搭建你的第一个项目。
+</Card>
 
 ## 工作原理
 
-1. **Specs** - 在 `.trellis/spec/` 里写你的编码规范。这些会自动注入到 AI 的上下文中。
+1. **Specs** — 在 `.trellis/spec/` 里写编码规范，自动注入到 AI 上下文。
 
-2. **Tasks** - 在 `.trellis/tasks/` 里跟踪工作进度。每个任务可以有自己的上下文文件，告诉 AI 哪些内容是相关的。
+2. **Tasks** — 在 `.trellis/tasks/` 里跟踪工作，每个任务可以有自己的上下文文件。
 
-3. **Workspace** - `.trellis/workspace/` 里的会话日志让你能接着上次的进度继续工作。
-
-<Card title="开始使用" icon="terminal" href="/zh/quickstart" horizontal>
-  安装 Trellis，5 分钟搭建你的第一个项目。
-</Card>
+3. **Workspace** — `.trellis/workspace/` 里的会话日志让你接着上次继续。
 
 ## 适合谁用？
 
@@ -29,22 +33,13 @@ Trellis 适合这些场景：
 
 - 日常开发用 Claude Code 或 Cursor
 - 代码库有明确的规范约定
-- 希望 AI 遵循团队的模式，而不是写通用代码
-- 在意 AI 会话之间的一致性
+- 希望 AI 遵循团队模式，而不是写通用代码
 
-如果只是写一次性脚本，或者项目刚起步还没有规范，Trellis 就有点杀鸡用牛刀了。
-
-## Trellis 不是什么
-
-Trellis 不会替你写代码，也不会替代你的判断。它只是确保 AI 在开始写代码之前有正确的上下文。
-
-把它想成给 AI 助手准备的入职文档。你不会指望一个新人不了解代码库就能写出好代码，道理是一样的。
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card title="核心概念" icon="book" href="/zh/concepts/overview">
     了解 Specs、Tasks 和 Workspace。
   </Card>
   <Card title="命令参考" icon="terminal" href="/zh/guides/commands">
     常用工作流的 Slash 命令。
   </Card>
-</Columns>
+</CardGroup>
