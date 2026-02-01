@@ -158,13 +158,13 @@ Verify:
 </Accordion>
 
 <Accordion title="AI is ignoring my specs">
-Specs might not be loading. Check:
+Several possible causes:
 
-1. Spec file is in `.trellis/spec/`?
-2. Paths correct in JSONL context files?
-3. For task work, is the task set as current?
+1. **Specs not loaded**: Check file paths in `.trellis/spec/` and JSONL context files
+2. **Context too long**: AI may "forget" specs in long conversations. Start fresh session or remind it
+3. **Spec clarity**: More specific specs work better than vague ones
 
-Also: is your spec specific enough? Vague specs get ignored.
+Trellis improves consistency but isn't a silver bullet. AI still makes mistakes.
 
 </Accordion>
 
