@@ -163,12 +163,29 @@ Trellis 在后台工作。没有 UI 变化。
 </Accordion>
 
 <Accordion title="怎么升级？">
+先更新 CLI：
+
 ```bash
 npm install -g @mindfoldhq/trellis@latest
+```
+
+然后更新项目。两个选项：
+
+**安全更新（默认）**：
+
+```bash
 trellis update
 ```
 
-更新 CLI，迁移文件格式。规范和自定义命令会保留。如果新版本改了 hook 脚本可能需要检查。
+只更新没被修改过的文件。你的定制会保留。
+
+**完全迁移**：
+
+```bash
+trellis update --migrate
+```
+
+用最新模板覆盖所有 Trellis 文件。想重新开始或新版本有破坏性改动时用这个。先备份你的定制。
 
 </Accordion>
 
