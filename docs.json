@@ -47,7 +47,7 @@
               {
                 "group": "Spec Templates",
                 "expanded": false,
-                "pages": ["templates/specs-index"]
+                "pages": ["templates/specs-index", "templates/specs-electron"]
               },
               {
                 "group": "Command Templates",
@@ -113,7 +113,7 @@
               {
                 "group": "Spec Templates",
                 "expanded": false,
-                "pages": ["zh/templates/specs-index"]
+                "pages": ["zh/templates/specs-index", "zh/templates/specs-electron"]
               },
               {
                 "group": "Command Templates",
