@@ -1,5 +1,22 @@
 Read the documentation guidelines before starting your writing task.
 
+---
+
+## ⚠️ Critical Reminder
+
+**Mintlify does NOT auto-discover pages.** When adding new pages:
+
+1. Create the `.mdx` file
+2. Create the Chinese version in `zh/` directory
+3. **Manually update `docs.json`** - add to BOTH English and Chinese navigation
+4. Test with `pnpm dev`
+
+Without step 3, pages won't appear in the sidebar!
+
+---
+
+## Guidelines to Read
+
 Execute these steps:
 
 1. Read `.trellis/spec/docs/index.md` to understand available guidelines

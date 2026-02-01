@@ -4,6 +4,48 @@
 
 ---
 
+## ⚠️ Critical: Manual Navigation Update Required
+
+**Mintlify does NOT auto-discover pages.** Every new page must be manually added to `docs.json`.
+
+```json
+// docs.json - Must update navigation when adding pages
+{
+  "navigation": {
+    "languages": [
+      {
+        "language": "en",
+        "groups": [
+          {
+            "group": "Spec Templates",
+            "pages": [
+              "templates/specs-index",
+              "templates/specs-node", // ← Add new pages here
+              "templates/specs-python"
+            ]
+          }
+        ]
+      },
+      {
+        "language": "zh",
+        "groups": [
+          // Same structure for Chinese
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Checklist for new pages:**
+
+1. [ ] Create `.mdx` file
+2. [ ] Add to English navigation in `docs.json`
+3. [ ] Create Chinese version in `zh/` directory
+4. [ ] Add to Chinese navigation in `docs.json`
+
+---
+
 ## Project Structure
 
 ```
@@ -149,17 +191,23 @@ zh/blog/
 
 ## Adding New Content
 
-### New Page
+### New Page (Bilingual)
 
-1. Create `.mdx` file in appropriate directory
-2. Add frontmatter with `title` and `description`
-3. Add page to `docs.json` navigation
+| Step | Action                   | File                                |
+| ---- | ------------------------ | ----------------------------------- |
+| 1    | Create English page      | `section/page.mdx`                  |
+| 2    | Create Chinese page      | `zh/section/page.mdx`               |
+| 3    | **Update EN navigation** | `docs.json` → `languages[0].groups` |
+| 4    | **Update ZH navigation** | `docs.json` → `languages[1].groups` |
+| 5    | Test locally             | `pnpm dev`                          |
+
+> ⚠️ **Steps 3-4 are mandatory.** Pages won't appear in sidebar without navigation entries.
 
 ### New Section
 
 1. Create new directory with descriptive name
 2. Add pages inside the directory
-3. Create a group in `docs.json` navigation
+3. Create a group in `docs.json` navigation (both EN and ZH)
 
 ### New Snippet
 
