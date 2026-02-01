@@ -1,0 +1,74 @@
+---
+title: 'Python + FastAPI'
+description: 'Python + FastAPI 后端规范模板'
+---
+
+## 项目结构
+
+```
+app/
+├── api/
+│   └── routes/     # FastAPI 路由处理器
+├── services/       # 业务逻辑
+├── db/
+│   ├── models/     # SQLAlchemy 模型
+│   └── migrations/ # Alembic 迁移
+├── core/           # 配置、安全、依赖
+└── schemas/        # Pydantic schemas
+```
+
+## 错误处理
+
+自定义异常在 `app/core/exceptions.py`：
+
+```python
+class AppError(Exception):
+    def __init__(self, code: str, message: str, status: int = 400):
+        self.code = code
+        self.message = message
+        self.status = status
+```
+
+用全局异常处理器。不要 catch 再 re-raise。
+
+## 数据库
+
+- 表名：`snake_case`，复数
+- 用 SQLAlchemy ORM，不写原生 SQL
+- 模型在 `app/db/models/`
+- 每个模型有 `id`、`created_at`、`updated_at`
+
+## API 路由
+
+每个资源一个 router 在 `app/api/routes/`：
+
+```python
+# app/api/routes/users.py
+from fastapi import APIRouter, Depends
+from app.services.user import UserService
+from app.schemas.user import UserResponse
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(user_id: int, service: UserService = Depends()):
+    return await service.get_by_id(user_id)
+```
+
+## 验证
+
+所有输入输出用 Pydantic schema：
+
+```python
+# app/schemas/user.py
+from pydantic import BaseModel, EmailStr
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    name: str
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    name: str
+```

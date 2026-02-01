@@ -1,0 +1,75 @@
+---
+title: 'Node.js + Express'
+description: 'Backend spec template for Node.js with Express and TypeScript'
+---
+
+## Project Structure
+
+```
+src/
+├── routes/     # Express route handlers
+├── services/   # Business logic
+├── db/
+│   ├── models/     # Database models
+│   └── migrations/ # SQL migrations
+├── lib/        # Shared utilities
+└── types/      # TypeScript types
+```
+
+## Error Handling
+
+All errors use `AppError` from `src/lib/errors.ts`. Never throw raw `Error` objects.
+
+API error response format:
+
+```json
+{
+  "error": {
+    "code": "USER_NOT_FOUND",
+    "message": "User does not exist"
+  }
+}
+```
+
+Never expose stack traces in production.
+
+## Database
+
+- Table names: `snake_case`, plural (`user_sessions`)
+- Column names: `snake_case` (`created_at`)
+- Always include `id`, `created_at`, `updated_at`
+- Foreign keys: `{table_singular}_id` (`user_id`)
+- Use the query builder from `src/db/query.ts`, not raw SQL
+
+## API Routes
+
+Routes go in `src/routes/`. One file per resource.
+
+```typescript
+// src/routes/users.ts
+import { Router } from 'express';
+import { UserService } from '../services/user';
+
+const router = Router();
+
+router.get('/:id', async (req, res) => {
+  const user = await UserService.findById(req.params.id);
+  res.json(user);
+});
+
+export default router;
+```
+
+Validate input with Zod. Schemas go in `src/types/schemas.ts`.
+
+## Authentication
+
+JWT tokens for auth. Token handling in `src/lib/auth.ts`.
+
+Protected routes use `requireAuth` middleware:
+
+```typescript
+router.get('/profile', requireAuth, async (req, res) => {
+  // req.user is available here
+});
+```

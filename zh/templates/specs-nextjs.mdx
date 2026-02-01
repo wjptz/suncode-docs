@@ -1,0 +1,76 @@
+---
+title: 'Next.js + tRPC + Prisma'
+description: 'Next.js + tRPC + Prisma 全栈规范模板'
+---
+
+## 项目结构
+
+```
+src/
+├── app/         # Next.js app router
+├── server/
+│   ├── api/     # tRPC routers
+│   └── db/      # Prisma client
+├── components/  # React 组件
+├── hooks/       # 自定义 hooks
+└── lib/         # 共享工具
+prisma/
+└── schema.prisma  # 数据库 schema
+```
+
+## API (tRPC)
+
+Routers 在 `src/server/api/routers/`：
+
+```typescript
+// src/server/api/routers/user.ts
+import { z } from 'zod';
+import { router, publicProcedure, protectedProcedure } from '../trpc';
+
+export const userRouter = router({
+  getById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {
+    return ctx.db.user.findUnique({ where: { id: input.id } });
+  }),
+
+  update: protectedProcedure
+    .input(z.object({ name: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      return ctx.db.user.update({
+        where: { id: ctx.user.id },
+        data: { name: input.name },
+      });
+    }),
+});
+```
+
+## 数据库 (Prisma)
+
+模型在 `prisma/schema.prisma`：
+
+```prisma
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+}
+```
+
+schema 改了后跑 `npx prisma generate`。
+
+## 组件
+
+跟 React 规范一样。用 tRPC hooks：
+
+```tsx
+import { api } from '~/lib/api';
+
+export function UserProfile({ userId }: { userId: string }) {
+  const { data: user, isLoading } = api.user.getById.useQuery({ id: userId });
+
+  if (isLoading) return <Spinner />;
+  return <div>{user?.name}</div>;
+}
+```
