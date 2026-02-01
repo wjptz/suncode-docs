@@ -10,5 +10,5 @@
   "repository": "https://github.com/mindfold-ai/docs",
   "license": "MIT",
   "keywords": ["trellis", "claude-code", "workflow", "agents", "skills", "specs"],
-  "skills": ["./skills/"]
+  "skills": ["./"]
 }
