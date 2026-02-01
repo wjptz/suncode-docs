@@ -47,12 +47,12 @@
               {
                 "group": "Spec Templates",
                 "expanded": false,
-                "pages": ["templates/specs-index"]
+                "pages": ["templates/specs-index", "templates/specs"]
               },
               {
                 "group": "Command Templates",
                 "expanded": false,
-                "pages": ["templates/commands-index"]
+                "pages": ["templates/commands-index", "templates/commands"]
               }
             ]
           },
@@ -113,12 +113,12 @@
               {
                 "group": "Spec Templates",
                 "expanded": false,
-                "pages": ["zh/templates/specs-index"]
+                "pages": ["zh/templates/specs-index", "zh/templates/specs"]
               },
               {
                 "group": "Command Templates",
                 "expanded": false,
-                "pages": ["zh/templates/commands-index"]
+                "pages": ["zh/templates/commands-index", "zh/templates/commands"]
               }
             ]
           },
