@@ -7,182 +7,151 @@ description: '常见技术栈的编码规范模板'
 
 ## 后端模板
 
-### Node.js + Express + TypeScript
+<Tabs>
+  <Tab title="Node.js + Express">
+    ### 项目结构
 
-<CodeGroup>
-```markdown 后端规范
-# 后端规范
+    ```
+    src/
+    ├── routes/     # Express 路由处理器
+    ├── services/   # 业务逻辑
+    ├── db/
+    │   ├── models/     # 数据库模型
+    │   └── migrations/ # SQL 迁移
+    ├── lib/        # 共享工具
+    └── types/      # TypeScript 类型
+    ```
 
-## 项目结构
+    ### 错误处理
 
-src/
-├── routes/ # Express 路由处理器
-├── services/ # 业务逻辑
-├── db/
-│ ├── models/ # 数据库模型
-│ └── migrations/ # SQL 迁移
-├── lib/ # 共享工具
-└── types/ # TypeScript 类型
+    所有错误用 `src/lib/errors.ts` 的 `AppError`。不要 throw 原生 `Error` 对象。
 
-## 错误处理
+    ### 数据库
 
-所有错误用 src/lib/errors.ts 的 AppError：
+    - 表名：`snake_case`，复数（`user_sessions`）
+    - 列名：`snake_case`（`created_at`）
+    - 必须有 `id`、`created_at`、`updated_at`
+    - 用查询构建器，不写原生 SQL
 
-throw new AppError("USER_NOT_FOUND", "用户不存在", 404);
+    ### API 路由
 
-API 错误响应格式：
+    路由放 `src/routes/`。每个资源一个文件。用 Zod 验证输入。
 
-{ "error": { "code": "USER_NOT_FOUND", "message": "用户不存在" } }
+    ### 认证
 
-不要 throw 原生 Error 对象。生产环境不暴露堆栈。
+    JWT token 做认证。受保护的路由用 `requireAuth` 中间件。
 
-## 数据库
+  </Tab>
 
-- 表名：snake_case，复数（user_sessions）
-- 列名：snake_case（created_at）
-- 必须有 id、created_at、updated_at
-- 外键：{单数表名}\_id（user_id）
+  <Tab title="Python + FastAPI">
+    ### 项目结构
 
-用 src/db/query.ts 的查询构建器，不写原生 SQL。
+    ```
+    app/
+    ├── api/
+    │   └── routes/     # FastAPI 路由处理器
+    ├── services/       # 业务逻辑
+    ├── db/
+    │   ├── models/     # SQLAlchemy 模型
+    │   └── migrations/ # Alembic 迁移
+    ├── core/           # 配置、安全、依赖
+    └── schemas/        # Pydantic schemas
+    ```
 
-## API 路由
+    ### 错误处理
 
-路由放 src/routes/。每个资源一个文件。
+    自定义异常在 `app/core/exceptions.py`。用全局异常处理器。
 
-用 Zod 验证输入。Schema 放 src/types/schemas.ts。
+    ### 数据库
 
-## 认证
+    - 表名：`snake_case`，复数
+    - 用 SQLAlchemy ORM，不写原生 SQL
+    - 每个模型有 `id`、`created_at`、`updated_at`
 
-JWT token 做认证。Token 处理在 src/lib/auth.ts。
+    ### API 路由
 
-受保护的路由用 requireAuth 中间件。
+    每个资源一个 router 在 `app/api/routes/`。
 
-````
-</CodeGroup>
+    ### 验证
 
----
+    所有输入输出用 Pydantic schema。
 
-### Python + FastAPI
-
-<CodeGroup>
-```markdown FastAPI 规范
-# 后端规范
-
-## 项目结构
-
-app/
-├── api/
-│   └── routes/     # FastAPI 路由处理器
-├── services/       # 业务逻辑
-├── db/
-│   ├── models/     # SQLAlchemy 模型
-│   └── migrations/ # Alembic 迁移
-├── core/           # 配置、安全、依赖
-└── schemas/        # Pydantic schemas
-
-## 错误处理
-
-自定义异常在 app/core/exceptions.py。
-用全局异常处理器。不要 catch 再 re-raise。
-
-## 数据库
-
-- 表名：snake_case，复数
-- 用 SQLAlchemy ORM，不写原生 SQL
-- 模型在 app/db/models/
-- 每个模型有 id、created_at、updated_at
-
-## API 路由
-
-每个资源一个 router 在 app/api/routes/。
-
-## 验证
-
-所有输入输出用 Pydantic schema。
-````
-
-</CodeGroup>
+  </Tab>
+</Tabs>
 
 ---
 
 ## 前端模板
 
-### React + TypeScript
+<Tabs>
+  <Tab title="React + TypeScript">
+    ### 项目结构
 
-<CodeGroup>
-```markdown 前端规范
-# 前端规范
+    ```
+    src/
+    ├── components/  # 复用组件
+    ├── pages/       # 路由页面
+    ├── hooks/       # 自定义 hooks
+    ├── stores/      # Zustand stores
+    ├── lib/         # 工具
+    ├── types/       # TypeScript 类型
+    └── api/         # API 客户端函数
+    ```
 
-## 项目结构
+    ### 组件
 
-src/
-├── components/ # 复用组件
-├── pages/ # 路由页面
-├── hooks/ # 自定义 hooks
-├── stores/ # Zustand stores
-├── lib/ # 工具
-├── types/ # TypeScript 类型
-└── api/ # API 客户端函数
+    只用命名导出。不用默认导出。Props 接口定义在组件上面。
 
-## 组件
+    ### 状态管理
 
-只用命名导出。不用默认导出。
+    用 Zustand。Store 文件在 `src/stores/`。
 
-Props 接口定义在组件上面。不用 inline 类型。
+    ### API 调用
 
-## 状态管理
+    API 函数在 `src/api/`。用 `src/lib/fetch.ts` 的 fetch 封装。
 
-用 Zustand。Store 文件在 src/stores/。
+    ### 样式
 
-## API 调用
+    Tailwind CSS。不用 inline styles。不用 CSS modules。
 
-API 函数在 src/api/。用 src/lib/fetch.ts 的 fetch 封装。
-
-## 样式
-
-Tailwind CSS。不用 inline styles。不用 CSS modules。
-
-````
-</CodeGroup>
+  </Tab>
+</Tabs>
 
 ---
 
 ## 全栈模板
 
-### Next.js + tRPC + Prisma
+<Tabs>
+  <Tab title="Next.js + tRPC + Prisma">
+    ### 项目结构
 
-<CodeGroup>
-```markdown 全栈规范
-# 全栈规范
+    ```
+    src/
+    ├── app/         # Next.js app router
+    ├── server/
+    │   ├── api/     # tRPC routers
+    │   └── db/      # Prisma client
+    ├── components/  # React 组件
+    ├── hooks/       # 自定义 hooks
+    └── lib/         # 共享工具
+    prisma/
+    └── schema.prisma  # 数据库 schema
+    ```
 
-## 项目结构
+    ### API (tRPC)
 
-src/
-├── app/            # Next.js app router
-├── server/
-│   ├── api/        # tRPC routers
-│   └── db/         # Prisma client
-├── components/     # React 组件
-├── hooks/          # 自定义 hooks
-└── lib/            # 共享工具
-prisma/
-└── schema.prisma   # 数据库 schema
+    Routers 在 `src/server/api/routers/`。用 zod 验证输入。
 
-## API (tRPC)
+    ### 数据库 (Prisma)
 
-Routers 在 src/server/api/routers/。
+    模型在 `prisma/schema.prisma`。schema 改了后跑 `npx prisma generate`。
 
-## 数据库 (Prisma)
+    ### 组件
 
-模型在 prisma/schema.prisma。
-schema 改了后跑 npx prisma generate。
+    跟 React 规范一样。用 tRPC hooks。
 
-## 组件
-
-跟 React 规范一样。用 tRPC hooks。
-````
-
-</CodeGroup>
+  </Tab>
+</Tabs>
 
 ---
 

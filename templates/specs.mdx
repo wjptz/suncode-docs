@@ -7,174 +7,151 @@ description: 'Coding convention templates for common stacks'
 
 ## Backend Templates
 
-### Node.js + Express + TypeScript
+<Tabs>
+  <Tab title="Node.js + Express">
+    ### Project Structure
 
-<CodeGroup>
-```markdown Backend Guidelines
-# Backend Guidelines
+    ```
+    src/
+    ├── routes/     # Express route handlers
+    ├── services/   # Business logic
+    ├── db/
+    │   ├── models/     # Database models
+    │   └── migrations/ # SQL migrations
+    ├── lib/        # Shared utilities
+    └── types/      # TypeScript types
+    ```
 
-## Project Structure
+    ### Error Handling
 
-src/
-├── routes/ # Express route handlers
-├── services/ # Business logic
-├── db/
-│ ├── models/ # Database models
-│ └── migrations/ # SQL migrations
-├── lib/ # Shared utilities
-└── types/ # TypeScript types
+    All errors use `AppError` from `src/lib/errors.ts`. Never throw raw `Error` objects.
 
-## Error Handling
+    ### Database
 
-All errors use AppError from src/lib/errors.ts.
-API error response format: { "error": { "code": "...", "message": "..." } }
-Never throw raw Error objects. Never expose stack traces in production.
+    - Table names: `snake_case`, plural (`user_sessions`)
+    - Column names: `snake_case` (`created_at`)
+    - Always include `id`, `created_at`, `updated_at`
+    - Use the query builder, not raw SQL
 
-## Database
+    ### API Routes
 
-- Table names: snake_case, plural (user_sessions)
-- Column names: snake_case (created_at)
-- Always include id, created_at, updated_at
-- Foreign keys: {table_singular}\_id (user_id)
-- Use the query builder from src/db/query.ts, not raw SQL.
+    Routes go in `src/routes/`. One file per resource. Validate input with Zod.
 
-## API Routes
+    ### Authentication
 
-Routes go in src/routes/. One file per resource.
-Validate input with Zod. Schemas go in src/types/schemas.ts.
+    JWT tokens for auth. Protected routes use `requireAuth` middleware.
 
-## Authentication
+  </Tab>
 
-JWT tokens for auth. Token handling in src/lib/auth.ts.
-Protected routes use requireAuth middleware.
+  <Tab title="Python + FastAPI">
+    ### Project Structure
 
-````
-</CodeGroup>
+    ```
+    app/
+    ├── api/
+    │   └── routes/     # FastAPI route handlers
+    ├── services/       # Business logic
+    ├── db/
+    │   ├── models/     # SQLAlchemy models
+    │   └── migrations/ # Alembic migrations
+    ├── core/           # Config, security, dependencies
+    └── schemas/        # Pydantic schemas
+    ```
 
----
+    ### Error Handling
 
-### Python + FastAPI
+    Custom exceptions in `app/core/exceptions.py`. Use the global exception handler.
 
-<CodeGroup>
-```markdown FastAPI Guidelines
-# Backend Guidelines
+    ### Database
 
-## Project Structure
+    - Table names: `snake_case`, plural
+    - Use SQLAlchemy ORM, not raw SQL
+    - Each model has `id`, `created_at`, `updated_at`
 
-app/
-├── api/
-│   └── routes/     # FastAPI route handlers
-├── services/       # Business logic
-├── db/
-│   ├── models/     # SQLAlchemy models
-│   └── migrations/ # Alembic migrations
-├── core/           # Config, security, dependencies
-└── schemas/        # Pydantic schemas
+    ### API Routes
 
-## Error Handling
+    One router per resource in `app/api/routes/`.
 
-Custom exceptions in app/core/exceptions.py.
-Use the global exception handler. Don't catch and re-raise.
+    ### Validation
 
-## Database
+    Use Pydantic schemas for all input/output.
 
-- Table names: snake_case, plural
-- Use SQLAlchemy ORM, not raw SQL
-- Models in app/db/models/
-- Each model has id, created_at, updated_at
-
-## API Routes
-
-One router per resource in app/api/routes/.
-
-## Validation
-
-Use Pydantic schemas for all input/output.
-````
-
-</CodeGroup>
+  </Tab>
+</Tabs>
 
 ---
 
 ## Frontend Templates
 
-### React + TypeScript
+<Tabs>
+  <Tab title="React + TypeScript">
+    ### Project Structure
 
-<CodeGroup>
-```markdown Frontend Guidelines
-# Frontend Guidelines
+    ```
+    src/
+    ├── components/  # Reusable components
+    ├── pages/       # Route pages
+    ├── hooks/       # Custom hooks
+    ├── stores/      # Zustand stores
+    ├── lib/         # Utilities
+    ├── types/       # TypeScript types
+    └── api/         # API client functions
+    ```
 
-## Project Structure
+    ### Components
 
-src/
-├── components/ # Reusable components
-├── pages/ # Route pages
-├── hooks/ # Custom hooks
-├── stores/ # Zustand stores
-├── lib/ # Utilities
-├── types/ # TypeScript types
-└── api/ # API client functions
+    Named exports only. No default exports. Props interface defined above the component.
 
-## Components
+    ### State Management
 
-Named exports only. No default exports.
-Props interface defined above the component. No inline types.
+    Use Zustand. Store files in `src/stores/`.
 
-## State Management
+    ### API Calls
 
-Use Zustand. Store files in src/stores/.
+    API functions in `src/api/`. Use the fetch wrapper from `src/lib/fetch.ts`.
 
-## API Calls
+    ### Styling
 
-API functions in src/api/. Use the fetch wrapper from src/lib/fetch.ts.
+    Tailwind CSS. No inline styles. No CSS modules.
 
-## Styling
-
-Tailwind CSS. No inline styles. No CSS modules.
-For complex components, extract class names to variables.
-
-````
-</CodeGroup>
+  </Tab>
+</Tabs>
 
 ---
 
 ## Full-Stack Templates
 
-### Next.js + tRPC + Prisma
+<Tabs>
+  <Tab title="Next.js + tRPC + Prisma">
+    ### Project Structure
 
-<CodeGroup>
-```markdown Full-Stack Guidelines
-# Full-Stack Guidelines
+    ```
+    src/
+    ├── app/         # Next.js app router
+    ├── server/
+    │   ├── api/     # tRPC routers
+    │   └── db/      # Prisma client
+    ├── components/  # React components
+    ├── hooks/       # Custom hooks
+    └── lib/         # Shared utilities
+    prisma/
+    └── schema.prisma  # Database schema
+    ```
 
-## Project Structure
+    ### API (tRPC)
 
-src/
-├── app/         # Next.js app router
-├── server/
-│   ├── api/     # tRPC routers
-│   └── db/      # Prisma client
-├── components/  # React components
-├── hooks/       # Custom hooks
-└── lib/         # Shared utilities
-prisma/
-└── schema.prisma  # Database schema
+    Routers in `src/server/api/routers/`. Use zod for input validation.
 
-## API (tRPC)
+    ### Database (Prisma)
 
-Routers in src/server/api/routers/.
-Use zod for input validation.
+    Models in `prisma/schema.prisma`. Run `npx prisma generate` after schema changes.
 
-## Database (Prisma)
+    ### Components
 
-Models in prisma/schema.prisma.
-Always run npx prisma generate after schema changes.
+    Same as React guidelines. Use tRPC hooks for data fetching.
 
-## Components
-
-Same as React guidelines. Use tRPC hooks for data fetching.
-````
-
-</CodeGroup>
+  </Tab>
+</Tabs>
 
 ---
 
