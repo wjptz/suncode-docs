@@ -44,12 +44,14 @@ docs/
 ├── showcase/              # English showcase
 ├── zh/showcase/           # Chinese showcase
 │
-└── marketplace/           # Downloadable assets (NOT rendered as pages)
-    ├── specs/             # Spec template directories
-    └── skills/            # Skill directories
+├── skills/                # Claude Code plugin skills (root level required)
+│   └── trellis-meta/      # Example skill
+│
+└── marketplace/           # Other downloadable assets
+    └── specs/             # Spec template directories
 ```
 
-**Note**: Content in `marketplace/` is excluded from Mintlify rendering via `docs.json` exclude rules. These are downloadable resources, not documentation pages.
+**Note**: Skills must be in root-level `skills/` directory for Claude Code plugin to work. Content in `marketplace/` is excluded from Mintlify rendering.
 
 ## Understanding docs.json
 
@@ -178,11 +180,13 @@ Add your template to the table in:
 ### 1. Create skill directory
 
 ```
-marketplace/skills/your-skill/
+skills/your-skill/
 ├── SKILL.md               # Skill definition (required)
 ├── references/            # Reference docs (optional)
 └── README.md              # Overview (optional)
 ```
+
+> **Note**: Skills must be in the root `skills/` directory for Claude Code plugin to work properly.
 
 ### 2. Create documentation pages
 
