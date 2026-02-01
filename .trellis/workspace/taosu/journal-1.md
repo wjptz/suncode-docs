@@ -710,3 +710,83 @@ Claude Code plugin validator 有严格但未完全文档化的约束：
 ### Next Steps
 
 - None - task complete
+
+## Session 11: Fix Plugin Structure for Skill Marketplace
+
+**Date**: 2026-02-01
+**Task**: Fix Plugin Structure for Skill Marketplace
+
+### Summary
+
+(Add summary)
+
+### Main Changes
+
+## Summary
+
+Fixed Claude Code plugin/skill marketplace structure after researching official docs and reference implementations. Skills are now correctly discoverable and installable via `/plugin install`.
+
+## Key Changes
+
+| Change               | Description                                                                      |
+| -------------------- | -------------------------------------------------------------------------------- |
+| Plugin structure     | Moved plugin.json inside plugin directory, skills in nested skills/ subdirectory |
+| Directory naming     | Renamed `skills/` → `plugins/`, aligned plugin dir name with plugin name         |
+| One plugin per skill | Each skill is now its own plugin for independent installation                    |
+| Marketplace name     | Changed to `trellis-marketplace`                                                 |
+| Contribute docs      | Updated all contribution guides with correct structure                           |
+
+## Final Structure
+
+```
+plugins/
+└── trellis-meta/              # Plugin = Skill (one-to-one)
+    ├── plugin.json            # name: "trellis-meta"
+    └── skills/trellis-meta/
+        └── SKILL.md
+```
+
+## Installation Flow
+
+```bash
+/plugin marketplace add mindfold-ai/docs
+/plugin install trellis-meta
+```
+
+## Files Updated
+
+- `.claude-plugin/marketplace.json` - source path, marketplace name
+- `plugins/trellis-meta/plugin.json` - version 1.0.0
+- `contribute/index.mdx` - new plugin structure guide
+- `zh/contribute/index.mdx` - Chinese version
+- `.claude/skills/contribute/SKILL.md` - contribution skill updated
+- `skills-market/trellis-meta.mdx` - installation instructions
+
+## Research Findings
+
+- Plugins are the unit of installation (no single skill install)
+- Other marketplaces use either grouped plugins or one-plugin-per-skill
+- Chose one-plugin-per-skill for flexibility
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `99fc3a3` | (see git log) |
+| `497e343` | (see git log) |
+| `26066c3` | (see git log) |
+| `1ab24b1` | (see git log) |
+| `134a174` | (see git log) |
+| `9e239bc` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
