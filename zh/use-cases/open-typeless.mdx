@@ -46,7 +46,7 @@ trellis init
 如果有类似项目的 spec，可以复制过来：
 
 ```bash
-cp -r ../old-project/electron-doc ./
+cp -r /path/to/old-project/.trellis/spec ./
 ```
 
 ### 1.4 让 AI 填充 Spec
@@ -93,29 +93,19 @@ Batch 1 完成后，验证并更新下游任务的 context：
 
 ### 3.1 启动并行 Agent
 
-用 `/trellis:parallel` 启动 3 个 worktree agent 开发 Batch 2：
+**Prompt:** `/trellis:parallel`
 
-```bash
-./.trellis/scripts/multi-agent/start.sh .trellis/tasks/01-29-asr-audio-recorder
-./.trellis/scripts/multi-agent/start.sh .trellis/tasks/01-29-asr-volcengine-client
-./.trellis/scripts/multi-agent/start.sh .trellis/tasks/01-29-asr-floating-window
-```
+AI 启动 3 个 worktree agent 开发 Batch 2，每个 agent 在隔离的 git worktree 中工作：
 
 ![parallel agents](/images/use-cases/open-typeless/step3-1.png)
-
-每个 agent 在隔离的 git worktree 中工作，独立开发功能。
 
 ## Step 4: 监控进度
 
 ### 4.1 查看 Agent 状态
 
-```bash
-./.trellis/scripts/multi-agent/status.sh
-```
+AI 监控 agent 状态和任务进度：
 
 ![agent status](/images/use-cases/open-typeless/step4-1.png)
-
-显示：1 running / 4 registered agents，按优先级显示任务进度。
 
 ### 4.2 记录 Session
 
@@ -129,31 +119,17 @@ Batch 1 完成后，验证并更新下游任务的 context：
 
 ![record session](/images/use-cases/open-typeless/step2-4.png)
 
-然后归档完成的任务：
-
-```bash
-./.trellis/scripts/task.sh archive asr-infrastructure
-```
-
 ## Step 5: 继续开发
 
 ### 5.1 查看剩余任务
 
-```bash
-./.trellis/scripts/task.sh list
-```
+AI 显示当前项目的剩余任务：
 
 ![task list](/images/use-cases/open-typeless/step5-1.png)
 
 ### 5.2 实现下一个功能
 
-启动下一个任务，让 AI 实现：
-
-```bash
-./.trellis/scripts/task.sh start .trellis/tasks/01-29-push-to-talk
-```
-
-Hook 会自动注入任务上下文。AI 用 implement agent 然后 check agent：
+选择下一个任务，AI 用 implement agent 然后 check agent：
 
 ![implement and check](/images/use-cases/open-typeless/step5-2.png)
 
@@ -167,12 +143,12 @@ AI 帮助完成剩余设置（环境配置、权限）：
 
 用 Trellis 构建 open-typeless：
 
-| 步骤 | 做什么     | Trellis 功能                           |
-| ---- | ---------- | -------------------------------------- |
-| 1    | 初始化项目 | `trellis init`，spec 组织              |
-| 2    | 规划任务   | AI 任务拆分，批次规划                  |
-| 3    | 并行开发   | `/trellis:parallel`，worktree agents   |
-| 4    | 监控和记录 | `status.sh`，`/trellis:record-session` |
-| 5    | 继续迭代   | Task hooks，implement/check agents     |
+| 步骤 | 做什么     | Trellis 功能                         |
+| ---- | ---------- | ------------------------------------ |
+| 1    | 初始化项目 | `trellis init`，spec 组织            |
+| 2    | 规划任务   | AI 任务拆分，批次规划                |
+| 3    | 并行开发   | `/trellis:parallel`，worktree agents |
+| 4    | 监控和记录 | `/trellis:record-session`            |
+| 5    | 继续迭代   | Task hooks，implement/check agents   |
 
 **结果：** 1 天完成完整 Electron 应用，有结构化的 spec 和文档化的进度。

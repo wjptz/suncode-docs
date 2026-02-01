@@ -47,7 +47,7 @@ trellis init
 If you have specs from a similar project, copy them over:
 
 ```bash
-cp -r ../old-project/electron-doc ./
+cp -r /path/to/old-project/.trellis/spec ./
 ```
 
 ### 1.4 Ask AI to Fill in Specs
@@ -94,29 +94,19 @@ After Batch 1 completes, verify and update downstream task contexts:
 
 ### 3.1 Start Parallel Agents
 
-Use `/trellis:parallel` to launch 3 worktree agents for Batch 2:
+**Prompt:** `/trellis:parallel`
 
-```bash
-./.trellis/scripts/multi-agent/start.sh .trellis/tasks/01-29-asr-audio-recorder
-./.trellis/scripts/multi-agent/start.sh .trellis/tasks/01-29-asr-volcengine-client
-./.trellis/scripts/multi-agent/start.sh .trellis/tasks/01-29-asr-floating-window
-```
+AI launches 3 worktree agents for Batch 2, each working in an isolated git worktree:
 
 ![parallel agents](/images/use-cases/open-typeless/step3-1.png)
-
-Each agent works in an isolated git worktree, developing features independently.
 
 ## Step 4: Monitor Progress
 
 ### 4.1 Check Agent Status
 
-```bash
-./.trellis/scripts/multi-agent/status.sh
-```
+AI monitors agent status and task progress:
 
 ![agent status](/images/use-cases/open-typeless/step4-1.png)
-
-Shows: 1 running / 4 registered agents, task progress by priority.
 
 ### 4.2 Record Session
 
@@ -130,31 +120,17 @@ After merging and completing a batch, record the session:
 
 ![record session](/images/use-cases/open-typeless/step2-4.png)
 
-Then archive completed tasks:
-
-```bash
-./.trellis/scripts/task.sh archive asr-infrastructure
-```
-
 ## Step 5: Continue Development
 
 ### 5.1 Check Remaining Tasks
 
-```bash
-./.trellis/scripts/task.sh list
-```
+AI shows remaining tasks in the current project:
 
 ![task list](/images/use-cases/open-typeless/step5-1.png)
 
 ### 5.2 Implement Next Feature
 
-Start the next task and let AI implement:
-
-```bash
-./.trellis/scripts/task.sh start .trellis/tasks/01-29-push-to-talk
-```
-
-The hook automatically injects task context. AI uses implement agent then check agent:
+Select the next task, AI uses implement agent then check agent:
 
 ![implement and check](/images/use-cases/open-typeless/step5-2.png)
 
@@ -168,12 +144,12 @@ AI helps with remaining setup (environment config, permissions):
 
 Using Trellis to build open-typeless:
 
-| Step | What                 | Trellis Feature                        |
-| ---- | -------------------- | -------------------------------------- |
-| 1    | Initialize project   | `trellis init`, spec organization      |
-| 2    | Plan tasks           | AI task breakdown, batch planning      |
-| 3    | Parallel development | `/trellis:parallel`, worktree agents   |
-| 4    | Monitor & record     | `status.sh`, `/trellis:record-session` |
-| 5    | Continue iterating   | Task hooks, implement/check agents     |
+| Step | What                 | Trellis Feature                      |
+| ---- | -------------------- | ------------------------------------ |
+| 1    | Initialize project   | `trellis init`, spec organization    |
+| 2    | Plan tasks           | AI task breakdown, batch planning    |
+| 3    | Parallel development | `/trellis:parallel`, worktree agents |
+| 4    | Monitor & record     | `/trellis:record-session`            |
+| 5    | Continue iterating   | Task hooks, implement/check agents   |
 
 **Result:** Complete Electron app in 1 day, with structured specs and documented progress.
