@@ -17,16 +17,93 @@ This skill guides you through contributing to the Trellis documentation project.
 ```
 docs/
 ├── docs.json              # Navigation config (MUST update for new pages)
+│
+├── index.mdx              # English homepage
+├── quickstart.mdx         # English quickstart
+├── zh/index.mdx           # Chinese homepage
+├── zh/quickstart.mdx      # Chinese quickstart
+│
 ├── guides/                # English guide pages
 ├── zh/guides/             # Chinese guide pages
+│
 ├── templates/             # English template pages
 ├── zh/templates/          # Chinese template pages
-├── skills-market/         # English skill pages
-├── zh/skills-market/      # Chinese skill pages
-└── marketplace/           # Downloadable assets
+│
+├── skills-market/         # English skill marketplace pages
+├── zh/skills-market/      # Chinese skill marketplace pages
+│
+├── blog/                  # English tech blog
+├── zh/blog/               # Chinese tech blog
+│
+├── changelog/             # English changelog
+├── zh/changelog/          # Chinese changelog
+│
+├── contribute/            # English contribution guide
+├── zh/contribute/         # Chinese contribution guide
+│
+├── showcase/              # English showcase
+├── zh/showcase/           # Chinese showcase
+│
+└── marketplace/           # Downloadable assets (NOT rendered as pages)
     ├── specs/             # Spec template directories
-    └── skills/            # Skill directories (future)
+    └── skills/            # Skill directories
 ```
+
+**Note**: Content in `marketplace/` is excluded from Mintlify rendering via `docs.json` exclude rules. These are downloadable resources, not documentation pages.
+
+## Understanding docs.json
+
+The navigation uses a **language-based structure**:
+
+```json
+{
+  "navigation": {
+    "languages": [
+      {
+        "language": "en",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": ["index", "quickstart"]
+          },
+          {
+            "group": "Guides",
+            "pages": ["guides/specs", "guides/tasks", ...]
+          },
+          {
+            "group": "Resource Marketplace",
+            "pages": [
+              {
+                "group": "Skills",
+                "expanded": false,
+                "pages": ["skills-market/index", "skills-market/trellis-meta"]
+              },
+              {
+                "group": "Spec Templates",
+                "expanded": false,
+                "pages": ["templates/specs-index", "templates/specs-electron"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "zh",
+        "groups": [
+          // Same structure with zh/ prefix
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Key points**:
+
+- English pages: no prefix (e.g., `guides/specs`)
+- Chinese pages: `zh/` prefix (e.g., `zh/guides/specs`)
+- Nested groups supported (e.g., Skills inside Resource Marketplace)
+- `expanded: false` keeps groups collapsed by default
 
 ## Contributing a Spec Template
 
@@ -61,20 +138,29 @@ description: 'Brief description'
 
 ### 3. Update navigation in docs.json
 
-Find the `templates` group and add your page:
+Find the `Spec Templates` nested group and add your page:
 
 ```json
 {
   "group": "Spec Templates",
-  "pages": [
-    "templates/specs-index",
-    "templates/specs-electron",
-    "templates/specs-your-template" // Add here
-  ]
+  "expanded": false,
+  "pages": ["templates/specs-index", "templates/specs-electron", "templates/specs-your-template"]
 }
 ```
 
-Do the same for Chinese navigation under the `zh` anchor.
+Do the same for Chinese under `"language": "zh"`:
+
+```json
+{
+  "group": "Spec Templates",
+  "expanded": false,
+  "pages": [
+    "zh/templates/specs-index",
+    "zh/templates/specs-electron",
+    "zh/templates/specs-your-template"
+  ]
+}
+```
 
 ### 4. Update the overview page
 
@@ -101,7 +187,7 @@ marketplace/skills/your-skill/
 
 ### 3. Update navigation in docs.json
 
-Find the `skills-market` group and add your page.
+Find the `Skills` nested group and add your page to both languages.
 
 ### 4. Update the overview page
 
@@ -116,11 +202,17 @@ Add your skill to the table in:
 
 1. Create the page in `guides/your-guide.mdx`
 2. Create Chinese version in `zh/guides/your-guide.mdx`
-3. Update `docs.json` navigation for both languages
+3. Update `docs.json` - add to `Guides` group in both languages
+
+### Adding a blog post
+
+1. Create the page in `blog/your-post.mdx`
+2. Create Chinese version in `zh/blog/your-post.mdx`
+3. Update `docs.json` - add to `Tech Blog` group in both languages
 
 ### Updating existing pages
 
-1. Find the file in `guides/` or `zh/guides/`
+1. Find the file in the appropriate directory
 2. Make your changes
 3. Ensure both language versions stay in sync
 
@@ -128,39 +220,22 @@ Add your skill to the table in:
 
 **All user-facing content must have both English and Chinese versions.**
 
-- English: root directories (`guides/`, `templates/`, etc.)
-- Chinese: under `zh/` (`zh/guides/`, `zh/templates/`, etc.)
-
-## Navigation (docs.json)
-
-The `docs.json` file controls all navigation. Structure:
-
-```json
-{
-  "anchors": [...],
-  "tabs": [
-    {
-      "tab": "Guides",
-      "groups": [
-        {
-          "group": "Group Name",
-          "pages": ["path/to/page"]
-        }
-      ]
-    }
-  ]
-}
-```
-
-**Important**: Pages won't appear in navigation until added to `docs.json`.
+| Content Type | English Path          | Chinese Path             |
+| ------------ | --------------------- | ------------------------ |
+| Homepage     | `index.mdx`           | `zh/index.mdx`           |
+| Guides       | `guides/*.mdx`        | `zh/guides/*.mdx`        |
+| Templates    | `templates/*.mdx`     | `zh/templates/*.mdx`     |
+| Skills       | `skills-market/*.mdx` | `zh/skills-market/*.mdx` |
+| Blog         | `blog/*.mdx`          | `zh/blog/*.mdx`          |
+| Changelog    | `changelog/*.mdx`     | `zh/changelog/*.mdx`     |
 
 ## Submitting a PR
 
-1. Fork the repo
+1. Fork the repo: `https://github.com/mindfold-ai/docs`
 2. Create a branch: `git checkout -b feat/your-contribution`
 3. Make changes following this guide
 4. Test locally: `mintlify dev`
-5. Commit with clear message
+5. Commit with conventional message (e.g., `docs: add xxx template`)
 6. Push and create PR to `main` branch
 
 ## Checklist Before PR
@@ -171,3 +246,5 @@ The `docs.json` file controls all navigation. Structure:
 - [ ] Local preview tested (`mintlify dev`)
 - [ ] No broken links
 - [ ] Code blocks have correct language tags
+- [ ] Frontmatter includes title and description
+- [ ] Images placed in `images/` directory (if any)
