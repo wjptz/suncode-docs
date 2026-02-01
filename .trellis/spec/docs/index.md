@@ -17,6 +17,7 @@ This project uses **Mintlify** as the documentation platform. All content is wri
 | [Directory Structure](./directory-structure.md) | File organization and naming conventions | Ready  |
 | [MDX Guidelines](./mdx-guidelines.md)           | MDX syntax, frontmatter, components      | Ready  |
 | [Config Guidelines](./config-guidelines.md)     | docs.json configuration patterns         | Ready  |
+| [Plugin Guidelines](./plugin-guidelines.md)     | Claude Code plugin manifest patterns     | Ready  |
 | [Style Guide](./style-guide.md)                 | Writing style and content standards      | Ready  |
 
 ---

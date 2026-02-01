@@ -1,7 +1,7 @@
 {
   "name": "trellis-meta",
   "version": "0.3.0",
-  "description": "Complete Trellis documentation skill - enables AI to help you customize and modify Trellis",
+  "description": "Meta-skill for understanding and customizing Trellis - the AI workflow system for Claude Code and Cursor",
   "author": {
     "name": "Mindfold",
     "url": "https://github.com/mindfold-ai"
@@ -9,6 +9,6 @@
   "homepage": "https://trellis.mindfold.ai",
   "repository": "https://github.com/mindfold-ai/docs",
   "license": "MIT",
-  "keywords": ["trellis", "claude-code", "workflow", "agents", "skills", "documentation"],
+  "keywords": ["trellis", "claude-code", "workflow", "agents", "skills", "specs"],
   "skills": ["./marketplace/skills/trellis-meta"]
 }

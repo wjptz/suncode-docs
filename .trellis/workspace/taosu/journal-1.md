@@ -596,3 +596,117 @@ MDX 文件数：82 → 76
 ### Next Steps
 
 - None - task complete
+
+## Session 10: 修复 Claude Code Plugin Schema
+
+**Date**: 2026-02-01
+**Task**: 修复 Claude Code Plugin Schema
+
+### Summary
+
+(Add summary)
+
+### Main Changes
+
+## 问题
+
+用户反馈执行 `/plugin marketplace add mindfold-ai/docs` 时报错：
+
+```
+Error: Invalid schema: name: Invalid input: expected string, received undefined,
+owner: Invalid input: expected object, received undefined,
+plugins.0.author: Invalid input: expected object, received string,
+plugins.0.source: Invalid input
+```
+
+## 原因分析
+
+参考 [everything-claude-code](https://github.com/affaan-m/everything-claude-code/tree/main/.claude-plugin) 的实现，发现 marketplace.json 缺少必需字段：
+
+| 错误                                | 原因                        |
+| ----------------------------------- | --------------------------- |
+| `name: expected string`             | 根级别缺少 `name` 字段      |
+| `owner: expected object`            | 根级别缺少 `owner` 对象     |
+| `plugins.0.author: expected object` | `author` 用了字符串而非对象 |
+| `plugins.0.source: Invalid input`   | 缺少 `source` 字段          |
+
+## 修复
+
+### marketplace.json
+
+添加必需的根级字段，修正 author 为对象格式：
+
+```json
+{
+  "name": "mindfold-docs",
+  "owner": {
+    "name": "Mindfold",
+    "email": "hello@mindfold.ai"
+  },
+  "metadata": {
+    "description": "..."
+  },
+  "plugins": [
+    {
+      "name": "trellis-meta",
+      "source": "./marketplace/skills/trellis-meta",
+      "author": { "name": "Mindfold" },
+      ...
+    }
+  ]
+}
+```
+
+### plugin.json
+
+添加必需的 `version` 字段，`skills` 改为数组格式：
+
+```json
+{
+  "name": "trellis-meta",
+  "version": "0.3.0",
+  "skills": ["./marketplace/skills/trellis-meta"]
+}
+```
+
+### 新增文件
+
+- `.claude-plugin/README.md` - 安装说明和结构文档
+- `.trellis/spec/docs/plugin-guidelines.md` - Plugin schema 规范，记录常见错误
+
+## 关键学习
+
+Claude Code plugin validator 有严格但未完全文档化的约束：
+
+1. `version` 字段是必需的
+2. 组件字段（`skills`, `agents`, `commands`）必须是数组
+3. `agents` 必须使用显式文件路径，不能用目录
+4. 不要添加 `hooks` 字段（会自动加载，显式声明会报 duplicate 错误）
+
+## 修改文件
+
+| 文件                                      | 操作         |
+| ----------------------------------------- | ------------ |
+| `.claude-plugin/marketplace.json`         | 修复 schema  |
+| `.claude-plugin/plugin.json`              | 添加 version |
+| `.claude-plugin/README.md`                | 新建         |
+| `.trellis/spec/docs/plugin-guidelines.md` | 新建         |
+| `.trellis/spec/docs/index.md`             | 更新索引     |
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `260c99f` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
