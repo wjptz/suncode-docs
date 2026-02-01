@@ -34,7 +34,7 @@ The directory name follows the pattern: `MM-DD-slug-assignee`.
 Use the task script:
 
 ```bash
-python .trellis/scripts/task.py create "user-auth" --assignee taosu
+python3 .trellis/scripts/task.py create "user-auth" --assignee taosu
 ```
 
 This creates the task directory with default files. Then edit `prd.md` to define requirements.
@@ -90,7 +90,7 @@ Different agents can have different context. Edit `implement.jsonl`, `check.json
 Set the current task:
 
 ```bash
-python .trellis/scripts/task.py set 01-31-user-auth-taosu
+python3 .trellis/scripts/task.py start 01-31-user-auth-taosu
 ```
 
 Hooks use this to inject the right context. Now when you start a Claude Code session, it knows:
@@ -104,29 +104,27 @@ Hooks use this to inject the right context. Now when you start a Claude Code ses
 List all tasks:
 
 ```bash
-python .trellis/scripts/task.py list
+python3 .trellis/scripts/task.py list
 ```
 
-Check current task:
+Clear current task when done:
 
 ```bash
-python .trellis/scripts/task.py current
+python3 .trellis/scripts/task.py finish
 ```
 
-Update status:
+Archive completed task:
 
 ```bash
-python .trellis/scripts/task.py status 01-31-user-auth-taosu done
+python3 .trellis/scripts/task.py archive 01-31-user-auth-taosu
 ```
-
-Common statuses: `pending`, `in_progress`, `review`, `done`.
 
 ## Multiple tasks
 
 You can have multiple tasks in progress. Only one is "current" at a time. Switch with:
 
 ```bash
-python .trellis/scripts/task.py set other-task-id
+python3 .trellis/scripts/task.py start other-task-id
 ```
 
 ## Task workflow
@@ -136,8 +134,8 @@ Typical flow:
 1. Create task: `task.py create`
 2. Edit `prd.md` with requirements
 3. Set up context files (JSONL)
-4. Set as current: `task.py set`
+4. Set as current: `task.py start`
 5. Work in Claude Code sessions
-6. Mark complete: `task.py status <id> done`
+6. Archive when complete: `task.py archive <id>`
 
 The task system keeps context organized so the AI knows what to focus on.
