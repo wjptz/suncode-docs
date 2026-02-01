@@ -12,14 +12,33 @@ description: '定制 Trellis 的必备技能'
 
 ## 安装
 
-在 Claude Code 里运行：
+在 Claude Code 中，skill 通过 plugin 系统分发。运行以下命令：
+
+**第一步**：注册 skill 来源
 
 ```bash
 /plugin marketplace add mindfold-ai/docs
+```
+
+**第二步**：安装 skill
+
+```bash
 /plugin install trellis-meta
 ```
 
-> 需要 Claude Code CLI v2.1.0+
+安装后，skill 显示为 `mindfold-docs:trellis-meta`。
+
+<Note>需要 Claude Code CLI v2.1.0+</Note>
+
+## 验证安装
+
+检查 skill 是否可用：
+
+```
+你有哪些 skills？
+```
+
+Claude 应该在回复中列出 `trellis-meta` 或 `mindfold-docs:trellis-meta`。
 
 ## 使用
 
@@ -37,7 +56,7 @@ description: '定制 Trellis 的必备技能'
 我要加一个新的工作流阶段叫 review
 ```
 
-AI 会参考技能里的文档，给你正确的修改步骤。
+AI 会自动使用技能里的文档，给你正确的修改步骤。
 
 ## 包含内容
 

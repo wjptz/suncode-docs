@@ -12,14 +12,33 @@ The official meta-skill for understanding and customizing Trellis. Install this 
 
 ## Install
 
-Run in Claude Code:
+In Claude Code, skills are distributed via the plugin system. Run these commands:
+
+**Step 1**: Register the skill source
 
 ```bash
 /plugin marketplace add mindfold-ai/docs
+```
+
+**Step 2**: Install the skill
+
+```bash
 /plugin install trellis-meta
 ```
 
-Requires Claude Code CLI v2.1.0+
+After installation, the skill appears as `mindfold-docs:trellis-meta`.
+
+<Note>Requires Claude Code CLI v2.1.0+</Note>
+
+## Verify Installation
+
+Check if the skill is available:
+
+```
+What skills do you have access to?
+```
+
+Claude should list `trellis-meta` or `mindfold-docs:trellis-meta` in the response.
 
 ## Usage
 
@@ -37,7 +56,7 @@ Help me modify the check hook to add a custom verification command
 I want to add a new workflow phase called review
 ```
 
-AI will reference the skill's documentation and give you the correct modification steps.
+AI will automatically use the skill's documentation and give you the correct modification steps.
 
 ## What's Included
 
