@@ -65,10 +65,17 @@ https://github.com/mindfold-ai/docs/discussions
 Skill 扩展 Claude 的能力。添加新 skill：
 
 1. Fork 仓库
-2. 创建 `skills/your-skill/SKILL.md`（含 YAML frontmatter）
-3. 创建文档页面（`skills-market/your-skill.mdx` + 中文版）
-4. 更新 `docs.json` 导航
-5. 开 PR
+2. 创建 plugin 结构：
+   ```
+   plugins/your-plugin/
+   ├── plugin.json
+   └── skills/your-skill/
+       └── SKILL.md
+   ```
+3. 更新 `.claude-plugin/marketplace.json` 注册你的 plugin
+4. 创建文档页面（`skills-market/your-skill.mdx` + 中文版）
+5. 更新 `docs.json` 导航
+6. 开 PR
 
 SKILL.md 格式参考 [Claude Code Skills 文档](https://code.claude.com/docs/en/skills)。
 

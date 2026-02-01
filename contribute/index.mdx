@@ -68,10 +68,17 @@ https://github.com/mindfold-ai/docs/discussions
 Skills extend Claude's capabilities. To add a new skill:
 
 1. Fork the repo
-2. Create `skills/your-skill/SKILL.md` with YAML frontmatter
-3. Create documentation pages (`skills-market/your-skill.mdx` + Chinese version)
-4. Update `docs.json` navigation
-5. Open a PR
+2. Create plugin structure:
+   ```
+   plugins/your-plugin/
+   ├── plugin.json
+   └── skills/your-skill/
+       └── SKILL.md
+   ```
+3. Update `.claude-plugin/marketplace.json` to register your plugin
+4. Create documentation pages (`skills-market/your-skill.mdx` + Chinese version)
+5. Update `docs.json` navigation
+6. Open a PR
 
 See [Claude Code Skills documentation](https://code.claude.com/docs/en/skills) for SKILL.md format.
 

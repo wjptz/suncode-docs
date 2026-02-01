@@ -44,14 +44,17 @@ docs/
 ├── showcase/              # English showcase
 ├── zh/showcase/           # Chinese showcase
 │
-├── skills/                # Claude Code plugin skills (root level required)
-│   └── trellis-meta/      # Example skill
+├── plugins/               # Claude Code plugins (one plugin per skill)
+│   └── trellis-meta/
+│       ├── plugin.json
+│       └── skills/trellis-meta/
+│           └── SKILL.md
 │
 └── marketplace/           # Other downloadable assets
     └── specs/             # Spec template directories
 ```
 
-**Note**: Skills must be in root-level `skills/` directory for Claude Code plugin to work. Content in `marketplace/` is excluded from Mintlify rendering.
+**Note**: Plugin skills follow Claude Code plugin structure. Content in `marketplace/` is excluded from Mintlify rendering.
 
 ## Understanding docs.json
 
@@ -177,27 +180,55 @@ Add your template to the table in:
 
 ## Contributing a Skill
 
-### 1. Create skill directory
+### 1. Create plugin directory
 
 ```
-skills/your-skill/
-├── SKILL.md               # Skill definition (required)
-├── references/            # Reference docs (optional)
-└── README.md              # Overview (optional)
+plugins/your-plugin/
+├── plugin.json            # Plugin manifest
+└── skills/
+    └── your-skill/
+        ├── SKILL.md       # Skill definition (required)
+        └── references/    # Reference docs (optional)
 ```
 
-> **Note**: Skills must be in the root `skills/` directory for Claude Code plugin to work properly.
+### 2. Create plugin.json
 
-### 2. Create documentation pages
+```json
+{
+  "name": "your-plugin",
+  "version": "1.0.0",
+  "description": "Your plugin description",
+  "author": { "name": "Your Name" },
+  "skills": ["./skills/"]
+}
+```
+
+### 3. Register in marketplace.json
+
+Add your plugin to `.claude-plugin/marketplace.json`:
+
+```json
+{
+  "plugins": [
+    {
+      "name": "your-plugin",
+      "source": "./plugins/your-plugin",
+      "description": "Your plugin description"
+    }
+  ]
+}
+```
+
+### 4. Create documentation pages
 
 **English**: `skills-market/your-skill.mdx`
 **Chinese**: `zh/skills-market/your-skill.mdx`
 
-### 3. Update navigation in docs.json
+### 5. Update navigation in docs.json
 
 Find the `Skills` nested group and add your page to both languages.
 
-### 4. Update the overview page
+### 6. Update the overview page
 
 Add your skill to the table in:
 
