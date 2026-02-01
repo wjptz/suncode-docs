@@ -41,9 +41,9 @@ Trellis 用分层架构和上下文压缩。JSONL 文件指定哪个任务加载
 <Accordion title="Trellis 支持 Cursor 吗？">
 核心系统（specs、tasks、workspace）能用。你读规范文件然后遵循它们。
 
-不能用的：hooks。Cursor 不能做 Claude Code 有的自动上下文注入。每次会话开始你得手动引用规范文件。
+**Hooks**：Cursor 已原生支持 hooks，但 Trellis 还没做 Cursor 的 hook 适配（后续计划中）。目前每次会话开始你仍需手动引用规范文件。
 
-多 Agent 工作流在 Cursor 里也不支持。
+多 Agent 工作流在 Cursor 里也暂不支持。
 
 </Accordion>
 
