@@ -30,19 +30,46 @@ Each worktree is a separate checkout on a separate branch. No merge conflicts du
 
 When done, each session creates a PR. You review and merge.
 
+## Configuration
+
+Before starting, create `worktree.yaml` in your project root:
+
+```yaml
+# worktree.yaml
+base_branch: main
+worktree_dir: ../.trellis-worktrees # Where to create worktrees
+tasks:
+  - id: feature-a
+    branch: feature/login-page
+    prd: |
+      Add login page with email/password authentication.
+      Include form validation and error handling.
+  - id: feature-b
+    branch: feature/settings-page
+    prd: |
+      Add user settings page.
+      Allow changing display name and password.
+```
+
+Each task defines:
+
+- `id`: Unique identifier
+- `branch`: Git branch name
+- `prd`: Requirements for this task
+
 ## Starting parallel sessions
 
-Use the `/trellis:parallel` command in Claude Code. It will guide you through:
+Use the `/trellis:parallel` command in Claude Code. It reads `worktree.yaml` and:
 
-- Defining tasks
-- Creating worktrees
-- Spawning sessions
+- Creates worktrees for each task
+- Spawns Claude Code sessions
+- Sets up branches
 
-This creates:
+Or use the script directly:
 
-- Separate worktrees for each task
-- Separate Claude Code sessions
-- Separate branches
+```bash
+python3 .trellis/scripts/multi_agent/start.py
+```
 
 Each session runs independently.
 
@@ -51,7 +78,7 @@ Each session runs independently.
 Check status with:
 
 ```bash
-python .trellis/scripts/multi_agent/status.py
+python3 .trellis/scripts/multi_agent/status.py
 ```
 
 Output shows each task's current phase and branch.
@@ -86,7 +113,7 @@ Not good for:
 When done, clean up worktrees:
 
 ```bash
-python .trellis/scripts/multi_agent/cleanup.py
+python3 .trellis/scripts/multi_agent/cleanup.py
 ```
 
 This removes worktrees but keeps branches. You can delete merged branches normally.
