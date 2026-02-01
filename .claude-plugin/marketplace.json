@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "trellis-meta",
-      "source": "./skills/trellis-meta",
+      "source": "./plugins/trellis-marketplace",
       "description": "Meta-skill for understanding and customizing Trellis - the AI workflow system for Claude Code and Cursor",
       "author": {
         "name": "Mindfold"

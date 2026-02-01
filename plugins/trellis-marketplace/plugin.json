@@ -1,6 +1,6 @@
 {
   "name": "trellis-meta",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Meta-skill for understanding and customizing Trellis - the AI workflow system for Claude Code and Cursor",
   "author": {
     "name": "Mindfold",
