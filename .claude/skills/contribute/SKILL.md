@@ -111,16 +111,20 @@ The navigation uses a **language-based structure**:
 
 ```
 marketplace/specs/your-template-name/
-├── README.md              # Template overview
-├── frontend/
+├── README.md              # Template overview (required)
+├── frontend/              # Frontend guidelines
 │   ├── index.md
 │   └── ...
-├── backend/
+├── backend/               # Backend guidelines
 │   ├── index.md
 │   └── ...
-└── guides/
-    └── index.md
+├── guides/                # Thinking guides
+│   └── ...
+└── shared/                # Cross-cutting concerns (optional)
+    └── ...
 ```
+
+Structure varies by stack. Include directories relevant to your template.
 
 ### 2. Create documentation pages (both languages)
 
@@ -229,14 +233,59 @@ Add your skill to the table in:
 | Blog         | `blog/*.mdx`          | `zh/blog/*.mdx`          |
 | Changelog    | `changelog/*.mdx`     | `zh/changelog/*.mdx`     |
 
+## Development Setup
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start local dev server
+pnpm dev
+
+# Check markdown lint
+pnpm lint:md
+
+# Format files
+pnpm format
+```
+
+**Pre-commit hooks**: The project uses husky with lint-staged. On commit:
+
+- Markdown files are auto-linted and formatted
+- `verify-docs.py` checks docs.json and frontmatter
+
+## MDX Components
+
+Mintlify supports MDX components. Common ones:
+
+```mdx
+<Card title="Title" icon="download" href="/path">
+  Card content here
+</Card>
+
+<CardGroup cols={2}>
+  <Card>...</Card>
+  <Card>...</Card>
+</CardGroup>
+
+<Accordion title="Click to expand">Hidden content</Accordion>
+
+<AccordionGroup>
+  <Accordion>...</Accordion>
+</AccordionGroup>
+```
+
+Inline HTML is allowed (MDX). See [Mintlify docs](https://mintlify.com/docs/components) for all components.
+
 ## Submitting a PR
 
 1. Fork the repo: `https://github.com/mindfold-ai/docs`
-2. Create a branch: `git checkout -b feat/your-contribution`
-3. Make changes following this guide
-4. Test locally: `mintlify dev`
-5. Commit with conventional message (e.g., `docs: add xxx template`)
-6. Push and create PR to `main` branch
+2. Clone and install: `pnpm install`
+3. Create a branch: `git checkout -b feat/your-contribution`
+4. Make changes following this guide
+5. Test locally: `pnpm dev`
+6. Commit with conventional message (e.g., `docs: add xxx template`)
+7. Push and create PR to `main` branch
 
 ## Checklist Before PR
 
