@@ -43,16 +43,11 @@ It's not magic memory. It's explicit journaling. You control what gets remembere
 <Accordion title="Does Trellis work with Cursor?">
 The core systems (specs, tasks, workspace) work. You read spec files and follow them.
 
-What doesn't work: hooks. Cursor can't do the automatic context injection that Claude Code has. You'll need to manually reference spec files at session start.
+**Hooks**: Cursor now supports hooks natively, but Trellis hasn't implemented Cursor hook support yet (planned for future). For now, you'll need to manually reference spec files at session start.
 
-Multi-agent workflows also don't work in Cursor.
+**Multi-Agent** (same dir): Limited support, requires manual coordination.
 
-</Accordion>
-
-<Accordion title="Do I need to use all three systems?">
-No. Most people start with specs only. Write your conventions, let AI follow them.
-
-Add tasks when you need context isolation between work items. Add workspace when you want session history that persists.
+**Multi-Session** (worktree isolation): Not supported.
 
 </Accordion>
 
@@ -100,7 +95,7 @@ Test it: new session, ask for code the spec covers, check if rules are followed.
 <Accordion title="What if I forget to set the current task?">
 Session runs without task-specific context. Specs still load from defaults, but the AI won't know your PRD or task-specific files.
 
-For task-specific work, run `trellis task start` first.
+For task-specific work, use `/trellis:start` to begin a session.
 
 </Accordion>
 
@@ -108,8 +103,8 @@ For task-specific work, run `trellis task start` first.
 Each line specifies a file to include:
 
 ```json
-{"type": "spec", "path": ".trellis/spec/backend/index.md"}
-{"type": "file", "path": "src/api/users.ts"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend coding standards"}
+{"file": "src/api/users.ts", "reason": "API implementation context"}
 ```
 
 Different agents get different files. Implement agent might need more context than check agent.
@@ -133,9 +128,10 @@ No hard limit, but practically:
 </Accordion>
 
 <Accordion title="What if two agents modify the same file?">
-They work in separate Git worktrees. No conflicts during development.
+Depends on the mode:
 
-Merge conflicts happen when merging PRs. Resolve normally. To avoid: plan tasks so they don't overlap.
+- **Multi-Agent (same dir)**: Agents share the same directory and can conflict. Plan tasks to avoid file overlap.
+- **Multi-Session (worktree)**: Each agent works in an isolated Git worktree. No conflicts during development, resolve when merging PRs.
 
 </Accordion>
 
@@ -153,16 +149,17 @@ Verify:
 1. `.trellis/` directory exists
 2. `.claude/settings.json` has hook configs
 3. Start a session — specs should appear in context
-   </Accordion>
+
+</Accordion>
 
 <Accordion title="AI is ignoring my specs">
-Specs might not be loading. Check:
+Several possible causes:
 
-1. Spec file is in `.trellis/spec/`?
-2. Paths correct in JSONL context files?
-3. For task work, is the task set as current?
+1. **Specs not loaded**: Check file paths in `.trellis/spec/` and JSONL context files
+2. **Context too long**: AI may "forget" specs in long conversations. Start fresh session or remind it
+3. **Spec clarity**: More specific specs work better than vague ones
 
-Also: is your spec specific enough? Vague specs get ignored.
+Trellis improves consistency but isn't a silver bullet. AI still makes mistakes.
 
 </Accordion>
 

@@ -1,41 +1,75 @@
 ---
-title: 'Multi-agent'
-description: 'Run multiple AI agents in parallel'
+title: 'Parallel Sessions'
+description: 'Run multiple isolated AI sessions in parallel'
 ---
 
-## Why multiple agents
+## Two approaches
 
-Some tasks are independent. Adding a login page doesn't affect adding a settings page. Running one agent on each lets you parallelize.
+Trellis supports two ways to run multiple agents:
 
-Trellis supports this through Git worktrees. Each agent works in an isolated copy of your repo. No merge conflicts during development.
+| Approach          | Description                           | Isolation                    |
+| ----------------- | ------------------------------------- | ---------------------------- |
+| **Multi-Agent**   | Multiple agents in the same directory | Shared files, can conflict   |
+| **Multi-Session** | Each agent in separate Git worktree   | Fully isolated, no conflicts |
 
-## How it works
+This guide focuses on **Multi-Session** - the worktree-based approach.
+
+## Why Multi-Session
+
+Some tasks are independent. Adding a login page doesn't affect adding a settings page. With separate worktrees, agents can't interfere with each other.
 
 ```
 main repo
     │
-    ├── worktree-1/  →  Agent 1 (feature-a)
-    ├── worktree-2/  →  Agent 2 (feature-b)
-    └── worktree-3/  →  Agent 3 (feature-c)
+    ├── worktree-1/  →  Session 1 (feature-a)
+    ├── worktree-2/  →  Session 2 (feature-b)
+    └── worktree-3/  →  Session 3 (feature-c)
 ```
 
-Each worktree is a separate checkout on a separate branch. Agents can't interfere with each other.
+Each worktree is a separate checkout on a separate branch. No merge conflicts during development.
 
-When done, each agent creates a PR. You review and merge.
+When done, each session creates a PR. You review and merge.
 
-## Starting parallel agents
+## Configuration
 
-Use the `/trellis:parallel` command in Claude Code. It will guide you through:
+Before starting, create `worktree.yaml` in your project root:
 
-- Defining tasks
-- Creating worktrees
-- Spawning agent sessions
+```yaml
+# worktree.yaml
+base_branch: main
+worktree_dir: ../.trellis-worktrees # Where to create worktrees
+tasks:
+  - id: feature-a
+    branch: feature/login-page
+    prd: |
+      Add login page with email/password authentication.
+      Include form validation and error handling.
+  - id: feature-b
+    branch: feature/settings-page
+    prd: |
+      Add user settings page.
+      Allow changing display name and password.
+```
 
-This creates:
+Each task defines:
 
-- Separate worktrees for each task
-- Separate Claude Code sessions
-- Separate branches
+- `id`: Unique identifier
+- `branch`: Git branch name
+- `prd`: Requirements for this task
+
+## Starting parallel sessions
+
+Use the `/trellis:parallel` command in Claude Code. It reads `worktree.yaml` and:
+
+- Creates worktrees for each task
+- Spawns Claude Code sessions
+- Sets up branches
+
+Or use the script directly:
+
+```bash
+python3 .trellis/scripts/multi_agent/start.py
+```
 
 Each session runs independently.
 
@@ -44,14 +78,14 @@ Each session runs independently.
 Check status with:
 
 ```bash
-python .trellis/scripts/multi_agent/status.py
+python3 .trellis/scripts/multi_agent/status.py
 ```
 
 Output shows each task's current phase and branch.
 
-## Agent pipeline
+## Session pipeline
 
-Each agent follows phases:
+Each session follows phases:
 
 1. **Plan** - Understand requirements, identify files to modify
 2. **Implement** - Write the code
@@ -79,13 +113,18 @@ Not good for:
 When done, clean up worktrees:
 
 ```bash
-python .trellis/scripts/multi_agent/cleanup.py
+python3 .trellis/scripts/multi_agent/cleanup.py
 ```
 
 This removes worktrees but keeps branches. You can delete merged branches normally.
 
-## Limits
+## Platform support
 
-Multi-agent is Claude Code only. Cursor doesn't support the hooks needed for automatic context injection.
+| Feature                  | Claude Code | Cursor           |
+| ------------------------ | ----------- | ---------------- |
+| Multi-Agent (same dir)   | ✅ Full     | ⚠️ Limited       |
+| Multi-Session (worktree) | ✅ Full     | ❌ Not supported |
 
-You also need enough API credits. Three agents means three times the token usage.
+Multi-Session requires Claude Code's hooks for automatic context injection.
+
+You also need enough API credits. Three sessions means three times the token usage.

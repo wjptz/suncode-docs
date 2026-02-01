@@ -30,7 +30,6 @@ All API endpoints return errors in this format:
   }
 }
 ```
-````
 
 Use `AppError` class from `src/lib/errors.ts`. Don't throw raw Error objects.
 
@@ -43,8 +42,7 @@ throw new Error('User not found');
 // Right
 throw new AppError('USER_NOT_FOUND', 'User not found', 404);
 ```
-
-```
+````
 
 The difference: the good spec includes the exact file path, the exact format, and a concrete example showing right vs wrong.
 
@@ -53,20 +51,18 @@ The difference: the good spec includes the exact file path, the exact format, an
 Put specs in `.trellis/spec/`. Organize by domain:
 
 ```
-
 .trellis/spec/
 ├── frontend/
-│ ├── index.md # Main frontend conventions
-│ ├── components.md # Component patterns
-│ └── state.md # State management
+│   ├── index.md        # Main frontend conventions
+│   ├── components.md   # Component patterns
+│   └── state.md        # State management
 ├── backend/
-│ ├── index.md # Main backend conventions
-│ ├── api.md # API design
-│ └── database.md # Database conventions
+│   ├── index.md        # Main backend conventions
+│   ├── api.md          # API design
+│   └── database.md     # Database conventions
 └── guides/
-└── index.md # General thinking guides
-
-````
+    └── index.md        # General thinking guides
+```
 
 The `index.md` in each folder is the entry point. Keep it focused - link to other files for details.
 
@@ -81,7 +77,7 @@ Don't say "the error utility". Say `src/lib/errors.ts`. The AI can then read tha
 
 Use the query builder from `src/db/query.ts`, not raw SQL.
 ORM models are in `src/db/models/`.
-````
+```
 
 ### Show real code
 
@@ -102,10 +98,8 @@ export function UserCard({ user, onEdit }: UserCardProps) {
   // Component logic
 }
 ```
-````
 
 Props interface first, then named export. No default exports for components.
-
 ````
 
 ### Be prescriptive
@@ -119,7 +113,7 @@ You can use either Redux or Zustand for state management.
 // Strong
 Use Zustand for state management. Store definitions go in `src/stores/`.
 Redux is not used in this project.
-````
+```
 
 ### Include anti-patterns
 
@@ -148,8 +142,6 @@ app.post('/users', (req, res) => {
 ```
 ````
 
-```
-
 ## Testing your specs
 
 After writing a spec, test it:
@@ -172,11 +164,14 @@ If it doesn't follow the spec, the spec isn't specific enough. Add more examples
 
 ## Updating specs
 
-When conventions change:
+Discovered a new pattern or learned something during development? Use `/trellis:update-spec` to have AI help you capture it in your specs.
 
-1. Update the spec file
-2. Commit the change
-3. Next session automatically gets the new rules
+Or when wrapping up with `/trellis:finish-work`, AI will ask if you have new knowledge to add to specs.
 
 Don't try to "tell" the AI about changes mid-session. Update the spec file. That's the source of truth.
-```
+
+## Next steps
+
+<Card title="Spec Templates" icon="file-code" href="/templates/specs-index">
+  Download ready-to-use spec templates for common tech stacks.
+</Card>

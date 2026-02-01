@@ -3,48 +3,28 @@ title: 'Trellis'
 description: '面向 Claude Code 和 Cursor 的一站式 AI 框架和工具集'
 ---
 
-## 痛点
+## Trellis 是什么？
 
-AI 助手很聪明，但它不了解你的代码库。不知道你们团队用 `snake_case` 命名数据库字段，不知道错误处理要按特定模式写。每次新会话都从零开始。
+AI 的能力像藤蔓一样生长——充满活力但四处蔓延。Trellis 是 AI 的脚手架，引导它沿着规范的路径前进。
 
-## 方案
+## 为什么用 Trellis？
 
-Trellis 给 AI 提供持久化的项目上下文。规范写一次，之后每个 AI 会话都能自动拿到。
+| 功能             | 解决什么问题                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| **自动注入**     | 规范和工作流自动注入每次对话，写一次，永久生效                                                               |
+| **自更新规范库** | 最佳实践存在自更新的 spec 文件中，用得越多，AI 越懂你                                                        |
+| **并行会话**     | 一个会话窗口可以在后台启动多个会话窗口，每个会话窗口都可以调用多个 Agent 同时工作，运行在各自独立的 worktree |
+| **团队共享**     | 团队共享规范，团队里有一个高人搞一版好的规范，拉高全员的 AI coding 水平                                      |
+| **会话持久化**   | 工作记录持久化到仓库，AI 跨会话记住项目上下文，不用每次再费劲告诉 AI 你的项目情况是什么                      |
 
-## 工作原理
-
-1. **Specs** - 在 `.trellis/spec/` 里写你的编码规范。这些会自动注入到 AI 的上下文中。
-
-2. **Tasks** - 在 `.trellis/tasks/` 里跟踪工作进度。每个任务可以有自己的上下文文件，告诉 AI 哪些内容是相关的。
-
-3. **Workspace** - `.trellis/workspace/` 里的会话日志让你能接着上次的进度继续工作。
-
-<Card title="开始使用" icon="terminal" href="/zh/quickstart" horizontal>
-  安装 Trellis，5 分钟搭建你的第一个项目。
-</Card>
-
-## 适合谁用？
-
-Trellis 适合这些场景：
-
-- 日常开发用 Claude Code 或 Cursor
-- 代码库有明确的规范约定
-- 希望 AI 遵循团队的模式，而不是写通用代码
-- 在意 AI 会话之间的一致性
-
-如果只是写一次性脚本，或者项目刚起步还没有规范，Trellis 就有点杀鸡用牛刀了。
-
-## Trellis 不是什么
-
-Trellis 不会替你写代码，也不会替代你的判断。它只是确保 AI 在开始写代码之前有正确的上下文。
-
-把它想成给 AI 助手准备的入职文档。你不会指望一个新人不了解代码库就能写出好代码，道理是一样的。
-
-<Columns cols={2}>
+<CardGroup cols={2}>
+  <Card title="开始使用" icon="rocket" href="/zh/quickstart">
+    安装 Trellis，搭建你的第一个项目。
+  </Card>
   <Card title="核心概念" icon="book" href="/zh/concepts/overview">
     了解 Specs、Tasks 和 Workspace。
   </Card>
   <Card title="命令参考" icon="terminal" href="/zh/guides/commands">
     常用工作流的 Slash 命令。
   </Card>
-</Columns>
+</CardGroup>

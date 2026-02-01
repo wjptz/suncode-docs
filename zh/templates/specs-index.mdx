@@ -1,0 +1,55 @@
+---
+title: '概览'
+description: '常见技术栈的编码规范模板'
+---
+
+Spec 模板帮你快速搭建项目的编码规范。下载、定制、使用。
+
+## 可用模板
+
+| 模板                                                                                                                | 技术栈 | 说明                           |
+| ------------------------------------------------------------------------------------------------------------------- | ------ | ------------------------------ |
+| [Electron + React + TypeScript](https://github.com/mindfold-ai/docs/tree/main/marketplace/specs/electron-fullstack) | 全栈   | Electron 桌面应用 + React 前端 |
+
+<Card
+  title="下载 Electron 模板"
+  icon="download"
+  href="https://download-directory.github.io/?url=https://github.com/mindfold-ai/docs/tree/main/marketplace/specs/electron-fullstack"
+>
+  下载完整的 spec 模板 ZIP 文件
+</Card>
+
+## 模板结构
+
+每个模板遵循这个结构：
+
+```
+spec/
+├── frontend/           # 前端规范
+│   ├── index.md        # 导航索引
+│   ├── components.md   # 组件模式
+│   ├── hooks.md        # Hook 约定
+│   └── state-management.md
+│
+├── backend/            # 后端规范
+│   ├── index.md
+│   └── ...
+│
+├── guides/             # 思考指南
+│   ├── index.md
+│   └── ...
+│
+└── README.md           # 模板概述
+```
+
+## 使用方法
+
+1. 下载模板 ZIP
+2. 解压到项目的 `.trellis/spec/` 目录
+3. 按你项目的具体规范修改
+4. 删掉不适用的部分
+5. 更新路径和示例以匹配你的代码库
+
+## 贡献模板
+
+即将推出。

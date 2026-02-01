@@ -1,0 +1,15 @@
+---
+title: 'v0.3.0-beta.7'
+description: '2026-01-30'
+---
+
+Windows 兼容性修复和 hook JSON 格式修正。
+
+## 变更
+
+- 修复 Claude Code hook JSON 输出格式 (Issue #18)
+- 为 git 命令添加 UTF-8 编码 (Issue #19)
+- status.py 中跨平台 `tail_follow()` 实现
+- Hook 命令现在直接使用 `python3`
+
+> **Windows 用户**：如果你的系统使用 `python` 而不是 `python3`，请手动更新 `.claude/settings.json` 把 `python3` 改成 `python`。

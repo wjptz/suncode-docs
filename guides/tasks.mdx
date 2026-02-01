@@ -31,27 +31,13 @@ The directory name follows the pattern: `MM-DD-slug-assignee`.
 
 ## Creating a task
 
-Create the task directory manually:
+Use the task script:
 
 ```bash
-mkdir -p .trellis/tasks/01-31-user-auth-taosu
+python3 .trellis/scripts/task.py create "user-auth" --assignee taosu
 ```
 
-Then add the required files inside.
-
-### task.json
-
-```json
-{
-  "id": "01-31-user-auth-taosu",
-  "title": "Add user authentication",
-  "status": "in_progress",
-  "assignee": "taosu",
-  "branch": "feature/user-auth",
-  "created": "2026-01-31",
-  "phases": ["implement", "check"]
-}
-```
+This creates the task directory with default files. Then edit `prd.md` to define requirements.
 
 ### prd.md
 
@@ -88,60 +74,68 @@ Users can sign up and log in with email/password.
 
 ### Context files (JSONL)
 
-These tell agents which files to read. One file path per line:
+These tell agents which files to read:
 
 ```jsonl
-{"type": "spec", "path": ".trellis/spec/backend/index.md"}
-{"type": "spec", "path": ".trellis/spec/backend/api.md"}
-{"type": "file", "path": "src/routes/auth.ts"}
-{"type": "file", "path": "src/services/user.ts"}
-{"type": "file", "path": "src/db/models/user.ts"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend coding standards"}
+{"file": ".trellis/spec/backend/api.md", "reason": "API design patterns"}
+{"file": "src/routes/auth.ts", "reason": "Auth route implementation"}
+{"file": "src/services/user.ts", "reason": "User service logic"}
 ```
 
-Different agents can have different context. The `implement` agent might need different files than the `check` agent.
+Different agents can have different context. Edit `implement.jsonl`, `check.jsonl`, etc. as needed.
 
 ## Working on a task
 
-Set the current task by writing the task ID to `.trellis/.current-task`:
+Set the current task:
 
 ```bash
-echo "01-31-user-auth-taosu" > .trellis/.current-task
+python3 .trellis/scripts/task.py start 01-31-user-auth-taosu
 ```
 
-Hooks use this file to inject the right context. Now when you start a Claude Code session, it knows:
+Hooks use this to inject the right context. Now when you start a Claude Code session, it knows:
 
 - Read the PRD from this task
-- Load specs listed in `implement.jsonl`
-- Work on the `feature/user-auth` branch
+- Load specs listed in the JSONL files
+- Work on the task's branch
 
-## Task status
+## Managing tasks
 
-Update status by editing the `status` field in `task.json`:
+List all tasks:
 
-```json
-{
-  "status": "in_progress"
-}
+```bash
+python3 .trellis/scripts/task.py list
 ```
 
-Common statuses: `pending`, `in_progress`, `review`, `done`.
+Clear current task when done:
+
+```bash
+python3 .trellis/scripts/task.py finish
+```
+
+Archive completed task:
+
+```bash
+python3 .trellis/scripts/task.py archive 01-31-user-auth-taosu
+```
 
 ## Multiple tasks
 
-You can have multiple tasks in progress. Only one is "current" at a time. Switch by updating `.trellis/.current-task`:
+You can have multiple tasks in progress. Only one is "current" at a time. Switch with:
 
 ```bash
-echo "other-task-id" > .trellis/.current-task
+python3 .trellis/scripts/task.py start other-task-id
 ```
 
 ## Task workflow
 
 Typical flow:
 
-1. Create task with requirements
-2. Set up context files (what specs and code are relevant)
-3. Start the task
-4. Work in Claude Code sessions
-5. Mark complete when done
+1. Create task: `task.py create`
+2. Edit `prd.md` with requirements
+3. Set up context files (JSONL)
+4. Set as current: `task.py start`
+5. Work in Claude Code sessions
+6. Archive when complete: `task.py archive <id>`
 
-The task system doesn't enforce a workflow. It just keeps context organized so the AI knows what to focus on.
+The task system keeps context organized so the AI knows what to focus on.

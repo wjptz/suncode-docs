@@ -41,16 +41,11 @@ Trellis 用分层架构和上下文压缩。JSONL 文件指定哪个任务加载
 <Accordion title="Trellis 支持 Cursor 吗？">
 核心系统（specs、tasks、workspace）能用。你读规范文件然后遵循它们。
 
-不能用的：hooks。Cursor 不能做 Claude Code 有的自动上下文注入。每次会话开始你得手动引用规范文件。
+**Hooks**：Cursor 已原生支持 hooks，但 Trellis 还没做 Cursor 的 hook 适配（后续计划中）。目前每次会话开始你仍需手动引用规范文件。
 
-多 Agent 工作流在 Cursor 里也不支持。
+**Multi-Agent**（同目录多 agent）：有限支持，需手动协调。
 
-</Accordion>
-
-<Accordion title="三个系统必须都用吗？">
-不用。大多数人从只用 specs 开始。写下你的规范，让 AI 遵循它们。
-
-需要工作项之间的上下文隔离时加 tasks。想要跨会话持久化的历史记录时加 workspace。
+**Multi-Session**（worktree 隔离）：不支持。
 
 </Accordion>
 
@@ -96,7 +91,7 @@ AI 会读整个规范，但规范太长时每部分得到的注意力就少。
 <Accordion title="忘了设置当前任务会怎样？">
 会话在没有任务特定上下文的情况下运行。规范还是会从默认值加载，但 AI 不知道你的 PRD 或任务特定的文件。
 
-做任务相关的工作时，先跑 `trellis task start`。
+做任务相关的工作时，先用 `/trellis:start` 命令开始会话。
 
 </Accordion>
 
@@ -104,8 +99,8 @@ AI 会读整个规范，但规范太长时每部分得到的注意力就少。
 每行指定一个要包含的文件：
 
 ```json
-{"type": "spec", "path": ".trellis/spec/backend/index.md"}
-{"type": "file", "path": "src/api/users.ts"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端编码规范"}
+{"file": "src/api/users.ts", "reason": "API 实现上下文"}
 ```
 
 不同 agent 拿到不同的文件。implement agent 可能比 check agent 需要更多上下文。
@@ -129,9 +124,10 @@ AI 会读整个规范，但规范太长时每部分得到的注意力就少。
 </Accordion>
 
 <Accordion title="两个 agent 改同一个文件会怎样？">
-它们在不同的 Git worktree 工作。开发过程中不会冲突。
+取决于运行模式：
 
-合并 PR 时会有冲突。正常解决就行。为了避免：规划任务时避免重叠。
+- **Multi-Agent（同目录）**：agent 共享同一目录，可能产生冲突。规划任务时避免文件重叠。
+- **Multi-Session（worktree）**：每个 agent 在独立的 Git worktree 工作，开发过程不冲突。合并 PR 时再解决冲突。
 
 </Accordion>
 
@@ -149,16 +145,17 @@ Trellis 在后台工作。没有 UI 变化。
 1. `.trellis/` 目录存在
 2. `.claude/settings.json` 有 hook 配置
 3. 开个会话 — 规范应该出现在上下文里
-   </Accordion>
+
+</Accordion>
 
 <Accordion title="AI 忽略我的规范">
-规范可能没被加载。检查：
+可能的原因：
 
-1. 规范文件在 `.trellis/spec/`？
-2. JSONL 上下文文件里路径对？
-3. 如果是任务工作，任务设为当前了？
+1. **规范没加载**：检查 `.trellis/spec/` 和 JSONL 上下文文件的路径
+2. **对话太长**：AI 可能在长对话中「忘记」规范。开新会话或提醒它
+3. **规范清晰度**：具体的规范比模糊的更有效
 
-另外：你的规范够具体吗？模糊的规范会被忽略。
+Trellis 能提升一致性，但不是银弹。AI 仍然会犯错。
 
 </Accordion>
 
