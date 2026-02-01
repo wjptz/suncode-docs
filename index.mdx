@@ -5,37 +5,22 @@ description: 'All-in-one AI framework & toolkit for Claude Code & Cursor'
 
 ## What is Trellis?
 
-Trellis is a framework that gives AI coding assistants persistent knowledge about your project — coding conventions, task context, and session history.
+AI's capabilities grow like vines — full of vitality but spreading everywhere. Trellis is scaffolding for AI, guiding it along the path of your conventions.
 
-Think of it like onboarding docs for your AI. New engineers need context to write good code. So does AI.
+## Why Trellis?
 
-## What you can do
-
-- **Enforce coding standards** — AI follows your patterns, not generic ones
-- **Track task context** — Each feature gets its own relevant files
-- **Continue where you left off** — Session journals preserve history
-
-<Card title="Get started" icon="rocket" href="/quickstart" horizontal>
-  Install Trellis and set up your first project.
-</Card>
-
-## How it works
-
-1. **Specs** — Document your coding conventions in `.trellis/spec/`. These get injected into AI context automatically.
-
-2. **Tasks** — Track work in `.trellis/tasks/`. Each task can have its own context files that tell the AI what's relevant.
-
-3. **Workspace** — Session journals in `.trellis/workspace/` let you pick up where you left off.
-
-## Who is this for?
-
-Trellis works best if you:
-
-- Use Claude Code or Cursor for daily development
-- Work on a codebase with specific conventions
-- Want AI to follow your team's patterns, not generic ones
+| Feature                       | Problem Solved                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| **Auto-Injection**            | Required specs and workflows auto-inject into every conversation. Write once, apply forever |
+| **Auto-updated Spec Library** | Best practices live in auto-updated spec files. The more you use it, the better it gets     |
+| **Parallel Sessions**         | Run multiple agents in tandem - each in its own worktree                                    |
+| **Team Sync**                 | Share specs across your team. One person's best practice benefits everyone                  |
+| **Session Persistence**       | Work traces persist in your repo. AI remembers project context across sessions              |
 
 <CardGroup cols={2}>
+  <Card title="Get started" icon="rocket" href="/quickstart">
+    Install Trellis and set up your first project.
+  </Card>
   <Card title="Core concepts" icon="book" href="/concepts/overview">
     Understand specs, tasks, and workspaces.
   </Card>
