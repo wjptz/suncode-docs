@@ -30,7 +30,6 @@ description: '怎么写 AI 会真正遵循的规范'
   }
 }
 ```
-````
 
 使用 `src/lib/errors.ts` 里的 `AppError` 类。不要直接 throw Error 对象。
 
@@ -43,8 +42,7 @@ throw new Error('用户不存在');
 // 正确
 throw new AppError('USER_NOT_FOUND', '用户不存在', 404);
 ```
-
-```
+````
 
 区别在哪：好规范包含了准确的文件路径、准确的格式、以及展示对错的具体例子。
 
@@ -53,20 +51,18 @@ throw new AppError('USER_NOT_FOUND', '用户不存在', 404);
 把规范放在 `.trellis/spec/`。按领域组织：
 
 ```
-
 .trellis/spec/
 ├── frontend/
-│ ├── index.md # 前端主要规范
-│ ├── components.md # 组件模式
-│ └── state.md # 状态管理
+│   ├── index.md        # 前端主要规范
+│   ├── components.md   # 组件模式
+│   └── state.md        # 状态管理
 ├── backend/
-│ ├── index.md # 后端主要规范
-│ ├── api.md # API 设计
-│ └── database.md # 数据库规范
+│   ├── index.md        # 后端主要规范
+│   ├── api.md          # API 设计
+│   └── database.md     # 数据库规范
 └── guides/
-└── index.md # 通用思维指南
-
-````
+    └── index.md        # 通用思维指南
+```
 
 每个文件夹里的 `index.md` 是入口。保持专注——细节放其他文件里链接过去。
 
@@ -81,7 +77,7 @@ throw new AppError('USER_NOT_FOUND', '用户不存在', 404);
 
 用 `src/db/query.ts` 的查询构建器，别写原生 SQL。
 ORM 模型在 `src/db/models/`。
-````
+```
 
 ### 放真实代码
 
@@ -102,10 +98,8 @@ export function UserCard({ user, onEdit }: UserCardProps) {
   // 组件逻辑
 }
 ```
-````
 
 Props 接口写在前面，然后是命名导出。组件不用默认导出。
-
 ````
 
 ### 别给选项，给方向
@@ -119,7 +113,7 @@ Props 接口写在前面，然后是命名导出。组件不用默认导出。
 // 强
 用 Zustand 做状态管理。Store 定义放 `src/stores/`。
 这个项目不用 Redux。
-````
+```
 
 ### 加上反面例子
 
@@ -148,8 +142,6 @@ app.post('/users', (req, res) => {
 ```
 ````
 
-```
-
 ## 测试你的规范
 
 写完规范后，测一下：
@@ -168,15 +160,18 @@ app.post('/users', (req, res) => {
 
 **没例子**：没例子的规则很难遵循。
 
-**引用过时**：如果你引用的 `src/utils/old.ts` 已经删了，规范就变得令人困惑。
+**引用过时**：如果你引用的 `src/utils/old.ts` 已经删了，AI 会被误导。
 
 ## 更新规范
 
-规范变了：
+开发过程中发现新模式或踩了坑？用 `/trellis:update-spec` 让 AI 帮你把经验写进规范。
 
-1. 更新规范文件
-2. 提交这个改动
-3. 下次会话自动拿到新规则
+或者在 `/trellis:finish-work` 收尾时，AI 会问你是否有新的知识要沉淀到规范里。
 
 不要试图在会话中途"告诉" AI 有变化。更新规范文件。那才是真相的来源。
-```
+
+## 下一步
+
+<Card title="规范模板" icon="file-code" href="/zh/templates/specs-index">
+  下载常见技术栈的现成规范模板。
+</Card>
