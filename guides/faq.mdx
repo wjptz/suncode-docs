@@ -167,29 +167,27 @@ Also: is your spec specific enough? Vague specs get ignored.
 </Accordion>
 
 <Accordion title="How do I upgrade?">
-First update the CLI:
+Update the CLI:
 
 ```bash
 npm install -g @mindfoldhq/trellis@latest
 ```
 
-Then update your project. Two options:
-
-**Safe update (default)**:
+Then update your project:
 
 ```bash
 trellis update
 ```
 
-Only updates files that haven't been modified. Your customizations are preserved.
+This only touches unmodified files. Your customizations stay intact.
 
-**Full migration**:
+Want a full reset (e.g., new version has breaking changes)?
 
 ```bash
 trellis update --migrate
 ```
 
-Overwrites all Trellis files with latest templates. Use this when you want a fresh start or the new version has breaking changes. Back up your customizations first.
+This overwrites everything with fresh templates. Back up your stuff first.
 
 </Accordion>
 

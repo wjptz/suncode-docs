@@ -169,23 +169,21 @@ Trellis 在后台工作。没有 UI 变化。
 npm install -g @mindfoldhq/trellis@latest
 ```
 
-然后更新项目。两个选项：
-
-**安全更新（默认）**：
+然后更新项目：
 
 ```bash
 trellis update
 ```
 
-只更新没被修改过的文件。你的定制会保留。
+这只动没改过的文件，你的定制不会丢。
 
-**完全迁移**：
+如果想完全重置（比如新版本改动大）：
 
 ```bash
 trellis update --migrate
 ```
 
-用最新模板覆盖所有 Trellis 文件。想重新开始或新版本有破坏性改动时用这个。先备份你的定制。
+这会用最新模板覆盖所有文件。跑之前先把自定义的东西备份一下。
 
 </Accordion>
 
