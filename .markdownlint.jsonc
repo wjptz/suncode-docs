@@ -10,6 +10,7 @@
   "MD034": false, // Bare URLs OK (common in MDX)
   "MD040": false, // Code blocks without language OK (MDX snippets)
   "MD046": false, // Mixed code block styles OK (MDX Tab components use indented)
+  "MD060": false, // Table column style (conflicts with prettier formatting)
 
   // Customize rules
   "MD024": {

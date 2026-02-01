@@ -1,7 +1,15 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "exclude": [".trellis/**", "AGENTS.md"],
+  "exclude": [
+    ".trellis/**",
+    "AGENTS.md",
+    "marketplace/skills/**",
+    "marketplace/agents/**",
+    "marketplace/commands/**",
+    "marketplace/specs/**",
+    "marketplace/README.md"
+  ],
   "name": "Trellis Doc",
   "colors": {
     "primary": "#16A34A",
@@ -13,41 +21,65 @@
     "languages": [
       {
         "language": "en",
-        "tabs": [
+        "groups": [
           {
-            "tab": "Guides",
-            "groups": [
+            "group": "Getting started",
+            "pages": ["index", "quickstart"]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/specs",
+              "guides/tasks",
+              "guides/commands",
+              "guides/multi-agent",
+              "guides/faq"
+            ]
+          },
+          {
+            "group": "Resource Marketplace",
+            "pages": [
               {
-                "group": "Getting started",
-                "pages": ["index", "quickstart"]
+                "group": "Skills",
+                "expanded": false,
+                "pages": ["skills-market/index", "skills-market/trellis-meta"]
               },
               {
-                "group": "Core concepts",
-                "pages": ["concepts/overview"]
+                "group": "Spec Templates",
+                "expanded": false,
+                "pages": ["templates/specs-index"]
               },
               {
-                "group": "How to use",
+                "group": "Command Templates",
+                "expanded": false,
+                "pages": ["templates/commands-index"]
+              }
+            ]
+          },
+          {
+            "group": "Community",
+            "pages": [
+              "showcase/index",
+              "contribute/index",
+              {
+                "group": "Tech Blog",
+                "expanded": false,
                 "pages": [
-                  "guides/specs",
-                  "guides/tasks",
-                  "guides/commands",
-                  "guides/multi-agent",
-                  "guides/faq"
+                  "blog/index",
+                  "blog/use-k8s-to-know-trellis",
+                  "blog/ai-collaborative-dev-system"
                 ]
               },
               {
-                "group": "Templates",
+                "group": "Changelog",
+                "expanded": false,
                 "pages": [
-                  "templates/index",
-                  "templates/specs",
-                  "templates/commands",
-                  "templates/skills",
-                  "templates/customizing"
+                  "changelog/v0.3.0-beta.8",
+                  "changelog/v0.3.0-beta.7",
+                  "changelog/v0.3.0-beta.0",
+                  "changelog/v0.2.0",
+                  "changelog/v0.1.9"
                 ]
-              },
-              {
-                "group": "Community",
-                "pages": ["showcase/index", "contribute/index"]
               }
             ]
           }
@@ -55,41 +87,65 @@
       },
       {
         "language": "zh",
-        "tabs": [
+        "groups": [
           {
-            "tab": "指南",
-            "groups": [
+            "group": "开始使用",
+            "pages": ["zh/index", "zh/quickstart"]
+          },
+          {
+            "group": "指南",
+            "pages": [
+              "zh/guides/specs",
+              "zh/guides/tasks",
+              "zh/guides/commands",
+              "zh/guides/multi-agent",
+              "zh/guides/faq"
+            ]
+          },
+          {
+            "group": "Resource Marketplace",
+            "pages": [
               {
-                "group": "开始使用",
-                "pages": ["zh/index", "zh/quickstart"]
+                "group": "Skills",
+                "expanded": false,
+                "pages": ["zh/skills-market/index", "zh/skills-market/trellis-meta"]
               },
               {
-                "group": "核心概念",
-                "pages": ["zh/concepts/overview"]
+                "group": "Spec Templates",
+                "expanded": false,
+                "pages": ["zh/templates/specs-index"]
               },
               {
-                "group": "使用方法",
+                "group": "Command Templates",
+                "expanded": false,
+                "pages": ["zh/templates/commands-index"]
+              }
+            ]
+          },
+          {
+            "group": "社区",
+            "pages": [
+              "zh/showcase/index",
+              "zh/contribute/index",
+              {
+                "group": "Tech Blog",
+                "expanded": false,
                 "pages": [
-                  "zh/guides/specs",
-                  "zh/guides/tasks",
-                  "zh/guides/commands",
-                  "zh/guides/multi-agent",
-                  "zh/guides/faq"
+                  "zh/blog/index",
+                  "zh/blog/use-k8s-to-know-trellis",
+                  "zh/blog/ai-collaborative-dev-system"
                 ]
               },
               {
-                "group": "模板",
+                "group": "Changelog",
+                "expanded": false,
                 "pages": [
-                  "zh/templates/index",
-                  "zh/templates/specs",
-                  "zh/templates/commands",
-                  "zh/templates/skills",
-                  "zh/templates/customizing"
+                  "zh/changelog/v0.3.0-beta.8",
+                  "zh/changelog/v0.3.0-beta.7",
+                  "zh/changelog/v0.3.0-beta.0",
+                  "zh/changelog/v0.2.0",
+                  "zh/changelog/v0.1.9"
                 ]
-              },
-              {
-                "group": "社区",
-                "pages": ["zh/showcase/index", "zh/contribute/index"]
               }
             ]
           }
@@ -113,8 +169,12 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:taosu@mindfold.ai"
+        "label": "Changelog",
+        "href": "/changelog/v0.3.0-beta.8"
+      },
+      {
+        "label": "Tech Blog",
+        "href": "/blog"
       }
     ],
     "primary": {
@@ -123,12 +183,19 @@
       "href": "https://github.com/mindfold-ai/Trellis"
     }
   },
+  "repository": {
+    "url": "https://github.com/mindfold-ai/docs",
+    "deployBranch": "main"
+  },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+    "options": ["chatgpt", "claude", "perplexity"]
+  },
+  "interaction": {
+    "drilldown": true
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mindfold_ai",
+      "x": "https://x.com/_kleinhe",
       "github": "https://github.com/mindfold-ai/Trellis"
     }
   }
