@@ -105,7 +105,7 @@
               "zh/guides/multi-agent",
               "zh/guides/faq",
               {
-                "group": "使用场景",
+                "group": "使用案例",
                 "expanded": false,
                 "pages": ["zh/use-cases/open-typeless"]
               }
