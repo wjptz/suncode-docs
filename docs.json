@@ -33,7 +33,12 @@
               "guides/tasks",
               "guides/commands",
               "guides/multi-agent",
-              "guides/faq"
+              "guides/faq",
+              {
+                "group": "Use Cases",
+                "expanded": false,
+                "pages": ["use-cases/open-typeless"]
+              }
             ]
           },
           {
@@ -55,7 +60,11 @@
             "group": "Community",
             "pages": [
               "showcase/index",
-              "contribute/index",
+              {
+                "group": "Contributing",
+                "expanded": false,
+                "pages": ["contribute/docs", "contribute/trellis"]
+              },
               {
                 "group": "Tech Blog",
                 "expanded": false,
@@ -94,7 +103,12 @@
               "zh/guides/tasks",
               "zh/guides/commands",
               "zh/guides/multi-agent",
-              "zh/guides/faq"
+              "zh/guides/faq",
+              {
+                "group": "使用场景",
+                "expanded": false,
+                "pages": ["zh/use-cases/open-typeless"]
+              }
             ]
           },
           {
@@ -116,7 +130,11 @@
             "group": "社区",
             "pages": [
               "zh/showcase/index",
-              "zh/contribute/index",
+              {
+                "group": "贡献指南",
+                "expanded": false,
+                "pages": ["zh/contribute/docs", "zh/contribute/trellis"]
+              },
               {
                 "group": "Tech Blog",
                 "expanded": false,
