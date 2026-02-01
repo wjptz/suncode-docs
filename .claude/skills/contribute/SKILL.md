@@ -245,6 +245,9 @@ pnpm dev
 # Check markdown lint
 pnpm lint:md
 
+# Verify docs structure
+pnpm verify
+
 # Format files
 pnpm format
 ```
@@ -279,20 +282,21 @@ Inline HTML is allowed (MDX). See [Mintlify docs](https://mintlify.com/docs/comp
 
 ## Submitting a PR
 
-1. Fork the repo: `https://github.com/mindfold-ai/docs`
-2. Clone and install: `pnpm install`
-3. Create a branch: `git checkout -b feat/your-contribution`
-4. Make changes following this guide
-5. Test locally: `pnpm dev`
-6. Commit with conventional message (e.g., `docs: add xxx template`)
-7. Push and create PR to `main` branch
+1. Fork the repo on GitHub: `https://github.com/mindfold-ai/docs`
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/docs.git`
+3. Install dependencies: `pnpm install`
+4. Create a branch: `git checkout -b feat/your-contribution`
+5. Make changes following this guide
+6. Test locally: `pnpm dev`
+7. Commit with conventional message (e.g., `docs: add xxx template`)
+8. Push to your fork and create PR to original repo's `main` branch
 
 ## Checklist Before PR
 
 - [ ] Both EN and ZH versions created
 - [ ] `docs.json` updated for both languages
 - [ ] Overview/index pages updated with new entries
-- [ ] Local preview tested (`mintlify dev`)
+- [ ] Local preview tested (`pnpm dev`)
 - [ ] No broken links
 - [ ] Code blocks have correct language tags
 - [ ] Frontmatter includes title and description
