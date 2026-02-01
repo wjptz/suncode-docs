@@ -90,6 +90,63 @@ docs/
 
 ---
 
+## Internationalization (i18n) Structure
+
+For bilingual documentation, follow this pattern:
+
+```
+docs/
+├── index.mdx              # English homepage
+├── quickstart.mdx         # English quickstart
+├── guides/                # English guides
+│   └── *.mdx
+├── blog/                  # English blog (EN posts only)
+│   ├── index.mdx          # Lists EN posts only
+│   └── *.mdx
+│
+├── zh/                    # Chinese content root
+│   ├── index.mdx          # Chinese homepage
+│   ├── quickstart.mdx     # Chinese quickstart
+│   ├── guides/            # Chinese guides
+│   │   └── *.mdx
+│   └── blog/              # Chinese blog (ZH posts only)
+│       ├── index.mdx      # Lists ZH posts only
+│       └── *.mdx
+│
+├── changelog.mdx          # Shared (no translation needed)
+└── docs.json
+```
+
+### i18n Rules
+
+| Content Type   | English Path       | Chinese Path                |
+| -------------- | ------------------ | --------------------------- |
+| Main pages     | `page.mdx`         | `zh/page.mdx`               |
+| Section pages  | `section/page.mdx` | `zh/section/page.mdx`       |
+| Blog posts     | `blog/post.mdx`    | `zh/blog/post.mdx`          |
+| Shared content | `changelog.mdx`    | `changelog.mdx` (same file) |
+
+### Common Mistake
+
+**Don't**: Mix languages in one folder
+
+```
+blog/
+├── post-en.mdx      # ❌ Clutters both language views
+└── post-zh.mdx
+```
+
+**Do**: Separate by language directory
+
+```
+blog/
+└── post.mdx         # ✅ English only
+zh/blog/
+└── post.mdx         # ✅ Chinese only
+```
+
+---
+
 ## Adding New Content
 
 ### New Page

@@ -111,6 +111,59 @@ Always include the schema for editor autocomplete.
 | Nested page      | `"essentials/settings"`     |
 | OpenAPI endpoint | `"openapi.json GET /users"` |
 
+### Collapsible Nested Groups
+
+To make a navigation group collapsible (collapsed by default), use the `expanded` property on **nested groups** (groups within groups):
+
+```json
+{
+  "navigation": {
+    "groups": [
+      {
+        "group": "Community",
+        "pages": [
+          "showcase/index",
+          "contribute/index",
+          {
+            "group": "Blog",
+            "expanded": false,
+            "pages": ["blog/index", "blog/post-one", "blog/post-two"]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+> **Warning**: The `expanded` property **only works on nested groups** (groups within groups). Top-level groups are always expanded and cannot be collapsed. If you put `expanded: false` on a top-level group, it will be silently ignored.
+
+**Common Mistake**: Trying to collapse a top-level group:
+
+```json
+// ❌ WRONG - This does NOT work
+{
+  "group": "Blog",
+  "expanded": false, // Ignored! Top-level groups can't collapse
+  "pages": ["blog/index", "blog/post-one"]
+}
+```
+
+```json
+// ✅ CORRECT - Nest it under a parent group
+{
+  "group": "Community",
+  "pages": [
+    "showcase/index",
+    {
+      "group": "Blog",
+      "expanded": false, // Works! This is a nested group
+      "pages": ["blog/index", "blog/post-one"]
+    }
+  ]
+}
+```
+
 ---
 
 ## Global Elements
@@ -268,6 +321,85 @@ docs/
 ```
 
 > **Important**: Each language needs its own complete navigation structure. Pages in `zh/` must be referenced as `"zh/pagename"` in the navigation.
+
+### i18n Naming Conventions
+
+Use consistent naming for common page types across languages:
+
+| English      | Chinese    | Usage                            |
+| ------------ | ---------- | -------------------------------- |
+| `Overview`   | `概览`     | Index/landing pages for sections |
+| `Guides`     | `指南`     | How-to documentation section     |
+| `Quickstart` | `快速开始` | Getting started guides           |
+| `FAQ`        | `常见问题` | Frequently asked questions       |
+
+**Example frontmatter**:
+
+```yaml
+# English (templates/specs-index.mdx)
+---
+title: 'Overview'
+description: 'Spec templates for common stacks'
+---
+# Chinese (zh/templates/specs-index.mdx)
+---
+title: '概览'
+description: '常见技术栈的规范模板'
+---
+```
+
+> **Rule**: Don't mix languages in titles. English pages use English titles, Chinese pages use Chinese titles.
+
+### i18n for Content Sections (Blog, Changelog, etc.)
+
+When a content section (like Blog) has language-specific posts, **separate the content by directory**:
+
+```
+docs/
+├── blog/                        # English blog
+│   ├── index.mdx                # Lists ONLY English posts
+│   ├── post-one.mdx
+│   └── post-two.mdx
+├── zh/
+│   └── blog/                    # Chinese blog
+│       ├── index.mdx            # Lists ONLY Chinese posts
+│       ├── post-one.mdx         # Same filename, different content
+│       └── post-two.mdx
+└── docs.json
+```
+
+**Navigation configuration**:
+
+```json
+{
+  "navigation": {
+    "languages": [
+      {
+        "language": "en",
+        "groups": [
+          {
+            "group": "Blog",
+            "pages": ["blog/index", "blog/post-one", "blog/post-two"]
+          }
+        ]
+      },
+      {
+        "language": "zh",
+        "groups": [
+          {
+            "group": "Blog",
+            "pages": ["zh/blog/index", "zh/blog/post-one", "zh/blog/post-two"]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+> **Common Mistake**: Putting all blog posts (both languages) in one `blog/` folder and showing them all in both navigations. This clutters each language's view with posts they can't read.
+
+**Key principle**: Each language's content section should be **self-contained** — its own directory, its own index, its own navigation entries.
 
 ---
 
