@@ -47,13 +47,7 @@
               {
                 "group": "Spec Templates",
                 "expanded": false,
-                "pages": [
-                  "templates/specs-index",
-                  "templates/specs-node",
-                  "templates/specs-python",
-                  "templates/specs-react",
-                  "templates/specs-nextjs"
-                ]
+                "pages": ["templates/specs-index"]
               },
               {
                 "group": "Command Templates",
@@ -119,13 +113,7 @@
               {
                 "group": "Spec Templates",
                 "expanded": false,
-                "pages": [
-                  "zh/templates/specs-index",
-                  "zh/templates/specs-node",
-                  "zh/templates/specs-python",
-                  "zh/templates/specs-react",
-                  "zh/templates/specs-nextjs"
-                ]
+                "pages": ["zh/templates/specs-index"]
               },
               {
                 "group": "Command Templates",
