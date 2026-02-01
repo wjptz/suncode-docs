@@ -179,15 +179,15 @@ Then update your project:
 trellis update
 ```
 
-This only touches unmodified files. Your customizations stay intact.
+This only touches unmodified files. Your customizations stay intact. A timestamped backup is created automatically at `.trellis/.backup-{timestamp}/` before any changes.
 
-Want a full reset (e.g., new version has breaking changes)?
+When there are breaking changes (like directory restructuring), run with `--migrate`:
 
 ```bash
 trellis update --migrate
 ```
 
-This overwrites everything with fresh templates. Back up your stuff first.
+This executes file migrations — renames and deletes old files to match the new structure. Modified files prompt for confirmation before migrating.
 
 </Accordion>
 
