@@ -91,11 +91,11 @@ Users can sign up and log in with email/password.
 These tell agents which files to read. One file path per line:
 
 ```jsonl
-{"type": "spec", "path": ".trellis/spec/backend/index.md"}
-{"type": "spec", "path": ".trellis/spec/backend/api.md"}
-{"type": "file", "path": "src/routes/auth.ts"}
-{"type": "file", "path": "src/services/user.ts"}
-{"type": "file", "path": "src/db/models/user.ts"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend coding standards"}
+{"file": ".trellis/spec/backend/api.md", "reason": "API design patterns"}
+{"file": "src/routes/auth.ts", "reason": "Auth route implementation"}
+{"file": "src/services/user.ts", "reason": "User service logic"}
+{"file": "src/db/models/user.ts", "reason": "User data model"}
 ```
 
 Different agents can have different context. The `implement` agent might need different files than the `check` agent.

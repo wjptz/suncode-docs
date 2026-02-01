@@ -104,8 +104,8 @@ AI 会读整个规范，但规范太长时每部分得到的注意力就少。
 每行指定一个要包含的文件：
 
 ```json
-{"type": "spec", "path": ".trellis/spec/backend/index.md"}
-{"type": "file", "path": "src/api/users.ts"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端编码规范"}
+{"file": "src/api/users.ts", "reason": "API 实现上下文"}
 ```
 
 不同 agent 拿到不同的文件。implement agent 可能比 check agent 需要更多上下文。

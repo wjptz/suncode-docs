@@ -108,8 +108,8 @@ For task-specific work, use `/trellis:start` to begin a session.
 Each line specifies a file to include:
 
 ```json
-{"type": "spec", "path": ".trellis/spec/backend/index.md"}
-{"type": "file", "path": "src/api/users.ts"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend coding standards"}
+{"file": "src/api/users.ts", "reason": "API implementation context"}
 ```
 
 Different agents get different files. Implement agent might need more context than check agent.

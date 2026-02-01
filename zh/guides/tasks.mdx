@@ -91,11 +91,11 @@ mkdir -p .trellis/tasks/01-31-user-auth-taosu
 告诉 agent 该读哪些文件。每行一个文件路径：
 
 ```jsonl
-{"type": "spec", "path": ".trellis/spec/backend/index.md"}
-{"type": "spec", "path": ".trellis/spec/backend/api.md"}
-{"type": "file", "path": "src/routes/auth.ts"}
-{"type": "file", "path": "src/services/user.ts"}
-{"type": "file", "path": "src/db/models/user.ts"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端编码规范"}
+{"file": ".trellis/spec/backend/api.md", "reason": "API 设计模式"}
+{"file": "src/routes/auth.ts", "reason": "认证路由实现"}
+{"file": "src/services/user.ts", "reason": "用户服务逻辑"}
+{"file": "src/db/models/user.ts", "reason": "用户数据模型"}
 ```
 
 不同 agent 可以有不同的上下文文件。`implement.jsonl` 可能包含比 `check.jsonl` 更多的文件。
