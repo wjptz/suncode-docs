@@ -129,9 +129,10 @@ AI 会读整个规范，但规范太长时每部分得到的注意力就少。
 </Accordion>
 
 <Accordion title="两个 agent 改同一个文件会怎样？">
-它们在不同的 Git worktree 工作。开发过程中不会冲突。
+取决于运行模式：
 
-合并 PR 时会有冲突。正常解决就行。为了避免：规划任务时避免重叠。
+- **Multi-Agent（同目录）**：agent 共享同一目录，可能产生冲突。规划任务时避免文件重叠。
+- **Multi-Session（worktree）**：每个 agent 在独立的 Git worktree 工作，开发过程不冲突。合并 PR 时再解决冲突。
 
 </Accordion>
 

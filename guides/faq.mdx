@@ -133,9 +133,10 @@ No hard limit, but practically:
 </Accordion>
 
 <Accordion title="What if two agents modify the same file?">
-They work in separate Git worktrees. No conflicts during development.
+Depends on the mode:
 
-Merge conflicts happen when merging PRs. Resolve normally. To avoid: plan tasks so they don't overlap.
+- **Multi-Agent (same dir)**: Agents share the same directory and can conflict. Plan tasks to avoid file overlap.
+- **Multi-Session (worktree)**: Each agent works in an isolated Git worktree. No conflicts during development, resolve when merging PRs.
 
 </Accordion>
 
