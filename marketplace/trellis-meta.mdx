@@ -1,0 +1,49 @@
+---
+title: 'trellis-meta'
+description: 'The essential skill for customizing Trellis'
+---
+
+The official meta-skill for understanding and customizing Trellis. Install this skill, and AI can help you:
+
+- Add specialized agents for your workflow
+- Change how context gets injected
+- Add project-specific commands
+- Modify quality checks
+
+## Install
+
+Run in Claude Code:
+
+```bash
+/plugin marketplace add mindfold-ai/docs
+/plugin install trellis-meta
+```
+
+Requires Claude Code CLI v2.1.0+
+
+## Usage
+
+After installation, just tell AI what you want:
+
+```
+I want to add a deploy agent to handle deployment workflow
+```
+
+```
+Help me modify the check hook to add a custom verification command
+```
+
+```
+I want to add a new workflow phase called review
+```
+
+AI will reference the skill's documentation and give you the correct modification steps.
+
+## What's Included
+
+| Directory        | Contents                                                        |
+| ---------------- | --------------------------------------------------------------- |
+| `core/`          | Core systems (workspace, tasks, specs, scripts)                 |
+| `claude-code/`   | Claude Code features (hooks, agents, Ralph Loop, multi-session) |
+| `how-to-modify/` | Modification guides (add agent, add command, modify hook, etc.) |
+| `meta/`          | Platform compatibility, self-iteration guide                    |

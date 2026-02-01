@@ -1,0 +1,49 @@
+---
+title: 'trellis-meta'
+description: '定制 Trellis 的必备技能'
+---
+
+官方元技能，用于理解和定制 Trellis。安装后，AI 可以帮你：
+
+- 为你的工作流加专门的 agent
+- 改上下文注入的方式
+- 加项目特定的命令
+- 修改质量检查
+
+## 安装
+
+在 Claude Code 里运行：
+
+```bash
+/plugin marketplace add mindfold-ai/docs
+/plugin install trellis-meta
+```
+
+> 需要 Claude Code CLI v2.1.0+
+
+## 使用
+
+安装后，直接告诉 AI 你想做什么：
+
+```
+我想加一个 deploy agent 处理部署流程
+```
+
+```
+帮我修改 check hook 加一个自定义验证命令
+```
+
+```
+我要加一个新的工作流阶段叫 review
+```
+
+AI 会参考技能里的文档，给你正确的修改步骤。
+
+## 包含内容
+
+| 目录             | 内容                                                             |
+| ---------------- | ---------------------------------------------------------------- |
+| `core/`          | 核心系统（workspace, tasks, specs, scripts）                     |
+| `claude-code/`   | Claude Code 专属功能（hooks, agents, Ralph Loop, multi-session） |
+| `how-to-modify/` | 修改指南（加 agent, 加命令, 改 hook 等）                         |
+| `meta/`          | 平台兼容性、自迭代指南                                           |
