@@ -59,7 +59,11 @@
           {
             "group": "Community",
             "pages": [
-              "showcase/index",
+              {
+                "group": "Showcase",
+                "expanded": false,
+                "pages": ["showcase/index"]
+              },
               {
                 "group": "Contributing",
                 "expanded": false,
@@ -129,7 +133,11 @@
           {
             "group": "社区",
             "pages": [
-              "zh/showcase/index",
+              {
+                "group": "项目展示",
+                "expanded": false,
+                "pages": ["zh/showcase/index"]
+              },
               {
                 "group": "贡献指南",
                 "expanded": false,
