@@ -62,7 +62,7 @@
               {
                 "group": "Showcase",
                 "expanded": false,
-                "pages": ["showcase/index", "showcase/open-typeless"]
+                "pages": ["showcase/index", "showcase/open-typeless", "showcase/trellis-cursor"]
               },
               {
                 "group": "Contributing",
@@ -136,7 +136,11 @@
               {
                 "group": "项目展示",
                 "expanded": false,
-                "pages": ["zh/showcase/index", "zh/showcase/open-typeless"]
+                "pages": [
+                  "zh/showcase/index",
+                  "zh/showcase/open-typeless",
+                  "zh/showcase/trellis-cursor"
+                ]
               },
               {
                 "group": "贡献指南",
