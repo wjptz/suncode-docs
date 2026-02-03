@@ -235,6 +235,56 @@ Add your skill to the table in:
 - `skills-market/index.mdx`
 - `zh/skills-market/index.mdx`
 
+## Contributing a Showcase Project
+
+### 1. Copy the template
+
+```bash
+cp showcase/template.mdx showcase/your-project.mdx
+cp zh/showcase/template.mdx zh/showcase/your-project.mdx
+```
+
+### 2. Fill in project details
+
+- Update `sidebarTitle` with your project name
+- Add project description
+- Replace GitHub OG image URL with your repo
+- Describe how you used Trellis
+
+### 3. Update navigation in docs.json
+
+Find the `Showcase` / `项目展示` group and add your page:
+
+```json
+{
+  "group": "Showcase",
+  "expanded": false,
+  "pages": ["showcase/index", "showcase/open-typeless", "showcase/your-project"]
+}
+```
+
+Do the same for Chinese.
+
+### 4. Add Card to overview page
+
+Add a Card component to display your project:
+
+**English** (`showcase/index.mdx`):
+
+```mdx
+<Card title="Project Name" icon="icon-name" href="/showcase/your-project">
+  One-line description
+</Card>
+```
+
+**Chinese** (`zh/showcase/index.mdx`):
+
+```mdx
+<Card title="项目名" icon="icon-name" href="/zh/showcase/your-project">
+  一句话描述
+</Card>
+```
+
 ## Contributing Documentation
 
 ### Adding a new guide
@@ -265,6 +315,7 @@ Add your skill to the table in:
 | Guides       | `guides/*.mdx`        | `zh/guides/*.mdx`        |
 | Templates    | `templates/*.mdx`     | `zh/templates/*.mdx`     |
 | Skills       | `skills-market/*.mdx` | `zh/skills-market/*.mdx` |
+| Showcase     | `showcase/*.mdx`      | `zh/showcase/*.mdx`      |
 | Blog         | `blog/*.mdx`          | `zh/blog/*.mdx`          |
 | Changelog    | `changelog/*.mdx`     | `zh/changelog/*.mdx`     |
 

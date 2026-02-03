@@ -1,0 +1,14 @@
+---
+title: 'open-typeless'
+sidebarTitle: 'open-typeless'
+---
+
+# 项目介绍
+
+macOS 语音输入应用，用 Trellis 在 1 天内完成。
+
+[![open-typeless](https://opengraph.githubassets.com/1/mindfold-ai/open-typeless)](https://github.com/mindfold-ai/open-typeless)
+
+## 开发方式
+
+从已有 Electron 项目复制 spec，AI 筛选整理后拆分成 3 个批次任务。用 `/trellis:parallel` 启动 3 个 worktree agent 并行开发，完成后自动创建 PR。

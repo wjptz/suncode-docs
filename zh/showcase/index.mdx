@@ -1,16 +1,24 @@
 ---
-title: '概览'
-description: '使用 Trellis 的项目'
+title: '项目展示'
+sidebarTitle: '概览'
 ---
-
-## 精选项目
-
-用了 Trellis 的有趣项目。想加你的？[提交 PR](/zh/contribute)。
 
 <CardGroup cols={2}>
 
-<Card title="你的项目" icon="code" href="/zh/contribute">
-  我们在寻找项目来展示。如果你在用 Trellis，告诉我们。
+<Card title="open-typeless" icon="microphone" href="/zh/use-cases/open-typeless">
+  macOS 语音输入应用，1 天完成。展示了 spec 组织、任务拆分、并行开发的完整流程。
 </Card>
 
 </CardGroup>
+
+---
+
+## 添加你的项目
+
+1. Fork [docs repo](https://github.com/mindfold-ai/docs)
+2. 复制 `showcase/template.mdx` 和 `zh/showcase/template.mdx` 创建双语页面
+3. 在 `docs.json` 的 EN 和 ZH showcase pages 数组里都添加页面路径
+4. 在 `showcase/index.mdx` 和 `zh/showcase/index.mdx` 都添加 Card
+5. 提交 PR
+
+使用 Claude Code 时可以调用 `/contribute` skill 获取帮助。

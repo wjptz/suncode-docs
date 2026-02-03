@@ -62,7 +62,7 @@
               {
                 "group": "Showcase",
                 "expanded": false,
-                "pages": ["showcase/index"]
+                "pages": ["showcase/index", "showcase/open-typeless"]
               },
               {
                 "group": "Contributing",
@@ -136,7 +136,7 @@
               {
                 "group": "项目展示",
                 "expanded": false,
-                "pages": ["zh/showcase/index"]
+                "pages": ["zh/showcase/index", "zh/showcase/open-typeless"]
               },
               {
                 "group": "贡献指南",
