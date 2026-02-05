@@ -17,6 +17,13 @@ npm install -g @mindfoldhq/trellis@latest
 trellis init
 ```
 
+<Tip>
+Trellis 会用你的名字创建个人工作目录。如果不指定 `-u`，会自动从 `git config user.name` 获取。
+
+手动指定：`trellis init -u john`（把 `john` 换成你的名字）。
+
+</Tip>
+
 这会创建一个 `.trellis/` 目录，结构如下：
 
 ```
