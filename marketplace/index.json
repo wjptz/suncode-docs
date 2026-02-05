@@ -3,6 +3,7 @@
   "templates": [
     {
       "id": "electron-fullstack",
+      "type": "spec",
       "name": "Electron + React + TypeScript",
       "description": "Full-stack Electron desktop app with React frontend and SQLite backend",
       "path": "marketplace/specs/electron-fullstack",
