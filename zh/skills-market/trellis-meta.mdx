@@ -12,23 +12,46 @@ description: '定制 Trellis 的必备技能'
 
 ## 安装
 
-在 Claude Code 中，skill 通过 plugin 系统分发。运行以下命令：
+<Tabs>
+  <Tab title="npx skills（推荐）">
+    支持 Claude Code、Cursor、OpenCode、Codex 等 [35+ agents](https://skills.sh)。
 
-**第一步**：注册 skill 来源
+    ```bash
+    npx skills add mindfold-ai/docs --skill trellis-meta
+    ```
 
-```bash
-/plugin marketplace add mindfold-ai/docs
-```
+    或安装所有可用 skills：
 
-**第二步**：安装 skill
+    ```bash
+    npx skills add mindfold-ai/docs
+    ```
 
-```bash
-/plugin install trellis-meta
-```
+    选项：
 
-安装后，skill 显示为 `trellis-marketplace:trellis-meta`。
+    | 参数 | 说明 |
+    | --- | --- |
+    | `-g` | 全局安装（`~/.claude/skills/`） |
+    | `-a claude-code` | 指定目标 agent |
+    | `-y` | 非交互模式 |
 
-<Note>需要 Claude Code CLI v2.1.0+</Note>
+  </Tab>
+  <Tab title="Claude Code Plugin">
+    **第一步**：注册 skill 来源
+
+    ```bash
+    /plugin marketplace add mindfold-ai/docs
+    ```
+
+    **第二步**：安装 skill
+
+    ```bash
+    /plugin install trellis-meta
+    ```
+
+    安装后，skill 显示为 `trellis-marketplace:trellis-meta`。
+
+  </Tab>
+</Tabs>
 
 ## 验证安装
 

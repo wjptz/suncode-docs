@@ -12,23 +12,46 @@ The official meta-skill for understanding and customizing Trellis. Install this 
 
 ## Install
 
-In Claude Code, skills are distributed via the plugin system. Run these commands:
+<Tabs>
+  <Tab title="npx skills (Recommended)">
+    Works with Claude Code, Cursor, OpenCode, Codex, and [35+ agents](https://skills.sh).
 
-**Step 1**: Register the skill source
+    ```bash
+    npx skills add mindfold-ai/docs --skill trellis-meta
+    ```
 
-```bash
-/plugin marketplace add mindfold-ai/docs
-```
+    Or install all available skills:
 
-**Step 2**: Install the skill
+    ```bash
+    npx skills add mindfold-ai/docs
+    ```
 
-```bash
-/plugin install trellis-meta
-```
+    Options:
 
-After installation, the skill appears as `trellis-marketplace:trellis-meta`.
+    | Flag | Description |
+    | --- | --- |
+    | `-g` | Install globally (`~/.claude/skills/`) |
+    | `-a claude-code` | Target a specific agent |
+    | `-y` | Non-interactive mode |
 
-<Note>Requires Claude Code CLI v2.1.0+</Note>
+  </Tab>
+  <Tab title="Claude Code Plugin">
+    **Step 1**: Register the skill source
+
+    ```bash
+    /plugin marketplace add mindfold-ai/docs
+    ```
+
+    **Step 2**: Install the skill
+
+    ```bash
+    /plugin install trellis-meta
+    ```
+
+    After installation, the skill appears as `trellis-marketplace:trellis-meta`.
+
+  </Tab>
+</Tabs>
 
 ## Verify Installation
 
