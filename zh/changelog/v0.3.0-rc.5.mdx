@@ -1,0 +1,24 @@
+---
+title: 'v0.3.0-rc.5'
+description: '2026-02-24'
+---
+
+发布候选版，支持 Codex 平台、brainstorm 命令和跨平台命令验证。
+
+## 新功能
+
+- **Codex 平台**：`trellis init --codex` 配置 OpenAI Codex CLI skills
+- **Brainstorm 命令**：所有平台新增 `/trellis:brainstorm`，交互式需求发现
+- **iFlow 改进**：修复命令结构，新增 parallel 支持
+
+## 变更
+
+- 所有平台模板现在包含一致的 14+ 个命令
+- 平台集成规范新增必须命令清单
+- 跨平台命令列表测试验证
+- Python `cli_adapter.py` 支持 Codex 平台检测
+- 发布工具支持 beta/rc/release 工作流
+
+## 迁移
+
+无需迁移。运行 `trellis update` 获取最新模板。

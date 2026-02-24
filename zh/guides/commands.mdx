@@ -21,13 +21,16 @@ Trellis 自带常用任务的命令。你也可以加自己的。
 
 ### 开发工作流
 
-| 命令                           | 做什么               |
-| ------------------------------ | -------------------- |
-| `/trellis:before-backend-dev`  | 编码前加载后端规范。 |
-| `/trellis:before-frontend-dev` | 编码前加载前端规范。 |
-| `/trellis:check-backend`       | 按后端规范审查代码。 |
-| `/trellis:check-frontend`      | 按前端规范审查代码。 |
-| `/trellis:commit`              | 用约定格式准备提交。 |
+| 命令                           | 做什么                    |
+| ------------------------------ | ------------------------- |
+| `/trellis:before-backend-dev`  | 编码前加载后端规范。      |
+| `/trellis:before-frontend-dev` | 编码前加载前端规范。      |
+| `/trellis:brainstorm`          | 交互式发现和澄清需求。    |
+| `/trellis:check-backend`       | 按后端规范审查代码。      |
+| `/trellis:check-frontend`      | 按前端规范审查代码。      |
+| `/trellis:check-cross-layer`   | 验证跨层变更的一致性。    |
+| `/trellis:create-command`      | 创建新的自定义命令。      |
+| `/trellis:integrate-skill`     | 集成外部 Skill 到项目中。 |
 
 ### 多 Agent
 
@@ -101,7 +104,7 @@ mkdir -p .claude/commands/my-project
 .claude/commands/
 ├── trellis/           # /trellis:* 命令
 │   ├── start.md
-│   └── commit.md
+│   └── finish-work.md
 └── my-project/        # /my-project:* 命令
     └── deploy-check.md
 ```

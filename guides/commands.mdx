@@ -21,13 +21,16 @@ Trellis ships with commands for common tasks. You can add your own.
 
 ### Development workflow
 
-| Command                        | What it does                               |
-| ------------------------------ | ------------------------------------------ |
-| `/trellis:before-backend-dev`  | Load backend specs before coding.          |
-| `/trellis:before-frontend-dev` | Load frontend specs before coding.         |
-| `/trellis:check-backend`       | Review code against backend specs.         |
-| `/trellis:check-frontend`      | Review code against frontend specs.        |
-| `/trellis:commit`              | Prepare a commit with conventional format. |
+| Command                        | What it does                                     |
+| ------------------------------ | ------------------------------------------------ |
+| `/trellis:before-backend-dev`  | Load backend specs before coding.                |
+| `/trellis:before-frontend-dev` | Load frontend specs before coding.               |
+| `/trellis:brainstorm`          | Discover and clarify requirements interactively. |
+| `/trellis:check-backend`       | Review code against backend specs.               |
+| `/trellis:check-frontend`      | Review code against frontend specs.              |
+| `/trellis:check-cross-layer`   | Verify changes across multiple layers.           |
+| `/trellis:create-command`      | Scaffold a new custom slash command.             |
+| `/trellis:integrate-skill`     | Integrate an external skill into your project.   |
 
 ### Multi-agent
 
@@ -101,7 +104,7 @@ Commands use the folder name as a namespace:
 .claude/commands/
 ├── trellis/           # /trellis:* commands
 │   ├── start.md
-│   └── commit.md
+│   └── finish-work.md
 └── my-project/        # /my-project:* commands
     └── deploy-check.md
 ```

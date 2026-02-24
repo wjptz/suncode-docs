@@ -120,11 +120,24 @@ python3 .trellis/scripts/multi_agent/cleanup.py
 
 ## 平台支持
 
-| 功能                      | Claude Code | Cursor      |
-| ------------------------- | ----------- | ----------- |
-| Multi-Agent（同目录）     | ✅ 完全支持 | ⚠️ 有限支持 |
-| Multi-Session（worktree） | ✅ 完全支持 | ❌ 不支持   |
+| 功能                      | Claude Code | Cursor      | iFlow       | OpenCode    | Codex       |
+| ------------------------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| Multi-Agent（同目录）     | ✅ 完全支持 | ⚠️ 有限支持 | ✅ 完全支持 | ⚠️ 有限支持 | ⚠️ 有限支持 |
+| Multi-Session（worktree） | ✅ 完全支持 | ❌ 不支持   | ✅ 完全支持 | ❌ 不支持   | ❌ 不支持   |
 
-Multi-Session 需要 Claude Code 的 hooks 来自动注入上下文。
+Multi-Session 需要 hooks 来自动注入上下文（目前 Claude Code 和 iFlow 支持）。
+
+### Agent 流水线
+
+每个 Multi-Session 任务使用 6-agent 流水线：
+
+| Agent         | 职责                     |
+| ------------- | ------------------------ |
+| **plan**      | 分析需求，规划要改的文件 |
+| **dispatch**  | 编排整个流水线           |
+| **implement** | 写代码                   |
+| **check**     | 按规范审查，自己修问题   |
+| **debug**     | 修复特定问题             |
+| **research**  | 搜索代码库，找模式       |
 
 你也需要足够的 API 额度。三个会话意味着三倍的 token 消耗。

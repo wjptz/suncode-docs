@@ -24,6 +24,35 @@ To specify manually: `trellis init -u john` (replace `john` with your actual nam
 
 </Tip>
 
+### Platform selection
+
+By default, `trellis init` sets up for Claude Code. To include other platforms:
+
+```bash
+# Include Cursor commands
+trellis init --cursor
+
+# Include multiple platforms
+trellis init --cursor --iflow
+
+# All available platform flags
+trellis init --claude     # Claude Code (default)
+trellis init --cursor     # Cursor IDE
+trellis init --iflow      # iFlow CLI
+trellis init --opencode   # OpenCode
+trellis init --codex      # Codex (OpenAI CLI)
+```
+
+### Other useful flags
+
+```bash
+trellis init -t electron-fullstack   # Use a spec template
+trellis init --overwrite             # Overwrite existing specs when using template
+trellis init --append                # Only add missing files from template
+```
+
+### What gets created
+
 This creates a `.trellis/` directory with the default structure:
 
 ```
@@ -37,7 +66,26 @@ This creates a `.trellis/` directory with the default structure:
 └── tasks/               # Task tracking
 ```
 
-For Claude Code, it also sets up `.claude/` with hooks and commands.
+For Claude Code, it also sets up `.claude/` with hooks and commands. For other platforms, it creates the corresponding config directory (`.cursor/`, `.iflow/`, `.agents/`, etc.).
+
+## Updating Trellis
+
+When a new version is released:
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+Useful update flags:
+
+```bash
+trellis update --dry-run     # Preview changes without applying
+trellis update --force       # Overwrite all managed files
+trellis update --migrate     # Run file migrations (renames, deletes)
+```
+
+`trellis update` only touches unmodified files. Your customizations stay intact. A timestamped backup is created automatically before any changes.
 
 ## Write your first spec
 

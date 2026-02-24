@@ -1,0 +1,11 @@
+---
+title: 'v0.3.0-rc.1'
+description: '2026-02-07'
+---
+
+修复预发布版本号比较问题。
+
+## 变更
+
+- 修复 rc 版本比较（`0.3.0-rc.0` 被错误排序在 `0.3.0-beta.16` 之前）
+- 将 3 个模块中重复的 `compareVersions()` 合并到 `utils/compare-versions.ts`

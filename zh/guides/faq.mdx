@@ -39,9 +39,11 @@ Trellis 用分层架构和上下文压缩。JSONL 文件指定哪个任务加载
 </Accordion>
 
 <Accordion title="Trellis 支持 Cursor 吗？">
-核心系统（specs、tasks、workspace）能用。你读规范文件然后遵循它们。
+支持。运行 `trellis init --cursor` 来配置 Cursor 专用命令。
 
-**Hooks**：Cursor 已原生支持 hooks，但 Trellis 还没做 Cursor 的 hook 适配（后续计划中）。目前每次会话开始你仍需手动引用规范文件。
+Trellis 会创建 `.cursor/commands/`，包含所有命令（如 `/trellis-start`、`/trellis-finish-work`）。注意 Cursor 的命令用 `-` 而不是 `:`。
+
+**Hooks**：Cursor 目前不支持自动注入 hooks，所以每次会话开始需要手动触发 `/trellis-start`。
 
 **Multi-Agent**（同目录多 agent）：有限支持，需手动协调。
 

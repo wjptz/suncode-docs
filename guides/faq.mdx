@@ -41,9 +41,11 @@ It's not magic memory. It's explicit journaling. You control what gets remembere
 </Accordion>
 
 <Accordion title="Does Trellis work with Cursor?">
-The core systems (specs, tasks, workspace) work. You read spec files and follow them.
+Yes. Run `trellis init --cursor` to set up Cursor-specific commands.
 
-**Hooks**: Cursor now supports hooks natively, but Trellis hasn't implemented Cursor hook support yet (planned for future). For now, you'll need to manually reference spec files at session start.
+Trellis creates `.cursor/commands/` with all slash commands (e.g., `/trellis-start`, `/trellis-finish-work`). Note that Cursor uses `-` instead of `:` in command names.
+
+**Hooks**: Cursor doesn't support auto-injection hooks yet, so you need to manually trigger `/trellis-start` at the beginning of each session.
 
 **Multi-Agent** (same dir): Limited support, requires manual coordination.
 

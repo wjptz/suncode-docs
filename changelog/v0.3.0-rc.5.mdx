@@ -1,0 +1,24 @@
+---
+title: 'v0.3.0-rc.5'
+description: '2026-02-24'
+---
+
+Release candidate with Codex platform support, brainstorm command, and cross-platform command verification.
+
+## New features
+
+- **Codex platform**: `trellis init --codex` sets up OpenAI Codex CLI skills
+- **Brainstorm command**: `/trellis:brainstorm` added to all platforms for interactive requirements discovery
+- **iFlow improvements**: Fixed command structure, added parallel support
+
+## Changes
+
+- All platform templates now include a consistent set of 14+ commands
+- Platform integration spec updated with required command checklist
+- Cross-platform test verification for command lists
+- Python `cli_adapter.py` now supports Codex platform detection
+- Release tooling updated to support beta/rc/release workflows
+
+## Migration
+
+No migration required. Run `trellis update` to get the latest templates.

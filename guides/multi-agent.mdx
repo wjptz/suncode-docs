@@ -120,11 +120,24 @@ This removes worktrees but keeps branches. You can delete merged branches normal
 
 ## Platform support
 
-| Feature                  | Claude Code | Cursor           |
-| ------------------------ | ----------- | ---------------- |
-| Multi-Agent (same dir)   | ✅ Full     | ⚠️ Limited       |
-| Multi-Session (worktree) | ✅ Full     | ❌ Not supported |
+| Feature                  | Claude Code | Cursor           | iFlow   | OpenCode         | Codex            |
+| ------------------------ | ----------- | ---------------- | ------- | ---------------- | ---------------- |
+| Multi-Agent (same dir)   | ✅ Full     | ⚠️ Limited       | ✅ Full | ⚠️ Limited       | ⚠️ Limited       |
+| Multi-Session (worktree) | ✅ Full     | ❌ Not supported | ✅ Full | ❌ Not supported | ❌ Not supported |
 
-Multi-Session requires Claude Code's hooks for automatic context injection.
+Multi-Session requires hooks for automatic context injection (currently supported by Claude Code and iFlow).
+
+### Agent pipeline
+
+Each multi-session task uses a 6-agent pipeline:
+
+| Agent         | Role                             |
+| ------------- | -------------------------------- |
+| **plan**      | Analyze requirements, plan files |
+| **dispatch**  | Orchestrate the pipeline         |
+| **implement** | Write the code                   |
+| **check**     | Review against specs, self-fix   |
+| **debug**     | Fix specific issues              |
+| **research**  | Search codebase, find patterns   |
 
 You also need enough API credits. Three sessions means three times the token usage.
