@@ -7,6 +7,22 @@ description: '关于 Trellis 的常见问题'
 
 <AccordionGroup>
 
+<Accordion title="看着很好用但听起来很复杂，怎么快速上手使用？">
+
+`npm install -g @mindfoldhq/trellis@latest`，在你的项目下面用 `trellis init` 进行初始化，然后就可以直接开始使用了。
+
+1. **Claude Code / iFlow 用户** — 打开一个新会话就可以直接开始使用。session start hook 会自动注入 AI 所需的所有信息（Trellis 工作流程、最近的 git 提交、最近的 journal 记录、项目上下文）。说需求，AI 会自动创建 task、生成 PRD、加载相关 spec 规范，然后委派给专门的 agent（implement、check 等）去干活。验收通过后用 `/trellis:record-session` 记录日志。也可以手动执行 `/trellis:start` 了解完整流程。
+
+2. **OpenCode 用户** — 跟 Claude Code 类似。session start 插件会在你第一条消息时自动注入上下文。用 `/trellis:start` 开始，然后按流程：说需求 → AI 加载 spec → 干活 → `/trellis:check-backend` 或 `/trellis:check-frontend` 自检 → `/trellis:record-session` 记录。要完整支持多 agent 流水线，需要安装 [oh-my-opencode](https://github.com/nicepkg/oh-my-opencode) 全局插件。
+
+3. **Cursor 用户** — 用 `trellis init --cursor` 初始化。Cursor 目前不支持 hooks，所以每次会话需要手动触发 `/trellis-start`。流程：`/trellis-start` → `/trellis-before-backend-dev` 或 `/trellis-before-frontend-dev` 加载规范 → 干活 → `/trellis-check-backend` 或 `/trellis-check-frontend` 自检 → `/trellis-record-session` 记录。注意 Cursor 命令用 `-` 而不是 `:`。
+
+4. **Codex 用户** — Codex 使用 skills（`$` 前缀）而不是 slash commands。流程：`$start` → `$before-backend-dev` 或 `$before-frontend-dev` → 干活 → `$check-backend` 或 `$check-frontend` → `$record-session`。
+
+5. **其它工具**（Trae、Windsurf 等） — 可以根据自己用的 IDE/CLI 手动创建对应的 slash command，然后按 Cursor 类似的流程使用。
+
+</Accordion>
+
 <Accordion title="为什么用 Trellis 而不是 Skills？">
   Skills 是可选的 — AI 可能跳过它们，导致质量不一致。Trellis 通过注入来强制执行规范。不管 AI
   "想不想"，每次会话都会拿到规范。

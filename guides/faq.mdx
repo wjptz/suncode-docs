@@ -7,6 +7,22 @@ description: 'Common questions about Trellis'
 
 <AccordionGroup>
 
+<Accordion title="Looks useful but sounds complex. How do I actually get started?">
+
+Install with `npm install -g @mindfoldhq/trellis@latest`, then run `trellis init` in your project. That's it — you're ready to go.
+
+1. **Claude Code / iFlow users** — Open a new session and start working directly. The session start hook automatically injects everything the AI needs (Trellis workflow, recent git history, your latest journal entries, project context). Describe your requirements, the AI creates tasks, generates PRDs, loads relevant specs, and delegates to specialized agents (implement, check, etc.). After you verify the result, use `/trellis:record-session` to save the journal. You can also run `/trellis:start` manually to see the full workflow.
+
+2. **OpenCode users** — Similar to Claude Code. The session start plugin auto-injects context on your first message. Use `/trellis:start` to begin, then follow the same workflow: describe needs → AI loads specs → work → `/trellis:check-backend` or `/trellis:check-frontend` to self-review → `/trellis:record-session` to save. For full multi-agent pipeline support, install the [oh-my-opencode](https://github.com/nicepkg/oh-my-opencode) global plugin.
+
+3. **Cursor users** — Run `trellis init --cursor` to set up. Cursor doesn't support hooks yet, so manually trigger `/trellis-start` at the beginning of each session. The workflow is: `/trellis-start` → `/trellis-before-backend-dev` or `/trellis-before-frontend-dev` to load specs → do your work → `/trellis-check-backend` or `/trellis-check-frontend` to self-review → `/trellis-record-session` to save. Note: Cursor uses `-` instead of `:` in command names.
+
+4. **Codex users** — Codex uses skills (`$` prefix) instead of slash commands. The workflow is: `$start` → `$before-backend-dev` or `$before-frontend-dev` → work → `$check-backend` or `$check-frontend` → `$record-session`.
+
+5. **Other tools** (Trae, Windsurf, etc.) — You can manually create slash commands matching your IDE/CLI format, then follow the same workflow as Cursor.
+
+</Accordion>
+
 <Accordion title="Why Trellis instead of Skills?">
   Skills are optional — the AI might skip them, leading to inconsistent quality. Trellis enforces
   specifications through injection. Every session gets the specs whether the AI "feels like it" or
