@@ -74,6 +74,7 @@
                 "expanded": false,
                 "pages": [
                   "blog/index",
+                  "blog/complete-guide",
                   "blog/use-k8s-to-know-trellis",
                   "blog/ai-collaborative-dev-system"
                 ]
@@ -167,6 +168,7 @@
                 "expanded": false,
                 "pages": [
                   "zh/blog/index",
+                  "zh/blog/complete-guide",
                   "zh/blog/use-k8s-to-know-trellis",
                   "zh/blog/ai-collaborative-dev-system"
                 ]
