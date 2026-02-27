@@ -1,0 +1,40 @@
+---
+title: '附录 D：JSONL 配置格式参考'
+---
+
+## 附录 D：JSONL 配置格式参考
+
+### 文件条目
+
+```jsonl
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
+```
+
+### 目录条目
+
+```jsonl
+{"file": "src/services/", "type": "directory", "reason": "Existing service patterns"}
+```
+
+### 完整示例（fullstack implement.jsonl）
+
+```jsonl
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
+{"file": ".trellis/spec/backend/api-module.md", "reason": "API module conventions"}
+{"file": ".trellis/spec/backend/quality.md", "reason": "Code quality requirements"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development guide"}
+{"file": ".trellis/spec/frontend/components.md", "reason": "Component conventions"}
+```
+
+### Completion Markers 生成规则
+
+`reason` 字段 → 大写 + 空格替换为下划线 + `_FINISH` 后缀：
+
+| reason | 生成的 marker |
+|--------|--------------|
+| "TypeCheck" | `TYPECHECK_FINISH` |
+| "Lint" | `LINT_FINISH` |
+| "Code quality requirements" | `CODE_QUALITY_REQUIREMENTS_FINISH` |
+| "Finish work checklist" | `FINISH_WORK_CHECKLIST_FINISH` |

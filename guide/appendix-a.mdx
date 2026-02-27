@@ -1,0 +1,116 @@
+---
+title: 'Appendix A: Key File Paths Quick Reference'
+---
+
+## Appendix A: Key File Paths Quick Reference
+
+### Core Documents
+
+| File | Description | When Read |
+|------|------|---------|
+| `.trellis/workflow.md` | Development workflow guide | Every session start |
+| `.trellis/worktree.yaml` | Multi-Agent worktree config | During parallel development |
+| `.trellis/.version` | Current Trellis version | During updates |
+
+### Command Definitions
+
+| File | Command |
+|------|------|
+| `.claude/commands/trellis/start.md` | `/start` |
+| `.claude/commands/trellis/parallel.md` | `/parallel` |
+| `.claude/commands/trellis/record-session.md` | `/record-session` |
+| `.claude/commands/trellis/finish-work.md` | `/finish-work` |
+| `.claude/commands/trellis/onboard.md` | `/onboard` |
+| `.claude/commands/trellis/before-backend-dev.md` | `/before-backend-dev` |
+| `.claude/commands/trellis/before-frontend-dev.md` | `/before-frontend-dev` |
+| `.claude/commands/trellis/check-backend.md` | `/check-backend` |
+| `.claude/commands/trellis/check-frontend.md` | `/check-frontend` |
+| `.claude/commands/trellis/check-cross-layer.md` | `/check-cross-layer` |
+| `.claude/commands/trellis/break-loop.md` | `/break-loop` |
+| `.claude/commands/trellis/create-command.md` | `/create-command` |
+| `.claude/commands/trellis/integrate-skill.md` | `/integrate-skill` |
+
+### Agent Definitions
+
+| File | Agent | Role |
+|------|-------|------|
+| `.claude/agents/dispatch.md` | Dispatch | Pure orchestrator |
+| `.claude/agents/plan.md` | Plan | Requirements assessment |
+| `.claude/agents/implement.md` | Implement | Code implementation |
+| `.claude/agents/check.md` | Check | Quality checking |
+| `.claude/agents/debug.md` | Debug | Bug fixing |
+| `.claude/agents/research.md` | Research | Information search (read-only) |
+
+### Hook Scripts
+
+| File | Trigger Timing | Function |
+|------|---------|------|
+| `.claude/hooks/session-start.py` | SessionStart | Auto-inject context |
+| `.claude/hooks/inject-subagent-context.py` | PreToolUse (Task) | Spec injection engine |
+| `.claude/hooks/ralph-loop.py` | SubagentStop (check) | Quality control loop |
+
+### Cursor Command Definitions
+
+| File | Command |
+|------|------|
+| `.cursor/commands/trellis-start.md` | `/trellis-start` |
+| `.cursor/commands/trellis-before-backend-dev.md` | `/trellis-before-backend-dev` |
+| `.cursor/commands/trellis-before-frontend-dev.md` | `/trellis-before-frontend-dev` |
+| `.cursor/commands/trellis-check-backend.md` | `/trellis-check-backend` |
+| `.cursor/commands/trellis-check-frontend.md` | `/trellis-check-frontend` |
+| `.cursor/commands/trellis-check-cross-layer.md` | `/trellis-check-cross-layer` |
+| `.cursor/commands/trellis-finish-work.md` | `/trellis-finish-work` |
+| `.cursor/commands/trellis-record-session.md` | `/trellis-record-session` |
+| `.cursor/commands/trellis-break-loop.md` | `/trellis-break-loop` |
+| `.cursor/commands/trellis-onboard.md` | `/trellis-onboard` |
+| `.cursor/commands/trellis-create-command.md` | `/trellis-create-command` |
+| `.cursor/commands/trellis-integrate-skill.md` | `/trellis-integrate-skill` |
+
+### Codex / OpenCode Configuration
+
+| File | Description |
+|------|------|
+| `AGENTS.md` | Codex entry file, provides base project context |
+| `.agents/skills/` | Agent Skills directory (shared by Codex / OpenCode) |
+
+### Kilo Code Configuration
+
+| File | Description |
+|------|------|
+| `.kilocode/rules/*.md` | Project rules (all modes) |
+| `.kilocode/rules-code/*.md` | Code mode specific rules |
+| `.kilocode/rules-architect/*.md` | Architect mode specific rules |
+| `.kilocode/workflows/*.md` | Workflow commands (equivalent to slash commands) |
+| `.kilocode/skills/*/SKILL.md` | Agent Skills (YAML frontmatter + instructions) |
+| `.kilocode/launchConfig.json` | Auto-launch config |
+| `.kilocode/mcp.json` | MCP server config |
+
+### Kiro Configuration
+
+| File | Description |
+|------|------|
+| `.kiro/steering/*.md` | Steering files (project context, auto-loaded) |
+| `.kiro/hooks/*.kiro.hook` | Agent Hooks (JSON format, event-driven automation) |
+| `.kiro/specs/*/requirements.md` | Spec requirements (EARS format) |
+| `.kiro/specs/*/design.md` | Spec technical design document |
+| `.kiro/specs/*/tasks.md` | Spec implementation task checklist |
+| `.kiro/prompts/` | Custom prompts |
+| `.kiro/agents/` | Custom Agent configuration (CLI) |
+| `.kiro/settings/mcp.json` | MCP server config |
+
+### Script Tools
+
+| Script | Function |
+|------|------|
+| `.trellis/scripts/task.py` | Task management (14 subcommands) |
+| `.trellis/scripts/get-context.py` | Get session context |
+| `.trellis/scripts/get-developer.py` | Get developer identity |
+| `.trellis/scripts/init-developer.py` | Initialize developer |
+| `.trellis/scripts/add-session.py` | Record session |
+| `.trellis/scripts/multi-agent/plan.py` | Plan phase script |
+| `.trellis/scripts/multi-agent/start.py` | Start worktree Agent |
+| `.trellis/scripts/multi-agent/status.py` | View status |
+| `.trellis/scripts/multi-agent/create-pr.py` | Create PR |
+| `.trellis/scripts/multi-agent/cleanup.py` | Clean up worktree |
+
+---

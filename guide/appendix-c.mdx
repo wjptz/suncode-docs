@@ -1,0 +1,39 @@
+---
+title: 'Appendix C: task.json Schema Reference'
+---
+
+## Appendix C: task.json Schema Reference
+
+```json
+{
+  "id": "string",           // Task ID, format: MM-DD-slug
+  "name": "string",         // Slug name
+  "title": "string",        // Task title
+  "description": "string",  // Description
+  "status": "string",       // planning | in_progress | review | completed | rejected
+  "dev_type": "string",     // backend | frontend | fullstack | test | docs
+  "scope": "string",        // Commit scope, e.g., "auth"
+  "priority": "string",     // P0 | P1 | P2 | P3 (default P2)
+  "creator": "string",      // Creator
+  "assignee": "string",     // Assignee
+  "createdAt": "string",    // ISO 8601 creation time
+  "completedAt": "string",  // ISO 8601 completion time (null if not done)
+  "branch": "string",       // Feature branch name
+  "base_branch": "string",  // PR target branch
+  "worktree_path": "string",// Worktree path (null if not parallel)
+  "current_phase": "number", // Current phase number
+  "next_action": [          // Phase sequence
+    {"phase": 1, "action": "implement"},
+    {"phase": 2, "action": "check"},
+    {"phase": 3, "action": "finish"},
+    {"phase": 4, "action": "create-pr"}
+  ],
+  "commit": "string",       // Commit hash
+  "pr_url": "string",       // PR URL
+  "subtasks": [],            // Subtask list
+  "relatedFiles": [],        // Related files list
+  "notes": "string"         // Notes
+}
+```
+
+---

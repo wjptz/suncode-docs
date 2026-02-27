@@ -1,0 +1,164 @@
+---
+title: '附录 F：FAQ'
+---
+
+## 附录 F：FAQ
+
+### Q1: 什么时候用 `/start` vs `/parallel`？
+
+| 维度 | `/start` | `/parallel` |
+|------|---------|------------|
+| 任务复杂度 | 简单到中等 | 复杂，可拆分 |
+| 预计时间 | < 30 分钟 | > 30 分钟 |
+| 独立性 | 单一任务 | 多个独立子任务 |
+| 隔离 | 不需要 | 需要（worktree） |
+
+### Q2: 什么时候需要 `/check-cross-layer`？
+
+**必须用**：修改涉及前端 + 后端 + 数据库的功能
+**建议用**：修改 API 接口或数据库 schema
+**不需要**：纯前端 UI 调整或纯后端内部逻辑
+
+### Q3: `/break-loop` 分析完之后怎么办？
+
+`/break-loop` 做深度分析后，你应该手动将分析结果更新到 `.trellis/spec/` 中的规范文件，然后 git push。下次会话 Hook 会自动注入更新后的规范。
+
+```
+修复 Bug → /break-loop 深度分析 → 手动更新 spec → git push → 下次自动防止
+```
+
+### Q4: 如何监控多 Agent 并行任务？
+
+```bash
+./.trellis/scripts/multi-agent/status.py                  # 概览
+./.trellis/scripts/multi-agent/status.py --log <name>     # 查看日志
+./.trellis/scripts/multi-agent/status.py --watch <name>   # 实时监控
+```
+
+日志位置：worktree 目录下的 `.dispatch-log` 和 `.plan-log`。
+
+### Q5: 会话历史存在哪里？
+
+```
+.trellis/workspace/
+├── index.md              # 总索引（所有开发者）
+└── {your-name}/
+    ├── index.md          # 个人索引（会话总数、最后活跃、历史表）
+    └── journal-N.md      # 会话日志（每个文件最多 2000 行）
+```
+
+### Q6: Spec 应该写多详细？
+
+**200-500 行 / 文件，20-50 行 / 章节**
+
+原则：
+- 具体到有代码示例
+- 解释为什么，不只是什么
+- 简洁——一个概念一个章节
+- 可操作——AI 能直接照做
+- 时效性——发现过时立即更新
+
+### Q7: 多人使用 Trellis 会冲突吗？
+
+**不冲突**：workspace（各人独立）、.developer（gitignored）、并行 worktree
+**可能冲突**：spec 文件（通过 PR 审查解决）、任务管理（用 --assignee 明确指派）
+
+### Q8: 如何从现有项目迁移到 Trellis？
+
+1. `npm install -g @mindfoldhq/trellis@latest`
+2. `trellis init -u your-name`（自动创建 bootstrap 引导任务）
+3. 运行 `/start`，AI 自动检测 bootstrap 任务并帮你填充 spec
+4. 手动补充核心规范
+5. 将 `.trellis/` 和 `.claude/` 加入 Git
+6. 提交并推送，团队成员 pull 后执行 `trellis init -u their-name`
+
+### Q9: Ralph Loop 验证失败怎么办？
+
+1. Check Agent 会自动尝试修复（最多 5 次循环）
+2. 如果 5 次后仍然失败，Ralph Loop 强制放行并打印警告
+3. 你可以手动检查并修复，然后重新运行 check
+4. 如果 verify 命令本身有问题，调整 `worktree.yaml` 的 `verify` 配置
+
+### Q10: 如何更新 Trellis 而不丢失自定义配置？
+
+```bash
+# 先预览更新内容
+trellis update --dry-run
+
+# 执行更新
+trellis update
+# Trellis 会自动检测你修改过的文件
+# 未修改的文件直接更新
+# 修改过的文件提示你选择：覆盖/跳过/合并
+```
+
+### Q11: 我用 Cursor，能享受和 Claude Code 一样的自动化吗？
+
+不完全一样。Cursor 不支持 Hook 系统，因此：
+- **没有自动注入** — 需要手动运行 `/start` 加载上下文
+- **没有 Ralph Loop** — 需要手动运行 `/trellis-check-backend` 等检查命令
+- **没有 Multi-Agent Pipeline** — 不支持 `/parallel` 并行编排
+- **核心功能保留** — Spec 管理、Task 管理、跨会话记忆（通过 `/start`）、所有检查命令均可用
+
+Cursor 用户通过手动调用命令可以达到 Claude Code 约 80% 的效果。详见 [13.2 Cursor 集成](#132-cursor-集成)。
+
+### Q12: Windows 用户如何安装 Trellis？
+
+Trellis 脚本已全部迁移为 Python，原生支持 Windows：
+
+```bash
+# 1. 确保已安装 Node.js 和 Python 3.8+
+
+# 2. 安装 Trellis
+npm install -g @mindfoldhq/trellis@latest
+
+# 3. 正常初始化
+cd your-project
+trellis init -u your-name
+```
+
+### Q13: 从 Cursor 切换到 Claude Code 需要重新配置吗？
+
+不需要。`trellis init` 在初始化时同时生成 `.claude/` 和 `.cursor/` 配置。
+如果项目中已有 `.cursor/commands/` 但没有 `.claude/`，只需重新运行：
+
+```bash
+trellis init -u your-name
+```
+
+Trellis 会自动检测环境并补全缺失的配置。你的 `.trellis/` 目录（Spec、Workspace、Tasks）完全共享，无需重新创建。
+
+### Q14: Kilo Code 和 Claude Code 的多 Agent 有什么区别？
+
+两者都支持多 Agent 并行，但机制不同：
+
+| 维度 | Claude Code（Trellis） | Kilo Code |
+|------|----------------------|-----------|
+| **隔离方式** | git worktree 物理隔离 | 独立对话上下文（Orchestrator Mode） |
+| **编排方式** | Hook 驱动（dispatch → implement → check） | 模式切换（Code / Architect / Debug 等） |
+| **并行数量** | 取决于 worktree 数量 | 取决于模式和上下文 |
+| **代码合并** | 各 worktree 独立 PR → 合并 | 同一工作区内 |
+| **配置** | `worktree.yaml` + Hook 脚本 | 内置，无需额外配置 |
+
+### Q15: Kiro 的 Spec 模式和 Trellis 的任务管理怎么配合？
+
+Kiro 的 Spec-Driven Development 和 Trellis 的任务系统可以互补：
+
+1. **用 Trellis 创建任务**：`task.py create "新功能"` 生成 `prd.md`
+2. **用 Kiro Spec 细化**：在 Kiro 中选择 Spec 模式，基于 `prd.md` 自动生成 `requirements.md` → `design.md` → `tasks.md`
+3. **Kiro 按 tasks.md 实现**：Agent Hooks 在文件修改时自动触发检查
+4. **用 Trellis 记录**：`/record-session` 记录会话，`task.py finish` 归档任务
+
+Kiro 的 `.kiro/specs/` 和 Trellis 的 `.trellis/tasks/` 各管各的，互不冲突。
+
+### Q16: Kilo Code 的 Skills 和 Trellis 的 Skills 是同一个东西吗？
+
+是的，它们遵循相同的 **Agent Skills 开放标准**。一个 SKILL.md 文件可以同时在 Kilo Code、Cursor、Claude Code 等支持该标准的平台上使用。
+
+Kilo 的 Skills 存放在 `.kilocode/skills/*/SKILL.md`，Claude Code 的在 `.claude/skills/` 或 `.agents/skills/`。格式兼容，可以互相复制使用。
+
+### Q17: OpenCode 和 Codex 的 Trellis 配置兼容吗？
+
+部分兼容。两者共用 `.agents/skills/` 目录。Codex 依赖 `AGENTS.md` 作为入口文件；OpenCode 则支持 session hook 自动注入上下文，命令使用 `/` 前缀（如 `/start`），体验更接近 Claude Code。
+
+---

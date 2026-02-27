@@ -1,0 +1,70 @@
+---
+title: '附录 B：全部命令速查表'
+---
+
+## 附录 B：全部命令速查表
+
+### Slash 命令（跨平台对照）
+
+| Claude Code / OpenCode | Cursor | Codex | Kilo | Kiro | 类别 | 说明 |
+|----------------------|--------|-------|------|------|------|------|
+| `/start` | `/trellis-start` | `$start` | `/start.md` | `@start` | 会话 | 启动开发会话 |
+| `/parallel` | ❌ | ❌ | Orchestrator | Autonomous Agent | 会话 | 多 Agent 并行编排 |
+| `/record-session` | `/trellis-record-session` | `$record-session` | `/record-session.md` | `@record-session` | 会话 | 记录会话历史 |
+| `/onboard` | `/trellis-onboard` | `$onboard` | `/onboard.md` | `@onboard` | 会话 | 新成员入门 |
+| `/before-backend-dev` | `/trellis-before-backend-dev` | `$before-backend-dev` | `rules-code/` | steering | 准备 | 后端开发前准备 |
+| `/before-frontend-dev` | `/trellis-before-frontend-dev` | `$before-frontend-dev` | `rules-code/` | steering | 准备 | 前端开发前准备 |
+| `/check-backend` | `/trellis-check-backend` | `$check-backend` | `/check-backend.md` | Hook | 质量 | 后端代码检查 |
+| `/check-frontend` | `/trellis-check-frontend` | `$check-frontend` | `/check-frontend.md` | Hook | 质量 | 前端代码检查 |
+| `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` | `/check-cross-layer.md` | Hook | 质量 | 跨层一致性检查 |
+| `/finish-work` | `/trellis-finish-work` | `$finish-work` | `/finish-work.md` | `@finish-work` | 质量 | 完工检查清单 |
+| `/brainstorm` | `/trellis-brainstorm` | `$brainstorm` | `/brainstorm.md` | `@brainstorm` | 知识 | 头脑风暴 |
+| `/break-loop` | `/trellis-break-loop` | `$break-loop` | `/break-loop.md` | `@break-loop` | 知识 | 深度 Bug 分析 |
+| `/create-command` | `/trellis-create-command` | `$create-command` | `/create-command.md` | `@create-command` | 扩展 | 创建自定义命令 |
+| `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` | `/integrate-skill.md` | `@integrate-skill` | 扩展 | 集成外部 Skill |
+
+<Info>
+**Kilo** 的命令通过 `.kilocode/workflows/` 目录下的 Markdown 文件实现，在聊天中输入 `/start.md` 等调用。
+规范加载通过 `.kilocode/rules-code/` 自动完成，无需手动命令。
+
+**Kiro** 的命令通过 `.kiro/prompts/` 管理，在聊天中输入 `@start` 等调用。规范加载通过 `.kiro/steering/` 自动完成。
+质量检查可通过 `.kiro/hooks/` 配置为文件保存时自动触发的 Agent Hook。
+</Info>
+
+### task.py 子命令
+
+| 子命令 | 说明 | 用法 |
+|--------|------|------|
+| `create` | 创建任务 | `task.py create "标题" [--slug name] [-a 指派人] [-p 优先级]` |
+| `init-context` | 初始化 JSONL | `task.py init-context "$DIR" <dev_type> [--platform]` |
+| `add-context` | 添加上下文条目 | `task.py add-context "$DIR" <target> "<path>" "<reason>"` |
+| `validate` | 验证 JSONL | `task.py validate "$DIR"` |
+| `list-context` | 查看所有条目 | `task.py list-context "$DIR"` |
+| `start` | 设为当前任务 | `task.py start "$DIR"` |
+| `finish` | 清除当前任务 | `task.py finish` |
+| `set-branch` | 设置分支名 | `task.py set-branch "$DIR" "feature/xxx"` |
+| `set-base-branch` | 设置 PR 目标分支 | `task.py set-base-branch "$DIR" "main"` |
+| `set-scope` | 设置 scope | `task.py set-scope "$DIR" "auth"` |
+| `create-pr` | 创建 PR | `task.py create-pr` |
+| `archive` | 归档任务 | `task.py archive <name>` |
+| `list` | 列出活跃任务 | `task.py list [--mine] [--status <s>]` |
+| `list-archive` | 列出归档任务 | `task.py list-archive [YYYY-MM]` |
+
+### Python 脚本
+
+```bash
+# 上下文管理
+./.trellis/scripts/get-context.py           # 获取完整上下文
+./.trellis/scripts/get-context.py --json    # JSON 格式
+./.trellis/scripts/get-developer.py          # 获取开发者身份
+
+# 会话记录
+./.trellis/scripts/add-session.py --title "..." --commit "..." --summary "..."
+
+# 多 Agent
+./.trellis/scripts/multi-agent/plan.py --name "..." --type "..." --requirement "..."
+./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
+./.trellis/scripts/multi-agent/status.py [--log <name>] [--watch <name>]
+./.trellis/scripts/multi-agent/cleanup.py <branch>
+./.trellis/scripts/multi-agent/create-pr.py
+```

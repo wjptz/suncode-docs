@@ -1,0 +1,72 @@
+---
+title: 'Appendix B: Complete Command Cheat Sheet'
+---
+
+## Appendix B: Complete Command Cheat Sheet
+
+### Slash Commands (Cross-Platform Reference)
+
+| Claude Code / OpenCode | Cursor | Codex | Kilo | Kiro | Category | Description |
+|----------------------|--------|-------|------|------|------|------|
+| `/start` | `/trellis-start` | `$start` | `/start.md` | `@start` | Session | Start development session |
+| `/parallel` | ❌ | ❌ | Orchestrator | Autonomous Agent | Session | Multi-Agent parallel orchestration |
+| `/record-session` | `/trellis-record-session` | `$record-session` | `/record-session.md` | `@record-session` | Session | Record session history |
+| `/onboard` | `/trellis-onboard` | `$onboard` | `/onboard.md` | `@onboard` | Session | New member onboarding |
+| `/before-backend-dev` | `/trellis-before-backend-dev` | `$before-backend-dev` | `rules-code/` | steering | Prep | Backend development prep |
+| `/before-frontend-dev` | `/trellis-before-frontend-dev` | `$before-frontend-dev` | `rules-code/` | steering | Prep | Frontend development prep |
+| `/check-backend` | `/trellis-check-backend` | `$check-backend` | `/check-backend.md` | Hook | Quality | Backend code check |
+| `/check-frontend` | `/trellis-check-frontend` | `$check-frontend` | `/check-frontend.md` | Hook | Quality | Frontend code check |
+| `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` | `/check-cross-layer.md` | Hook | Quality | Cross-layer consistency check |
+| `/finish-work` | `/trellis-finish-work` | `$finish-work` | `/finish-work.md` | `@finish-work` | Quality | Pre-commit finish checklist |
+| `/brainstorm` | `/trellis-brainstorm` | `$brainstorm` | `/brainstorm.md` | `@brainstorm` | Knowledge | Brainstorming |
+| `/break-loop` | `/trellis-break-loop` | `$break-loop` | `/break-loop.md` | `@break-loop` | Knowledge | Deep bug analysis |
+| `/create-command` | `/trellis-create-command` | `$create-command` | `/create-command.md` | `@create-command` | Extension | Create custom command |
+| `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` | `/integrate-skill.md` | `@integrate-skill` | Extension | Integrate external Skill |
+
+<Info>
+**Kilo** commands are implemented as Markdown files under `.kilocode/workflows/`, invoked in chat as `/start.md`, etc.
+Spec loading is handled automatically via `.kilocode/rules-code/`, no manual commands needed.
+
+**Kiro** commands are managed via `.kiro/prompts/`, invoked in chat as `@start`, etc. Spec loading is handled automatically via `.kiro/steering/`.
+Quality checks can be configured as Agent Hooks that auto-trigger on file save via `.kiro/hooks/`.
+</Info>
+
+### task.py Subcommands
+
+| Subcommand | Description | Usage |
+|--------|------|------|
+| `create` | Create task | `task.py create "title" [--slug name] [-a assignee] [-p priority]` |
+| `init-context` | Initialize JSONL | `task.py init-context "$DIR" <dev_type> [--platform]` |
+| `add-context` | Add context entry | `task.py add-context "$DIR" <target> "<path>" "<reason>"` |
+| `validate` | Validate JSONL | `task.py validate "$DIR"` |
+| `list-context` | View all entries | `task.py list-context "$DIR"` |
+| `start` | Set as current task | `task.py start "$DIR"` |
+| `finish` | Clear current task | `task.py finish` |
+| `set-branch` | Set branch name | `task.py set-branch "$DIR" "feature/xxx"` |
+| `set-base-branch` | Set PR target branch | `task.py set-base-branch "$DIR" "main"` |
+| `set-scope` | Set scope | `task.py set-scope "$DIR" "auth"` |
+| `create-pr` | Create PR | `task.py create-pr` |
+| `archive` | Archive task | `task.py archive <name>` |
+| `list` | List active tasks | `task.py list [--mine] [--status <s>]` |
+| `list-archive` | List archived tasks | `task.py list-archive [YYYY-MM]` |
+
+### Python Scripts
+
+```bash
+# Context management
+./.trellis/scripts/get-context.py           # Get full context
+./.trellis/scripts/get-context.py --json    # JSON format
+./.trellis/scripts/get-developer.py          # Get developer identity
+
+# Session recording
+./.trellis/scripts/add-session.py --title "..." --commit "..." --summary "..."
+
+# Multi-Agent
+./.trellis/scripts/multi-agent/plan.py --name "..." --type "..." --requirement "..."
+./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
+./.trellis/scripts/multi-agent/status.py [--log <name>] [--watch <name>]
+./.trellis/scripts/multi-agent/cleanup.py <branch>
+./.trellis/scripts/multi-agent/create-pr.py
+```
+
+---
