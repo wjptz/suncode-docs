@@ -18,12 +18,40 @@ button[aria-haspopup="menu"] > div:first-child {
 }
 
 /*
- * Fix box-drawing character alignment in code blocks.
- * JetBrains Mono renders box-drawing chars (─│┌┐└┘) at 8.4287px
- * but ASCII/spaces at 8.4000px, causing ~2px misalignment on wide boxes.
- * Menlo has equal widths for both (8.4287px), so boxes align perfectly.
+ * CJK-aligned ASCII-art diagrams.
+ *
+ * Problem: In browser monospace fonts, CJK characters render at ~1.7× ASCII
+ * width instead of the terminal-standard 2×. This breaks box-drawing alignment
+ * in diagrams that mix Chinese text with ASCII borders (│┌┐└┘─).
+ *
+ * Solution: Use <pre class="cjk-diagram"> with each CJK char wrapped in
+ * <b> tags. CSS forces each <b> to display:inline-block;width:2ch, which
+ * locks every CJK character to exactly 2 monospace ASCII character widths.
+ * Works with any monospace font on any OS/browser.
  */
-pre code {
-  font-family: Menlo, Monaco, "Courier New", monospace !important;
+pre.cjk-diagram {
+  display: block !important; /* Override Mintlify's display:flex on <pre> */
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 24px;
+  font-family: Menlo, Monaco, "Courier New", monospace;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 16px 0;
+  background: #f8f8f8;
+  color: #1e1e1e;
+}
+
+.dark pre.cjk-diagram {
+  background: #1e1e1e;
+  color: #d4d4d4;
+}
+
+pre.cjk-diagram b {
+  display: inline-block;
+  width: 2ch;
+  text-align: center;
+  font-weight: normal;
 }
 
