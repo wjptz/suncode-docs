@@ -846,3 +846,237 @@ Tutorial showing how to use Trellis:
 ### Next Steps
 
 - None - task complete
+
+## Session 13: Showcase section improvements
+
+**Date**: 2026-02-03
+**Task**: Showcase section improvements
+
+### Summary
+
+(Add summary)
+
+### Main Changes
+
+## Summary
+
+Improved the Showcase section with project pages and contribution workflow.
+
+## Changes
+
+| Change                 | Description                                                       |
+| ---------------------- | ----------------------------------------------------------------- |
+| Collapsible Showcase   | Made Showcase section collapsible in navigation                   |
+| open-typeless showcase | Added first showcase project with GitHub OG preview               |
+| Template files         | Created `showcase/template.mdx` for contributors (not in sidebar) |
+| Contribution guide     | Added clear 5-step guide with bilingual requirements              |
+| Contribute skill       | Updated skill with showcase contribution section                  |
+
+## Files Modified
+
+- `docs.json` - Made Showcase collapsible, added open-typeless page
+- `showcase/index.mdx`, `zh/showcase/index.mdx` - Simplified, added contribution steps
+- `showcase/open-typeless.mdx`, `zh/showcase/open-typeless.mdx` - New showcase page
+- `showcase/template.mdx`, `zh/showcase/template.mdx` - Template for contributors
+- `.claude/skills/contribute/SKILL.md` - Added showcase contribution section
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `036f2c1` | (see git log) |
+| `47f9d00` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+## Session 14: Add Trellis for Cursor to showcase
+
+**Date**: 2026-02-03
+**Task**: Add Trellis for Cursor to showcase
+
+### Summary
+
+(Add summary)
+
+### Main Changes
+
+## Summary
+
+Added community fork "Trellis for Cursor" to the showcase section.
+
+## Changes
+
+| Change            | Description                           |
+| ----------------- | ------------------------------------- |
+| New showcase page | `showcase/trellis-cursor.mdx` (EN/ZH) |
+| Navigation        | Added to docs.json                    |
+| Overview card     | Added to showcase index pages         |
+
+## Project Details
+
+- **Repo**: github.com/jojolionss/Trellis
+- **Based on**: Trellis v0.2.12
+- **Features**: Cursor commands, Chinese localization, MCP integration
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `bdda581` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+## Session 15: Add marketplace specs index.json
+
+**Date**: 2026-02-05
+**Task**: Add marketplace specs index.json
+
+### Summary
+
+Created marketplace/specs/index.json for Trellis CLI remote template init. Archived 02-01-add-use-cases and 02-05-add-specs-index tasks.
+
+### Main Changes
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `a2c7163` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+## Session 16: Migrate index.json to unified location
+
+**Date**: 2026-02-05
+**Task**: Migrate index.json to unified location
+
+### Summary
+
+Moved marketplace/specs/index.json to marketplace/index.json, added type field for multi-template support.
+
+### Main Changes
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `f43547e` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+## Session 17: Add npx skills install method to docs
+
+**Date**: 2026-02-10
+**Task**: Add npx skills install method to docs
+
+### Summary
+
+(Add summary)
+
+### Main Changes
+
+## Summary
+
+Verified Vercel skills CLI (`npx skills`) compatibility with our trellis-meta skill, then updated documentation to recommend it as primary install method.
+
+## Changes
+
+| Change                       | Description                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Dry run test                 | Ran `npx skills add mindfold-ai/docs --list`, confirmed 2 skills discovered (contribute, trellis-meta) |
+| trellis-meta page (EN/ZH)    | Replaced single install section with Tabs: "npx skills (Recommended)" + "Claude Code Plugin"           |
+| Skills overview page (EN/ZH) | Added `npx skills add` one-liner at top, updated table install commands                                |
+
+## Files Modified
+
+- `skills-market/trellis-meta.mdx` - Added Tabs with npx skills + plugin methods
+- `zh/skills-market/trellis-meta.mdx` - Chinese version
+- `skills-market/index.mdx` - Added npx skills command, updated table
+- `zh/skills-market/index.mdx` - Chinese version
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `641b862` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
+
+## Session 18: Add installation FAQ to docs
+
+**Date**: 2026-02-28
+**Task**: Add installation FAQ to docs
+
+### Summary
+
+Added installation/init/version management FAQ entry to both EN and ZH FAQ pages. Also enriched existing upgrade FAQ with protected paths and automatic backup details.
+
+### Main Changes
+
+### Git Commits
+
+| Hash      | Message       |
+| --------- | ------------- |
+| `2ff479f` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
