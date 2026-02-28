@@ -18,6 +18,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from typing import Optional
 
 
 def get_project_root() -> Path:
@@ -30,7 +31,7 @@ def get_project_root() -> Path:
     return Path.cwd()
 
 
-def load_docs_json(root: Path) -> dict | None:
+def load_docs_json(root: Path) -> Optional[dict]:
     """Load and validate docs.json."""
     docs_json_path = root / "docs.json"
     if not docs_json_path.exists():
@@ -99,7 +100,7 @@ def check_page_exists(root: Path, page: str) -> bool:
     return False
 
 
-def extract_frontmatter(content: str) -> dict | None:
+def extract_frontmatter(content: str) -> Optional[dict]:
     """Extract YAML frontmatter from MDX content."""
     if not content.startswith("---"):
         return None

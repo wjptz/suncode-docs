@@ -16,3 +16,13 @@ button[aria-haspopup="menu"] > div:first-child {
 [role="menuitem"] > div:first-child {
   display: none !important;
 }
+
+/*
+ * Fix box-drawing character alignment in code blocks.
+ * JetBrains Mono renders box-drawing chars (─│┌┐└┘) at 8.4287px
+ * but ASCII/spaces at 8.4000px, causing ~2px misalignment on wide boxes.
+ * Menlo has equal widths for both (8.4287px), so boxes align perfectly.
+ */
+pre code {
+  font-family: Menlo, Monaco, "Courier New", monospace !important;
+}
