@@ -23,6 +23,43 @@ description: '关于 Trellis 的常见问题'
 
 </Accordion>
 
+<Accordion title="如何安装？全局 vs 局部？版本切换？">
+
+**安装（推荐全局安装）：**
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+```
+
+**验证安装：**
+
+```bash
+trellis --version
+```
+
+**在项目中初始化：**
+
+```bash
+trellis init                # （推荐）交互式，逐项确认
+trellis init -y             # 跳过确认，使用默认配置
+trellis init -u {username}  # 同时设置开发者身份（不加此参数会自动从 .git/ 读取默认配置）
+trellis init -f             # 强制覆盖已有文件
+trellis init -s             # 跳过已有文件
+```
+
+**版本切换与更新：**
+
+```bash
+trellis update                    # 对比版本差异并更新
+trellis update --migrate          # 应用文件重命名/删除等迁移
+```
+
+**回退到正式版：** `npm install -g @mindfoldhq/trellis@latest`
+
+`trellis update` 永远不会覆盖 `.trellis/workspace/`、`.trellis/tasks/`、`.trellis/.developer`、`.trellis/spec/frontend/`、`.trellis/spec/backend/` — 这些路径受保护。并且每次 update 时，`.trellis/`、`.cursor/`、`.claude/` 等目录下的所有内容都会自动生成一个备份保存在 `.trellis/.backup-*` 目录下，无需担心更新会破坏原有结构。
+
+</Accordion>
+
 <Accordion title="为什么用 Trellis 而不是 Skills？">
   Skills 是可选的 — AI 可能跳过它们，导致质量不一致。Trellis 通过注入来强制执行规范。不管 AI
   "想不想"，每次会话都会拿到规范。
@@ -190,7 +227,11 @@ npm install -g @mindfoldhq/trellis@latest
 trellis update
 ```
 
-这只动没改过的文件，你改的东西不会丢。改动前会自动创建备份到 `.trellis/.backup-{时间戳}/`。
+这只动没改过的文件，你改的东西不会丢。
+
+**受保护路径**（永远不会被覆盖）：`.trellis/workspace/`、`.trellis/tasks/`、`.trellis/.developer`、`.trellis/spec/frontend/`、`.trellis/spec/backend/`。
+
+**自动备份**：每次 update 都会将 `.trellis/`、`.cursor/`、`.claude/` 等目录的内容备份到 `.trellis/.backup-*`，无需担心破坏性更新。
 
 有破坏性改动（比如目录结构调整）时，加 `--migrate`：
 

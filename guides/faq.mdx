@@ -23,6 +23,43 @@ Install with `npm install -g @mindfoldhq/trellis@latest`, then run `trellis init
 
 </Accordion>
 
+<Accordion title="How do I install? Global vs local? Version switching?">
+
+**Install (global recommended):**
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+```
+
+**Verify installation:**
+
+```bash
+trellis --version
+```
+
+**Initialize in your project:**
+
+```bash
+trellis init                # (recommended) interactive, confirm each step
+trellis init -y             # skip confirmation, use defaults
+trellis init -u {username}  # also set developer identity (without this, auto-detects from .git/ config)
+trellis init -f             # force overwrite existing files
+trellis init -s             # skip existing files
+```
+
+**Version switching & updates:**
+
+```bash
+trellis update                    # compare version diff and update
+trellis update --migrate          # apply file renames/deletes and other migrations
+```
+
+**Roll back to stable release:** `npm install -g @mindfoldhq/trellis@latest`
+
+`trellis update` never overwrites `.trellis/workspace/`, `.trellis/tasks/`, `.trellis/.developer`, `.trellis/spec/frontend/`, `.trellis/spec/backend/` — these paths are protected. Every update automatically creates a timestamped backup of all contents under `.trellis/`, `.cursor/`, `.claude/` etc. in a `.trellis/.backup-*` directory. No need to worry about destructive updates.
+
+</Accordion>
+
 <Accordion title="Why Trellis instead of Skills?">
   Skills are optional — the AI might skip them, leading to inconsistent quality. Trellis enforces
   specifications through injection. Every session gets the specs whether the AI "feels like it" or
@@ -194,7 +231,11 @@ Then update your project:
 trellis update
 ```
 
-This only touches unmodified files. Your customizations stay intact. A timestamped backup is created automatically at `.trellis/.backup-{timestamp}/` before any changes.
+This only touches unmodified files. Your customizations stay intact.
+
+**Protected paths** (never overwritten): `.trellis/workspace/`, `.trellis/tasks/`, `.trellis/.developer`, `.trellis/spec/frontend/`, `.trellis/spec/backend/`.
+
+**Automatic backups**: Every update creates a timestamped backup of `.trellis/`, `.cursor/`, `.claude/` etc. at `.trellis/.backup-*` before any changes. No risk of destructive updates.
 
 When there are breaking changes (like directory restructuring), run with `--migrate`:
 
