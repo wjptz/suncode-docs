@@ -129,7 +129,7 @@ taosu
 **Format**: Plain text, semver version string.
 
 ```
-0.3.0-beta.5
+0.3.0
 ```
 
 **Used by**:

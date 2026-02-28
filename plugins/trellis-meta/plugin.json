@@ -1,7 +1,7 @@
 {
   "name": "trellis-meta",
   "version": "1.0.0",
-  "description": "Meta-skill for understanding and customizing Trellis - the AI workflow system for Claude Code and Cursor",
+  "description": "Meta-skill for understanding and customizing Trellis - the all-in-one AI workflow system for 9 AI coding platforms",
   "author": {
     "name": "Mindfold",
     "url": "https://github.com/mindfold-ai"
@@ -9,6 +9,21 @@
   "homepage": "https://trellis.mindfold.ai",
   "repository": "https://github.com/mindfold-ai/docs",
   "license": "MIT",
-  "keywords": ["trellis", "claude-code", "workflow", "agents", "skills", "specs"],
+  "keywords": [
+    "trellis",
+    "claude-code",
+    "cursor",
+    "opencode",
+    "iflow",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "workflow",
+    "agents",
+    "skills",
+    "specs"
+  ],
   "skills": ["./skills/"]
 }

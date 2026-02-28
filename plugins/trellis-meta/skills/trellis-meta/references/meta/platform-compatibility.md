@@ -1,14 +1,24 @@
 # Platform Compatibility Reference
 
-Detailed guide on Trellis feature availability across different AI coding platforms.
+Detailed guide on Trellis feature availability across 9 AI coding platforms.
 
 ---
 
 ## Overview
 
-Trellis is designed primarily for **Claude Code** but provides partial support for **Cursor**. Future support for **OpenCode** is under consideration.
+Trellis v0.3.0 supports **9 platforms**. The key differentiator is **hook support** — Claude Code and iFlow have Python hook systems that enable automatic context injection and quality enforcement. Other platforms use commands/skills with manual context loading.
 
-The key differentiator is **hooks support** - Claude Code's hook system enables automatic context injection and quality enforcement, while other platforms require manual workarounds.
+| Platform    | Config Directory              | CLI Flag        | Hooks | Command Format |
+| ----------- | ----------------------------- | --------------- | ----- | -------------- |
+| Claude Code | `.claude/`                    | (default)       | ✅    | Markdown       |
+| iFlow       | `.iflow/`                     | `--iflow`       | ✅    | Markdown       |
+| Cursor      | `.cursor/`                    | `--cursor`      | ❌    | Markdown       |
+| OpenCode    | `.opencode/`                  | `--opencode`    | ❌    | Markdown       |
+| Codex       | `.agents/skills/`             | `--codex`       | ❌    | Skills         |
+| Kilo        | `.kilocode/commands/trellis/` | `--kilo`        | ❌    | Markdown       |
+| Kiro        | `.kiro/skills/`               | `--kiro`        | ❌    | Skills         |
+| Gemini CLI  | `.gemini/commands/trellis/`   | `--gemini`      | ❌    | TOML           |
+| Antigravity | `.agent/workflows/`           | `--antigravity` | ❌    | Markdown       |
 
 ---
 
@@ -23,21 +33,21 @@ The key differentiator is **hooks support** - Claude Code's hook system enables 
 │  │                    LAYER 3: AUTOMATION                              │ │
 │  │  Hooks, Ralph Loop, Auto-injection, Multi-Session                  │ │
 │  │  ─────────────────────────────────────────────────────────────────│ │
-│  │  Platform: Claude Code ONLY                                        │ │
+│  │  Platform: Claude Code + iFlow                                     │ │
 │  └────────────────────────────────────────────────────────────────────┘ │
 │                                    │                                     │
 │  ┌────────────────────────────────▼───────────────────────────────────┐ │
 │  │                    LAYER 2: AGENTS                                  │ │
 │  │  Agent definitions, Task tool, Subagent invocation                 │ │
 │  │  ─────────────────────────────────────────────────────────────────│ │
-│  │  Platform: Claude Code (full), Cursor (manual)                     │ │
+│  │  Platform: Claude Code + iFlow (full), others (manual)             │ │
 │  └────────────────────────────────────────────────────────────────────┘ │
 │                                    │                                     │
 │  ┌────────────────────────────────▼───────────────────────────────────┐ │
 │  │                    LAYER 1: PERSISTENCE                             │ │
-│  │  Workspace, Tasks, Specs, Commands, JSONL files                    │ │
+│  │  Workspace, Tasks, Specs, Commands/Skills, JSONL files             │ │
 │  │  ─────────────────────────────────────────────────────────────────│ │
-│  │  Platform: ALL (file-based, portable)                              │ │
+│  │  Platform: ALL 9 (file-based, portable)                            │ │
 │  └────────────────────────────────────────────────────────────────────┘ │
 │                                                                          │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -47,7 +57,7 @@ The key differentiator is **hooks support** - Claude Code's hook system enables 
 
 ## Detailed Feature Breakdown
 
-### Layer 1: Persistence (All Platforms)
+### Layer 1: Persistence (All 9 Platforms)
 
 These features work on all platforms because they're file-based.
 
@@ -56,166 +66,95 @@ These features work on all platforms because they're file-based.
 | Workspace system   | `.trellis/workspace/`    | Journals, session history                 |
 | Task system        | `.trellis/tasks/`        | Task tracking, requirements               |
 | Spec system        | `.trellis/spec/`         | Coding guidelines                         |
-| Slash commands     | `.claude/commands/`      | Command prompts (read manually on Cursor) |
+| Commands/Skills    | Platform-specific dirs   | Command prompts in each platform's format |
 | JSONL context      | `*.jsonl` in task dirs   | Context file lists                        |
 | Developer identity | `.trellis/.developer`    | Who is working                            |
 | Current task       | `.trellis/.current-task` | Active task pointer                       |
 
-**Cursor workaround**: Manually read these files at session start.
+### Layer 2: Agents (Claude Code + iFlow Full, Others Manual)
 
-### Layer 2: Agents (Claude Code Full, Cursor Limited)
+| Feature            | Claude Code / iFlow            | Other Platforms           |
+| ------------------ | ------------------------------ | ------------------------- |
+| Agent definitions  | Auto-loaded via `--agent` flag | Read agent files manually |
+| Task tool          | Full subagent support          | No Task tool              |
+| Context injection  | Automatic via hooks            | Manual copy-paste         |
+| Agent restrictions | Enforced by definition         | Honor code only           |
 
-| Feature            | Claude Code                    | Cursor                              |
-| ------------------ | ------------------------------ | ----------------------------------- |
-| Agent definitions  | Auto-loaded via `--agent` flag | Read `.claude/agents/*.md` manually |
-| Task tool          | Full subagent support          | No Task tool                        |
-| Context injection  | Automatic via hooks            | Manual copy-paste                   |
-| Agent restrictions | Enforced by definition         | Honor code only                     |
+### Layer 3: Automation (Claude Code + iFlow Only)
 
-**Cursor workaround**:
+| Feature                | Dependency         | Why Hook-Platforms Only          |
+| ---------------------- | ------------------ | -------------------------------- |
+| SessionStart hook      | `settings.json`    | Hook system for lifecycle events |
+| PreToolUse hook        | Hook system        | Intercepts tool calls            |
+| SubagentStop hook      | Hook system        | Controls agent lifecycle         |
+| Auto context injection | PreToolUse:Task    | Hooks inject JSONL content       |
+| Ralph Loop             | SubagentStop:check | Blocks agent until verify passes |
+| Multi-Session          | CLI + hooks        | Session resume, worktree scripts |
 
-1. Read the agent definition file manually
-2. Copy relevant context from JSONL files
-3. Follow agent restrictions manually
-
-### Layer 3: Automation (Claude Code Only)
-
-| Feature                | Dependency              | Why Claude Code Only                |
-| ---------------------- | ----------------------- | ----------------------------------- |
-| SessionStart hook      | `.claude/settings.json` | Claude Code hook system             |
-| PreToolUse hook        | Hook system             | Intercepts tool calls               |
-| SubagentStop hook      | Hook system             | Controls agent lifecycle            |
-| Auto context injection | PreToolUse:Task         | Hooks inject JSONL content          |
-| Ralph Loop             | SubagentStop:check      | Blocks agent until verify passes    |
-| Multi-Session          | claude CLI + hooks      | `claude --resume`, worktree scripts |
-
-**No workaround**: These features fundamentally require Claude Code's hook system.
+**No workaround**: These features fundamentally require a hook system.
 
 ---
 
-## Claude Code Features Used
+## Platform Usage Guides
 
-### Hook System
+### Claude Code + iFlow (Full Support)
 
-```json
-// .claude/settings.json
-{
-  "hooks": {
-    "SessionStart": [...],
-    "PreToolUse": [...],
-    "SubagentStop": [...]
-  }
-}
+All features work automatically. Hooks provide context injection and quality enforcement.
+
+```bash
+# Initialize
+trellis init -u your-name           # Claude Code (default)
+trellis init --iflow -u your-name   # iFlow
 ```
 
-Claude Code executes these hooks at specific lifecycle points. No other platform currently supports this.
+### Cursor
 
-### CLI Features
-
-| Command                                 | Purpose                      |
-| --------------------------------------- | ---------------------------- |
-| `claude --agent <name>`                 | Load agent definition        |
-| `claude --resume <id>`                  | Resume session               |
-| `claude -p`                             | Print mode (non-interactive) |
-| `claude --dangerously-skip-permissions` | Automation mode              |
-| `claude --output-format stream-json`    | Machine-readable output      |
-
-### Task Tool
-
-```javascript
-Task(
-  subagent_type: "implement",
-  prompt: "...",
-  model: "opus"
-)
+```bash
+trellis init --cursor -u your-name
 ```
 
-Claude Code's Task tool spawns subagents with isolated context. The PreToolUse hook intercepts this to inject specs.
+- **Works**: Workspace, tasks, specs, commands (read via `.cursor/commands/trellis-*.md`)
+- **Doesn't work**: Hooks, auto-injection, Ralph Loop, Multi-Session
+- **Workaround**: Manually read spec files at session start
 
----
+### OpenCode
 
-## Cursor Usage Guide
-
-For teams using Cursor, here's how to get partial Trellis benefits:
-
-### What Works
-
-1. **Workspace tracking**: Journals and sessions work normally
-2. **Task organization**: Task directories and PRDs work
-3. **Spec reading**: Read specs manually at session start
-4. **Commands as prompts**: Read command files as reference
-
-### Recommended Workflow
-
-```
-1. Session Start
-   - Read .trellis/workflow.md
-   - Read relevant specs from .trellis/spec/
-   - Check .trellis/.current-task
-
-2. Before Implementation
-   - Read implement.jsonl for context files
-   - Manually read each file listed
-   - Follow spec guidelines
-
-3. Before Commit
-   - Run verify commands manually (pnpm lint, pnpm typecheck)
-   - Self-review against check.jsonl specs
+```bash
+trellis init --opencode -u your-name
 ```
 
-### What Doesn't Work
+- **Works**: Workspace, tasks, specs, agents, commands
+- **Note**: Full subagent context injection requires [oh-my-opencode](https://github.com/nicepkg/oh-my-opencode). Without it, agents use Self-Loading fallback.
 
-- No automatic spec injection
-- No Ralph Loop (manual verification only)
-- No Multi-Session (no worktree automation)
-- No session resume
+### Codex
 
----
+```bash
+trellis init --codex -u your-name
+```
 
-## OpenCode Considerations (Future)
+- Commands mapped to Codex Skills format under `.agents/skills/`
+- Use `$start`, `$finish-work`, `$brainstorm` etc. to invoke
 
-### Requirements for Support
+### Kilo, Kiro, Gemini CLI, Antigravity
 
-To support OpenCode, we would need:
+```bash
+trellis init --kilo -u your-name
+trellis init --kiro -u your-name
+trellis init --gemini -u your-name
+trellis init --antigravity -u your-name
+```
 
-1. **Hook equivalent**: Some way to intercept agent lifecycle events
-2. **Agent system**: Subagent invocation with context
-3. **CLI integration**: Scripting and automation support
-
-### Potential Approaches
-
-| Approach           | Pros                        | Cons                      |
-| ------------------ | --------------------------- | ------------------------- |
-| Native integration | Best UX, full features      | Requires OpenCode changes |
-| Adapter layer      | Works with current OpenCode | Maintenance burden        |
-| File-based polling | No OpenCode changes needed  | Hacky, latency issues     |
-| MCP server         | Standard protocol           | May not cover all hooks   |
-
-### Minimum Viable Support
-
-If OpenCode adds hook support similar to Claude Code:
-
-1. Port `session-start.py` to OpenCode format
-2. Port `inject-subagent-context.py` for context injection
-3. Port `ralph-loop.py` for quality enforcement
-
-Without hooks, only Layer 1 (persistence) features would work.
+- Each platform uses its native command format
+- Core file-based systems work the same across all platforms
 
 ---
 
 ## Version Compatibility Matrix
 
-| Trellis Version | Claude Code  | Cursor  | OpenCode      |
-| --------------- | ------------ | ------- | ------------- |
-| 0.3.x           | Full support | Partial | Not supported |
-| 0.4.x (planned) | Full support | Partial | TBD           |
-
-### Breaking Changes
-
-| Version      | Change               | Impact               |
-| ------------ | -------------------- | -------------------- |
-| 0.3.0        | New hook format      | Update settings.json |
-| 0.3.0-beta.3 | worktree.yaml schema | Update config        |
+| Trellis Version | Platforms Supported |
+| --------------- | ------------------- |
+| 0.2.x           | Claude Code, Cursor |
+| 0.3.0           | All 9 platforms     |
 
 ---
 
@@ -224,26 +163,23 @@ Without hooks, only Layer 1 (persistence) features would work.
 ### Claude Code
 
 ```bash
-# Check Claude Code version
 claude --version
-
-# Verify hooks are loaded
 cat .claude/settings.json | grep -A 5 '"hooks"'
 ```
 
-### Cursor
+### Other Platforms
 
 ```bash
-# No CLI check available
-# Verify by checking if hooks execute (they won't)
+# Check if platform config directory exists
+ls -la .cursor/ .opencode/ .iflow/ .agents/ .kilocode/ .kiro/ .gemini/ .agent/ 2>/dev/null
 ```
 
 ### Determining Support Level
 
 ```
-Is hooks system available?
-├── YES → Full Trellis support (Claude Code)
-└── NO  → Partial support only
+Does the platform have hook support?
+├── YES (Claude Code, iFlow) → Full Trellis support
+└── NO  (all others) → Partial support
          ├── Can read files → Layer 1 works
          └── Has agent system → Layer 2 partial
 ```

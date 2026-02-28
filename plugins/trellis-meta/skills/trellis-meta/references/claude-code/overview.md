@@ -1,6 +1,6 @@
 # Claude Code Features Overview
 
-These features require **Claude Code** and don't work on Cursor or other platforms.
+These features require **Claude Code** (or **iFlow**, which shares the same hook system) and don't work on other platforms.
 
 ---
 

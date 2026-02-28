@@ -1,18 +1,18 @@
 ---
 name: trellis-meta
 description: |
-  Meta-skill for understanding and customizing Mindfold Trellis - the AI workflow system for Claude Code and Cursor. This skill documents the ORIGINAL Trellis system design. When users customize their Trellis installation, modifications should be recorded in a project-local `trellis-local` skill, NOT in this meta-skill. Use this skill when: (1) understanding Trellis architecture, (2) customizing Trellis workflows, (3) adding commands/agents/hooks, (4) troubleshooting issues, or (5) adapting Trellis to specific projects.
+  Meta-skill for understanding and customizing Mindfold Trellis - the all-in-one AI workflow system for 9 AI coding platforms (Claude Code, Cursor, OpenCode, iFlow, Codex, Kilo, Kiro, Gemini CLI, Antigravity). This skill documents the ORIGINAL Trellis system design. When users customize their Trellis installation, modifications should be recorded in a project-local `trellis-local` skill, NOT in this meta-skill. Use this skill when: (1) understanding Trellis architecture, (2) customizing Trellis workflows, (3) adding commands/agents/hooks, (4) troubleshooting issues, or (5) adapting Trellis to specific projects.
 ---
 
 # Trellis Meta-Skill
 
 ## Version Compatibility
 
-| Item                        | Value        |
-| --------------------------- | ------------ |
-| **Trellis CLI Version**     | 0.3.0-beta.5 |
-| **Skill Last Updated**      | 2026-01-31   |
-| **Min Claude Code Version** | 1.0.0+       |
+| Item                        | Value      |
+| --------------------------- | ---------- |
+| **Trellis CLI Version**     | 0.3.0      |
+| **Skill Last Updated**      | 2026-02-28 |
+| **Min Claude Code Version** | 1.0.0+     |
 
 > ⚠️ **Version Mismatch Warning**: If your Trellis CLI version differs from above, some features may not work as documented. Run `trellis --version` to check.
 
@@ -22,49 +22,42 @@ description: |
 
 ### Feature Support Matrix
 
-| Feature                     | Claude Code | Cursor     | OpenCode (Future) |
-| --------------------------- | ----------- | ---------- | ----------------- |
-| **Core Systems**            |             |            |                   |
-| Workspace system            | ✅ Full     | ✅ Full    | ✅ Planned        |
-| Task system                 | ✅ Full     | ✅ Full    | ✅ Planned        |
-| Spec system                 | ✅ Full     | ✅ Full    | ✅ Planned        |
-| Slash commands              | ✅ Full     | ✅ Full    | ⏳ TBD            |
-| Agent definitions           | ✅ Full     | ⚠️ Manual  | ⏳ TBD            |
-| **Hook-Dependent Features** |             |            |                   |
-| SessionStart hook           | ✅ Full     | ❌ None    | ⏳ TBD            |
-| PreToolUse hook             | ✅ Full     | ❌ None    | ⏳ TBD            |
-| SubagentStop hook           | ✅ Full     | ❌ None    | ⏳ TBD            |
-| Auto context injection      | ✅ Full     | ❌ Manual  | ⏳ TBD            |
-| Ralph Loop                  | ✅ Full     | ❌ None    | ⏳ TBD            |
-| **Multi-Agent/Session**     |             |            |                   |
-| Multi-Agent (current dir)   | ✅ Full     | ⚠️ Limited | ⏳ TBD            |
-| Multi-Session (worktrees)   | ✅ Full     | ❌ None    | ⏳ TBD            |
-| `claude --resume`           | ✅ Full     | ❌ None    | ⏳ TBD            |
+| Feature                     | Claude Code | iFlow   | Cursor     | OpenCode   | Codex      | Kilo       | Kiro       | Gemini CLI | Antigravity  |
+| --------------------------- | ----------- | ------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ------------ |
+| **Core Systems**            |             |         |            |            |            |            |            |            |              |
+| Workspace system            | ✅ Full     | ✅ Full | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full      |
+| Task system                 | ✅ Full     | ✅ Full | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full      |
+| Spec system                 | ✅ Full     | ✅ Full | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full    | ✅ Full      |
+| Commands/Skills             | ✅ Full     | ✅ Full | ✅ Full    | ✅ Full    | ✅ Skills  | ✅ Full    | ✅ Skills  | ✅ TOML    | ✅ Workflows |
+| Agent definitions           | ✅ Full     | ✅ Full | ⚠️ Manual  | ✅ Full    | ⚠️ Manual  | ⚠️ Manual  | ⚠️ Manual  | ⚠️ Manual  | ⚠️ Manual    |
+| **Hook-Dependent Features** |             |         |            |            |            |            |            |            |              |
+| SessionStart hook           | ✅ Full     | ✅ Full | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None      |
+| PreToolUse hook             | ✅ Full     | ✅ Full | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None      |
+| SubagentStop hook           | ✅ Full     | ✅ Full | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None      |
+| Auto context injection      | ✅ Full     | ✅ Full | ❌ Manual  | ❌ Manual  | ❌ Manual  | ❌ Manual  | ❌ Manual  | ❌ Manual  | ❌ Manual    |
+| Ralph Loop                  | ✅ Full     | ✅ Full | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None      |
+| **Multi-Agent/Session**     |             |         |            |            |            |            |            |            |              |
+| Multi-Agent (current dir)   | ✅ Full     | ✅ Full | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited | ⚠️ Limited   |
+| Multi-Session (worktrees)   | ✅ Full     | ✅ Full | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None    | ❌ None      |
 
 ### Legend
 
 - ✅ **Full**: Feature works as documented
 - ⚠️ **Limited/Manual**: Works but requires manual steps
-- ❌ **None**: Not supported on this platform
-- ⏳ **TBD**: Under consideration for future support
+- ❌ **None/Manual**: Not supported or requires manual workaround
 
-### Platform-Specific Notes
+### Platform Categories
 
-#### Claude Code (Full Support)
+#### Full Hook Support (Claude Code, iFlow)
 
-All features work as documented. Hooks provide automatic context injection and quality enforcement.
+All features work as documented. Hooks provide automatic context injection and quality enforcement. iFlow shares the same Python hook system as Claude Code.
 
-#### Cursor (Partial Support)
+#### Commands Only (Cursor, OpenCode, Codex, Kilo, Kiro, Gemini CLI, Antigravity)
 
-- **Works**: Workspace, tasks, specs, commands (read manually)
+- **Works**: Workspace, tasks, specs, commands/skills (platform-specific format)
 - **Doesn't work**: Hooks, auto-injection, Ralph Loop, Multi-Session
 - **Workaround**: Manually read spec files at session start; no automatic quality gates
-
-#### OpenCode (Future Consideration)
-
-- Need to evaluate OpenCode's extension/hook capabilities
-- May require adapter layer for hook compatibility
-- Core file-based systems should work once integrated
+- **Note**: Each platform uses its own command format (Codex uses Skills, Gemini uses TOML, Antigravity uses Workflows)
 
 ### Designing for Portability
 
@@ -72,18 +65,18 @@ When customizing Trellis, consider platform compatibility:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    PORTABLE (All Platforms)                  │
+│                 PORTABLE (All 9 Platforms)                   │
 │  - .trellis/workspace/    - .trellis/tasks/                 │
-│  - .trellis/spec/         - .claude/commands/               │
+│  - .trellis/spec/         - Platform commands/skills        │
 │  - File-based configs     - JSONL context files             │
 └─────────────────────────────────────────────────────────────┘
                               │
 ┌─────────────────────────────▼───────────────────────────────┐
-│                  CLAUDE CODE ONLY                            │
-│  - .claude/hooks/         - .claude/settings.json hooks     │
-│  - SubagentStop control   - Auto context injection          │
-│  - Ralph Loop             - Multi-Session worktrees         │
-│  - claude CLI features    - --resume, --agent flags         │
+│              HOOK-CAPABLE (Claude Code + iFlow)              │
+│  - .claude/hooks/ or .iflow/hooks/                          │
+│  - settings.json hook configuration                         │
+│  - Auto context injection   - SubagentStop control          │
+│  - Ralph Loop               - Multi-Session worktrees       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -231,7 +224,7 @@ Trellis transforms AI assistants into structured development partners through **
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        USER INTERACTION                              │
-│  /trellis:start  /trellis:parallel  /trellis:finish-work            │
+│  /trellis:start  /trellis:brainstorm  /trellis:parallel  /trellis:finish-work │
 └─────────────────────────────────┬───────────────────────────────────┘
                                   │
 ┌─────────────────────────────────▼───────────────────────────────────┐

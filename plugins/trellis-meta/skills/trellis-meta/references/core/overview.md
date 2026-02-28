@@ -1,6 +1,6 @@
 # Core Systems Overview
 
-These systems work on **all platforms** (Claude Code, Cursor, and future platforms).
+These systems work on **all 9 platforms** (Claude Code, Cursor, OpenCode, iFlow, Codex, Kilo, Kiro, Gemini CLI, Antigravity).
 
 ---
 
@@ -48,7 +48,11 @@ All core systems are **file-based**:
 
 All core systems work automatically with hook integration.
 
-### Cursor
+### iFlow
+
+All core systems work automatically with hook integration (same as Claude Code).
+
+### Cursor, OpenCode, Codex, Kilo, Kiro, Gemini CLI, Antigravity
 
 Read files manually at session start:
 
@@ -56,10 +60,6 @@ Read files manually at session start:
 2. Read relevant specs from `.trellis/spec/`
 3. Check `.trellis/.current-task` for active work
 4. Read JSONL files for context
-
-### Other Platforms
-
-Same as Cursor - manual file reading.
 
 ---
 

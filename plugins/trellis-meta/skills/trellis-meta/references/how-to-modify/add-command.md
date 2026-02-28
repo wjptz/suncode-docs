@@ -2,7 +2,7 @@
 
 Add a new `/trellis:my-command` command.
 
-**Platform**: All (Claude Code + Cursor)
+**Platform**: All (9 platforms — each has its own command format)
 
 ---
 
@@ -55,11 +55,20 @@ What the command produces.
 
 ---
 
-## Step 2: Mirror to Cursor (Optional)
+## Step 2: Mirror to Other Platforms (Optional)
 
-If supporting Cursor, copy to `.cursor/commands/my-command.md`.
+Commands are automatically mirrored to configured platforms by `trellis init` and `trellis update`. Each platform uses its own format:
 
-**Note**: Cursor commands don't have the `trellis:` prefix.
+| Platform    | Path                                       | Format   |
+| ----------- | ------------------------------------------ | -------- |
+| Cursor      | `.cursor/commands/trellis-my-command.md`   | Markdown |
+| OpenCode    | `.opencode/agents/trellis-my-command.md`   | Markdown |
+| iFlow       | `.iflow/commands/trellis/my-command.md`    | Markdown |
+| Codex       | `.agents/skills/my-command/SKILL.md`       | Skill    |
+| Kilo        | `.kilocode/commands/trellis/my-command.md` | Markdown |
+| Kiro        | `.kiro/skills/my-command/SKILL.md`         | Skill    |
+| Gemini CLI  | `.gemini/commands/trellis/my-command.toml` | TOML     |
+| Antigravity | `.agent/workflows/my-command.md`           | Markdown |
 
 ---
 
