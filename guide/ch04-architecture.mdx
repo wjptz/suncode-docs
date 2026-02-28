@@ -7,75 +7,78 @@ title: 'Chapter 4: Architecture Overview'
 ### 4.1 Overall Architecture
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                           User                                  │
-└───────────────────────────┬────────────────────────────────────┘
-                            │
-                            ▼
-┌────────────────────────────────────────────────────────────────┐
-│      Claude Code / Cursor / Codex / OpenCode / Kilo / Kiro       │
-│                   (AI Coding Assistant Interface)                 │
-└───────────────────────────┬────────────────────────────────────┘
-                            │
-               ┌────────────┼────────────┐
-               │                         │
-               ▼                         ▼
-      ┌─────────────────┐      ┌──────────────────────────┐
-      │  Slash Commands    │      │   Hook System               │
-      │  /*      │      │  (Auto-injection)            │
-      │                  │      │  [Claude Code Exclusive]    │
-      │  User-initiated  │      │                            │
-      │  Triggers specific│      │  session-start.py          │
-      │  workflows        │      │  inject-context.py         │
-      │                  │      │  ralph-loop.py             │
-      │  [All Platforms]  │      │                            │
-      └────────┬────────┘      └────────────┬─────────────┘
-               │                         │
-               └──────────┬──────────────┘
-                          │
-                          ▼
-      ┌────────────────────────────────────────────────────────┐
-      │                    .trellis/ Directory                   │
-      │                                                        │
-      │   spec/          workspace/       tasks/       scripts/ │
-      │   (Spec Library)  (Work Records)  (Task Mgmt)  (Automation) │
-      └───────────────────────┬────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                             User                             │
+└─────────────────────────────┬────────────────────────────────┘
                               │
                               ▼
-      ┌────────────────────────────────────────────────────────┐
-      │                    Agent System                          │
-      │                                                        │
-      │   Plan → Research → Implement → Check → Debug          │
-      │                                                        │
-      │   Each Agent receives precise context via Hooks          │
-      └───────────────────────┬────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│    Claude Code / Cursor / Codex / OpenCode / Kilo / Kiro     │
+│               (AI Coding Assistant Interface)                │
+└─────────────────────────────┬────────────────────────────────┘
                               │
-                              ▼
-      ┌────────────────────────────────────────────────────────┐
-      │                    Your Project Code                     │
-      │              (AI generates/modifies code per specs)      │
-      └────────────────────────────────────────────────────────┘
+                 ┌────────────┼────────────┐
+                 │                         │
+                 ▼                         ▼
+      ┌────────────────────┐      ┌───────────────────────────┐
+      │  Slash Commands    │      │  Hook System              │
+      │  /trellis:*        │      │  (Auto-inject)            │
+      │                    │      │  [Claude Code only]       │
+      │  User-triggered    │      │                           │
+      │  Trigger workflows │      │  session-start.py         │
+      │                    │      │  inject-context.py        │
+      │  [All platforms]   │      │  ralph-loop.py            │
+      └─────────┬──────────┘      └─────────────┬─────────────┘
+                │                              │
+                └──────────────┬───────────────┘
+                               │
+                               ▼
+      ┌──────────────────────────────────────────────────────┐
+      │                 .trellis/ Directory                  │
+      │                                                      │
+      │  spec/        workspace/      tasks/      scripts/   │
+      │  (Specs)      (Records)       (Tasks)     (Auto)     │
+      └─────────────────────────┬────────────────────────────┘
+                                │
+                                ▼
+      ┌──────────────────────────────────────────────────────┐
+      │                     Agent System                     │
+      │                                                      │
+      │  Plan → Research → Implement → Check → Debug         │
+      │                                                      │
+      │  Each Agent receives precise context via Hooks       │
+      └─────────────────────────┬────────────────────────────┘
+                                │
+                                ▼
+      ┌──────────────────────────────────────────────────────┐
+      │                  Your Project Code                   │
+      │        (AI generates/modifies code per specs)        │
+      └──────────────────────────────────────────────────────┘
 ```
 
 ### 4.2 Session Startup Flow
 
 <Tabs>
   <Tab title="Claude Code / OpenCode">
-  These two platforms' Hook systems **automatically trigger** `session-start.py` at session start, no need to manually enter `/start`.
-  Users can describe tasks immediately after opening the terminal. Optionally run `/start` for a more detailed context report.
+    These two platforms' Hook systems **automatically trigger** `session-start.py` at session start,
+    no need to manually enter `/start`. Users can describe tasks immediately after opening the
+    terminal. Optionally run `/start` for a more detailed context report.
   </Tab>
   <Tab title="Cursor / Codex">
-  Cursor's Hook support is still in development, and Codex provides base context via `AGENTS.md`.
-  Users **must manually invoke** `/start` (or `$start` for Codex) to get full project context.
-  The command internally executes the same steps as the Claude Code Hook: reading identity, workflow, history, tasks, etc.
+    Cursor's Hook support is still in development, and Codex provides base context via `AGENTS.md`.
+    Users **must manually invoke** `/start` (or `$start` for Codex) to get full project context. The
+    command internally executes the same steps as the Claude Code Hook: reading identity, workflow,
+    history, tasks, etc.
   </Tab>
   <Tab title="Kilo">
-  Kilo **auto-loads** project rules via `.kilocode/rules/` and `AGENTS.md` into every interaction.
-  Optionally run the `/start.md` workflow for full Trellis context (identity, Git status, active tasks, etc.).
+    Kilo **auto-loads** project rules via `.kilocode/rules/` and `AGENTS.md` into every interaction.
+    Optionally run the `/start.md` workflow for full Trellis context (identity, Git status, active
+    tasks, etc.).
   </Tab>
   <Tab title="Kiro">
-  Kiro **auto-loads** project context via `.kiro/steering/` (product.md, tech.md, structure.md, etc.) into every interaction.
-  Optionally run a custom prompt for full Trellis context. Kiro also supports auto-generating requirements, design, and task documents via Spec mode.
+    Kiro **auto-loads** project context via `.kiro/steering/` (product.md, tech.md, structure.md,
+    etc.) into every interaction. Optionally run a custom prompt for full Trellis context. Kiro also
+    supports auto-generating requirements, design, and task documents via Spec mode.
   </Tab>
 </Tabs>
 
@@ -86,30 +89,29 @@ When you enter `/start` (or when the Claude Code Hook fires automatically), here
      │
      ▼
 ┌────────────────────────────────────────┐
-│  Hook: session-start.py (auto-trigger)  │
-│                                         │
-│  Read .trellis/.developer     → Identity│
-│  Read .trellis/workflow.md    → Workflow│
-│  Read workspace/{name}/index.md → History│
-│  Read git log                  → Commits│
-│  Read .trellis/tasks/          → Tasks  │
-└─────────────────┬──────────────────────┘
-                  │
-                  ▼
-         ┌────────────────────┐
-         │  Context injected   │
-         │  into AI            │
-         └────────┬───────────┘
-                  │
-                  ▼
-      ┌────────────────────────────────┐
-      │  start.md command executes:     │
-      │                                │
-      │  Step 1: Read workflow.md      │
-      │  Step 2: Run get-context.py    │
-      │  Step 3: Read spec indexes     │
-      │  Step 4: Report and ask user   │
-      └────────────────────────────────┘
+│  Hook: session-start.py (auto-trigger) │
+│                                        │
+│  Read .trellis/.developer    → identity│
+│  Read .trellis/workflow.md   → workflow│
+│  Read workspace/{name}/index → history │
+│  Read git log               → commits  │
+│  Read .trellis/tasks/        → tasks   │
+└───────────────────┬────────────────────┘
+                    │
+                    ▼
+         ┌──────────────────────────┐
+         │  Context injected into AI│
+         └────────────┬─────────────┘
+                      │
+                      ▼
+      ┌──────────────────────────────────┐
+      │  start.md command runs:          │
+      │                                  │
+      │  Step 1: Read workflow.md        │
+      │  Step 2: Run get-context.py      │
+      │  Step 3: Read spec indexes       │
+      │  Step 4: Report & ask user       │
+      └──────────────────────────────────┘
 ```
 
 `session-start.py` is a `SessionStart` Hook that fires automatically at the start of each new session, ensuring the AI always begins with full context.
@@ -117,8 +119,9 @@ When you enter `/start` (or when the Claude Code Hook fires automatically), here
 ### 4.3 Spec Injection Mechanism
 
 <Info>
-Automatic spec injection is a Claude Code exclusive feature, relying on the Hook system (`PreToolUse` intercepting `Task` tool calls).
-Cursor, Codex, OpenCode, and other platforms require manually loading specs via commands (e.g., `/before-backend-dev`).
+  Automatic spec injection is a Claude Code exclusive feature, relying on the Hook system
+  (`PreToolUse` intercepting `Task` tool calls). Cursor, Codex, OpenCode, and other platforms
+  require manually loading specs via commands (e.g., `/before-backend-dev`).
 </Info>
 
 `inject-subagent-context.py` is the core engine of Trellis. When the main Agent invokes a sub-Agent (e.g., Implement), this Hook automatically intercepts and injects context.
@@ -126,33 +129,32 @@ Cursor, Codex, OpenCode, and other platforms require manually loading specs via 
 **Workflow**:
 
 ```
-Main Agent calls: Task(subagent_type="implement", prompt="Implement feature")
+Main Agent calls: Task(subagent_type="implement", prompt="...")
      │
      ▼
 ┌──────────────────────────────────────────────────────────────┐
-│  Hook: inject-subagent-context.py (PreToolUse intercept)      │
-│                                                               │
-│  1. Read .trellis/.current-task                               │
-│     → Get current task directory path                         │
-│                                                               │
-│  2. Read {task_dir}/implement.jsonl                           │
-│     → Get list of spec files this Agent needs                 │
-│                                                               │
-│  3. Read each file referenced in the JSONL                    │
-│     → .trellis/spec/backend/index.md                          │
-│     → .trellis/spec/backend/database-guidelines.md            │
-│     → ...                                                     │
-│                                                               │
-│  4. Read prd.md (requirements) and info.md (technical design) │
-│                                                               │
-│  5. Assemble all content into a new prompt, replacing the     │
-│     original prompt                                           │
-│                                                               │
-│  6. Update current_phase in task.json                         │
+│  Hook: inject-subagent-context.py (PreToolUse intercept)     │
+│                                                              │
+│  1. Read .trellis/.current-task                              │
+│     → Get current task directory path                        │
+│                                                              │
+│  2. Read {task_dir}/implement.jsonl                          │
+│     → Get spec file list for this Agent                      │
+│                                                              │
+│  3. Read each file referenced in JSONL                       │
+│     → .trellis/spec/backend/index.md                         │
+│     → .trellis/spec/backend/database-guidelines.md           │
+│     → ...                                                    │
+│                                                              │
+│  4. Read prd.md (requirements) and info.md (design)          │
+│                                                              │
+│  5. Assemble all into new prompt, replace original           │
+│                                                              │
+│  6. Update current_phase in task.json                        │
 └───────────────────────┬──────────────────────────────────────┘
                         │
                         ▼
-Implement Agent receives the actual prompt:
+Actual prompt received by Implement Agent:
 
   # Implement Agent Task
   ## Your Context
@@ -161,9 +163,9 @@ Implement Agent receives the actual prompt:
   === .trellis/spec/backend/database-guidelines.md ===
   (Full database spec content)
   === {task_dir}/prd.md (Requirements) ===
-  (Full requirements document)
+  (Full requirements doc)
   ## Your Task
-  Implement feature
+  Implement the feature
 ```
 
 #### JSONL Configuration Format Explained
@@ -179,19 +181,19 @@ JSONL (JSON Lines) files define which files each Agent needs to read. Each line 
 
 **Field descriptions**:
 
-| Field | Required | Description |
-|------|------|------|
-| `file` | Yes | Relative path to file or directory (relative to project root) |
-| `reason` | Yes | Why this file is needed (also used to generate completion markers) |
-| `type` | No | Defaults to `"file"`. Set to `"directory"` to read all `.md` files in the directory (max 20) |
+| Field    | Required | Description                                                                                  |
+| -------- | -------- | -------------------------------------------------------------------------------------------- |
+| `file`   | Yes      | Relative path to file or directory (relative to project root)                                |
+| `reason` | Yes      | Why this file is needed (also used to generate completion markers)                           |
+| `type`   | No       | Defaults to `"file"`. Set to `"directory"` to read all `.md` files in the directory (max 20) |
 
 **Three types of JSONL files**:
 
-| File | Used By | Typical Content |
-|------|------|---------|
+| File              | Used By         | Typical Content                                      |
+| ----------------- | --------------- | ---------------------------------------------------- |
 | `implement.jsonl` | Implement Agent | workflow.md + relevant specs + code pattern examples |
-| `check.jsonl` | Check Agent | finish-work.md + check commands + relevant specs |
-| `debug.jsonl` | Debug Agent | relevant specs + check commands |
+| `check.jsonl`     | Check Agent     | finish-work.md + check commands + relevant specs     |
+| `debug.jsonl`     | Debug Agent     | relevant specs + check commands                      |
 
 **Practical example** (implement.jsonl for a backend task):
 
@@ -214,37 +216,37 @@ JSONL (JSON Lines) files define which files each Agent needs to read. Each line 
 ### 4.4 Quality Control Loop (Ralph Loop)
 
 <Info>
-Ralph Loop is a Claude Code exclusive quality control mechanism, relying on the `SubagentStop` Hook.
-Cursor and other platforms require manually running `/check-backend` (`/trellis-check-backend`) or `/check-frontend` for code checks.
+  Ralph Loop is a Claude Code exclusive quality control mechanism, relying on the `SubagentStop`
+  Hook. Cursor and other platforms require manually running `/check-backend`
+  (`/trellis-check-backend`) or `/check-frontend` for code checks.
 </Info>
 
 Ralph Loop is based on the [Ralph Wiggum technique](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents), automatically verifying when the Check Agent finishes its work.
 
 ```
-Check Agent believes it's done
+Check Agent thinks it's done
          │
          ▼
-┌──────────────────────────────────────────┐
-│  Hook: ralph-loop.py (SubagentStop intercept) │
-│                                           │
-│  1. Read verify config from worktree.yaml │
-│                                           │
-│  ┌─── Has verify commands? ──┐            │
-│  │                           │            │
-│  ▼ Yes                       ▼ No         │
-│  Run verify commands         Check        │
-│  (pnpm lint, etc.)          completion    │
-│  │                          markers       │
-│  │                           │            │
-│  ├── All pass ───────────────┤── All present ──→ Allow stop │
-│  │                           │            │
-│  └── Some fail ──────────────┘── Missing ──→ Block stop │
-│                                    │      │
-│                       Return to Check Agent│
-│                       Continue fixing      │
-│                                           │
-│  Safety limit: max 5 iterations           │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│  Hook: ralph-loop.py (SubagentStop intercept)          │
+│                                                        │
+│  1. Read verify config from worktree.yaml              │
+│                                                        │
+│  ┌── Has verify commands? ──┐                          │
+│  │                          │                          │
+│  ▼ Yes                      ▼ No                       │
+│  Run verify commands        Check completion           │
+│  (pnpm lint etc.)           markers                    │
+│  │                          │                          │
+│  ├── All pass ──────────┤── All present ──→ Allow stop │
+│  │                          │                          │
+│  └── Has failure ───────┘── Missing ──→ Block stop     │
+│                              │                         │
+│                 Return to Check Agent                  │
+│                 Continue fixing                        │
+│                                                        │
+│  Safety limit: max 5 iterations                        │
+└────────────────────────────────────────────────────────┘
 ```
 
 **Two verification modes**:
@@ -291,14 +293,14 @@ Ralph Loop tracks iteration count via `.trellis/.ralph-state.json`:
 
 Trellis includes 6 built-in Agents, each with different roles, tools, and responsibilities:
 
-| Agent | Role | Tools | Model | Key Features |
-|-------|------|------|-------|---------|
-| **dispatch** | Pure orchestrator | Read, Bash, Exa Search, Exa Code Context | opus | Only invokes other Agents in sequence, does not read specs |
-| **plan** | Requirements assessment | Read, Bash, Glob, Grep, Task | opus | Can reject unclear requirements |
-| **implement** | Code implementation | Read, Write, Edit, Bash, Glob, Grep, Exa Search, Exa Code Context | opus | Forbidden from git commit |
-| **check** | Quality checking | Read, Write, Edit, Bash, Glob, Grep, Exa Search, Exa Code Context | opus | Must self-fix, controlled by Ralph Loop |
-| **debug** | Bug fixing | Read, Write, Edit, Bash, Glob, Grep, Exa Search, Exa Code Context | opus | Precise fixes only, no extra refactoring |
-| **research** | Information search | Read, Glob, Grep, Exa Search, Exa Code Context | opus | Read-only, does not modify files |
+| Agent         | Role                    | Tools                                                             | Model | Key Features                                               |
+| ------------- | ----------------------- | ----------------------------------------------------------------- | ----- | ---------------------------------------------------------- |
+| **dispatch**  | Pure orchestrator       | Read, Bash, Exa Search, Exa Code Context                          | opus  | Only invokes other Agents in sequence, does not read specs |
+| **plan**      | Requirements assessment | Read, Bash, Glob, Grep, Task                                      | opus  | Can reject unclear requirements                            |
+| **implement** | Code implementation     | Read, Write, Edit, Bash, Glob, Grep, Exa Search, Exa Code Context | opus  | Forbidden from git commit                                  |
+| **check**     | Quality checking        | Read, Write, Edit, Bash, Glob, Grep, Exa Search, Exa Code Context | opus  | Must self-fix, controlled by Ralph Loop                    |
+| **debug**     | Bug fixing              | Read, Write, Edit, Bash, Glob, Grep, Exa Search, Exa Code Context | opus  | Precise fixes only, no extra refactoring                   |
+| **research**  | Information search      | Read, Glob, Grep, Exa Search, Exa Code Context                    | opus  | Read-only, does not modify files                           |
 
 **Agent Collaboration Flow (Multi-Agent Pipeline)**:
 
@@ -330,10 +332,10 @@ Dispatch Agent
 
 **Dispatch Agent Timeout Configuration**:
 
-| Phase | Max Time | Poll Count |
-|-------|---------|---------|
-| implement | 30 minutes | 6 polls |
-| check | 15 minutes | 3 polls |
-| debug | 20 minutes | 4 polls |
+| Phase     | Max Time   | Poll Count |
+| --------- | ---------- | ---------- |
+| implement | 30 minutes | 6 polls    |
+| check     | 15 minutes | 3 polls    |
+| debug     | 20 minutes | 4 polls    |
 
 ---
