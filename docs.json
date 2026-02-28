@@ -67,6 +67,10 @@
             ]
           },
           {
+            "group": "Use Cases",
+            "pages": ["use-cases/open-typeless"]
+          },
+          {
             "group": "Resource Marketplace",
             "pages": [
               {
@@ -179,6 +183,10 @@
               "zh/guide/appendix-f",
               "zh/guide/resources"
             ]
+          },
+          {
+            "group": "Use Cases",
+            "pages": ["zh/use-cases/open-typeless"]
           },
           {
             "group": "Resource Marketplace",
