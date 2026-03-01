@@ -18,6 +18,17 @@ button[aria-haspopup="menu"] > div:first-child {
 }
 
 /*
+ * Fix box-drawing character alignment in code blocks.
+ *
+ * JetBrains Mono (Mintlify default) renders box-drawing chars (─│┌┐└┘)
+ * wider than ASCII, causing ~2px misalignment on wide diagrams.
+ * Menlo renders them at equal width.
+ */
+pre code {
+  font-family: Menlo, Monaco, "Courier New", monospace !important;
+}
+
+/*
  * CJK-aligned ASCII-art diagrams.
  *
  * Problem: In browser monospace fonts, CJK characters render at ~1.7× ASCII
