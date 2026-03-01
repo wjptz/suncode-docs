@@ -19,6 +19,7 @@ This project uses **Mintlify** as the documentation platform. All content is wri
 | [Config Guidelines](./config-guidelines.md)     | docs.json configuration patterns         | Ready  |
 | [Plugin Guidelines](./plugin-guidelines.md)     | Claude Code plugin manifest patterns     | Ready  |
 | [Style Guide](./style-guide.md)                 | Writing style and content standards      | Ready  |
+| [ASCII-Art Alignment](./ascii-art-alignment.md) | Box-drawing & CJK alignment in diagrams  | Ready  |
 
 ---
 
