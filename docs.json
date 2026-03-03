@@ -27,7 +27,7 @@
             "pages": ["index"]
           },
           {
-            "group": "Part I — Getting Started",
+            "group": "Getting Started",
             "pages": [
               "guide/ch01-what-is-trellis",
               "guide/ch02-quick-start",
@@ -35,7 +35,7 @@
             ]
           },
           {
-            "group": "Part II — Mastery",
+            "group": "Mastery",
             "pages": [
               "guide/ch04-architecture",
               "guide/ch05-commands",
@@ -45,7 +45,7 @@
             ]
           },
           {
-            "group": "Part III — Customization",
+            "group": "Customization",
             "pages": [
               "guide/ch09-custom-commands",
               "guide/ch10-custom-agents",
@@ -147,7 +147,7 @@
             "pages": ["zh/index"]
           },
           {
-            "group": "Part I — 入门篇",
+            "group": "入门篇",
             "pages": [
               "zh/guide/ch01-what-is-trellis",
               "zh/guide/ch02-quick-start",
@@ -155,7 +155,7 @@
             ]
           },
           {
-            "group": "Part II — 精通篇",
+            "group": "精通篇",
             "pages": [
               "zh/guide/ch04-architecture",
               "zh/guide/ch05-commands",
@@ -165,7 +165,7 @@
             ]
           },
           {
-            "group": "Part III — 魔改篇",
+            "group": "魔改篇",
             "pages": [
               "zh/guide/ch09-custom-commands",
               "zh/guide/ch10-custom-agents",
