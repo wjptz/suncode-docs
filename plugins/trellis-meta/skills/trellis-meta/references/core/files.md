@@ -15,6 +15,7 @@ Complete reference of all files in the `.trellis/` directory.
 ├── .version                # Installed Trellis version
 ├── .gitignore              # Git ignore rules
 ├── workflow.md             # Main workflow documentation
+├── config.yaml             # Project-level configuration
 ├── worktree.yaml           # Multi-session configuration
 │
 ├── workspace/              # Developer workspaces
@@ -198,6 +199,28 @@ taosu
 
 ---
 
+### `config.yaml`
+
+**Purpose**: Project-level Trellis configuration.
+
+**Created by**: `trellis init`
+
+**Format**: YAML
+
+```yaml
+# Commit message used when auto-committing journal/index changes
+session_commit_message: 'chore: record journal'
+
+# Maximum lines per journal file before rotating to a new one
+max_journal_lines: 2000
+```
+
+**Used by**: `common/config.py` (read by `add_session.py`)
+
+**Behavior**: All values have sensible hardcoded defaults. If config.yaml is missing or a key is absent, the default is used.
+
+---
+
 ### `worktree.yaml`
 
 **Purpose**: Configure Multi-Session and Ralph Loop.
@@ -295,6 +318,7 @@ These files are managed by `trellis update`:
 | File                     | Purpose                  |
 | ------------------------ | ------------------------ |
 | `.trellis/workflow.md`   | Workflow documentation   |
+| `.trellis/config.yaml`   | Project-level config     |
 | `.trellis/worktree.yaml` | Multi-session config     |
 | `.trellis/.gitignore`    | Git ignore rules         |
 | `.claude/hooks/*.py`     | Hook scripts             |
@@ -321,6 +345,7 @@ These files are managed by `trellis update`:
 ├── .version
 ├── .gitignore
 ├── workflow.md
+├── config.yaml
 ├── worktree.yaml
 ├── spec/
 │   ├── frontend/

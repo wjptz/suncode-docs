@@ -1,0 +1,18 @@
+---
+title: 'v0.3.2'
+description: '2026-03-03'
+---
+
+Record Session 自动提交 & 项目级配置。
+
+## 新增功能
+
+- **自动提交 workspace 变更**：`add_session.py` 执行完毕后自动提交 `.trellis/workspace` 变更，解决 record-session 后工作目录残留 dirty 文件的问题
+- **项目级配置**：新增 `.trellis/config.yaml`，支持自定义 `session_commit_message` 和 `max_journal_lines`
+- **配置读取模块**：新增 `common/config.py`，读取 config.yaml 并提供硬编码默认值兜底
+- **跳过自动提交**：`add_session.py` 新增 `--no-commit` 参数，可按需跳过自动提交
+- **模板更新**：8 个平台的 record-session 模板同步更新，补充 auto-commit 说明
+
+## 迁移
+
+无需迁移。运行 `trellis update` 即可同步新文件（`config.yaml`、`config.py`）及更新后的模板。

@@ -13,6 +13,7 @@ These scripts work on all platforms - they only read/write files and don't requi
 ├── common/                 # Shared utilities
 │   ├── paths.py
 │   ├── developer.py
+│   ├── config.py
 │   ├── task_utils.py
 │   ├── phase.py
 │   └── git_context.py
@@ -85,14 +86,26 @@ python3 .trellis/scripts/get_context.py
 Record session entry to journal.
 
 ```bash
-python3 .trellis/scripts/add_session.py "Session summary"
+python3 .trellis/scripts/add_session.py \
+  --title "Session Title" \
+  --commit "hash1,hash2" \
+  --summary "Brief summary"
 ```
+
+**Options:**
+
+- `--title` - Session title (required)
+- `--commit` - Comma-separated commit hashes
+- `--summary` - Brief summary
+- `--content-file` - Path to file with detailed content
+- `--no-commit` - Skip auto-commit of workspace changes
 
 **Actions:**
 
 1. Appends to current journal
 2. Updates index markers
-3. Rotates journal if needed
+3. Rotates journal if >max_journal_lines
+4. Auto-commits `.trellis/workspace` changes (unless `--no-commit`)
 
 ---
 
@@ -227,6 +240,19 @@ from common.phase import (
 )
 ```
 
+### `common/config.py`
+
+Project-level configuration reader.
+
+```python
+from common.config import (
+    get_session_commit_message,  # Commit message for auto-commit
+    get_max_journal_lines,       # Max lines per journal file
+)
+```
+
+Reads from `.trellis/config.yaml` with hardcoded fallback defaults.
+
 ### `common/git_context.py`
 
 Git context generation.
@@ -268,7 +294,10 @@ python3 .trellis/scripts/task.py start \
 ### Record Session
 
 ```bash
-python3 .trellis/scripts/add_session.py "Implemented login form, pending API integration"
+python3 .trellis/scripts/add_session.py \
+  --title "Implement login form" \
+  --commit "abc1234" \
+  --summary "Added login form, pending API integration"
 ```
 
 ### Archive Completed Task
