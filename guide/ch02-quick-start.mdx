@@ -15,47 +15,35 @@ cd your-project
 ```
 
 <Note>
-**OS Requirements**: Mac, Linux, and Windows are fully supported. All scripts have been migrated to Python for cross-platform compatibility.
+  **OS Requirements**: Mac, Linux, and Windows are fully supported. All scripts have been migrated
+  to Python for cross-platform compatibility.
 </Note>
 
 Choose the init command based on your platform:
 
 <Tabs>
   <Tab title="Claude Code">
-  ```bash
-  trellis init -u your-name
-  ```
-  Automatically detects the Claude Code environment and configures the `.claude/` directory (commands, agents, hooks).
+    ```bash trellis init -u your-name ``` Automatically detects the Claude Code environment and
+    configures the `.claude/` directory (commands, agents, hooks).
   </Tab>
   <Tab title="Cursor">
-  ```bash
-  trellis init -u your-name
-  ```
-  Automatically detects the Cursor environment and configures the `.cursor/commands/` directory.
+    ```bash trellis init -u your-name ``` Automatically detects the Cursor environment and
+    configures the `.cursor/commands/` directory.
   </Tab>
   <Tab title="Codex">
-  ```bash
-  trellis init --codex -u your-name
-  ```
-  Configures `AGENTS.md` and `.agents/skills/`.
+    ```bash trellis init --codex -u your-name ``` Configures `AGENTS.md` and `.agents/skills/`.
   </Tab>
   <Tab title="OpenCode">
-  ```bash
-  trellis init --opencode -u your-name
-  ```
-  Configures `.agents/skills/`. Supports session hook for automatic context injection.
+    ```bash trellis init --opencode -u your-name ``` Configures `.agents/skills/`. Supports session
+    hook for automatic context injection.
   </Tab>
   <Tab title="Kilo">
-  ```bash
-  trellis init --kilo -u your-name
-  ```
-  Configures the `.kilocode/` directory (workflows, rules, skills).
+    ```bash trellis init --kilo -u your-name ``` Configures the `.kilocode/` directory (workflows,
+    rules, skills).
   </Tab>
   <Tab title="Kiro">
-  ```bash
-  trellis init --kiro -u your-name
-  ```
-  Configures the `.kiro/` directory (steering, hooks, prompts).
+    ```bash trellis init --kiro -u your-name ``` Configures the `.kiro/` directory (steering, hooks,
+    prompts).
   </Tab>
 </Tabs>
 
@@ -65,24 +53,26 @@ Choose the init command based on your platform:
 
 `trellis init` automatically detects and configures installed platforms:
 
-| Platform | Config Directory | Command Format |
-|------|---------|---------|
-| **Claude Code** | `.claude/commands/trellis/`, `.claude/agents/`, `.claude/hooks/` | `/start` |
-| **Cursor** | `.cursor/commands/*.md` | `/start` |
-| **Codex** | `AGENTS.md`, `.agents/skills/` | `$start` |
-| **OpenCode** | `.agents/skills/` | `/start` |
-| **Kilo** | `.kilocode/workflows/`, `.kilocode/rules/`, `.kilocode/skills/` | `/start.md` |
-| **Kiro** | `.kiro/steering/`, `.kiro/hooks/`, `.kiro/prompts/` | `@start` |
+| Platform        | Config Directory                                                 | Command Format |
+| --------------- | ---------------------------------------------------------------- | -------------- |
+| **Claude Code** | `.claude/commands/trellis/`, `.claude/agents/`, `.claude/hooks/` | `/start`       |
+| **Cursor**      | `.cursor/commands/*.md`                                          | `/start`       |
+| **Codex**       | `AGENTS.md`, `.agents/skills/`                                   | `$start`       |
+| **OpenCode**    | `.agents/skills/`                                                | `/start`       |
+| **Kilo**        | `.kilocode/workflows/`, `.kilocode/rules/`, `.kilocode/skills/`  | `/start.md`    |
+| **Kiro**        | `.kiro/steering/`, `.kiro/hooks/`, `.kiro/prompts/`              | `@start`       |
 
 #### Platform Capability Comparison
 
-| Capability | Claude Code | Cursor | Codex | OpenCode | Kilo | Kiro |
-|------|:-:|:-:|:-:|:-:|:-:|:-:|
-| Session auto-injection | ✅ Hook | ❌ Manual /start | ⚡ AGENTS.md | ✅ Hook | ⚡ rules/ + launchConfig | ⚡ steering/ |
-| Sub-Agent spec injection | ✅ PreToolUse Hook | ❌ | ❌ | ❌ | ⚡ Orchestrator Mode | ⚡ Custom Agents |
-| Ralph Loop quality gate | ✅ SubagentStop Hook | ❌ | ❌ | ❌ | ❌ | ⚡ Agent Hooks |
-| Multi-Agent Pipeline | ✅ | ❌ | ❌ | ❌ | ✅ Orchestrator + worktree | ✅ Autonomous Agent |
-| Number of commands | 13 | 12 | 13 | 13 | workflows | prompts |
+| Capability               |     Claude Code      |      Cursor      |    Codex     | OpenCode |            Kilo            |        Kiro         |
+| ------------------------ | :------------------: | :--------------: | :----------: | :------: | :------------------------: | :-----------------: |
+| Session auto-injection   |       ✅ Hook        | ❌ Manual /start | ⚡ AGENTS.md | ✅ Hook  |  ⚡ rules/ + launchConfig  |    ⚡ steering/     |
+| Sub-Agent spec injection |  ✅ PreToolUse Hook  |        ❌        |      ❌      |    ❌    |    ⚡ Orchestrator Mode    |  ⚡ Custom Agents   |
+| Ralph Loop quality gate  | ✅ SubagentStop Hook |        ❌        |      ❌      |    ❌    |             ❌             |   ⚡ Agent Hooks    |
+| Multi-Agent Pipeline     |          ✅          |        ❌        |      ❌      |    ❌    | ✅ Orchestrator + worktree | ✅ Autonomous Agent |
+| Number of commands       |          13          |        12        |      13      |    13    |         workflows          |       prompts       |
+
+<!-- markdownlint-disable MD024 MD001 -->
 
 ### 2.3 Three Steps to Get Started
 
@@ -92,81 +82,185 @@ Choose the init command based on your platform:
   # Step 1: Open the Claude Code terminal
   # Hook auto-injects context — you can describe your task directly (or run /start to see the full flow)
 
-  # Step 2: Describe what you want to do
-  "Add user login feature"
+# Step 2: Describe what you want to do
 
-  # Step 3: AI works automatically
-  # AI reads specs → creates task → invokes Agent to implement → self-checks
-  # Once done, you test, commit, and record the session
-  ```
-  </Tab>
-  <Tab title="Cursor">
-  ```bash
-  # Step 1: Open Cursor, you must first run
-  /start
+"Add user login feature"
 
-  # Step 2: Describe what you want to do
-  "Add user login feature"
+# Step 3: AI works automatically
 
-  # Step 3: AI works automatically
-  # AI reads specs → creates task → implements → you manually run /trellis-check-backend to check
-  # Once done, you test, commit, and record the session
-  ```
+# AI reads specs → creates task → invokes Agent to implement → self-checks
+
+# Once done, you test, commit, and record the session
+
+````
+</Tab>
+<Tab title="Cursor">
+```bash
+# Step 1: Open Cursor, you must first run
+/start
+
+# Step 2: Describe what you want to do
+"Add user login feature"
+
+# Step 3: AI works automatically
+# AI reads specs → creates task → implements → you manually run /trellis-check-backend to check
+# Once done, you test, commit, and record the session
+````
+
   </Tab>
   <Tab title="Codex">
   ```bash
   # Step 1: Codex provides base context via AGENTS.md
   # Run $start for full context
 
-  # Step 2: Describe what you want to do
-  "Add user login feature"
+# Step 2: Describe what you want to do
 
-  # Step 3: AI works automatically
-  # Once done, you test, commit, and record the session
-  ```
-  </Tab>
-  <Tab title="OpenCode">
-  ```bash
-  # Step 1: Open the OpenCode terminal
-  # Hook auto-injects context — you can describe your task directly (or run /start to see the full flow)
+"Add user login feature"
 
-  # Step 2: Describe what you want to do
-  "Add user login feature"
+# Step 3: AI works automatically
 
-  # Step 3: AI works automatically
-  # Once done, you test, commit, and record the session
-  ```
+# Once done, you test, commit, and record the session
+
+````
+</Tab>
+<Tab title="OpenCode">
+```bash
+# Step 1: Open the OpenCode terminal
+# Hook auto-injects context — you can describe your task directly (or run /start to see the full flow)
+
+# Step 2: Describe what you want to do
+"Add user login feature"
+
+# Step 3: AI works automatically
+# Once done, you test, commit, and record the session
+````
+
   </Tab>
   <Tab title="Kilo">
   ```bash
   # Step 1: Kilo auto-loads project specs via .kilocode/rules/
   # Run the /start.md workflow for full context
 
-  # Step 2: Describe what you want to do
-  "Add user login feature"
+# Step 2: Describe what you want to do
 
-  # Step 3: AI works automatically
-  # Kilo Orchestrator Mode breaks down tasks and assigns them to Code/Architect modes
-  # Once done, you test, commit, and record the session
-  ```
-  </Tab>
-  <Tab title="Kiro">
-  ```bash
-  # Step 1: Kiro auto-loads project specs via .kiro/steering/
-  # Choose Spec mode to generate requirements → design → tasks
+"Add user login feature"
 
-  # Step 2: Describe what you want to do
-  "Add user login feature"
+# Step 3: AI works automatically
 
-  # Step 3: AI works automatically
-  # Kiro implements step by step following the tasks.md checklist
-  # Agent Hooks can auto-trigger checks on file save
-  # Once done, you test, commit, and record the session
-  ```
+# Kilo Orchestrator Mode breaks down tasks and assigns them to Code/Architect modes
+
+# Once done, you test, commit, and record the session
+
+````
+</Tab>
+<Tab title="Kiro">
+```bash
+# Step 1: Kiro auto-loads project specs via .kiro/steering/
+# Choose Spec mode to generate requirements → design → tasks
+
+# Step 2: Describe what you want to do
+"Add user login feature"
+
+# Step 3: AI works automatically
+# Kiro implements step by step following the tasks.md checklist
+# Agent Hooks can auto-trigger checks on file save
+# Once done, you test, commit, and record the session
+````
+
   </Tab>
 </Tabs>
 
-### 2.4 Full Directory Structure
+### 2.5 Remote Spec Templates
+
+Instead of writing specs from scratch, you can pull pre-built spec templates during init.
+
+#### Official Marketplace
+
+```bash
+# Interactive: browse and pick from available templates
+trellis init -u your-name
+
+# Non-interactive: specify a template by ID
+trellis init -u your-name --template electron-fullstack
+```
+
+The interactive picker shows all templates from the [official marketplace](https://github.com/mindfold-ai/docs/tree/main/marketplace). Choose one or start with blank specs.
+
+#### Custom Registry (`--registry`)
+
+Pull specs from your own GitHub, GitLab, or Bitbucket repository:
+
+```bash
+# Direct download: repo directory becomes .trellis/spec/
+trellis init --registry gh:myorg/myrepo/my-team-spec
+
+# Marketplace mode: repo has index.json with multiple templates
+trellis init --registry gh:myorg/myrepo/marketplace
+
+# Pick a specific template from a custom marketplace
+trellis init --registry gh:myorg/myrepo/marketplace --template my-template
+
+# Specify a branch
+trellis init --registry gh:myorg/myrepo/specs#develop
+
+# GitLab or Bitbucket
+trellis init --registry gitlab:myorg/myrepo/specs
+trellis init --registry bitbucket:myorg/myrepo/specs
+```
+
+**Source format**: `provider:user/repo[/subdir][#ref]`
+
+| Provider  | Prefix             |
+| --------- | ------------------ |
+| GitHub    | `gh:` or `github:` |
+| GitLab    | `gitlab:`          |
+| Bitbucket | `bitbucket:`       |
+
+The ref (branch/tag) defaults to `main` if omitted.
+
+#### Handling Existing Specs
+
+When `.trellis/spec/` already exists, use a strategy flag:
+
+| Flag          | Behavior                                      |
+| ------------- | --------------------------------------------- |
+| `--overwrite` | Delete existing spec directory, then download |
+| `--append`    | Only copy files that don't already exist      |
+| _(neither)_   | Interactive prompt asks what to do            |
+
+#### Building a Custom Marketplace
+
+Create an `index.json` in your repository:
+
+```json
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "my-backend-spec",
+      "type": "spec",
+      "name": "My Backend Spec",
+      "description": "Backend conventions for our team",
+      "path": "marketplace/specs/my-backend-spec",
+      "tags": ["backend", "node"]
+    }
+  ]
+}
+```
+
+The `path` field is relative to the repository root. Only `type: "spec"` is supported currently.
+
+#### Private Repositories
+
+For private repos, set the `GIGET_AUTH` environment variable with a personal access token:
+
+```bash
+GIGET_AUTH=ghp_xxxxx trellis init --registry gh:myorg/private-repo/specs
+```
+
+For GitHub fine-grained tokens, you need **Contents** and **Metadata** read permissions.
+
+### 2.6 Full Directory Structure
 
 ```
 your-project/

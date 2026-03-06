@@ -14,48 +14,31 @@ npm install -g @mindfoldhq/trellis@latest
 cd your-project
 ```
 
-<Note>
-**操作系统要求**: Mac、Linux、Windows 完整支持。脚本已全部迁移为 Python，跨平台兼容。
-</Note>
+<Note>**操作系统要求**: Mac、Linux、Windows 完整支持。脚本已全部迁移为 Python，跨平台兼容。</Note>
 
 初始化命令根据你使用的平台选择：
 
 <Tabs>
   <Tab title="Claude Code">
-  ```bash
-  trellis init -u your-name
-  ```
-  自动检测 Claude Code 环境，配置 `.claude/` 目录（commands、agents、hooks）。
+    ```bash trellis init -u your-name ``` 自动检测 Claude Code 环境，配置 `.claude/`
+    目录（commands、agents、hooks）。
   </Tab>
   <Tab title="Cursor">
-  ```bash
-  trellis init -u your-name
-  ```
-  自动检测 Cursor 环境，配置 `.cursor/commands/` 目录。
+    ```bash trellis init -u your-name ``` 自动检测 Cursor 环境，配置 `.cursor/commands/` 目录。
   </Tab>
   <Tab title="Codex">
-  ```bash
-  trellis init --codex -u your-name
-  ```
-  配置 `AGENTS.md` 和 `.agents/skills/`。
+    ```bash trellis init --codex -u your-name ``` 配置 `AGENTS.md` 和 `.agents/skills/`。
   </Tab>
   <Tab title="OpenCode">
-  ```bash
-  trellis init --opencode -u your-name
-  ```
-  配置 `.agents/skills/`。支持 session hook 自动注入上下文。
+    ```bash trellis init --opencode -u your-name ``` 配置 `.agents/skills/`。支持 session hook
+    自动注入上下文。
   </Tab>
   <Tab title="Kilo">
-  ```bash
-  trellis init --kilo -u your-name
-  ```
-  配置 `.kilocode/` 目录（workflows、rules、skills）。
+    ```bash trellis init --kilo -u your-name ``` 配置 `.kilocode/`
+    目录（workflows、rules、skills）。
   </Tab>
   <Tab title="Kiro">
-  ```bash
-  trellis init --kiro -u your-name
-  ```
-  配置 `.kiro/` 目录（steering、hooks、prompts）。
+    ```bash trellis init --kiro -u your-name ``` 配置 `.kiro/` 目录（steering、hooks、prompts）。
   </Tab>
 </Tabs>
 
@@ -65,24 +48,26 @@ cd your-project
 
 `trellis init` 会自动检测并配置已安装的平台：
 
-| 平台 | 配置目录 | 命令格式 |
-|------|---------|---------|
-| **Claude Code** | `.claude/commands/trellis/`, `.claude/agents/`, `.claude/hooks/` | `/start` |
-| **Cursor** | `.cursor/commands/*.md` | `/start` |
-| **Codex** | `AGENTS.md`, `.agents/skills/` | `$start` |
-| **OpenCode** | `.agents/skills/` | `/start` |
-| **Kilo** | `.kilocode/workflows/`, `.kilocode/rules/`, `.kilocode/skills/` | `/start.md` |
-| **Kiro** | `.kiro/steering/`, `.kiro/hooks/`, `.kiro/prompts/` | `@start` |
+| 平台            | 配置目录                                                         | 命令格式    |
+| --------------- | ---------------------------------------------------------------- | ----------- |
+| **Claude Code** | `.claude/commands/trellis/`, `.claude/agents/`, `.claude/hooks/` | `/start`    |
+| **Cursor**      | `.cursor/commands/*.md`                                          | `/start`    |
+| **Codex**       | `AGENTS.md`, `.agents/skills/`                                   | `$start`    |
+| **OpenCode**    | `.agents/skills/`                                                | `/start`    |
+| **Kilo**        | `.kilocode/workflows/`, `.kilocode/rules/`, `.kilocode/skills/`  | `/start.md` |
+| **Kiro**        | `.kiro/steering/`, `.kiro/hooks/`, `.kiro/prompts/`              | `@start`    |
 
 #### 平台能力对比
 
-| 能力 | Claude Code | Cursor | Codex | OpenCode | Kilo | Kiro |
-|------|:-:|:-:|:-:|:-:|:-:|:-:|
-| 会话自动注入 | ✅ Hook | ❌ 手动 /start | ⚡ AGENTS.md | ✅ Hook | ⚡ rules/ + launchConfig | ⚡ steering/ |
-| 子 Agent 规范注入 | ✅ PreToolUse Hook | ❌ | ❌ | ❌ | ⚡ Orchestrator Mode | ⚡ Custom Agents |
-| Ralph Loop 质量门 | ✅ SubagentStop Hook | ❌ | ❌ | ❌ | ❌ | ⚡ Agent Hooks |
-| Multi-Agent Pipeline | ✅ | ❌ | ❌ | ❌ | ✅ Orchestrator + worktree | ✅ Autonomous Agent |
-| 命令数量 | 13 | 12 | 13 | 13 | workflows | prompts |
+| 能力                 |     Claude Code      |     Cursor     |    Codex     | OpenCode |            Kilo            |        Kiro         |
+| -------------------- | :------------------: | :------------: | :----------: | :------: | :------------------------: | :-----------------: |
+| 会话自动注入         |       ✅ Hook        | ❌ 手动 /start | ⚡ AGENTS.md | ✅ Hook  |  ⚡ rules/ + launchConfig  |    ⚡ steering/     |
+| 子 Agent 规范注入    |  ✅ PreToolUse Hook  |       ❌       |      ❌      |    ❌    |    ⚡ Orchestrator Mode    |  ⚡ Custom Agents   |
+| Ralph Loop 质量门    | ✅ SubagentStop Hook |       ❌       |      ❌      |    ❌    |             ❌             |   ⚡ Agent Hooks    |
+| Multi-Agent Pipeline |          ✅          |       ❌       |      ❌      |    ❌    | ✅ Orchestrator + worktree | ✅ Autonomous Agent |
+| 命令数量             |          13          |       12       |      13      |    13    |         workflows          |       prompts       |
+
+<!-- markdownlint-disable MD024 MD001 -->
 
 ### 2.3 首次使用三步走
 
@@ -92,81 +77,185 @@ cd your-project
   # 步骤 1：打开 Claude Code 终端
   # Hook 自动注入上下文，你可以直接描述任务（也可运行 /start 了解完整流程）
 
-  # 步骤 2：描述你要做什么
-  "添加用户登录功能"
+# 步骤 2：描述你要做什么
 
-  # 步骤 3：AI 自动工作
-  # AI 会读取规范 → 创建任务 → 调用 Agent 实现 → 自我检查
-  # 完成后你测试、提交、记录会话即可
-  ```
-  </Tab>
-  <Tab title="Cursor">
-  ```bash
-  # 步骤 1：打开 Cursor，必须先调用
-  /start
+"添加用户登录功能"
 
-  # 步骤 2：描述你要做什么
-  "添加用户登录功能"
+# 步骤 3：AI 自动工作
 
-  # 步骤 3：AI 自动工作
-  # AI 会读取规范 → 创建任务 → 实现 → 你手动运行 /trellis-check-backend 检查
-  # 完成后你测试、提交、记录会话即可
-  ```
+# AI 会读取规范 → 创建任务 → 调用 Agent 实现 → 自我检查
+
+# 完成后你测试、提交、记录会话即可
+
+````
+</Tab>
+<Tab title="Cursor">
+```bash
+# 步骤 1：打开 Cursor，必须先调用
+/start
+
+# 步骤 2：描述你要做什么
+"添加用户登录功能"
+
+# 步骤 3：AI 自动工作
+# AI 会读取规范 → 创建任务 → 实现 → 你手动运行 /trellis-check-backend 检查
+# 完成后你测试、提交、记录会话即可
+````
+
   </Tab>
   <Tab title="Codex">
   ```bash
   # 步骤 1：Codex 通过 AGENTS.md 提供基础上下文
   # 需要运行 $start 获取完整上下文
 
-  # 步骤 2：描述你要做什么
-  "添加用户登录功能"
+# 步骤 2：描述你要做什么
 
-  # 步骤 3：AI 自动工作
-  # 完成后你测试、提交、记录会话即可
-  ```
-  </Tab>
-  <Tab title="OpenCode">
-  ```bash
-  # 步骤 1：打开 OpenCode 终端
-  # Hook 自动注入上下文，你可以直接描述任务（也可运行 /start 了解完整流程）
+"添加用户登录功能"
 
-  # 步骤 2：描述你要做什么
-  "添加用户登录功能"
+# 步骤 3：AI 自动工作
 
-  # 步骤 3：AI 自动工作
-  # 完成后你测试、提交、记录会话即可
-  ```
+# 完成后你测试、提交、记录会话即可
+
+````
+</Tab>
+<Tab title="OpenCode">
+```bash
+# 步骤 1：打开 OpenCode 终端
+# Hook 自动注入上下文，你可以直接描述任务（也可运行 /start 了解完整流程）
+
+# 步骤 2：描述你要做什么
+"添加用户登录功能"
+
+# 步骤 3：AI 自动工作
+# 完成后你测试、提交、记录会话即可
+````
+
   </Tab>
   <Tab title="Kilo">
   ```bash
   # 步骤 1：Kilo 通过 .kilocode/rules/ 自动加载项目规范
   # 可运行 /start.md workflow 获取完整上下文
 
-  # 步骤 2：描述你要做什么
-  "添加用户登录功能"
+# 步骤 2：描述你要做什么
 
-  # 步骤 3：AI 自动工作
-  # Kilo Orchestrator Mode 会拆解任务分配给 Code/Architect 等模式
-  # 完成后你测试、提交、记录会话即可
-  ```
-  </Tab>
-  <Tab title="Kiro">
-  ```bash
-  # 步骤 1：Kiro 通过 .kiro/steering/ 自动加载项目规范
-  # 选择 Spec 模式生成需求→设计→任务三件套
+"添加用户登录功能"
 
-  # 步骤 2：描述你要做什么
-  "添加用户登录功能"
+# 步骤 3：AI 自动工作
 
-  # 步骤 3：AI 自动工作
-  # Kiro 按 tasks.md 中的 checklist 逐步实现
-  # Agent Hooks 可在文件保存时自动触发检查
-  # 完成后你测试、提交、记录会话即可
-  ```
+# Kilo Orchestrator Mode 会拆解任务分配给 Code/Architect 等模式
+
+# 完成后你测试、提交、记录会话即可
+
+````
+</Tab>
+<Tab title="Kiro">
+```bash
+# 步骤 1：Kiro 通过 .kiro/steering/ 自动加载项目规范
+# 选择 Spec 模式生成需求→设计→任务三件套
+
+# 步骤 2：描述你要做什么
+"添加用户登录功能"
+
+# 步骤 3：AI 自动工作
+# Kiro 按 tasks.md 中的 checklist 逐步实现
+# Agent Hooks 可在文件保存时自动触发检查
+# 完成后你测试、提交、记录会话即可
+````
+
   </Tab>
 </Tabs>
 
-### 2.4 目录结构全貌
+### 2.5 远程 Spec 模板
+
+你可以在初始化时直接拉取现成的 Spec 模板，而不用从零开始写。
+
+#### 官方 Marketplace
+
+```bash
+# 交互模式：浏览并选择可用模板
+trellis init -u your-name
+
+# 非交互模式：指定模板 ID
+trellis init -u your-name --template electron-fullstack
+```
+
+交互式选择器会展示[官方 Marketplace](https://github.com/mindfold-ai/docs/tree/main/marketplace) 中的所有模板。你也可以选择空白模板从头开始。
+
+#### 自定义仓库（`--registry`）
+
+从你自己的 GitHub、GitLab 或 Bitbucket 仓库拉取 Spec：
+
+```bash
+# 直接下载：仓库目录直接成为 .trellis/spec/
+trellis init --registry gh:myorg/myrepo/my-team-spec
+
+# Marketplace 模式：仓库包含 index.json 和多个模板
+trellis init --registry gh:myorg/myrepo/marketplace
+
+# 从自定义 Marketplace 选择特定模板
+trellis init --registry gh:myorg/myrepo/marketplace --template my-template
+
+# 指定分支
+trellis init --registry gh:myorg/myrepo/specs#develop
+
+# GitLab 或 Bitbucket
+trellis init --registry gitlab:myorg/myrepo/specs
+trellis init --registry bitbucket:myorg/myrepo/specs
+```
+
+**源格式**：`provider:user/repo[/subdir][#ref]`
+
+| Provider  | 前缀               |
+| --------- | ------------------ |
+| GitHub    | `gh:` 或 `github:` |
+| GitLab    | `gitlab:`          |
+| Bitbucket | `bitbucket:`       |
+
+ref（分支/标签）省略时默认为 `main`。
+
+#### 处理已有 Spec
+
+当 `.trellis/spec/` 已存在时，使用策略参数：
+
+| 参数          | 行为                         |
+| ------------- | ---------------------------- |
+| `--overwrite` | 删除现有 spec 目录后重新下载 |
+| `--append`    | 只复制目标目录中不存在的文件 |
+| _（都不加）_  | 交互式询问如何处理           |
+
+#### 搭建自定义 Marketplace
+
+在你的仓库中创建 `index.json`：
+
+```json
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "my-backend-spec",
+      "type": "spec",
+      "name": "My Backend Spec",
+      "description": "Backend conventions for our team",
+      "path": "marketplace/specs/my-backend-spec",
+      "tags": ["backend", "node"]
+    }
+  ]
+}
+```
+
+`path` 字段相对于仓库根目录。目前仅支持 `type: "spec"` 类型。
+
+#### 私有仓库
+
+对于私有仓库，通过 `GIGET_AUTH` 环境变量设置个人访问令牌：
+
+```bash
+GIGET_AUTH=ghp_xxxxx trellis init --registry gh:myorg/private-repo/specs
+```
+
+GitHub fine-grained token 需要 **Contents** 和 **Metadata** 读权限。
+
+### 2.6 目录结构全貌
 
 ```
 your-project/
