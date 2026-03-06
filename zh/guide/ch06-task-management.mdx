@@ -112,10 +112,10 @@ TASK_DIR=$(./.trellis/scripts/task.py create "添加用户登录" \
   "worktree_path": null,
   "current_phase": 1,
   "next_action": [
-    {"phase": 1, "action": "implement"},
-    {"phase": 2, "action": "check"},
-    {"phase": 3, "action": "finish"},
-    {"phase": 4, "action": "create-pr"}
+    { "phase": 1, "action": "implement" },
+    { "phase": 2, "action": "check" },
+    { "phase": 3, "action": "finish" },
+    { "phase": 4, "action": "create-pr" }
   ],
   "commit": null,
   "pr_url": null,
@@ -139,6 +139,7 @@ planning → in_progress → review → completed
 `task.py init-context` 会根据 dev_type 生成默认的 JSONL 文件：
 
 **backend 类型默认 implement.jsonl**：
+
 ```jsonl
 {"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
 {"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
@@ -148,6 +149,7 @@ planning → in_progress → review → completed
 ```
 
 **backend 类型默认 check.jsonl**（Claude Code 平台）：
+
 ```jsonl
 {"file": ".claude/commands/trellis/finish-work.md", "reason": "Finish work checklist"}
 {"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
@@ -178,15 +180,16 @@ Plan Agent 在接受需求前会进行严格评估，可能会拒绝。
 
 **5 类拒绝原因**：
 
-| 拒绝类型 | 触发条件 | 示例 |
-|---------|---------|------|
-| **Unclear or Vague** | 没有具体结果定义 | "Make it better"、"Fix the bugs" |
-| **Incomplete Information** | 缺少关键实现细节 | 引用了未知系统 |
-| **Out of Scope** | 不属于本项目 | 需要修改外部系统 |
-| **Potentially Harmful** | 安全风险 | 故意开后门 |
-| **Too Large** | 应该拆分 | 一次要做 6 个功能 |
+| 拒绝类型                   | 触发条件         | 示例                             |
+| -------------------------- | ---------------- | -------------------------------- |
+| **Unclear or Vague**       | 没有具体结果定义 | "Make it better"、"Fix the bugs" |
+| **Incomplete Information** | 缺少关键实现细节 | 引用了未知系统                   |
+| **Out of Scope**           | 不属于本项目     | 需要修改外部系统                 |
+| **Potentially Harmful**    | 安全风险         | 故意开后门                       |
+| **Too Large**              | 应该拆分         | 一次要做 6 个功能                |
 
 **拒绝时**：
+
 - `task.json` 状态设为 `"rejected"`
 - 生成 `REJECTED.md` 包含原因和改进建议
 - 任务目录保留供用户查看
@@ -214,3 +217,89 @@ Suggestions:
 - Start with basic authentication first
 - Create separate features for each capability
 ```
+
+### 6.6 任务生命周期 Hooks
+
+你可以配置在任务生命周期事件发生时自动执行的 shell 命令。适用于同步任务到 Linear、发送 Slack 通知、触发 CI 流水线等场景。
+
+#### 配置方式
+
+在 `.trellis/config.yaml` 中添加 `hooks` 块：
+
+```yaml
+hooks:
+  after_create:
+    - 'python3 .trellis/scripts/hooks/linear_sync.py create'
+  after_start:
+    - 'python3 .trellis/scripts/hooks/linear_sync.py start'
+  after_finish:
+    - "echo 'Task finished'"
+  after_archive:
+    - 'python3 .trellis/scripts/hooks/linear_sync.py archive'
+```
+
+<Note>默认的 `config.yaml` 中 hooks 部分是**注释掉的**。需要手动取消注释并编辑才能激活。</Note>
+
+#### 支持的事件
+
+| 事件            | 触发时机                        | 典型用途                        |
+| --------------- | ------------------------------- | ------------------------------- |
+| `after_create`  | `task.py create` 完成后         | 在项目管理工具中创建关联 issue  |
+| `after_start`   | `task.py start` 设置当前任务后  | 更新 issue 状态为 "In Progress" |
+| `after_finish`  | `task.py finish` 清除当前任务后 | 通知团队、触发评审              |
+| `after_archive` | `task.py archive` 归档任务后    | 标记 issue 为 "Done"            |
+
+#### 环境变量
+
+每个 Hook 都会收到：
+
+| 变量             | 值                          |
+| ---------------- | --------------------------- |
+| `TASK_JSON_PATH` | 任务 `task.json` 的绝对路径 |
+
+父进程的所有其他环境变量也会被继承。
+
+#### 执行行为
+
+- **工作目录**：仓库根目录
+- **Shell**：命令通过系统 shell 执行（`shell=True`）
+- **失败不阻塞**：Hook 失败会在 stderr 输出 `[WARN]`，但不会阻止任务操作完成
+- **顺序执行**：同一事件的多个 Hook 按列表顺序执行；某个失败不会跳过后续 Hook
+- **stdout 被捕获**：Hook 的 stdout 不会显示给用户 — 诊断信息请输出到 stderr
+
+<Warning>
+  `after_archive` Hook 收到的 `TASK_JSON_PATH` 指向的是**归档后**的位置（如
+  `.trellis/tasks/archive/2026-03/task-name/task.json`），不是原始路径。
+</Warning>
+
+#### 示例：Linear 同步 Hook
+
+Trellis 内置了一个示例 Hook 脚本 `.trellis/scripts/hooks/linear_sync.py`，可将任务生命周期事件同步到 [Linear](https://linear.app)。
+
+**功能说明**：
+
+| 动作      | 触发事件        | 效果                                                           |
+| --------- | --------------- | -------------------------------------------------------------- |
+| `create`  | `after_create`  | 从 task.json 创建 Linear issue（标题、优先级、指派人、父任务） |
+| `start`   | `after_start`   | 更新关联 issue 状态为 "In Progress"                            |
+| `archive` | `after_archive` | 更新关联 issue 状态为 "Done"                                   |
+| `sync`    | 手动调用        | 将 `prd.md` 内容推送到 Linear issue 描述                       |
+
+**前置条件**：
+
+1. 安装 [`linearis`](https://www.npmjs.com/package/linearis) CLI 并设置 `LINEAR_API_KEY`
+2. 创建 `.trellis/hooks.local.json`（已被 gitignore）并填入团队配置：
+
+```json
+{
+  "linear": {
+    "team": "ENG",
+    "project": "My Project",
+    "assignees": {
+      "alice": "linear-user-id-for-alice"
+    }
+  }
+}
+```
+
+Hook 会将 Linear issue 标识符写回 `task.json` 的 `meta.linear_issue` 字段（如 `"ENG-123"`），确保后续事件幂等。
