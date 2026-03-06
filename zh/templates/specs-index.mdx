@@ -5,6 +5,10 @@ description: '常见技术栈的编码规范模板'
 
 Spec 模板帮你快速搭建项目的编码规范。下载、定制、使用。
 
+<Info>
+**Spec 需要根据你的场景自定义。** Trellis 默认生成的 spec 是空模板——它们是留给*你的项目*规范的占位符。每个团队的技术栈、编码模式和质量标准都不同，所以你写的 spec 应该反映你实际的代码库，而不是泛泛的最佳实践。从 Marketplace 下载的模板只是起点，务必按你的项目做裁剪和扩展。
+</Info>
+
 ## 可用模板
 
 | 模板                                                                                                                | 技术栈 | 说明                           |
@@ -18,6 +22,52 @@ Spec 模板帮你快速搭建项目的编码规范。下载、定制、使用。
 >
   下载完整的 spec 模板 ZIP 文件
 </Card>
+
+## Template Marketplace <sup>v0.3.6</sup>
+
+从 v0.3.6 开始，你可以用 `--registry` 参数直接从任意 Git 仓库拉取 spec 模板：
+
+```bash
+# 从自定义仓库拉取
+trellis init --registry https://github.com/your-org/your-spec-templates
+
+# 可以和平台参数组合使用
+trellis init --registry https://github.com/your-org/your-spec-templates --cursor -u your-name
+```
+
+### 工作原理
+
+Trellis 自动探测两种模式：
+
+- **Marketplace 模式**：如果仓库包含 `marketplace/index.json` 文件，Trellis 会读取模板索引并让你选择要安装的模板
+- **直接下载模式**：如果没有 `index.json`，Trellis 会将整个 `marketplace/specs/` 目录视为单个模板并直接下载
+
+### 发布你自己的模板
+
+要创建一个可供他人通过 `--registry` 使用的 spec 模板仓库：
+
+1. 创建一个 Git 仓库（GitHub、GitLab 或 Bitbucket）
+2. 添加 `marketplace/` 目录，放入你的 spec 模板
+3. 创建 `marketplace/index.json` 来列出可用模板：
+
+```json
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "my-stack",
+      "type": "spec",
+      "name": "My Stack Template",
+      "description": "我们技术栈的编码规范",
+      "path": "marketplace/specs/my-stack",
+      "tags": ["react", "node", "typescript"]
+    }
+  ]
+}
+```
+
+4. 在每个模板路径内，按照标准结构（见下方）放置 spec 文件
+5. 分享仓库 URL，其他人通过 `trellis init --registry <url>` 安装
 
 ## 模板结构
 
@@ -44,12 +94,16 @@ spec/
 
 ## 使用方法
 
-1. 下载模板 ZIP
+1. 下载模板 ZIP 或使用 `trellis init --registry`
 2. 解压到项目的 `.trellis/spec/` 目录
 3. 按你项目的具体规范修改
 4. 删掉不适用的部分
 5. 更新路径和示例以匹配你的代码库
 
+<Tip>
+不需要一次填完所有 spec 文件。先从对你项目最重要的部分开始，然后逐步扩展。`/trellis:start` 的 bootstrap 任务会引导你完成初始填写。
+</Tip>
+
 ## 贡献模板
 
-即将推出。
+想和社区分享你的 spec？创建一个包含模板的仓库，然后提 PR 将它添加到[官方模板仓库](https://github.com/mindfold-ai/docs/tree/main/marketplace)。

@@ -3,23 +3,20 @@ title: 'v0.3.6'
 description: '2026-03-06'
 ---
 
-Task lifecycle hooks, custom template registries, parent-child subtasks, and a critical hook fix.
+Task lifecycle hooks, custom template registries, parent-child subtasks, and PreToolUse hook fix.
 
 ## Enhancements
 
-- **Custom template registry** (`--registry`): Pull spec templates from your own GitHub, GitLab, or Bitbucket repo during `trellis init`. Supports marketplace mode (with `index.json`) and direct download mode. See [Remote Spec Templates](/guide/ch02-quick-start#25-remote-spec-templates).
-- **Task lifecycle hooks**: Configure `after_create`, `after_start`, `after_finish`, and `after_archive` hooks in `.trellis/config.yaml`. Each hook receives `TASK_JSON_PATH` as an environment variable. Ships with a Linear sync hook example. See [Task Lifecycle Hooks](/guide/ch06-task-management#66-task-lifecycle-hooks).
-- **Parent-child subtasks**: `add-subtask` and `remove-subtask` commands, `--parent` flag on `task.py create`, new `children`/`parent`/`meta` fields in `task.json`.
-- **record-session improvements**: Archive judgment now based on actual work status, not the `status` field in `task.json`.
-- **brainstorm subtask decomposition**: `/trellis:brainstorm` Step 8 now includes subtask creation for complex tasks.
+- **Custom template registries**: `trellis init --registry` supports fetching Spec templates from custom GitHub/GitLab/Bitbucket repositories. Automatically detects marketplace mode (`index.json`) and direct download mode
+- **Task lifecycle hooks**: `.trellis/config.yaml` gains a `hooks` configuration block supporting four events: `after_create`, `after_start`, `after_finish`, and `after_archive`. Task information is passed via the `TASK_JSON_PATH` environment variable. Ships with a Linear sync hook example. See: [Task Management](/guide/ch06-task-management)
+- **Parent-child subtasks**: `task.py add-subtask` / `remove-subtask` commands for linking tasks. `task.json` gains `children`, `parent`, and `meta` fields. `task.py create --parent` creates a child task directly
+- **Record-session prompt improvement**: Archive decision is now based on actual work state rather than the `task.json` status field
+- **Brainstorm prompt update**: `/brainstorm` now includes a subtask decomposition step for complex tasks
 
 ## Bug Fixes
 
-- **PreToolUse context injection broken by Claude Code v2.1.63**: CC renamed the internal tool from `Task` to `Agent` ([anthropics/claude-code#29677](https://github.com/anthropics/claude-code/issues/29677)), silently breaking the PreToolUse hook — `implement`, `check`, `debug`, and `research` agents were not receiving injected code-spec context. Fixed by accepting both `Task` and `Agent` as valid tool names.
+- **PreToolUse context injection failure**: Claude Code v2.1.63 renamed its internal tool from `Task` to `Agent` ([anthropics/claude-code#29677](https://github.com/anthropics/claude-code/issues/29677)), causing hook scripts with `tool_name != "Task"` checks to exit early. This broke code-spec context injection for all implement/check/debug/research agents. Fix: accept both `Task` and `Agent` tool names, and add an `"Agent"` matcher to `settings.json`
 
-<Warning>
-  The PreToolUse bug affected **all** Trellis users on Claude Code v2.1.63+. Run `trellis update` to
-  apply the fix.
-</Warning>
+## Migration
 
-<Note>Run `trellis update` to sync updated hook scripts and command templates.</Note>
+No manual migration required. Run `trellis update` to sync the updated hook scripts and settings.

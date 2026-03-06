@@ -3,10 +3,12 @@ title: 'v0.3.5'
 description: '2026-03-05'
 ---
 
-Hotfix for v0.3.4 migration error.
+Hotfix for Kilo workflows delete migration.
 
 ## Bug Fixes
 
-- **Delete migration manifest**: Fixed field name in delete migration manifest — uses correct `from` field instead of `path` for Kilo commands cleanup
+- **Migration manifest field name**: Fixed `delete` migration manifest using incorrect `path` field instead of `from`, causing Kilo commands cleanup to fail during `trellis update`
 
-<Note>Run `trellis update` to apply the Kilo workflows migration that was broken in v0.3.4.</Note>
+## Migration
+
+No manual migration required. Run `trellis update` to apply the Kilo workflows migration that was blocked in v0.3.4.
