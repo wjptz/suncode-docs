@@ -63,24 +63,22 @@ Have an idea for better docs? Open a discussion:
 
 https://github.com/mindfold-ai/docs/discussions
 
-### Contribute a Claude Code Skill
+### Contribute a Skill
 
-Skills extend Claude's capabilities. To add a new skill:
+Skills extend AI capabilities. To add a new skill:
 
-1. Fork the repo
-2. Create plugin structure:
+1. Fork the [Trellis repo](https://github.com/mindfold-ai/Trellis)
+2. Create skill directory:
    ```
-   plugins/your-plugin/
-   ├── plugin.json
-   └── skills/your-skill/
-       └── SKILL.md
+   marketplace/skills/your-skill/
+   └── SKILL.md
    ```
-3. Update `.claude-plugin/marketplace.json` to register your plugin
-4. Create documentation pages (`skills-market/your-skill.mdx` + Chinese version)
-5. Update `docs.json` navigation
-6. Open a PR
+3. Open a PR to the Trellis repo
+4. (Optional) Create documentation pages in docs repo (`skills-market/your-skill.mdx` + Chinese version)
 
 See [Claude Code Skills documentation](https://code.claude.com/docs/en/skills) for SKILL.md format.
+
+<Note>Skills are hosted in the [Trellis main repo](https://github.com/mindfold-ai/Trellis), not in docs.</Note>
 
 ### Contribute a Spec Template
 

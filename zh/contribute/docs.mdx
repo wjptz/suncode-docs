@@ -60,24 +60,22 @@ https://github.com/mindfold-ai/docs/issues
 
 https://github.com/mindfold-ai/docs/discussions
 
-### 贡献 Claude Code Skill
+### 贡献 Skill
 
-Skill 扩展 Claude 的能力。添加新 skill：
+Skill 扩展 AI 的能力。添加新 skill：
 
-1. Fork 仓库
-2. 创建 plugin 结构：
+1. Fork [Trellis 主仓库](https://github.com/mindfold-ai/Trellis)
+2. 创建 skill 目录：
    ```
-   plugins/your-plugin/
-   ├── plugin.json
-   └── skills/your-skill/
-       └── SKILL.md
+   marketplace/skills/your-skill/
+   └── SKILL.md
    ```
-3. 更新 `.claude-plugin/marketplace.json` 注册你的 plugin
-4. 创建文档页面（`skills-market/your-skill.mdx` + 中文版）
-5. 更新 `docs.json` 导航
-6. 开 PR
+3. 向 Trellis 主仓库提 PR
+4. （可选）在 docs 仓库创建文档页面（`skills-market/your-skill.mdx` + 中文版）
 
 SKILL.md 格式参考 [Claude Code Skills 文档](https://code.claude.com/docs/en/skills)。
+
+<Note>Skill 托管在 [Trellis 主仓库](https://github.com/mindfold-ai/Trellis)，不在 docs 仓库。</Note>
 
 ### 贡献 Spec 模板
 
