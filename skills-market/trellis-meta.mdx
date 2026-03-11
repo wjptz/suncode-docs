@@ -12,46 +12,25 @@ The official meta-skill for understanding and customizing Trellis. Install this 
 
 ## Install
 
-<Tabs>
-  <Tab title="npx skills (Recommended)">
-    Works with Claude Code, Cursor, OpenCode, iFlow, Codex, Kilo, Kiro, Gemini CLI, Antigravity, and more.
+Works with Claude Code, Cursor, OpenCode, iFlow, Codex, Kilo, Kiro, Gemini CLI, Antigravity, and more.
 
-    ```bash
-    npx skills add mindfold-ai/Trellis/marketplace --skill trellis-meta
-    ```
+```bash
+npx skills add mindfold-ai/Trellis/marketplace --skill trellis-meta
+```
 
-    Or install all available skills:
+Or install all available skills:
 
-    ```bash
-    npx skills add mindfold-ai/Trellis/marketplace
-    ```
+```bash
+npx skills add mindfold-ai/Trellis/marketplace
+```
 
-    Options:
+Options:
 
-    | Flag | Description |
-    | --- | --- |
-    | `-g` | Install globally (`~/.claude/skills/`) |
-    | `-a claude-code` | Target a specific agent |
-    | `-y` | Non-interactive mode |
-
-  </Tab>
-  <Tab title="Claude Code Plugin">
-    **Step 1**: Register the skill source
-
-    ```bash
-    /plugin marketplace add mindfold-ai/Trellis
-    ```
-
-    **Step 2**: Install the skill
-
-    ```bash
-    /plugin install trellis-meta
-    ```
-
-    After installation, the skill appears as `trellis-marketplace:trellis-meta`.
-
-  </Tab>
-</Tabs>
+| Flag | Description |
+| --- | --- |
+| `-g` | Install globally (`~/.claude/skills/`) |
+| `-a claude-code` | Target a specific agent |
+| `-y` | Non-interactive mode |
 
 ## Verify Installation
 
@@ -61,7 +40,7 @@ Check if the skill is available:
 What skills do you have access to?
 ```
 
-Claude should list `trellis-meta` or `trellis-marketplace:trellis-meta` in the response.
+Claude should list `trellis-meta` in the response.
 
 ## Usage
 

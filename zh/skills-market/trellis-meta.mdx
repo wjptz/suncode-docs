@@ -12,46 +12,25 @@ description: '定制 Trellis 的必备技能'
 
 ## 安装
 
-<Tabs>
-  <Tab title="npx skills（推荐）">
-    支持 Claude Code、Cursor、OpenCode、iFlow、Codex、Kilo、Kiro、Gemini CLI、Antigravity 等更多 agents。
+支持 Claude Code、Cursor、OpenCode、iFlow、Codex、Kilo、Kiro、Gemini CLI、Antigravity 等更多 agents。
 
-    ```bash
-    npx skills add mindfold-ai/Trellis/marketplace --skill trellis-meta
-    ```
+```bash
+npx skills add mindfold-ai/Trellis/marketplace --skill trellis-meta
+```
 
-    或安装所有可用 skills：
+或安装所有可用 skills：
 
-    ```bash
-    npx skills add mindfold-ai/Trellis/marketplace
-    ```
+```bash
+npx skills add mindfold-ai/Trellis/marketplace
+```
 
-    选项：
+选项：
 
-    | 参数 | 说明 |
-    | --- | --- |
-    | `-g` | 全局安装（`~/.claude/skills/`） |
-    | `-a claude-code` | 指定目标 agent |
-    | `-y` | 非交互模式 |
-
-  </Tab>
-  <Tab title="Claude Code Plugin">
-    **第一步**：注册 skill 来源
-
-    ```bash
-    /plugin marketplace add mindfold-ai/Trellis
-    ```
-
-    **第二步**：安装 skill
-
-    ```bash
-    /plugin install trellis-meta
-    ```
-
-    安装后，skill 显示为 `trellis-marketplace:trellis-meta`。
-
-  </Tab>
-</Tabs>
+| 参数 | 说明 |
+| --- | --- |
+| `-g` | 全局安装（`~/.claude/skills/`） |
+| `-a claude-code` | 指定目标 agent |
+| `-y` | 非交互模式 |
 
 ## 验证安装
 
@@ -61,7 +40,7 @@ description: '定制 Trellis 的必备技能'
 你有哪些 skills？
 ```
 
-Claude 应该在回复中列出 `trellis-meta` 或 `trellis-marketplace:trellis-meta`。
+Claude 应该在回复中列出 `trellis-meta`。
 
 ## 使用
 
