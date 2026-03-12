@@ -113,6 +113,7 @@
                 "pages": [
                   "changelog/v0.4.0-beta.2",
                   "changelog/v0.4.0-beta.1",
+                  "changelog/v0.3.10",
                   "changelog/v0.3.9",
                   "changelog/v0.3.8",
                   "changelog/v0.3.7",
@@ -246,6 +247,7 @@
                 "pages": [
                   "zh/changelog/v0.4.0-beta.2",
                   "zh/changelog/v0.4.0-beta.1",
+                  "zh/changelog/v0.3.10",
                   "zh/changelog/v0.3.9",
                   "zh/changelog/v0.3.8",
                   "zh/changelog/v0.3.7",

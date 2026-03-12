@@ -1,0 +1,11 @@
+---
+title: 'v0.3.10'
+description: '2026-03-12'
+---
+
+修复 registry URL 处理和 AI 模型兼容性问题。
+
+## Bug 修复
+
+- **HTTPS registry URL 支持** — `trellis init --registry` 现在支持 HTTPS URL（如 `https://github.com/user/repo`），会自动转换为 giget 格式。支持 GitHub、GitLab、Bitbucket，包括 `/tree/branch/path` 格式和 `.git` 后缀。(#87)
+- **Record-session AI 兼容性** — 更新了所有 9 个平台的 record-session 命令措辞。之前 "AI must NOT execute git commit" 的表述过于绝对，导致 AI 模型（尤其是 GPT）拒绝运行 `add_session.py` 等脚本。新措辞明确说明处理 `.trellis/` 元数据提交的脚本可以安全执行。(#88)
