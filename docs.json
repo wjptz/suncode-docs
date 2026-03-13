@@ -76,7 +76,7 @@
               {
                 "group": "Skills",
                 "expanded": false,
-                "pages": ["skills-market/index", "skills-market/trellis-meta"]
+                "pages": ["skills-market/index", "skills-market/trellis-meta", "skills-market/cc-codex-spec-bootstrap"]
               },
               {
                 "group": "Spec Templates",
@@ -207,7 +207,7 @@
               {
                 "group": "Skills",
                 "expanded": false,
-                "pages": ["zh/skills-market/index", "zh/skills-market/trellis-meta"]
+                "pages": ["zh/skills-market/index", "zh/skills-market/trellis-meta", "zh/skills-market/cc-codex-spec-bootstrap"]
               },
               {
                 "group": "Spec Templates",

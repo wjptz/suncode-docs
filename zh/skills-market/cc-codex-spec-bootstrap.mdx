@@ -1,0 +1,92 @@
+---
+title: 'cc-codex-spec-bootstrap'
+description: '使用 Claude Code + Codex 并行流水线引导生成编码规范'
+---
+
+一个多 Agent 流水线：**Claude Code** 负责编排，**Codex** 并行执行。CC 使用 GitNexus（知识图谱）+ ABCoder（AST）分析仓库，创建包含完整架构上下文的 Trellis 任务 PRD，然后 Codex agent 并行填充编码规范文件 — 每个 agent 都能使用相同的代码智能 MCP 工具。
+
+## 为什么需要这个技能？
+
+AI 编码 agent 在有项目特定编码规范时能写出更好的代码。但手动编写这些规范很繁琐。这个技能自动化了引导过程：
+
+1. **Claude Code** 使用 GitNexus + ABCoder 分析仓库架构
+2. **Claude Code** 创建包含架构上下文 + MCP 工具说明的 Trellis 任务 PRD
+3. **Codex agent** 并行执行这些任务，每个 agent 使用相同的 MCP 工具填充一个 spec 目录
+
+结果：每个 spec 文件都包含真实代码示例、实际模式和项目特定的反模式 — 而非占位文本。
+
+## 前置条件
+
+| 工具 | 用途 | 必需 |
+|------|------|------|
+| [Trellis](https://github.com/mindfold-ai/Trellis) | 工作流框架，提供 `.trellis/spec/` 结构 | 是 |
+| [GitNexus](https://github.com/abhigyanpatwari/GitNexus) | 代码 → 知识图谱（Tree-sitter + KuzuDB） | 是 |
+| [ABCoder](https://github.com/nicepkg/abcoder) | 代码 → UniAST（TS 用 ts-morph，其他语言用 tree-sitter） | 是 |
+| [Codex CLI](https://github.com/openai/codex) | 并行任务执行 agent | 是 |
+
+## 安装
+
+```bash
+npx skills add mindfold-ai/Trellis/marketplace --skill cc-codex-spec-bootstrap
+```
+
+或安装所有可用 skills：
+
+```bash
+npx skills add mindfold-ai/Trellis/marketplace
+```
+
+选项：
+
+| 参数 | 说明 |
+| --- | --- |
+| `-g` | 全局安装（`~/.claude/skills/`） |
+| `-a claude-code` | 指定目标 agent |
+| `-y` | 非交互模式 |
+
+## 验证安装
+
+检查 skill 是否可用：
+
+```
+你有哪些 skills？
+```
+
+Claude 应该在回复中列出 `cc-codex-spec-bootstrap`。
+
+## 使用
+
+安装后，告诉 AI 引导生成你的 specs：
+
+```
+用 Codex 为这个项目引导生成编码规范
+```
+
+```
+用代码智能设置 Trellis spec 文件
+```
+
+```
+运行 CC + Codex spec 流水线
+```
+
+## 工作原理
+
+### 阶段 1 — 分析
+
+Claude Code 用 GitNexus（知识图谱）和 ABCoder（AST）索引仓库，然后映射架构：包边界、模块集群、关键模式和跨包数据流。
+
+### 阶段 2 — 规划
+
+Claude Code 为每个（包, 层）组合创建一个 Trellis 任务。每个任务 PRD 包含阶段 1 的架构上下文以及 MCP 工具说明，使 Codex agent 可以独立探索代码库。
+
+### 阶段 3 — 执行
+
+Codex agent 并行执行所有任务。每个 agent 读取 PRD，使用 GitNexus + ABCoder MCP 工具分析相关代码，然后用真实示例和模式填充 spec 文件。
+
+## 包含内容
+
+| 文件 | 内容 |
+| --- | --- |
+| `SKILL.md` | 完整流水线说明（3 个阶段、检查清单、PRD 模板） |
+| `references/mcp-setup.md` | GitNexus + ABCoder MCP 安装配置详细指南 |
