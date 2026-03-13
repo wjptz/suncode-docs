@@ -1,0 +1,15 @@
+---
+title: 'v0.4.0-beta.3'
+description: '2026-03-13'
+---
+
+修复 `trellis update` 跳过未注册 Python 脚本的问题，并合并 v0.3.10 修复。
+
+## Bug 修复
+
+- **Update 脚本同步** — `trellis update` 现在使用 `getAllScripts()` 作为 Python 脚本文件的唯一数据源。之前有 11 个脚本（`common/` 下 9 个，`multi_agent/` 下 2 个）因未注册到 `collectTemplateFiles()` 的手动列表中而被静默跳过。
+
+## 合并自 v0.3.10
+
+- **HTTPS registry URL 支持** — `trellis init --registry` 现在支持 HTTPS URL（如 `https://github.com/user/repo`），会自动转换为 giget 格式。(#87)
+- **Record-session AI 兼容性** — 更新了 record-session 命令措辞，AI 模型（尤其是 GPT）不再拒绝运行元数据脚本。(#88)
