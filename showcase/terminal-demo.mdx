@@ -50,6 +50,9 @@ description: 'See the full Trellis workflow in action — from brainstorm to shi
           <span className="td-agent-name">research</span>
           <span className="td-agent-desc">(Find platform integration specs and code patterns)</span>
         </div>
+        <div className="td-line td-line-loading" style={{animationDelay: '5.4s'}}>
+          └ Initializing...
+        </div>
         <div className="td-line td-line-sub td-d6">
           └ Done <span className="td-dim">(36 tool uses · 86.5k tokens · 2m 25s)</span> <span className="td-success">✓</span>
         </div>
@@ -74,6 +77,9 @@ description: 'See the full Trellis workflow in action — from brainstorm to shi
           <span className="td-agent-name">implement</span>
           <span className="td-agent-desc">(Implement Gemini CLI platform)</span>
         </div>
+        <div className="td-line td-line-loading" style={{animationDelay: '12.8s'}}>
+          └ Writing src/configurators/gemini.ts...
+        </div>
         <div className="td-line td-line-sub td-d11">
           └ Done <span className="td-dim">(99 tool uses · 162.5k tokens · 12m 3s)</span> <span className="td-success">✓</span>
         </div>
@@ -88,8 +94,14 @@ description: 'See the full Trellis workflow in action — from brainstorm to shi
           <span className="td-agent-name">check</span>
           <span className="td-agent-desc">(Review implementation against code-specs)</span>
         </div>
+        <div className="td-line td-line-loading" style={{animationDelay: '17.6s'}}>
+          └ Reading diff... 14 files changed
+        </div>
         <div className="td-line td-line-sub td-d14">
-          └ Found 1 issue → fixed automatically <span className="td-success">✓</span>
+          └ Found 1 issue: missing EXCLUDE_PATTERNS entry
+        </div>
+        <div className="td-line td-line-sub" style={{animationDelay: '19.8s'}}>
+          └ Fixed automatically <span className="td-success">✓</span>
         </div>
 
         {/* ── Phase 7: Update spec ── */}
@@ -98,22 +110,34 @@ description: 'See the full Trellis workflow in action — from brainstorm to shi
           <span className="td-cmd">/trellis:update-spec</span>
         </div>
         <div className="td-line td-line-ai td-d16">
-          <span className="td-bullet">● </span>
-          Added Gemini CLI conventions to <span className="td-link">platform-integration.md</span>
+          <span className="td-tool-name">● Read</span>
+          <span className="td-tool-args">(.trellis/spec/backend/platform-integration.md)</span>
+        </div>
+        <div className="td-line td-line-ai td-d17">
+          <span className="td-tool-name">● Update</span>
+          <span className="td-tool-args">(platform-integration.md)</span>
+          <span> — added Gemini CLI conventions</span>
         </div>
 
         {/* ── Phase 8: Record session ── */}
-        <div className="td-line td-line-user td-d17">
+        <div className="td-line td-line-user td-d18">
           <span className="td-prompt">❯ </span>
           <span className="td-cmd">/trellis:record-session</span>
         </div>
-        <div className="td-line td-line-ai td-d18">
-          <span className="td-bullet">● </span>
-          Session archived. 5 commits on <span className="td-link">feat/gemini</span>. Ready for review.
+        <div className="td-line td-line-ai td-d19">
+          <span className="td-tool-name">● Bash</span>
+          <span className="td-tool-args">(task.py archive gemini-cli)</span>
+        </div>
+        <div className="td-line td-line-ai td-d20">
+          <span className="td-tool-name">● Bash</span>
+          <span className="td-tool-args">(add_session.py --title "feat: Gemini CLI support" --commit "ec6114a")</span>
+        </div>
+        <div className="td-line td-line-sub td-d21">
+          └ Task archived. Session recorded to <span className="td-link">journal-4.md</span>.
         </div>
 
         {/* ── Final cursor ── */}
-        <div className="td-line td-line-ai td-d19">
+        <div className="td-line td-line-ai td-d22">
           <span className="td-prompt">❯ </span>
           <span className="td-cursor"></span>
         </div>

@@ -8,9 +8,11 @@ function initTerminalDemo(wrap) {
   var body = wrap.querySelector('.td-body');
   var lines = body ? body.querySelectorAll('.td-line') : [];
 
-  var delays = [0.3,1.0,1.8,3.0,4.2,5.0,6.0,7.0,8.0,9.0,9.8,10.6,11.6,12.8,13.6,14.8,15.6,16.6,17.6,18.6];
-  var phaseEnd = [2, 3, 9, 12, 14, 16, 19];
-  var descDelays = [0.3, 3.0, 4.2, 9.8, 12.8, 14.8, 16.6];
+  // Delays for ALL .td-line elements in DOM order (including loading/status lines)
+  // DOM order: d0,d1,d2, d3,d4, d5,load,d6,d7,d8,d9, d10,load,d11,d12, d13,load,d14,fix, d15,d16,d17, d18,d19,d20,d21, d22
+  var delays = [0.5,1.1,1.8, 2.8,3.4, 4.6,5.4,6.6,8.0,9.2,10.4, 12.0,12.8,14.0,15.3, 16.8,17.6,18.8,19.8, 21.5,22.1,23.3, 24.3,24.9,26.1,27.1, 28.3];
+  var phaseEnd = [2, 4, 10, 14, 18, 21, 26];
+  var descDelays = [0.5, 2.8, 4.6, 12.0, 16.8, 21.5, 24.3];
 
   // ── Auto-scroll: use animationstart event (reliable, event-driven) ──
   if (body) {
