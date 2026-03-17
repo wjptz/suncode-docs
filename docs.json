@@ -227,6 +227,7 @@
                 "expanded": false,
                 "pages": [
                   "zh/showcase/index",
+                  "zh/showcase/terminal-demo",
                   "zh/showcase/open-typeless",
                   "zh/showcase/trellis-cursor"
                 ]

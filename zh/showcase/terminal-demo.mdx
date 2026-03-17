@@ -1,0 +1,241 @@
+---
+title: '工作流演示'
+sidebarTitle: '工作流演示'
+description: '看看 Trellis 完整工作流的实际效果 — 从需求到交付'
+---
+
+{/* 终端演示 — CSS 在 styles.css（td- 前缀），JS 在 terminal-demo.js */}
+
+<div className="td-wrap">
+  <div className="td-inner">
+
+    <div className="td-glow"></div>
+    <div className="td-window">
+      <div className="td-titlebar">
+        <div className="td-dots">
+          <div className="td-dot td-dot-r"></div>
+          <div className="td-dot td-dot-y"></div>
+          <div className="td-dot td-dot-g"></div>
+        </div>
+      </div>
+      <div className="td-body">
+
+        {/* ── 阶段 1: 启动会话 ── */}
+        <div className="td-line td-line-user td-d0">
+          <span className="td-prompt">❯ </span>
+          <span className="td-cmd">/trellis:start</span>
+        </div>
+        <div className="td-line td-line-ai td-d1">
+          <span className="td-bullet">● </span>
+          Loaded — workflow, 3 active tasks, branch <span className="td-link">feat/v0.4.0-beta</span>
+        </div>
+        <div className="td-line td-line-ai td-d2">
+          <span className="td-bullet">● </span>
+          What would you like to work on?
+        </div>
+
+        {/* ── 阶段 2: 描述需求 ── */}
+        <div className="td-line td-line-user td-d3">
+          <span className="td-prompt">❯ </span>
+          Add Gemini CLI support, similar to how Cursor is integrated
+        </div>
+
+        {/* ── 阶段 3: 创建任务 + 调研 ── */}
+        <div className="td-line td-line-ai td-d4">
+          <span className="td-tool-name">● Bash</span>
+          <span className="td-tool-args">(task.py create "Gemini CLI support" --slug gemini-cli)</span>
+        </div>
+        <div className="td-line td-line-agent td-d5">
+          <span className="td-agent-icon">▶ </span>
+          <span className="td-agent-name">research</span>
+          <span className="td-agent-desc">(Find platform integration specs and code patterns)</span>
+        </div>
+        <div className="td-line td-line-loading" style={{animationDelay: '5.4s'}}>
+          └ Initializing...
+        </div>
+        <div className="td-line td-line-sub td-d6">
+          └ Done <span className="td-dim">(36 tool uses · 86.5k tokens · 2m 25s)</span> <span className="td-success">✓</span>
+        </div>
+
+        {/* ── 阶段 4: 配置上下文 ── */}
+        <div className="td-line td-line-ai td-d7">
+          <span className="td-tool-name">● Bash</span>
+          <span className="td-tool-args">(task.py add-context ... platform-integration.md, cursor.ts, ai-tools.ts)</span>
+        </div>
+        <div className="td-line td-line-sub td-d8">
+          └ 6 spec files added to <span className="td-link">implement.jsonl</span>
+        </div>
+        <div className="td-line td-line-ai td-d9">
+          <span className="td-tool-name">● Bash</span>
+          <span className="td-tool-args">(task.py start ...)</span>
+          <span> — hooks will inject context into agents</span>
+        </div>
+
+        {/* ── 阶段 5: 实现 ── */}
+        <div className="td-line td-line-agent td-d10">
+          <span className="td-agent-icon">▶ </span>
+          <span className="td-agent-name">implement</span>
+          <span className="td-agent-desc">(Implement Gemini CLI platform)</span>
+        </div>
+        <div className="td-line td-line-loading" style={{animationDelay: '12.8s'}}>
+          └ Writing src/configurators/gemini.ts...
+        </div>
+        <div className="td-line td-line-sub td-d11">
+          └ Done <span className="td-dim">(99 tool uses · 162.5k tokens · 12m 3s)</span> <span className="td-success">✓</span>
+        </div>
+        <div className="td-line td-line-ai td-d12">
+          <span className="td-bullet">● </span>
+          TypeCheck <span className="td-success">✓</span> · Lint <span className="td-success">✓</span> · Tests: 337/337 <span className="td-success">✓</span>
+        </div>
+
+        {/* ── 阶段 6: 质量检查 ── */}
+        <div className="td-line td-line-agent td-d13">
+          <span className="td-agent-icon">▶ </span>
+          <span className="td-agent-name">check</span>
+          <span className="td-agent-desc">(Review implementation against code-specs)</span>
+        </div>
+        <div className="td-line td-line-loading" style={{animationDelay: '17.6s'}}>
+          └ Reading diff... 14 files changed
+        </div>
+        <div className="td-line td-line-sub td-d14">
+          └ Found 1 issue: missing EXCLUDE_PATTERNS entry
+        </div>
+        <div className="td-line td-line-sub" style={{animationDelay: '19.8s'}}>
+          └ Fixed automatically <span className="td-success">✓</span>
+        </div>
+
+        {/* ── 阶段 7: 更新规范 ── */}
+        <div className="td-line td-line-user td-d15">
+          <span className="td-prompt">❯ </span>
+          <span className="td-cmd">/trellis:update-spec</span>
+        </div>
+        <div className="td-line td-line-ai td-d16">
+          <span className="td-tool-name">● Read</span>
+          <span className="td-tool-args">(.trellis/spec/backend/platform-integration.md)</span>
+        </div>
+        <div className="td-line td-line-ai td-d17">
+          <span className="td-tool-name">● Update</span>
+          <span className="td-tool-args">(platform-integration.md)</span>
+          <span> — added Gemini CLI conventions</span>
+        </div>
+
+        {/* ── 阶段 8: 记录会话 ── */}
+        <div className="td-line td-line-user td-d18">
+          <span className="td-prompt">❯ </span>
+          <span className="td-cmd">/trellis:record-session</span>
+        </div>
+        <div className="td-line td-line-ai td-d19">
+          <span className="td-tool-name">● Bash</span>
+          <span className="td-tool-args">(task.py archive gemini-cli)</span>
+        </div>
+        <div className="td-line td-line-ai td-d20">
+          <span className="td-tool-name">● Bash</span>
+          <span className="td-tool-args">(add_session.py --title "feat: Gemini CLI support" --commit "ec6114a")</span>
+        </div>
+        <div className="td-line td-line-sub td-d21">
+          └ Task archived. Session recorded to <span className="td-link">journal-4.md</span>.
+        </div>
+
+        {/* ── 最终光标 ── */}
+        <div className="td-line td-line-ai td-d22">
+          <span className="td-prompt">❯ </span>
+          <span className="td-cursor"></span>
+        </div>
+
+      </div>
+    </div>
+
+    {/* ── 进度条（可点击） ── */}
+    <div className="td-timeline">
+      <div className="td-timeline-track"></div>
+      <div className="td-timeline-fill"></div>
+      <div className="td-step-dot" title="启动"></div>
+      <div className="td-step-dot" title="描述"></div>
+      <div className="td-step-dot" title="调研"></div>
+      <div className="td-step-dot" title="实现"></div>
+      <div className="td-step-dot" title="检查"></div>
+      <div className="td-step-dot" title="更新规范"></div>
+      <div className="td-step-dot" title="归档"></div>
+    </div>
+
+    {/* ── 步骤说明 ── */}
+    <div className="td-descs">
+      <div className="td-desc td-desc-0">
+        <p className="td-desc-title">会话已加载</p>
+        <p className="td-desc-text">AI 自动读取项目上下文 — 工作流规则、活跃任务、Git 状态和最近的工作日志。</p>
+      </div>
+      <div className="td-desc td-desc-1">
+        <p className="td-desc-title">自然语言输入</p>
+        <p className="td-desc-text">用自然语言描述你想要的功能，Trellis 自动创建结构化的任务和 PRD。</p>
+      </div>
+      <div className="td-desc td-desc-2">
+        <p className="td-desc-title">调研与配置</p>
+        <p className="td-desc-text">Research Agent 找到相关的规范和代码模式，通过 jsonl 配置上下文文件 — hooks 自动注入给 Agent。</p>
+      </div>
+      <div className="td-desc td-desc-3">
+        <p className="td-desc-title">实现</p>
+        <p className="td-desc-text">Agent 按照项目规范跨 5 层编写代码。99 次工具调用，337 个测试全部通过。</p>
+      </div>
+      <div className="td-desc td-desc-4">
+        <p className="td-desc-title">质量检查</p>
+        <p className="td-desc-text">Check Agent 对照代码规范审查每个改动文件，发现问题自动修复。</p>
+      </div>
+      <div className="td-desc td-desc-5">
+        <p className="td-desc-title">更新规范</p>
+        <p className="td-desc-text">将本次会话中学到的新模式沉淀到规范库 — 让未来的会话更准确。</p>
+      </div>
+      <div className="td-desc td-desc-6">
+        <p className="td-desc-title">会话已归档</p>
+        <p className="td-desc-text">5 个原子提交，会话记录到工作日志。分支已准备好等待 Review。</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+---
+
+## 刚才发生了什么？
+
+这个演示回放了一次真实的 Trellis 会话 — 我们为 Trellis CLI 添加了 **Gemini CLI 平台支持**，涉及类型定义、模板、配置器、CLI 参数、Python 适配器和文档。
+
+### 工作流程
+
+<Steps>
+  <Step title="启动会话">
+    `/trellis:start` 加载项目上下文 — 工作流规则、活跃任务、Git 状态和最近的工作日志。AI 立即进入状态。
+  </Step>
+  <Step title="描述需求">
+    用自然语言描述你想要的功能。Trellis 创建一个带结构化 PRD 的跟踪任务。
+  </Step>
+  <Step title="调研与配置">
+    Research Agent 读取 36 个文件，找到相关的规范和代码模式。上下文文件配置到 jsonl 中，Agent 通过 hooks 自动接收正确的规范。
+  </Step>
+  <Step title="实现">
+    Implement Agent 跨 5 层编写代码（类型 → 模板 → 配置器 → CLI → Python）。99 次工具调用，337 个测试一次通过。
+  </Step>
+  <Step title="质量检查">
+    Check Agent 对照代码规范审查每个改动文件。发现 1 个缺失的 `EXCLUDE_PATTERNS` 条目并自动修复。
+  </Step>
+  <Step title="更新规范">
+    `/trellis:update-spec` 将本次会话中学到的新模式沉淀到规范库 — 让未来的会话更准确。
+  </Step>
+  <Step title="记录与交付">
+    `/trellis:record-session` 将会话归档到工作日志。5 个原子提交已在功能分支上，准备好等待 Review。
+  </Step>
+</Steps>
+
+### 关键数据
+
+| 指标 | 数值 |
+|------|------|
+| **总耗时** | ~20 分钟 |
+| **工具调用** | 169 次（explore + research + implement + check） |
+| **改动文件** | 14 个 TOML 模板 + 5 个源文件 |
+| **测试** | 337/337 通过 |
+| **提交** | 5 个原子提交 |
+| **人工输入** | 3 条消息（需求描述 + update-spec + record-session） |
+
+<Card title="立即体验" icon="rocket" href="/zh/guide/ch02-quick-start">
+  安装 Trellis，运行 `/trellis:start` 开始你的第一个任务。
+</Card>
