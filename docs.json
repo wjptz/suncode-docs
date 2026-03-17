@@ -1,6 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
+  "js": "/terminal-demo.js",
   "exclude": [
     ".trellis/**",
     "AGENTS.md",
@@ -91,7 +92,7 @@
               {
                 "group": "Showcase",
                 "expanded": false,
-                "pages": ["showcase/index", "showcase/open-typeless", "showcase/trellis-cursor"]
+                "pages": ["showcase/index", "showcase/terminal-demo", "showcase/open-typeless", "showcase/trellis-cursor"]
               },
               {
                 "group": "Contributing",
