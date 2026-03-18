@@ -82,7 +82,7 @@
               {
                 "group": "Spec Templates",
                 "expanded": false,
-                "pages": ["templates/specs-index", "templates/specs-electron", "templates/specs-nextjs"]
+                "pages": ["templates/specs-index", "templates/specs-electron", "templates/specs-nextjs", "templates/specs-cf-workers"]
               }
             ]
           },
@@ -215,7 +215,7 @@
               {
                 "group": "Spec Templates",
                 "expanded": false,
-                "pages": ["zh/templates/specs-index", "zh/templates/specs-electron", "zh/templates/specs-nextjs"]
+                "pages": ["zh/templates/specs-index", "zh/templates/specs-electron", "zh/templates/specs-nextjs", "zh/templates/specs-cf-workers"]
               }
             ]
           },
