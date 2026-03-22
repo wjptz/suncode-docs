@@ -40,6 +40,10 @@ cd your-project
   <Tab title="Kiro">
     ```bash trellis init --kiro -u your-name ``` 配置 `.kiro/` 目录（steering、hooks、prompts）。
   </Tab>
+  <Tab title="CodeBuddy">
+    ```bash trellis init --codebuddy -u your-name ``` 配置 `.codebuddy/commands/trellis/`
+    目录（嵌套子目录命名空间的 slash commands）。
+  </Tab>
 </Tabs>
 
 `your-name` 会成为你的开发者身份标识，并创建个人工作区 `.trellis/workspace/your-name/`。
@@ -56,16 +60,17 @@ cd your-project
 | **OpenCode**    | `.agents/skills/`                                                | `/start`    |
 | **Kilo**        | `.kilocode/workflows/`, `.kilocode/rules/`, `.kilocode/skills/`  | `/start.md` |
 | **Kiro**        | `.kiro/steering/`, `.kiro/hooks/`, `.kiro/prompts/`              | `@start`    |
+| **CodeBuddy**   | `.codebuddy/commands/trellis/*.md`                               | `/trellis:start` |
 
 #### 平台能力对比
 
-| 能力                 |     Claude Code      |     Cursor     |    Codex     | OpenCode |            Kilo            |        Kiro         |
-| -------------------- | :------------------: | :------------: | :----------: | :------: | :------------------------: | :-----------------: |
-| 会话自动注入         |       ✅ Hook        | ❌ 手动 /start | ⚡ AGENTS.md | ✅ Hook  |  ⚡ rules/ + launchConfig  |    ⚡ steering/     |
-| 子 Agent 规范注入    |  ✅ PreToolUse Hook  |       ❌       |      ❌      |    ❌    |    ⚡ Orchestrator Mode    |  ⚡ Custom Agents   |
-| Ralph Loop 质量门    | ✅ SubagentStop Hook |       ❌       |      ❌      |    ❌    |             ❌             |   ⚡ Agent Hooks    |
-| Multi-Agent Pipeline |          ✅          |       ❌       |      ❌      |    ❌    | ✅ Orchestrator + worktree | ✅ Autonomous Agent |
-| 命令数量             |          13          |       12       |      13      |    13    |         workflows          |       prompts       |
+| 能力                 |     Claude Code      |     Cursor     |    Codex     | OpenCode |            Kilo            |        Kiro         |         CodeBuddy          |
+| -------------------- | :------------------: | :------------: | :----------: | :------: | :------------------------: | :-----------------: | :------------------------: |
+| 会话自动注入         |       ✅ Hook        | ❌ 手动 /start | ⚡ AGENTS.md | ✅ Hook  |  ⚡ rules/ + launchConfig  |    ⚡ steering/     | ❌ 手动 /trellis:start     |
+| 子 Agent 规范注入    |  ✅ PreToolUse Hook  |       ❌       |      ❌      |    ❌    |    ⚡ Orchestrator Mode    |  ⚡ Custom Agents   |             ❌             |
+| Ralph Loop 质量门    | ✅ SubagentStop Hook |       ❌       |      ❌      |    ❌    |             ❌             |   ⚡ Agent Hooks    |             ❌             |
+| Multi-Agent Pipeline |          ✅          |       ❌       |      ❌      |    ❌    | ✅ Orchestrator + worktree | ✅ Autonomous Agent |             ❌             |
+| 命令数量             |          13          |       12       |      13      |    13    |         workflows          |       prompts       |             12             |
 
 <!-- markdownlint-disable MD024 MD001 -->
 
@@ -163,6 +168,23 @@ cd your-project
 ````
 
   </Tab>
+  <Tab title="CodeBuddy">
+  ```bash
+  # 步骤 1：打开 CodeBuddy，必须先调用
+  /trellis:start
+
+# 步骤 2：描述你要做什么
+
+"添加用户登录功能"
+
+# 步骤 3：AI 自动工作
+
+# AI 会读取规范 → 创建任务 → 实现 → 你手动运行 /trellis:check 检查
+
+# 完成后你测试、提交、记录会话即可
+
+````
+</Tab>
 </Tabs>
 
 ### 2.5 远程 Spec 模板
@@ -370,9 +392,16 @@ your-project/
 │   ├── workflows/                     #   Workflow 命令
 │   └── skills/                        #   Agent Skills
 │
-└── .kiro/                             # Kiro 配置
-    ├── steering/                      #   项目上下文（Steering 系统）
-    ├── hooks/                         #   Agent Hooks（事件驱动自动化）
-    ├── prompts/                       #   自定义提示词
-    └── specs/                         #   Spec-Driven Development 文档
+├── .kiro/                             # Kiro 配置
+│   ├── steering/                      #   项目上下文（Steering 系统）
+│   ├── hooks/                         #   Agent Hooks（事件驱动自动化）
+│   ├── prompts/                       #   自定义提示词
+│   └── specs/                         #   Spec-Driven Development 文档
+│
+└── .codebuddy/                        # CodeBuddy 配置
+    └── commands/
+        └── trellis/                   #   Trellis 命令集（嵌套）
+            ├── start.md
+            ├── check.md
+            └── ...
 ```

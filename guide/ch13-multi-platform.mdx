@@ -207,6 +207,66 @@ Trellis's `prd.md` can serve as input for Kiro Specs, while Kiro's generated `re
 can feed back into Trellis's `spec/` directory. Together they enable a complete loop from requirements to delivery.
 </Info>
 
+### 13.5b CodeBuddy Integration
+
+[CodeBuddy](https://copilot.tencent.com/) is Tencent Cloud's AI coding assistant, supporting IDE and CLI forms with MCP extensibility.
+
+```bash
+trellis init --codebuddy -u your-name
+```
+
+Generates configuration under the `.codebuddy/` directory:
+
+**Trellis to CodeBuddy mapping**:
+
+| Trellis / Claude Code | CodeBuddy | Description |
+|----------------------|-----------|------|
+| `CLAUDE.md` | `.codebuddy/.rules/*.md` | CodeBuddy uses rules files for project context |
+| `.claude/commands/*.md` | `.codebuddy/commands/trellis/*.md` | Nested directories: `/trellis:start`, `/trellis:check` |
+| `.claude/agents/*.md` | `.codebuddy/agents/*.md` | Custom AI sub-agents (markdown + YAML frontmatter) |
+| `.claude/hooks/` | `settings.json` hooks | CodeBuddy supports hooks in settings config |
+
+**CodeBuddy configuration directory structure**:
+
+```
+project/
+├── .codebuddy/
+│   ├── settings.json                  # Project settings (shared)
+│   ├── settings.local.json            # Personal settings (gitignored)
+│   ├── commands/                      # Slash commands
+│   │   └── trellis/                   #   Trellis namespace
+│   │       ├── start.md               #   /trellis:start
+│   │       ├── check.md               #   /trellis:check
+│   │       └── finish-work.md         #   /trellis:finish-work
+│   ├── agents/                        # Custom AI sub-agents
+│   └── .rules/                        # Project rules
+```
+
+**Differences from Claude Code**:
+- Files located at `.codebuddy/commands/trellis/{name}.md`
+- CodeBuddy has 12 commands (no `/parallel`, as CodeBuddy doesn't support Multi-Agent Pipeline)
+- No Hook support at Trellis level — spec injection requires manual command invocation
+- No Agent system integration — all work happens in the main conversation
+
+**Recommended workflow for CodeBuddy users**:
+
+```bash
+# 1. Start session (required)
+/trellis:start
+
+# 2. Load relevant specs
+/trellis:before-dev
+
+# 3. Describe task, AI develops...
+
+# 4. Check code quality
+/trellis:check
+/trellis:check-cross-layer
+
+# 5. Finish checklist
+/trellis:finish-work
+```
+
 ### 13.6 Operating System Compatibility
 
 | OS | Support Status | Notes |

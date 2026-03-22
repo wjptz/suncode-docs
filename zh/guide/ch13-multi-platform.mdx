@@ -207,6 +207,66 @@ Trellis 的 `prd.md` 可以作为 Kiro Spec 的输入，而 Kiro 生成的 `requ
 可以反哺 Trellis 的 `spec/` 目录。两者结合可以实现从需求到交付的完整闭环。
 </Info>
 
+### 13.5b CodeBuddy 集成
+
+[CodeBuddy](https://copilot.tencent.com/) 是腾讯云推出的 AI 编程助手，支持 IDE 和 CLI 形态，具备 MCP 扩展能力。
+
+```bash
+trellis init --codebuddy -u your-name
+```
+
+在 `.codebuddy/` 目录下生成配置：
+
+**Trellis 到 CodeBuddy 的映射**：
+
+| Trellis / Claude Code | CodeBuddy | 说明 |
+|----------------------|-----------|------|
+| `CLAUDE.md` | `.codebuddy/.rules/*.md` | CodeBuddy 使用规则文件作为项目上下文 |
+| `.claude/commands/*.md` | `.codebuddy/commands/trellis/*.md` | 嵌套目录：`/trellis:start`、`/trellis:check` |
+| `.claude/agents/*.md` | `.codebuddy/agents/*.md` | 自定义 AI 子代理（Markdown + YAML 前置元数据） |
+| `.claude/hooks/` | `settings.json` hooks | CodeBuddy 在 settings 配置中支持 hooks |
+
+**CodeBuddy 配置目录结构**：
+
+```
+project/
+├── .codebuddy/
+│   ├── settings.json                  # 项目设置（团队共享）
+│   ├── settings.local.json            # 个人设置（gitignored）
+│   ├── commands/                      # Slash 命令
+│   │   └── trellis/                   #   Trellis 命名空间
+│   │       ├── start.md               #   /trellis:start
+│   │       ├── check.md               #   /trellis:check
+│   │       └── finish-work.md         #   /trellis:finish-work
+│   ├── agents/                        # 自定义 AI 子代理
+│   └── .rules/                        # 项目规则
+```
+
+**与 Claude Code 的差异**：
+- 文件位于 `.codebuddy/commands/trellis/{name}.md`
+- CodeBuddy 共 12 个命令（不含 `/parallel`，因为 CodeBuddy 不支持 Multi-Agent Pipeline）
+- Trellis 层面无 Hook 支持 — 规范注入需要通过命令手动触发
+- 无 Agent 系统集成 — 所有工作在主对话中完成
+
+**CodeBuddy 用户推荐工作流**：
+
+```bash
+# 1. 启动会话（必须）
+/trellis:start
+
+# 2. 加载相关规范
+/trellis:before-dev
+
+# 3. 描述任务，AI 开发...
+
+# 4. 检查代码质量
+/trellis:check
+/trellis:check-cross-layer
+
+# 5. 完成检查清单
+/trellis:finish-work
+```
+
 ### 13.6 操作系统兼容性
 
 | 操作系统 | 支持状态 | 说明 |

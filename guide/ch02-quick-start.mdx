@@ -45,6 +45,10 @@ Choose the init command based on your platform:
     ```bash trellis init --kiro -u your-name ``` Configures the `.kiro/` directory (steering, hooks,
     prompts).
   </Tab>
+  <Tab title="CodeBuddy">
+    ```bash trellis init --codebuddy -u your-name ``` Configures `.codebuddy/commands/trellis/`
+    directory (slash commands with nested namespacing).
+  </Tab>
 </Tabs>
 
 `your-name` becomes your developer identity and creates your personal workspace at `.trellis/workspace/your-name/`.
@@ -61,16 +65,17 @@ Choose the init command based on your platform:
 | **OpenCode**    | `.agents/skills/`                                                | `/start`       |
 | **Kilo**        | `.kilocode/workflows/`, `.kilocode/rules/`, `.kilocode/skills/`  | `/start.md`    |
 | **Kiro**        | `.kiro/steering/`, `.kiro/hooks/`, `.kiro/prompts/`              | `@start`       |
+| **CodeBuddy**   | `.codebuddy/commands/trellis/*.md`                               | `/trellis:start` |
 
 #### Platform Capability Comparison
 
-| Capability               |     Claude Code      |      Cursor      |    Codex     | OpenCode |            Kilo            |        Kiro         |
-| ------------------------ | :------------------: | :--------------: | :----------: | :------: | :------------------------: | :-----------------: |
-| Session auto-injection   |       ✅ Hook        | ❌ Manual /start | ⚡ AGENTS.md | ✅ Hook  |  ⚡ rules/ + launchConfig  |    ⚡ steering/     |
-| Sub-Agent spec injection |  ✅ PreToolUse Hook  |        ❌        |      ❌      |    ❌    |    ⚡ Orchestrator Mode    |  ⚡ Custom Agents   |
-| Ralph Loop quality gate  | ✅ SubagentStop Hook |        ❌        |      ❌      |    ❌    |             ❌             |   ⚡ Agent Hooks    |
-| Multi-Agent Pipeline     |          ✅          |        ❌        |      ❌      |    ❌    | ✅ Orchestrator + worktree | ✅ Autonomous Agent |
-| Number of commands       |          13          |        12        |      13      |    13    |         workflows          |       prompts       |
+| Capability               |     Claude Code      |      Cursor      |    Codex     | OpenCode |            Kilo            |        Kiro         |         CodeBuddy          |
+| ------------------------ | :------------------: | :--------------: | :----------: | :------: | :------------------------: | :-----------------: | :------------------------: |
+| Session auto-injection   |       ✅ Hook        | ❌ Manual /start | ⚡ AGENTS.md | ✅ Hook  |  ⚡ rules/ + launchConfig  |    ⚡ steering/     | ❌ Manual /trellis:start   |
+| Sub-Agent spec injection |  ✅ PreToolUse Hook  |        ❌        |      ❌      |    ❌    |    ⚡ Orchestrator Mode    |  ⚡ Custom Agents   |             ❌             |
+| Ralph Loop quality gate  | ✅ SubagentStop Hook |        ❌        |      ❌      |    ❌    |             ❌             |   ⚡ Agent Hooks    |             ❌             |
+| Multi-Agent Pipeline     |          ✅          |        ❌        |      ❌      |    ❌    | ✅ Orchestrator + worktree | ✅ Autonomous Agent |             ❌             |
+| Number of commands       |          13          |        12        |      13      |    13    |         workflows          |       prompts       |             12             |
 
 <!-- markdownlint-disable MD024 MD001 -->
 
@@ -168,6 +173,23 @@ Choose the init command based on your platform:
 ````
 
   </Tab>
+  <Tab title="CodeBuddy">
+  ```bash
+  # Step 1: Open CodeBuddy, run
+  /trellis:start
+
+# Step 2: Describe what you want to do
+
+"Add user login feature"
+
+# Step 3: AI works automatically
+
+# AI reads specs → creates task → implements → manually run /trellis:check to check
+
+# Once done, you test, commit, and record the session
+
+````
+</Tab>
 </Tabs>
 
 ### 2.5 Remote Spec Templates
@@ -375,11 +397,18 @@ your-project/
 │   ├── workflows/                     #   Workflow commands
 │   └── skills/                        #   Agent Skills
 │
-└── .kiro/                             # Kiro configuration
-    ├── steering/                      #   Project context (Steering system)
-    ├── hooks/                         #   Agent Hooks (event-driven automation)
-    ├── prompts/                       #   Custom prompts
-    └── specs/                         #   Spec-Driven Development docs
+├── .kiro/                             # Kiro configuration
+│   ├── steering/                      #   Project context (Steering system)
+│   ├── hooks/                         #   Agent Hooks (event-driven automation)
+│   ├── prompts/                       #   Custom prompts
+│   └── specs/                         #   Spec-Driven Development docs
+│
+└── .codebuddy/                        # CodeBuddy configuration
+    └── commands/
+        └── trellis/                   #   Trellis command set (nested)
+            ├── start.md
+            ├── check.md
+            └── ...
 ```
 
 ---
