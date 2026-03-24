@@ -78,12 +78,14 @@ trellis init --codex -u your-name
 - **`.codex/hooks/session-start.py`** + **`.codex/hooks.json`** — SessionStart hook，自动注入 Trellis 工作流、指南和任务上下文
 
 <Note>
-Codex hooks 需要手动启用实验性功能。在 `~/.codex/config.toml` 中添加：
+截至 Codex CLI v0.116.0（2026-03-24），hooks 仍是实验性功能，需要手动启用。在 `~/.codex/config.toml` 中添加：
 
 ```toml
 [features]
 codex_hooks = true
 ```
+
+未来 Codex 正式支持 hooks 后可能不再需要此配置。
 </Note>
 
 ### 13.4 Kilo Code 集成

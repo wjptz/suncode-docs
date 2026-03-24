@@ -78,12 +78,14 @@ Generates the following configuration:
 - **`.codex/hooks/session-start.py`** + **`.codex/hooks.json`** — SessionStart hook that injects Trellis workflow, guidelines, and task context into Codex sessions
 
 <Note>
-Codex hooks require enabling the experimental feature flag. Add this to `~/.codex/config.toml`:
+As of Codex CLI v0.116.0 (2026-03-24), hooks are an experimental feature that requires manual opt-in. Add this to `~/.codex/config.toml`:
 
 ```toml
 [features]
 codex_hooks = true
 ```
+
+This requirement may be removed in a future Codex release when hooks become stable.
 </Note>
 
 ### 13.4 Kilo Code Integration
