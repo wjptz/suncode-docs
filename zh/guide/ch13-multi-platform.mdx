@@ -71,7 +71,20 @@ trellis init --codex -u your-name
 会生成以下配置：
 
 - **`AGENTS.md`**（根目录） — Codex 的入口文件，提供项目基础上下文（类似 `CLAUDE.md` 的角色）
-- **`.agents/skills/`** — Agent Skills 目录，存放可复用的 AI 能力模块
+- **`.agents/skills/`** — 共享 Agent Skills 目录（[agentskills.io](https://agentskills.io) 开放标准，Codex、Kimi CLI、Amp、Cline 等均可使用）
+- **`.codex/config.toml`** — 项目级 Codex 配置
+- **`.codex/agents/`** — 自定义 Codex agents（`implement.toml`、`research.toml`、`check.toml`）
+- **`.codex/skills/`** — Codex 专属 skills（如用于多 agent pipeline 的 `parallel`）
+- **`.codex/hooks/session-start.py`** + **`.codex/hooks.json`** — SessionStart hook，自动注入 Trellis 工作流、指南和任务上下文
+
+<Note>
+Codex hooks 需要手动启用实验性功能。在 `~/.codex/config.toml` 中添加：
+
+```toml
+[features]
+codex_hooks = true
+```
+</Note>
 
 ### 13.4 Kilo Code 集成
 

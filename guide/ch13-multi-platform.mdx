@@ -71,7 +71,20 @@ trellis init --codex -u your-name
 Generates the following configuration:
 
 - **`AGENTS.md`** (root directory) — Codex entry file, provides base project context (similar to `CLAUDE.md`)
-- **`.agents/skills/`** — Agent Skills directory for reusable AI capability modules
+- **`.agents/skills/`** — Shared Agent Skills directory ([agentskills.io](https://agentskills.io) open standard, used by Codex, Kimi CLI, Amp, Cline, and others)
+- **`.codex/config.toml`** — Project-scoped Codex configuration
+- **`.codex/agents/`** — Custom Codex agents (`implement.toml`, `research.toml`, `check.toml`)
+- **`.codex/skills/`** — Codex-specific skills (e.g. `parallel` for multi-agent pipelines)
+- **`.codex/hooks/session-start.py`** + **`.codex/hooks.json`** — SessionStart hook that injects Trellis workflow, guidelines, and task context into Codex sessions
+
+<Note>
+Codex hooks require enabling the experimental feature flag. Add this to `~/.codex/config.toml`:
+
+```toml
+[features]
+codex_hooks = true
+```
+</Note>
 
 ### 13.4 Kilo Code Integration
 
