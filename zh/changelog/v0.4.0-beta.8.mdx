@@ -13,7 +13,7 @@ description: '2026-03-24'
   - `.codex/agents/` — 自定义 Codex agents（implement、research、check）
   - `.codex/skills/` — Codex 专属 skills（如带 `--platform codex` 的 `parallel`）
   - `.codex/hooks/session-start.py` + `hooks.json` — SessionStart hook，注入完整 Trellis 上下文（工作流、指南、任务状态）
-- **Codex SessionStart Hook**：自动将 Trellis 工作流、指南和任务上下文注入 Codex 会话。需要在 `~/.codex/config.toml` 中设置 `codex_hooks = true`（Codex 实验性功能）
+- **Codex SessionStart Hook**：自动将 Trellis 工作流、指南和任务上下文注入 Codex 会话。需要在 `~/.codex/config.toml` 的 `[features]` 下设置 `codex_hooks = true`（Codex 实验性功能）
 - **会话分支上下文**：会话日志现在包含 git 分支信息 (#108)
 
 ## 修复
@@ -34,6 +34,6 @@ description: '2026-03-24'
 
 ## 说明
 
-- Codex hooks 需要在 `~/.codex/config.toml` 中启用 `features.codex_hooks = true`
+- Codex hooks 需要在 `~/.codex/config.toml` 的 `[features]` 下启用 `codex_hooks = true`
 - Codex hooks 的 `suppressOutput` 尚未生效（Codex 实验性限制 — context 仍会在 TUI 中打印）
 - `parallel` skill 从共享的 `.agents/skills/` 移至 Codex 专属的 `.codex/skills/`，因为包含 `--platform codex`

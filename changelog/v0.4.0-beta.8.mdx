@@ -13,7 +13,7 @@ Decouple `.agents/skills/` as shared Agent Skills layer, add full `.codex/` dire
   - `.codex/agents/` — custom Codex agents (implement, research, check)
   - `.codex/skills/` — Codex-specific skills (e.g. `parallel` with `--platform codex`)
   - `.codex/hooks/session-start.py` + `hooks.json` — SessionStart hook injecting full Trellis context (workflow, guidelines, task status)
-- **Codex SessionStart hook**: Automatically injects Trellis workflow, guidelines, and task context into Codex sessions. Requires `codex_hooks = true` in `~/.codex/config.toml` (experimental Codex feature)
+- **Codex SessionStart hook**: Automatically injects Trellis workflow, guidelines, and task context into Codex sessions. Requires `codex_hooks = true` under `[features]` in `~/.codex/config.toml` (experimental Codex feature)
 - **Branch context in sessions**: Session journal records now include git branch information (#108)
 
 ## Bug Fixes
@@ -34,6 +34,6 @@ Decouple `.agents/skills/` as shared Agent Skills layer, add full `.codex/` dire
 
 ## Notes
 
-- Codex hooks require `features.codex_hooks = true` in `~/.codex/config.toml`
+- Codex hooks require `codex_hooks = true` under `[features]` in `~/.codex/config.toml`
 - Codex hooks `suppressOutput` is not yet functional (Codex experimental limitation — context is still printed in TUI)
 - `parallel` skill moved from shared `.agents/skills/` to Codex-specific `.codex/skills/` since it contains `--platform codex`
