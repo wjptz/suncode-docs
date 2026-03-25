@@ -8,27 +8,24 @@ title: 'Appendix B: Complete Command Cheat Sheet'
 
 | Claude Code / OpenCode | Cursor | Codex | Kilo | Kiro | Category | Description |
 |----------------------|--------|-------|------|------|------|------|
-| `/start` | `/trellis-start` | `$start` | `/start.md` | `@start` | Session | Start development session |
-| `/parallel` | ❌ | ❌ | Orchestrator | Autonomous Agent | Session | Multi-Agent parallel orchestration |
-| `/record-session` | `/trellis-record-session` | `$record-session` | `/record-session.md` | `@record-session` | Session | Record session history |
-| `/onboard` | `/trellis-onboard` | `$onboard` | `/onboard.md` | `@onboard` | Session | New member onboarding |
-| `/before-backend-dev` | `/trellis-before-backend-dev` | `$before-backend-dev` | `rules-code/` | steering | Prep | Backend development prep |
-| `/before-frontend-dev` | `/trellis-before-frontend-dev` | `$before-frontend-dev` | `rules-code/` | steering | Prep | Frontend development prep |
-| `/check-backend` | `/trellis-check-backend` | `$check-backend` | `/check-backend.md` | Hook | Quality | Backend code check |
-| `/check-frontend` | `/trellis-check-frontend` | `$check-frontend` | `/check-frontend.md` | Hook | Quality | Frontend code check |
-| `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` | `/check-cross-layer.md` | Hook | Quality | Cross-layer consistency check |
-| `/finish-work` | `/trellis-finish-work` | `$finish-work` | `/finish-work.md` | `@finish-work` | Quality | Pre-commit finish checklist |
-| `/brainstorm` | `/trellis-brainstorm` | `$brainstorm` | `/brainstorm.md` | `@brainstorm` | Knowledge | Brainstorming |
-| `/break-loop` | `/trellis-break-loop` | `$break-loop` | `/break-loop.md` | `@break-loop` | Knowledge | Deep bug analysis |
-| `/create-command` | `/trellis-create-command` | `$create-command` | `/create-command.md` | `@create-command` | Extension | Create custom command |
-| `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` | `/integrate-skill.md` | `@integrate-skill` | Extension | Integrate external Skill |
+| `/trellis:start` | `/trellis-start` | `$start` | `/start.md` | skill | Session | Start development session |
+| `/trellis:parallel` | ❌ | ❌ | `/parallel.md` | ❌ | Session | Multi-Agent parallel orchestration |
+| `/trellis:record-session` | `/trellis-record-session` | `$record-session` | `/record-session.md` | skill | Session | Record session history |
+| `/trellis:onboard` | `/trellis-onboard` | `$onboard` | `/onboard.md` | skill | Session | New member onboarding |
+| `/trellis:before-dev` | `/trellis-before-dev` | `$before-dev` | `/before-dev.md` | skill | Prep | Development prep |
+| `/trellis:check` | `/trellis-check` | `$check` | `/check.md` | skill | Quality | Code check |
+| `/trellis:check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` | `/check-cross-layer.md` | skill | Quality | Cross-layer consistency check |
+| `/trellis:finish-work` | `/trellis-finish-work` | `$finish-work` | `/finish-work.md` | skill | Quality | Pre-commit finish checklist |
+| `/trellis:brainstorm` | `/trellis-brainstorm` | `$brainstorm` | `/brainstorm.md` | skill | Knowledge | Brainstorming |
+| `/trellis:break-loop` | `/trellis-break-loop` | `$break-loop` | `/break-loop.md` | skill | Knowledge | Deep bug analysis |
+| `/trellis:update-spec` | `/trellis-update-spec` | `$update-spec` | `/update-spec.md` | skill | Knowledge | Update code-spec |
+| `/trellis:create-command` | `/trellis-create-command` | `$create-command` | `/create-command.md` | skill | Extension | Create custom command |
+| `/trellis:integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` | `/integrate-skill.md` | skill | Extension | Integrate external Skill |
 
 <Info>
 **Kilo** commands are implemented as Markdown files under `.kilocode/workflows/`, invoked in chat as `/start.md`, etc.
-Spec loading is handled automatically via `.kilocode/rules-code/`, no manual commands needed.
 
-**Kiro** commands are managed via `.kiro/prompts/`, invoked in chat as `@start`, etc. Spec loading is handled automatically via `.kiro/steering/`.
-Quality checks can be configured as Agent Hooks that auto-trigger on file save via `.kiro/hooks/`.
+**Kiro** commands are implemented as Agent Skills under `.kiro/skills/*/SKILL.md`.
 </Info>
 
 ### task.py Subcommands
