@@ -77,7 +77,7 @@
               {
                 "group": "Skills",
                 "expanded": false,
-                "pages": ["skills-market/index", "skills-market/trellis-meta", "skills-market/cc-codex-spec-bootstrap"]
+                "pages": ["skills-market/index", "skills-market/trellis-meta", "skills-market/cc-codex-spec-bootstrap", "skills-market/frontend-fullchain-optimization"]
               },
               {
                 "group": "Spec Templates",
@@ -213,7 +213,7 @@
               {
                 "group": "Skills",
                 "expanded": false,
-                "pages": ["zh/skills-market/index", "zh/skills-market/trellis-meta", "zh/skills-market/cc-codex-spec-bootstrap"]
+                "pages": ["zh/skills-market/index", "zh/skills-market/trellis-meta", "zh/skills-market/cc-codex-spec-bootstrap", "zh/skills-market/frontend-fullchain-optimization"]
               },
               {
                 "group": "Spec Templates",
