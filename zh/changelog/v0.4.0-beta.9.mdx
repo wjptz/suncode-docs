@@ -1,0 +1,29 @@
+---
+title: 'v0.4.0-beta.9'
+description: '2026-04-07'
+---
+
+新增 Copilot 和 Windsurf 平台支持、自托管 Registry、OpenCode dispatch 修复、6 阶段任务生命周期。
+
+## 新功能
+
+- **GitHub Copilot 支持**：新增平台，包含独立 prompt 模板和 hook 追踪。运行 `trellis init --platform copilot` 初始化
+- **Windsurf 支持**：完整的 Windsurf IDE 工作流支持 — rules、workflows（brainstorm、start、before-dev、finish-work、update-spec、record-session）和 AI 配置
+- **自托管 Registry**：`--registry` 参数支持自托管 GitLab/GitHub Enterprise URL (#131)。模板获取器现在能正确解析 GHE/GitLab 的 raw 文件 URL
+- **StatusLine 集成**：Claude Code statusLine 现在显示 Trellis 任务上下文 (#127)
+- **CodeBuddy 与 Codex 改进**：新增 CodeBuddy 平台支持，Codex agent 及文档修复 (#128, #116)
+- **6 阶段任务生命周期**：任务 `next_action` 模板从 4 阶段流水线更新为完整生命周期：brainstorm → research → implement → check → update-spec → record-session
+- **Marketplace 子模块化**：Marketplace 迁移至独立仓库，以 git submodule 方式链接 (#117)
+
+## 修复
+
+- **OpenCode dispatch 同步修复**：Dispatch 现在同步等待子任务完成，不再使用后台轮询，防止阶段提前推进 (#147)
+- **跨平台路径规范化**：`.current-task` 路径引用现在跨平台统一处理 (#130)
+- **Codex Windows 修复**：`hooks.json` 中的 `{{PYTHON_CMD}}` 占位符在 Windows 上正确解析 (#132)
+- **会话记录**：`add_session.py` 改进 git-add 错误处理，新增 Python 3.10 版本检查
+- **模板获取器**：修复 `template-fetcher.ts` 中自托管 GitLab/GHE URL 解析
+
+## 说明
+
+- 运行 `trellis update` 同步所有变更
+- 新平台：`trellis init --platform copilot` 或 `--platform windsurf`
