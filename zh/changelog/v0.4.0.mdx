@@ -39,7 +39,7 @@ Codex 现在会把 skill 写入 `.agents/skills/`——这是 [agentskills.io](h
 
 ## 值得一提的改进
 
-- **自托管模板 Registry。** `trellis init` / `trellis update` 支持通过 `TRELLIS_REGISTRY` 环境变量从自托管 URL 拉取模板。可用于企业内部镜像和离线环境部署。
+- **自定义 spec 模板 Registry。** `trellis init -r <source>` 从自定义 git 仓库拉 spec 模板，而不是从默认的 Trellis marketplace 拉。支持 GitHub / GitLab / Bitbucket 的 giget 风格源（如 `gh:myorg/my-specs/path`），也支持**自托管 GitLab**（HTTPS 和 SSH 都行）。团队可以把自家编码规范维护在内网 git 服务器上分发给成员。注意：这只影响 spec 模板来源——Trellis CLI 本身仍从 npm 安装。
 - **多 Agent worktree + PR 感知。** 多 agent 流水线能追踪 worktree submodule 和 PR 状态。
 - **重新 init 的快速路径。** 在已有项目里跑 `trellis init --codex` 只配置 Codex；`trellis init -u name` 为新设备设置开发者身份；不带参数的 `trellis init` 会显示 add-platform / add-developer / 完整 re-init 菜单。
 - **分支感知的 session 和 journal。** `.trellis` 的 session 和 journal 记录带上 git 分支上下文。

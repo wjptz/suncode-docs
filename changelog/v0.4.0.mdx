@@ -39,7 +39,7 @@ Five new platforms landed during the cycle, all additive on top of the 0.3.x abs
 
 ## Notable improvements
 
-- **Self-hosted template registry.** `trellis init` / `trellis update` pull from a self-hosted URL via `TRELLIS_REGISTRY`. Enables enterprise mirrors and air-gapped deployments.
+- **Custom spec template registry.** `trellis init -r <source>` pulls spec templates from a custom git repository instead of the default Trellis marketplace. Supports GitHub / GitLab / Bitbucket via giget-style sources (e.g. `gh:myorg/my-specs/path`), including **self-hosted GitLab** over HTTPS or SSH. Lets teams maintain their own editing conventions on an internal git server. Note: this only affects spec template sources — the Trellis CLI itself still installs from npm.
 - **Multi-agent worktree + PR awareness.** The multi-agent pipeline tracks worktree submodules and PR state.
 - **Re-init fast path.** `trellis init --codex` on an existing project configures just Codex; `trellis init -u name` sets up a developer identity for new-device sync; bare `trellis init` shows an add-platform / add-developer / full-re-init menu.
 - **Branch-aware sessions and journals.** `.trellis` session and journal records carry git branch context.
