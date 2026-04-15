@@ -1,0 +1,79 @@
+---
+title: 'v0.4.0'
+description: '2026-04-15'
+---
+
+**v0.4.0 stable.** Promoted from rc.1 with zero `src/` changes — this is the stable release of everything shipped across 11 betas and 2 RCs over the 0.4.0 cycle.
+
+## The headline: monorepo-native Trellis
+
+0.4.0's defining change is a structural one: **Trellis now thinks in packages, not projects**. Two closely-linked refactors make this work:
+
+### 1. Monorepo support with per-package spec infrastructure
+
+`trellis init` now detects monorepos and creates **per-package** spec directories instead of a single project-wide one. Every Python script that touches task state — `task.py`, `add_session.py`, `create_bootstrap.py` — gained a `--package` flag. The `start` / `parallel` / `workflow` / `agents` templates honor per-package scope when discovering specs.
+
+This changes the core mental model from "one project, one set of specs" to "one project, N sets of specs, sliced by package."
+
+### 2. Generic `before-dev` / `check` commands
+
+On its own, per-package specs would have made the command matrix explode: `N_packages × {backend, frontend}` = too many files. So across 9 platforms, the type-specific `before-backend-dev` / `before-frontend-dev` / `check-backend` / `check-frontend` were merged into single `before-dev` / `check` commands.
+
+To land this safely, a new migration type — **`safe-file-delete`** — was added. It only removes files whose hash matches a known-unmodified state, so your local edits are preserved. The beta.1 manifest shipped 36 `safe-file-delete` entries covering every platform variant.
+
+**Why these two are one change:** Without the command merge, the per-package architecture is unusable in practice. Without per-package specs, the command merge is just cleanup. Together they are the 0.4.0 architecture shift.
+
+## Ecosystem: the Shared Agent Skills layer
+
+Codex now writes to `.agents/skills/` — the cross-client directory standardized by [agentskills.io](https://agentskills.io). That single output is read automatically by Cursor, Gemini CLI, GitHub Copilot, Amp, and Kimi Code. The `trellis init` Codex prompt entry surfaces this spillover explicitly so users understand one checkbox covers multiple tools.
+
+## New platforms
+
+Five new platforms landed during the cycle, all additive on top of the 0.3.x abstractions:
+
+- **GitHub Copilot** — full platform with hooks tracking and standalone prompt templates
+- **Windsurf** — workflow support
+- **Qoder** — skills-based platform with `qodercli`
+- **Kimi Code** — reads `.agents/skills/` automatically via the shared layer
+- **Factory Droid** (`--droid`) — Cursor-level commands-only integration (`.factory/commands/trellis/<name>.md`)
+
+## Notable improvements
+
+- **Self-hosted template registry.** `trellis init` / `trellis update` pull from a self-hosted URL via `TRELLIS_REGISTRY`. Enables enterprise mirrors and air-gapped deployments.
+- **Multi-agent worktree + PR awareness.** The multi-agent pipeline tracks worktree submodules and PR state.
+- **Re-init fast path.** `trellis init --codex` on an existing project configures just Codex; `trellis init -u name` sets up a developer identity for new-device sync; bare `trellis init` shows an add-platform / add-developer / full-re-init menu.
+- **Branch-aware sessions and journals.** `.trellis` session and journal records carry git branch context.
+- **Statusline integration.** Claude Code statusline shows current Trellis task state.
+- **Marketplace as submodule.** The marketplace was extracted to a standalone repo (#117).
+- **Python scripts refactor.** Shared `io` / `log` / `git` modules, `TaskInfo` dataclass, god-module split.
+- **OpenCode plugin v1.** Updated to v1 plugin API; fixes non-persistent context injection that was losing context on session reopen. Thanks to @Adamcf123.
+
+## Bug fixes
+
+**SessionStart additionalContext size fix.** Vanilla payload reduced from ~29 KB to ~7 KB, under Claude Code's ~20 KB truncation threshold. Task state was being silently lost on most projects before rc.0 — arguably the most impactful fix in the cycle.
+
+**Windows fixes.**
+- `statusline.py` GBK encoding crash on the middle-dot separator (UTF-8 stdout/stderr wrap on Windows). Thanks to @xiangagou163.
+- `{{PYTHON_CMD}}` placeholder resolution in Codex `hooks.json` (#132)
+- Path normalization in `isManagedPath` (`\` → `/`)
+
+**Other fixes (selected).**
+- fix(update): allow rename migrations to target protected paths + warn on config parse failure
+- fix(update): parse name from `.developer` when creating migration task
+- fix(hooks): normalize `.current-task` path refs across platforms (#130)
+- fix(hooks): correct `SubagentStop` event field names in ralph-loop (#152)
+- fix(opencode): make dispatch wait for child tasks (#147)
+- fix(init): strip npm scope prefix from monorepo package directory names
+- fix(init): rename "empty templates" to "from scratch" in template picker
+- fix(scripts): preserve submodule status prefix in `start.py`
+
+## Install
+
+```bash
+npm install -g @mindfoldhq/trellis
+```
+
+## Upgrade notes
+
+- **From 0.3.x:** run `trellis update` to apply the full 0.4.0 cycle. The 36 file deletions for the merged `before-dev` / `check` commands are handled automatically via `safe-file-delete` with hash verification — your local edits are preserved.
+- **From any 0.4.0 prerelease:** `trellis update` is a clean version bump with no migrations.
