@@ -3,61 +3,46 @@ title: 'v0.4.0'
 description: '2026-04-15'
 ---
 
-**v0.4.0 正式版。** 从 rc.1 直接 promote，`src/` 零改动——这是 0.4.0 周期 11 个 beta + 2 个 RC 全部内容的稳定版。
+经过 11 个 beta + 2 个 rc，Trellis v0.4.0 稳定版正式发布！
 
-## 主线：Trellis 原生支持 Monorepo
+## Monorepo 原生支持
 
-0.4.0 的定性改动是结构性的：**Trellis 现在以「包」为单位思考，而不是「项目」**。由两个紧耦合的重构共同完成：
+`trellis init` 现在会识别 monorepo，按包创建独立的 spec 目录，每个 package 都能有自己的一套编码规范和任务。配套地，9 个平台上的 `before-backend-dev` / `before-frontend-dev` / `check-backend` / `check-frontend` 合并成了通用的 `before-dev` / `check`，命令矩阵不会因为 package 数量爆炸。
 
-### 1. Monorepo 支持 + per-package spec 基础设施
+## 平台支持更多
 
-`trellis init` 会识别 monorepo，按包创建**独立的** spec 目录，而不是项目全局一份。所有操作 task 状态的 Python 脚本——`task.py`、`add_session.py`、`create_bootstrap.py`——都加了 `--package` 参数。`start` / `parallel` / `workflow` / `agents` 模板里的 spec 发现逻辑也按 package 作用域走。
+- **GitHub Copilot** — `--copilot`
+- **Windsurf** — `--windsurf`
+- **Qoder** — `--qoder`
+- **Factory Droid** — `--droid`
 
-这改变了核心心智模型——从"一个项目一套 spec"变成"一个项目 N 套 spec，按包切分"。
+例如同时启用多个平台：
 
-### 2. 通用 `before-dev` / `check` 命令
+```bash
+trellis init --codex --gemini --copilot -u your-name
+```
 
-如果只做 per-package spec，命令矩阵会爆炸成 `N 个包 × {backend, frontend}`，根本用不起来。所以在 9 个平台上，把类型特定的 `before-backend-dev` / `before-frontend-dev` / `check-backend` / `check-frontend` 全部合并成单一的 `before-dev` / `check`。
+## Codex 满血支持
 
-为了安全落地，新增了一种迁移类型——**`safe-file-delete`**：只删除 hash 匹配已知未修改状态的文件，你的本地改动会被保留。beta.1 的 manifest 里塞了 36 条 `safe-file-delete`，覆盖所有平台的所有变体。
+- **启用了 Codex 的 SessionStart hook**：现在 Codex 用户可以跟 Claude Code 用户一样，无需再手动调用 `/start` 命令，启动 session 就能直接对话，task 状态、workflow、guidelines 自动注入
+- **支持了 sub-agent 的定义**：`.codex/agents/` 下新增 TOML 格式的 `implement` / `research` / `check` agent，跟 Claude Code 的 `Agent` 工具语义对齐
+- **shared skills 共享层**：Codex 写入 `.agents/skills/`（[agentskills.io](https://agentskills.io) 标准目录），同一份输出会被 Cursor、Gemini CLI、GitHub Copilot、Amp、Kimi Code 自动读取——勾一个 Codex 选项覆盖一大片工具链
 
-**为什么这两个是一个改动：** 没有命令合并，per-package 架构实操上不可用；没有 per-package，命令合并只是清理。绑在一起才构成 0.4.0 的架构代差。
+## 其他改进
 
-## 生态：Shared Agent Skills 共享层
+- **自定义 spec 模板 Registry**：`trellis init -r <source>` 从自定义 git 仓库（GitHub / GitLab / Bitbucket，含自托管 GitLab 的 HTTPS / SSH）拉 spec 模板，而不是从默认 marketplace 拉。团队可以把自家编码规范维护在内网 git 服务器上分发
+- **重新 init 的快速路径**：`trellis init --codex` 在已有项目里追加配置 Codex；不带参数会弹菜单
+- **分支感知**：session 和 journal 带上 git 分支上下文，多分支并行不混乱
+- **Claude Code Statusline 集成**
+- **多 Agent 流水线**：支持 worktree submodule 和 PR 状态追踪
 
-Codex 现在会把 skill 写入 `.agents/skills/`——这是 [agentskills.io](https://agentskills.io) 标准的跨客户端目录。Cursor、Gemini CLI、GitHub Copilot、Amp、Kimi Code 都会自动读取。`trellis init` 的 Codex 选项把这个「顺带覆盖多个工具」的好处显式标出来，让用户知道勾一个选项能覆盖多个工具链。
+## 关键修复
 
-## 新增平台
+- **SessionStart 瘦身**：从约 29 KB 缩到约 7 KB，修了一个会让 Claude Code 静默截断 task 状态的大坑
+- **Windows**：statusline GBK 编码崩溃（感谢 @xiangagou163）、Codex `hooks.json` 的 `{{PYTHON_CMD}}` 占位符解析
 
-0.4.0 周期接入了 5 个新平台，都是在 0.3.x 抽象之上的 additive 扩展：
+**其他修复（节选）**
 
-- **GitHub Copilot** —— 完整平台支持，包含 hooks 追踪和独立 prompt 模板
-- **Windsurf** —— workflow 支持
-- **Qoder** —— skills 类型平台，CLI 为 `qodercli`
-- **Kimi Code** —— 通过共享层自动读取 `.agents/skills/`
-- **Factory Droid**（`--droid`）—— Cursor 级别支持，仅 commands（`.factory/commands/trellis/<name>.md`）
-
-## 值得一提的改进
-
-- **自定义 spec 模板 Registry。** `trellis init -r <source>` 从自定义 git 仓库拉 spec 模板，而不是从默认的 Trellis marketplace 拉。支持 GitHub / GitLab / Bitbucket 的 giget 风格源（如 `gh:myorg/my-specs/path`），也支持**自托管 GitLab**（HTTPS 和 SSH 都行）。团队可以把自家编码规范维护在内网 git 服务器上分发给成员。注意：这只影响 spec 模板来源——Trellis CLI 本身仍从 npm 安装。
-- **多 Agent worktree + PR 感知。** 多 agent 流水线能追踪 worktree submodule 和 PR 状态。
-- **重新 init 的快速路径。** 在已有项目里跑 `trellis init --codex` 只配置 Codex；`trellis init -u name` 为新设备设置开发者身份；不带参数的 `trellis init` 会显示 add-platform / add-developer / 完整 re-init 菜单。
-- **分支感知的 session 和 journal。** `.trellis` 的 session 和 journal 记录带上 git 分支上下文。
-- **Statusline 集成。** Claude Code 状态栏显示当前 Trellis 任务状态。
-- **Marketplace 拆为独立仓库。** marketplace 迁移为 git submodule（#117）。
-- **Python 脚本重构。** 引入共享的 `io` / `log` / `git` 模块、`TaskInfo` dataclass，把 god module 拆成职责清晰的小模块。
-- **OpenCode 插件 v1。** 升级到 v1 插件 API，修复 context 注入不持久化的问题（之前会话重开 context 会丢）。感谢 @Adamcf123。
-
-## Bug 修复
-
-**SessionStart additionalContext 瘦身。** vanilla 从约 29 KB 缩到约 7 KB，控制在 Claude Code 约 20 KB 的截断阈值之下。在 rc.0 之前，大多数项目的 task 状态会被静默丢失——这可能是整个周期里影响面最大的一个修复。
-
-**Windows 修复。**
-- `statusline.py` 在 Windows 上因 GBK 编码崩溃（中点分隔符），现在把 stdout/stderr 包成 UTF-8。感谢 @xiangagou163。
-- Codex `hooks.json` 里的 `{{PYTHON_CMD}}` 占位符解析（#132）
-- `isManagedPath` 路径规范化（`\` → `/`）
-
-**其他修复（节选）。**
 - fix(update): rename 迁移允许指向受保护路径 + 配置解析失败时告警
 - fix(update): 创建迁移任务时从 `.developer` 解析名字
 - fix(hooks): 跨平台规范化 `.current-task` 路径引用（#130）
@@ -67,13 +52,20 @@ Codex 现在会把 skill 写入 `.agents/skills/`——这是 [agentskills.io](h
 - fix(init): 模板选择器把 "empty templates" 改成 "from scratch"
 - fix(scripts): `start.py` 保留 submodule 的 status 前缀
 
-## 安装
+## 安装与升级
 
 ```bash
-npm install -g @mindfoldhq/trellis
+# 新装
+npm install -g @mindfoldhq/trellis@latest --registry=https://registry.npmjs.org
+
+# 升级（已装过 trellis）
+trellis update
 ```
 
-## 升级说明
+从 0.3.x 升级会自动处理 36 个命令文件的合并——带 hash 校验，**你的本地修改会被保留**，没被改过的文件才删。
 
-- **0.3.x 升级：** 跑 `trellis update` 会应用整个 0.4.0 周期。被合并的 `before-dev` / `check` 命令对应的 36 个文件删除，会通过 `safe-file-delete` 自动处理（带 hash 校验，本地改动会保留）。
-- **任意 0.4.0 prerelease 升级：** `trellis update` 是一次干净的版本升级，没有迁移。
+---
+
+- 完整 changelog：https://docs.trytrellis.app/zh/changelog/v0.4.0
+- Repo：https://github.com/mindfold-ai/Trellis
+- Doc：https://docs.trytrellis.app/zh
