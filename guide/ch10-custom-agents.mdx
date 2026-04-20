@@ -14,7 +14,6 @@ name: agent-name
 description: |
   One-line description of what this agent does.
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: opus
 ---
 # Agent Name
 
@@ -53,11 +52,10 @@ For example, adding timeout control to the Check Agent:
 
 ```markdown
 ---
-name: check
+name: trellis-check
 description: |
   Code quality check expert with 10-minute timeout.
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: opus
 timeout: 600000
 ---
 ```
@@ -70,7 +68,6 @@ name: test
 description: |
   Test writing expert. Writes comprehensive tests for code changes.
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: opus
 ---
 # Test Agent
 
