@@ -1,21 +1,23 @@
 ---
 title: 'Trellis'
-description: '面向 Claude Code 和 Cursor 的一站式 AI 框架和工具集'
+description: '面向 10+ AI coding 平台的一站式 AI 框架和工具集'
 ---
 
 ## Trellis 是什么？
 
 AI 的能力像藤蔓一样生长——充满活力但四处蔓延。Trellis 是 AI 的脚手架，引导它沿着规范的路径前进。
 
+支持平台：Claude Code、Cursor、OpenCode、Codex、Kiro、Gemini CLI、Qoder、CodeBuddy、GitHub Copilot、Droid。
+
 ## 为什么用 Trellis？
 
-| 功能             | 解决什么问题                                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **自动注入**     | 规范和工作流自动注入每次对话，写一次，永久生效                                                               |
-| **自更新规范库** | 最佳实践存在自更新的 spec 文件中，用得越多，AI 越懂你                                                        |
-| **并行会话**     | 一个会话窗口可以在后台启动多个会话窗口，每个会话窗口都可以调用多个 Agent 同时工作，运行在各自独立的 worktree |
-| **团队共享**     | 团队共享规范，团队里有一个高人搞一版好的规范，拉高全员的 AI coding 水平                                      |
-| **会话持久化**   | 工作记录持久化到仓库，AI 跨会话记住项目上下文，不用每次再费劲告诉 AI 你的项目情况是什么                      |
+| 功能             | 解决什么问题                                                                                       |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| **自动注入**     | 规范和工作流自动注入每次对话，写一次，永久生效                                                     |
+| **自更新规范库** | 最佳实践存在自更新的 spec 文件中，用得越多，AI 越懂你                                              |
+| **Skill 优先**   | 大部分操作是 auto-trigger 的 skill —— AI 自己挑正确的那个，不用手动敲命令                          |
+| **团队共享**     | 团队共享规范，团队里有一个高人搞一版好的规范，拉高全员的 AI coding 水平                            |
+| **会话持久化**   | 工作记录持久化到仓库，AI 跨会话记住项目上下文，不用每次再费劲告诉 AI 你的项目情况是什么            |
 
 <CardGroup cols={2}>
   <Card title="快速开始" icon="rocket" href="/zh/guide/ch02-quick-start">
@@ -24,8 +26,8 @@ AI 的能力像藤蔓一样生长——充满活力但四处蔓延。Trellis 是
   <Card title="架构全景" icon="book" href="/zh/guide/ch04-architecture">
     了解 Specs、Tasks、Hook 和 Workspace。
   </Card>
-  <Card title="命令全解" icon="terminal" href="/zh/guide/ch05-commands">
-    13 条 Slash 命令的完整用法。
+  <Card title="命令与 Skill" icon="terminal" href="/zh/guide/ch05-commands">
+    Slash 命令（`/start`、`/finish-work`）和 auto-trigger skill 参考。
   </Card>
   <Card title="实战场景" icon="code" href="/zh/guide/ch08-real-world">
     从 Bug 修复到全栈开发的真实案例。
