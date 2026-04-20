@@ -1,0 +1,65 @@
+---
+title: 'v0.5.0-beta.8'
+description: '2026-04-20'
+---
+
+## Bug 修复
+
+### 1. `trellis update` 现在真的能把 opencode 的变更推送到已安装的项目（beta.7 的 follow-up）
+
+beta.7 修了 OpenCode 1.2.x 要求的 plugin factory-function shape（在 CLI 模板里）。但已经装了项目的用户跑 `trellis update` 后反馈 `.opencode/plugins/*.js` **还是坏的**——修复根本没推过去。
+
+根因：`packages/cli/src/configurators/index.ts` 里 opencode 是这么写的：
+
+```ts
+opencode: {
+  configure: configureOpenCode,
+  // ← 没有 collectTemplates！
+},
+```
+
+所有其他配过的平台都有 `collectTemplates`——那个函数返回该平台的文件集合，update 拿来做 hash 追踪。opencode 是唯一例外，属于历史遗漏不是设计选择。后果：`collectPlatformTemplates("opencode")` 返回 `undefined`，`trellis update` 静默跳过整个 `.opencode/` 子树。任何 CLI 侧的 opencode 改动（plugin 逻辑、agent prompt、lib 工具、`package.json` deps）`init` 时能铺下去，`update` 时推不动。
+
+修复：加 `collectOpenCodeTemplates()`，遍历 opencode 模板目录返回 `{ .opencode/agents/*, .opencode/plugins/*, .opencode/lib/*, .opencode/package.json, .opencode/commands/trellis/*, .opencode/skills/*/SKILL.md }`。`configureOpenCode`（init）重构为复用同一套枚举，保证 init 和 update 写入的文件字节级一致。
+
+### 2. Windows 下 Bash tool `cd` 之后 hook 路径 ENOENT
+
+一个在 Windows monorepo 下用 Claude Code 的用户反馈：
+
+```
+UserPromptSubmit operation blocked by hook:
+[python .claude/hooks/inject-workflow-state.py]:
+can't open file 'E:\IdeaProjects\ai-codeview\frontend\.claude\hooks\inject-workflow-state.py':
+[Errno 2] No such file or directory
+```
+
+文件真实位置在 `E:\IdeaProjects\ai-codeview\.claude\...`（项目根），不在 `frontend/` 下。Claude Code 的 Bash tool 之前执行过 `cd frontend/`，**默认行为**是这个 cwd 粘连到后续所有 tool 调用，包括 hook。UserPromptSubmit hook 的命令 `python .claude/hooks/inject-workflow-state.py` 按粘住的 cwd 解析相对路径 → 找不到文件。
+
+修复：在 `.claude/settings.json` 的 `env` block 里 pin `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1`：
+
+```json
+{
+  "env": {
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1"
+  },
+  "statusLine": { ... },
+  "hooks": { ... }
+}
+```
+
+这个变量 Claude Code 进程内部直接读取，不走 shell 展开，所以 macOS / Linux / Windows 全平台一致生效。Bash tool 每条命令跑完自动回项目根，hook 始终在项目根 cwd 下运行。
+
+也考虑过改 hook 命令用 `$CLAUDE_PROJECT_DIR`，但放弃了——[CC issue #6023](https://github.com/anthropics/claude-code/issues/6023) 已经证实 `$VAR` 语法在 Windows cmd/PowerShell 里不展开，那样做反而让 Windows 更惨。
+
+## 升级
+
+```bash
+trellis update
+```
+
+非 breaking。
+
+- **opencode**：< 0.5.0-beta.7 的任何 beta 且配了 opencode，这个版本自动把 3 个 plugin 文件 + `trellis-*` agents + `lib/trellis-context.js` + `.opencode/package.json` 刷到最新模板。未改过的 hash 匹配自动更新；改过的弹标准 `Modified by you` confirm prompt + diff。
+- **claude settings**：未修改过 `.claude/settings.json` 会自动更新。改过的（比如自己加了 hook）会弹 `Modified by you` prompt——选 `[1] Overwrite` 接受新 env block，或 `[3] Skip` 然后手动在你自己的 settings 里加 `"env": { "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1" }` 拿到 Windows 修复。
+
+安装：`npm install -g @mindfoldhq/trellis@beta`
