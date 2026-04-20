@@ -1,0 +1,37 @@
+---
+title: 'v0.5.0-beta.5'
+description: '2026-04-20'
+---
+
+## Breaking 变更
+
+- **子代理改名: `implement` / `check` / `research` → `trellis-implement` / `trellis-check` / `trellis-research`**，覆盖全部 10 个平台（claude, cursor, opencode, codex, kiro, gemini, qoder, codebuddy, copilot, droid）。
+
+  老的通用名字和用户自己定义的 agent 撞名，在某些平台上主 agent 还会根据 description 启发式匹配误触发。加 `trellis-` 前缀后，它们明确就是 Trellis 子代理，只会在你明确想调用的时候才跑。
+
+  `workflow.md`、copilot 的 start prompt、`shared-hooks/inject-subagent-context.py` 的常量、configurator 的 pull-based prelude 检测都已同步更新。如果你写了自定义命令或脚本里有 `Task(subagent_type: "implement", ...)`，需要自己改成 `trellis-implement`。
+
+## Bug 修复
+
+- **删掉所有 agent frontmatter 里的 `model: opus`。** 这个 bug 对 Cursor 用户是真金白银的损失。
+
+  18 个 markdown agent 模板全部硬编码了 `model: opus`，外加 `copilot/prompts/start.prompt.md` 里 3 个 `Task()` 示例写着 `model: "opus"`。各平台表现：
+
+  - **Claude Code**：静默覆盖用户选的 model，所有子代理强制跑 Opus，无视用户偏好。
+  - **Cursor**：`opus` 映射到 Claude Opus 计费，比 Sonnet 贵约 5×。有测试者反馈"差点给我跑破产"才发现。
+  - **Gemini / Droid / Codebuddy / Qoder**：`opus` 根本不是合法的 model 标识符——轻则忽略，重则报错。
+
+  现在 agent 继承你平台会话的 model 配置。符合用户预期：Cursor 里设了 Sonnet，子代理就跑 Sonnet。
+
+## 升级
+
+```bash
+trellis update --migrate
+```
+
+- **未修改过的 agent 文件**：通过 hash 校验自动改名（10 个平台共 30 条 rename 记录）。
+- **自定义过的 agent 文件**：会弹标准的 `Modified by you` confirm prompt + diff 预览。选 `[1] Overwrite` 接受新命名，或 `[3] Skip` 保留你的自定义 agent——但保留的话你还得自己把 `workflow.md`、skill prompt、hook 常量也改成你保留的那个名字。
+
+本版本 `update.skip` 被 bypass（breaking + recommendMigrate 同时为 true 且带 `--migrate`），防止出现半迁移状态——`workflow.md` 里写 `trellis-implement` 但 `.claude/agents/` 里还是旧的 `implement.md`。
+
+安装：`npm install -g @mindfoldhq/trellis@beta`
