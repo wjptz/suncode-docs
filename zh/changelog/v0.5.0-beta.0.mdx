@@ -1,0 +1,100 @@
+---
+title: 'v0.5.0-beta.0'
+description: '2026-04-20'
+---
+
+**Skill-first 架构 + 全员 hooks。** 0.5 的第一个预览版同时重塑两件事：模板的组织方式（单一源，N 份输出）和 AI 遵守 workflow 的方式（每轮 hook，不再是会话首次注入）。并做了自 0.4.0 以来最大的一次清理 —— iFlow 平台、multi-agent pipeline、Ralph Loop、dispatch/debug/plan sub-agent、6 个退役命令全部移除。
+
+## Skill-first 模板架构
+
+命令和 skill 现在统一放在 `packages/cli/src/templates/common/`（3 个命令 + 5 个 skill），作为单一事实源。13 个平台都从 `common/` 经由各自的 adapter 派生。彻底消除了以前"同一内容在 N 个平台各存一份"造成的漂移 —— 以前某些命令在 A 平台更新了但 B 平台没更新的情况不再出现。
+
+两个可复用 helper：
+
+- **`createTemplateReader()`**（在 `template-utils.ts`）—— 工厂函数，6 个平台模板模块共用，替换掉之前各自的 `readFileSync` 样板代码。用 `fileURLToPath` 正确处理带空格 / Windows 路径。
+- **`writeSharedHooks()` + `writeAgents()` + `writeSkills()`**（在 `configurators/shared.ts`）—— 三行调用完成 configurator 的 hook / agent / skill 输出，不再需要各自写文件拷贝循环。
+
+## 7 个新平台升级到 agent-capable
+
+Qoder、CodeBuddy、Factory Droid、Cursor、Gemini CLI、Kiro、GitHub Copilot 从"仅命令"升级到完整的 agent-capable 平台。每个平台都配齐：
+
+- Sub-agent 定义（implement / check / research），使用各平台的原生格式
+- Hook 配置基于 `shared-hooks/` Python 脚本（session-start、inject-subagent-context、statusline），单一实现 + 跨平台输出 adapter
+
+Claude Code 的 hook 也迁移到共享 hook，删除了 1,435 行平台专有实现，其中包含积累多版本的死代码（`AGENT_DEBUG`、`spec.jsonl`/`research.jsonl` 读取、硬编码的 `check-cross-layer.md` 引用）。
+
+## Sub-agent 上下文注入：class-1 hook vs class-2 pull-based
+
+Codex、Copilot、Gemini、Qoder（class-2）无法可靠地通过 hook 改写 sub-agent prompt：
+
+- Codex `PreToolUse` 只对 Bash 触发；`CollabAgentSpawn` 未实现（#15486）
+- Copilot `preToolUse` 对 sub-agent 无效（#2392 / #2540）
+- Gemini `BeforeTool` 看不到调用方上下文（#18128）
+- Qoder 没有 Task tool + context isolation
+
+这 4 个平台改走 **pull-based prelude**：sub-agent 定义的最前面加一段指令，让 sub-agent 在第一轮自己 Read `.current-task` + `prd.md` + `implement.jsonl`/`check.jsonl`。Class-1 平台（Claude / Cursor / OpenCode / Kiro / CodeBuddy / Droid）继续走 hook 推送注入。两种路径都在共享基础设施里（`applyPullBasedPreludeMarkdown` / `applyPullBasedPreludeToml`），以后加平台挑一种就能用。
+
+## Workflow enforcement v2：每轮面包屑 hook
+
+新增 `inject-workflow-state.py` 共享 hook，每次用户发消息触发（8 平台的 UserPromptSubmit；OpenCode Bun plugin 的 `chat.message`）。注入 ~200 字节的 `<workflow-state>` 块，根据当前任务的 `status` 提示 AI 下一步该做什么。
+
+面包屑内容来自 `workflow.md` 里的 `[workflow-state:STATUS]...[/workflow-state:STATUS]` 区块 —— **fork 工作流的用户只需改一个 markdown 文件**，不用碰 hook Python 代码。覆盖 4 种状态：`no_task` / `planning` / `in_progress` / `completed`。自定义带连字符的状态（`in-review`、`blocked-by-team`）也能识别（STATUS 正则 `[A-Za-z0-9_-]+`）。未知状态输出通用 fallback，而不是静默退出 —— hook 绝不会把对话"漏过"。
+
+三档容错（workflow.md 缺失 → tag 部分缺 → status 未知），hook 不会崩。
+
+Kiro 是唯一降级的平台：它的 `agentSpawn` 只针对单 sub-agent 生命周期，上游没有主会话 per-turn 的等价入口。Sub-agent 上下文注入还在工作；每轮面包屑等上游支持。
+
+## SessionStart payload 重构
+
+SessionStart 的 `<workflow>` 块从 2.7 KB 增至 9.5 KB，inline 了 Phase 1/2/3 每个 step 的详细内容 —— AI 一开场就有 step 级 how-to，不再需要 lazy-load `get_context.py --mode phase --step X.Y`。腾出空间来自 `<guidelines>` 的精简（10.9 KB → 4.6 KB）：跨包 `guides/index.md` 仍然内联，但其它 `spec/<pkg>/<layer>/index.md` 只列路径。理由：sub-agent 通过 jsonl 注入拿到具体 spec，主 agent 需要细节时按需读。
+
+Session-start 总 payload：16.7 KB —— 在 Claude Code 的 ~20 KB `additionalContext` 截断阈值下。
+
+`workflow.md` 本体从 17 KB 瘦到 14 KB：改为纯英文（原先中英混排），去掉 `What is Trellis` 介绍、File Structure 目录树、和别处重复的 Best Practices 段，task.py 命令表从 5 条扩到 16 条（按 PR #169 的 lifecycle / context / metadata / hierarchy / PR 分组），并加了 `--help` 指引以便未来扩展时命令表不用同步更新。
+
+## 大规模清理（126 条 safe-file-delete 迁移）
+
+本版本移除四类"已有更好替代"的老功能：
+
+- **iFlow 平台** —— CLI 已不再维护；整个 `.iflow/` 目录和模板源移除
+- **Multi-agent pipeline**（`.trellis/scripts/multi_agent/` + `worktree.yaml`）—— 主流 CLI 都有原生 worktree 支持，Trellis 不需要再自己实现
+- **Ralph Loop hook**（`ralph-loop.py`）—— SubagentStop + exit-code-2 强制跨平台不可移植；check sub-agent 自己的修复循环已经足够
+- **6 个命令 + 3 个 sub-agent** —— `parallel`（被原生 worktree 取代）、`onboard` / `create-command` / `integrate-skill`（使用率低）、`check-cross-layer`（合并进 `check`）、`record-session`（被 `/finish-work` 吸收）；`dispatch` / `debug` / `plan` agent（被 skill routing 取代）
+
+所有清理都做 **hash 校验**：如果你本地改过这些文件就保留并警告；只有原版 Trellis 写入的文件会被删。126 条 safe-file-delete 条目覆盖全部 13 平台（`allowed_hashes` 从历史 git 版本中提取，确保任何 0.3.x / 0.4.x 版本的用户都能干净迁移）。
+
+## 其它值得一提的改动
+
+- `task.py create` 不再写 legacy 的 `current_phase` / `next_action` 字段。FP 分析结论：workflow.md 里的 Phase N.M 是文档分层，不是运行时状态 —— `task.json.status` 才是任务级状态的单一事实源。
+- `inject-subagent-context.py` 的 `update_current_phase()` 函数删除 —— 它在每次 Task spawn 时回写 legacy `current_phase`，悄悄撤销了声明的废弃。
+- Codex hook 集成：`configureCodex` 现在自动写入 shared-hooks（之前跳过了）；`trellis init --codex` 在 stderr 打印警告提醒用户在 `~/.codex/config.toml` 里设置 `features.codex_hooks = true`。
+- `get_context.py --mode phase`（不带 `--step`）返回 Phase Index + Phase 1/2/3 所有 step body（以前只有 Phase Index）—— 这样 agent-less 平台（Kilo / Antigravity / Windsurf）手动跑 `/start` 时拿到的内容和 hook 平台一致。
+- Hook 路径 CWD 稳健性（部分）：`inject-workflow-state.py` 从 CWD 向上查找 `.trellis/`，修复了该 hook 在子目录 / submodule 里 CWD 漂移的问题。所有 hook 的完整覆盖留到 beta 之后的 task。
+
+## Spec 文档更新
+
+- **platform-integration.md** —— 新章节：Workflow State Injection（每轮面包屑）、Subagent Context Injection: Hook-based vs Pull-based、Guidelines: Paths-only vs Inline、Per-Turn Hook 设计原则（不要静默退出）
+- **quality-guidelines.md** —— 新章节：Schema 字段废弃时要审计所有 writer（来自一次 Codex cross-review：`cmd_create` 删了字段但 hook 每次 spawn 还在回写）
+- **workflow.md** —— 完整英文化；结构精简；task.py 16 子命令表
+- **directory-structure.md** + **script-conventions.md** —— multi-agent 相关引用移除
+
+## 测试
+
+572 个 tests 全过，lint + typecheck 全绿。本周期新加了 18 个 tests：workflow-state per-turn 面包屑（7 个 case，含 hyphen / no_task / CWD drift）、Phase Index 扩容、paths-only guidelines、`update_current_phase` 删除回归、UserPromptSubmit 平台接线 invariant。
+
+## 延后到后续 beta / rc
+
+- Kiro `agentSpawn` hook 输出格式在真实环境验证
+- Cursor / CodeBuddy / Droid sub-agent hook 注入真实环境测试
+- 所有 hook 的完整 CWD 稳健性（含 Windows cmd / PowerShell）
+- Submodule / 微服务仓库的父子 Trellis 配置（issue #172）
+
+## 迁移
+
+跑 `trellis update` 拉新模板 + 执行 126 条 safe-file-delete。你本地改过的文件会保留并给警告；只有原版 Trellis 写入的文件会被清理。
+
+**Codex 用户：** 在 `~/.codex/config.toml` 里设置 `features.codex_hooks = true` 来启用 SessionStart + UserPromptSubmit 面包屑注入。不设置 flag 的话 `hooks.json` 会被 Codex 静默忽略。
+
+**iFlow 用户：** `.iflow/` 目录会被移除。如果想保留，先拷出来再跑 update。
+
+安装：`npm install -g @mindfoldhq/trellis@beta`
