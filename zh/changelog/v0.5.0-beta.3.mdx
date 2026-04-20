@@ -1,0 +1,34 @@
+---
+title: 'v0.5.0-beta.3'
+description: '2026-04-20'
+---
+
+## Bug 修复
+
+- **`update.skip` 不再把 breaking release 升级卡在半迁移状态。** 之前，`.trellis/config.yaml` 里配了 `update.skip` 的项目在跨越 breaking release 时行为不一致：`rename` 会忽略 skip，但 `safe-file-delete` 和 template-write 会尊重 skip。结果用户升完还是半迁移 —— 老的废弃文件还留在 skip 保护的路径下、新命令（比如 `continue.md`）根本没落地、每次 update 都在反复 flag 这些文件。
+
+  现在当本次升级跨越的 manifest 里有 `breaking: true + recommendMigrate: true` **且**用户加了 `--migrate`，`update.skip` 会对以下三类操作都 bypass：
+
+  1. `safe-file-delete` 迁移
+  2. 新文件写入（比如 0.5.0 的 `continue.md` 命令）
+  3. 已有文件的模板更新（比如 0.5.0 的 `finish-work.md`）
+
+  用户本地改动仍然有保护 —— 写入时的 per-file "Modified by you" confirm prompt 照常弹。`safe-file-delete` 的 `allowed_hashes` hash 检查也仍然是终极兜底（hash 不匹配的文件会被标记为 `skip-modified` 保留，无论 bypass 是否触发）。
+
+  非 breaking 的普通 update 照常尊重 `update.skip` —— 只有 breaking release 才会触发 bypass。
+
+  breaking-change 警告区新增一条黄色 `⚠ update.skip BYPASSED` 提示，说明哪些 skip 保护下的文件这次会被清理，用户不会被突然删文件吓到。
+
+这个版本没有项目文件迁移 —— 纯 CLI 侧修复。
+
+## 迁移
+
+如果你从 0.4.x 升到 0.5 beta.2 后，`update.skip` 保护路径下留下了半迁移状态（老命令和新 skill 并存），这个版本能帮你收尾：
+
+```bash
+trellis update --migrate
+```
+
+你会看到黄色的 `⚠ update.skip BYPASSED` 提示，列出这次终于要清理的文件。
+
+安装：`npm install -g @mindfoldhq/trellis@beta`

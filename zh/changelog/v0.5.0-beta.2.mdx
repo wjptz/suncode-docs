@@ -1,0 +1,20 @@
+---
+title: 'v0.5.0-beta.2'
+description: '2026-04-20'
+---
+
+## Bug 修复
+
+- **confirm prompt 里的 `[b] Backup-rename` 现在真的会写 inline `.backup` 副本**。之前它和 `[r] Rename anyway` 执行的是完全相同的代码路径 —— 两个都只是依赖 `.trellis/.backup-<timestamp>/` 下的全量项目快照。prompt 上说 "keeps a .backup copy" 是误导。
+
+  现在 `backup-rename` 会在执行 rename / delete 的同时，在新路径旁留下 `<new-path>.backup`（rename 时）或 `<from>.backup`（delete 时），你可以直接在新模板旁边看到自己改过的原内容，不用再翻全量快照。prompt label 也更新成明确写出产物路径。
+
+  默认选项仍是 `backup-rename`（最安全，Enter 一路走不丢东西）。只有当你确认本地改动 mv 过去没问题时才选 `[r]`。
+
+这个版本没有项目文件迁移 —— 纯 CLI 侧修复。
+
+## 迁移
+
+跑 `trellis update` 升级到新 CLI 行为。如果是直接从 0.4.x 升上来，加 `--migrate`（0.5.0-beta.0 的 breaking-change gate 仍然生效）。
+
+安装：`npm install -g @mindfoldhq/trellis@beta`
