@@ -1,0 +1,31 @@
+---
+title: 'v0.5.0-beta.4'
+description: '2026-04-20'
+---
+
+## Bug 修复
+
+- **`.trellis/workflow.md` 现在真的会被 `trellis update` 覆盖更新。** 0.5 升级的关键修复。
+
+  workflow.md 从早期 Trellis 版本开始就被**明确排除**在 `collectTemplateFiles` 之外，当时的设计假设是"workflow.md 是用户可定制文档，`init` 时写一次，之后 `update` 不碰"。这个假设在 0.5.0 崩了 —— 因为 workflow.md 开始承担**脚本解析的结构**：
+
+  - `## Phase Index` —— 被 `get_context.py --mode phase` 读取
+  - `## Phase 1/2/3` 标题 —— 内联进 9.5 KB 的 SessionStart payload
+  - `[workflow-state:STATUS]` 标签块 —— 被每轮面包屑 hook 消费
+
+  从 0.4.x 升到 0.5 的用户就踩坑了：`get_context.py` 报 `Phase Index section not found in workflow.md`，新加的 `/continue` 命令无法解析 step 路由。
+
+  **workflow.md 现在进入正常的 update 流程。** 未修改过的自动更新，改过的走已有的 "Modified by you" 冲突 prompt（带 diff 预览）。`workspace/index.md` 保持排除 —— 它是 `add_session.py` 运行时追加的 journal index，没有脚本依赖的结构。
+
+## 已经升到 beta.0..beta.3 踩坑的用户
+
+如果你已经升到某个 0.5 beta 且看到 `Phase Index section not found`：
+
+```bash
+trellis update --migrate
+```
+
+- **没改过 workflow.md**：自动更新（显示在 "Template updated (will auto-update)" 段里）
+- **改过 workflow.md**：弹 `Modified by you` confirm prompt + diff 预览。选 `[1] Overwrite` 换成新 0.5 结构；或者选 `[3] Skip` 手动把你的改动 merge 到新模板里（全局安装的 CLI 里，模板路径是 `packages/cli/dist/templates/trellis/workflow.md`）
+
+安装：`npm install -g @mindfoldhq/trellis@beta`

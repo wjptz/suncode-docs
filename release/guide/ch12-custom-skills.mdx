@@ -1,0 +1,74 @@
+---
+title: 'Custom Skills'
+---
+
+## Custom Skills
+
+### 12.1 What is a Skill
+
+| Concept | Command | Agent | Skill |
+|------|------|-------|-------|
+| **Purpose** | User-triggered specific workflow | System-invoked autonomous unit | Reusable AI capability module |
+| **Trigger** | `/xxx` | `Task(subagent_type)` | Skill system auto-matches |
+| **Cross-project** | No | No | Yes (npm publish) |
+| **Granularity** | Workflow-level | Role-level | Capability-level |
+
+### 12.2 SKILL.md File Format
+
+Skill files are stored in the `.claude/skills/` or `.agents/skills/` directory:
+
+```markdown
+# Skill Name
+
+## Trigger
+
+When the user asks to [describe trigger condition]...
+
+## Instructions
+
+[Detailed instructions for the AI]
+
+## Tools Required
+
+- Tool1
+- Tool2
+
+## Examples
+
+### Example 1
+
+User: "..."
+AI: [Expected behavior]
+```
+
+### 12.3 Creating Skills with skill-creator
+
+```
+/create-command
+# Select Skill type
+```
+
+Or use the skill-creator Skill directly:
+
+```
+I want to create a new Skill for auto-generating API documentation
+```
+
+### 12.4 Integrating External Skills
+
+```
+/integrate-skill
+```
+
+The AI will:
+1. Identify the Skill source
+2. Analyze the Skill's functionality
+3. Create integration docs in `spec/guides/`
+4. Create a wrapper command in `.claude/commands/trellis/`
+5. Generate a unified `/use-[skill-name]` entry point
+
+### 12.5 Sharing Skills
+
+If you want to share a Skill, you can publish it via npm or share it directly on GitHub. Other users can integrate your Skill into their projects via the `/integrate-skill` command.
+
+---

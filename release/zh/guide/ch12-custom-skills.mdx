@@ -1,0 +1,72 @@
+---
+title: '定制 Skill'
+---
+
+## 定制 Skill
+
+### 12.1 Skill 是什么
+
+| 概念 | 命令 | Agent | Skill |
+|------|------|-------|-------|
+| **作用** | 用户触发特定工作流 | 系统调用的自治单元 | 可复用的 AI 能力模块 |
+| **触发方式** | `/xxx` | `Task(subagent_type)` | Skill 系统自动匹配 |
+| **跨项目** | 不可 | 不可 | 可（npm 发布） |
+| **粒度** | 工作流级 | 角色级 | 能力级 |
+
+### 12.2 SKILL.md 文件格式
+
+Skill 文件存放在 `.claude/skills/` 或 `.agents/skills/` 目录：
+
+```markdown
+# Skill Name
+
+## Trigger
+
+When the user asks to [describe trigger condition]...
+
+## Instructions
+
+[Detailed instructions for the AI]
+
+## Tools Required
+
+- Tool1
+- Tool2
+
+## Examples
+
+### Example 1
+
+User: "..."
+AI: [Expected behavior]
+```
+
+### 12.3 使用 skill-creator 创建 Skill
+
+```
+/create-command
+# 选择创建 Skill 类型
+```
+
+或者直接使用 skill-creator Skill：
+
+```
+我想创建一个新的 Skill，用于自动生成 API 文档
+```
+
+### 12.4 集成外部 Skill
+
+```
+/integrate-skill
+```
+
+AI 会：
+1. 识别 Skill 来源
+2. 分析 Skill 功能
+3. 在 `spec/guides/` 创建集成文档
+4. 在 `.claude/commands/trellis/` 创建包装命令
+5. 生成统一的 `/use-[skill-name]` 入口
+
+### 12.5 分享 Skill
+
+如果你想分享 Skill，可以通过 npm 发布或直接在 GitHub 上共享。其他用户可以通过 `/integrate-skill` 命令将你的 Skill 集成到他们的项目中。

@@ -1,0 +1,31 @@
+---
+title: 'v0.3.3'
+description: '2026-03-04'
+---
+
+Init 下载体验优化、Update 跳过 spec 目录、Windows 编码修复。
+
+## 新增功能
+
+- **代理自动检测**：自动识别 `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` 环境变量，通过 undici ProxyAgent 为所有网络请求（包括 giget 模板下载）配置代理
+- **下载超时与倒计时**：模板索引获取 5 秒超时，带实时 `Loading... 2s/5s` 倒计时；模板下载 30 秒超时（Promise.race）
+- **显示来源 URL**：`trellis init` 选择模板时展示正在请求的 GitHub 地址
+- **重试提示**：下载失败时建议用户通过 `trellis init --template <name>` 手动重试
+- **消除重复请求**：预获取的 `SpecTemplate` 直接传入 `downloadTemplateById`，避免二次请求索引
+- **Update 跳过 spec 目录**：`trellis update` 不再修改 `.trellis/spec/` 下的文件，用户自定义的 spec 内容受完整保护
+- **Update 代理支持**：`trellis update` 在检查 npm 版本前自动配置代理
+
+## Bug 修复
+
+- **Windows stdin UTF-8**：在 `common/__init__.py` 中集中处理 stdio 编码，新增 `sys.stdin` 到 `_configure_stream()`，修复 Windows PowerShell 下通过 stdin 管道传入中文内容乱码的问题
+- **移除内联编码**：删除 `add_session.py` 和 `git_context.py` 中重复的编码处理代码，统一由 `common/__init__.py` 管理
+- **Record-session 模板清理**：移除 8 个平台 record-session 模板中的 auto-commit 实现细节，防止 AI 误用 `--no-commit` 参数
+
+## 依赖变更
+
+- 新增 `undici ^6.21.0`（ProxyAgent 支持）
+- `engines.node` 从 `>=18.0.0` 提升至 `>=18.17.0`（undici v6 要求）
+
+## 迁移
+
+无需迁移。运行 `trellis update` 即可同步更新后的脚本和模板。Node.js 最低版本要求提升至 >=18.17.0。

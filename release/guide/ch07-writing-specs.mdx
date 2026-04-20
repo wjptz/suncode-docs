@@ -1,0 +1,178 @@
+---
+title: 'Writing Specs'
+---
+
+## Writing Specs
+
+### 7.1 Spec Directory Structure and Layering
+
+```
+.trellis/spec/
+├── frontend/                    # Frontend specs
+│   ├── index.md                 #   Index: lists all specs and their status
+│   ├── component-guidelines.md  #   Component specs
+│   ├── hook-guidelines.md       #   Hook specs
+│   ├── state-management.md      #   State management
+│   ├── type-safety.md           #   Type safety
+│   ├── quality-guidelines.md    #   Quality guidelines
+│   └── directory-structure.md   #   Directory structure
+│
+├── backend/                     # Backend specs
+│   ├── index.md
+│   ├── database-guidelines.md
+│   ├── error-handling.md
+│   ├── logging-guidelines.md
+│   ├── quality-guidelines.md
+│   └── directory-structure.md
+│
+└── guides/                      # Thinking guides
+    ├── index.md
+    ├── cross-layer-thinking-guide.md
+    └── code-reuse-thinking-guide.md
+```
+
+**Layering principles**:
+- `index.md` is the entry point, listing all spec files and their status
+- Each file focuses on a single topic, 200-500 lines
+- Each section 20-50 lines
+- Write in English (technical terms are naturally English); Chinese projects may use Chinese
+
+### 7.2 From Empty Templates to Complete Specs
+
+`trellis init` generates empty templates marked "(To be filled by the team)". Here's how to fill them:
+
+**Step 1**: Extract patterns from actual code
+
+```bash
+# See how existing code is organized
+ls src/components/     # Component structure
+ls src/services/       # Service structure
+```
+
+**Step 2**: Write down your conventions
+
+```markdown
+# Component Guidelines
+
+## File Structure
+
+- One component per file
+- Use PascalCase for filenames: `UserProfile.tsx`
+- Co-locate styles: `UserProfile.module.css`
+- Co-locate tests: `UserProfile.test.tsx`
+
+## Patterns
+
+### Required
+
+- Functional components + hooks (no class components)
+- TypeScript with explicit Props interface
+- `export default` for page components, named export for shared
+
+### Forbidden
+
+- No `any` type in Props
+- No inline styles (use CSS Modules)
+- No direct DOM manipulation
+```
+
+**Step 3**: Add code examples
+
+```markdown
+### Good Example
+
+```tsx
+interface UserProfileProps {
+  userId: string;
+  onUpdate: (user: User) => void;
+}
+
+export function UserProfile({ userId, onUpdate }: UserProfileProps) {
+  // ...
+}
+```
+
+### Bad Example
+
+```tsx
+// Don't: no Props interface, using any
+export default function UserProfile(props: any) {
+  // ...
+}
+```
+```
+
+**Step 4**: Update index.md status
+
+```markdown
+| Guideline | File | Status |
+|-----------|------|--------|
+| Component Guidelines | component-guidelines.md | **Filled** |
+| Hook Guidelines | hook-guidelines.md | To fill |
+```
+
+### 7.3 Good Specs vs Bad Specs
+
+**Good specs** (specific, with code, with reasoning):
+
+```markdown
+### Database Query Pattern
+
+**Always use parameterized queries** to prevent SQL injection.
+
+```sql
+-- Good
+SELECT * FROM users WHERE id = $1
+
+-- Bad
+SELECT * FROM users WHERE id = '${userId}'
+```
+
+**Why**: Parameterized queries are automatically escaped by the database driver.
+```
+
+**Bad specs** (too vague, no code, no reasoning):
+
+```markdown
+### Database
+- Use good query patterns
+- Be careful with SQL
+- Follow best practices
+```
+
+**Over-specified specs** (too granular, stifles creativity):
+
+```markdown
+### Variable Naming
+- All boolean variables must start with `is` or `has`
+- All arrays must end with `List`
+- All functions must be less than 20 lines
+- All files must be less than 200 lines
+```
+
+### 7.4 Bootstrap Guided Initial Fill
+
+`trellis init` automatically creates a bootstrap guide task (`00-bootstrap-guidelines`). The AI detects it during the first `/start` and guides you through filling in the blank spec files.
+
+During this guided task, the AI analyzes your codebase, extracts existing patterns, and auto-fills spec templates.
+
+### 7.5 Continuous Spec Evolution
+
+Specs are not written once and forgotten; they evolve continuously with development:
+
+| Trigger | Update Frequency | Example |
+|---------|---------|------|
+| Fixed a non-obvious bug | Immediately | Add to "Common Mistakes" |
+| Discovered a better practice | Same day | Add to "Patterns" |
+| Team agrees on new convention | Same day | Add to "Conventions" |
+| Routine improvements | Weekly | Refine wording, add examples |
+
+**Evolution flywheel**:
+
+```
+Develop → Discover pattern/issue → Manually update Spec file → git push
+                                                                   ↓
+  Entire team benefits ← Hook auto-injects ← Next session auto-loads ← git pull
+```
+
+---

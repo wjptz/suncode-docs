@@ -1,0 +1,213 @@
+---
+title: 'Custom Hooks'
+---
+
+## Custom Hooks
+
+### 11.1 Hook Types
+
+| Hook Type | Trigger Timing | Purpose |
+|-----------|---------|------|
+| `SessionStart` | New session starts | Load context, initialize environment |
+| `PreToolUse` | Before tool invocation | Intercept and modify parameters, inject context |
+| `PostToolUse` | After tool invocation | Log activity, trigger follow-up actions |
+| `SubagentStop` | When sub-Agent stops | Verify output quality, control loops |
+
+### 11.2 settings.json Configuration Format
+
+Configure Hooks in `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-subagent-context.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "check",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/ralph-loop.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Configuration notes**:
+
+- Each event type is an array containing `{ matcher, hooks }` objects
+- `matcher`: Matching rule (`"startup"` matches session start, `"Task"` matches Task tool calls, `"check"` matches check Agent stop)
+- `hooks`: Array of Hooks to execute when matched, executed in order
+- `$CLAUDE_PROJECT_DIR`: Automatically expanded by Claude Code to the project root
+- `timeout`: Timeout in seconds; Hook is skipped if exceeded
+
+### 11.3 Existing Hook Source Code Walkthrough
+
+#### session-start.py — Context Loading
+
+**Trigger**: `SessionStart`
+
+**Functionality**:
+- Reads `.trellis/.developer` to get developer identity
+- Reads `workflow.md` to get workflow guide
+- Reads `workspace/{name}/index.md` to get session history
+- Reads `git log` to get recent commits
+- Reads the active task list
+
+**Output**: Injects all context as a system message at the beginning of the session.
+
+#### inject-subagent-context.py — Spec Injection Engine
+
+**Trigger**: `PreToolUse`, matching `Task` tool calls
+
+**Functionality** (see section 4.3 for details):
+- Intercepts Task tool calls
+- Reads the corresponding JSONL file based on subagent_type
+- Reads all files referenced in the JSONL
+- Builds the complete Agent prompt (specs + requirements + original instructions)
+- Replaces the original prompt
+- Updates current_phase in task.json
+
+**Key design decisions**:
+- Dispatch Agent does not read specs, keeping it simple
+- Each Agent receives full context, no resume needed
+- `[finish]` marker triggers lightweight context injection
+
+#### ralph-loop.py — Quality Loop
+
+**Trigger**: `SubagentStop`, matching `check` Agent
+
+**Functionality** (see section 4.4 for details):
+- Checks verify commands or completion markers
+- Pass allows stop, failure blocks stop
+- Maximum 5 iterations
+- State tracked in `.ralph-state.json`
+
+### 11.4 Writing Custom Hooks
+
+Hooks receive JSON input via stdin and output JSON results via stdout.
+
+**Input format** (PreToolUse example):
+
+```json
+{
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Task",
+  "tool_input": {
+    "subagent_type": "implement",
+    "prompt": "..."
+  },
+  "cwd": "/path/to/project"
+}
+```
+
+**Output format**:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "allow",
+    "updatedInput": {
+      "subagent_type": "implement",
+      "prompt": "modified prompt..."
+    }
+  }
+}
+```
+
+### 11.5 Example: Adding an Auto-Test Hook
+
+`.claude/hooks/auto-test.py`:
+
+```python
+#!/usr/bin/env python3
+"""Run tests automatically after Edit tool completes."""
+
+import json
+import os
+import subprocess
+import sys
+
+def main():
+    input_data = json.load(sys.stdin)
+
+    hook_event = input_data.get("hook_event_name", "")
+    tool_name = input_data.get("tool_name", "")
+
+    # Only trigger after Edit tool
+    if hook_event != "PostToolUse" or tool_name != "Edit":
+        sys.exit(0)
+
+    # Get the edited file
+    file_path = input_data.get("tool_input", {}).get("file_path", "")
+
+    # Only for .ts/.tsx files
+    if not file_path.endswith((".ts", ".tsx")):
+        sys.exit(0)
+
+    # Run typecheck
+    result = subprocess.run(
+        ["pnpm", "typecheck"],
+        capture_output=True,
+        timeout=30
+    )
+
+    if result.returncode != 0:
+        output = {
+            "hookSpecificOutput": {
+                "message": f"TypeCheck failed after editing {file_path}:\n{result.stderr.decode()}"
+            }
+        }
+        print(json.dumps(output))
+
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()
+```
+
+Register it in `settings.json`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "type": "command",
+        "command": "python3 .claude/hooks/auto-test.py"
+      }
+    ]
+  }
+}
+```
+
+---

@@ -1,0 +1,98 @@
+---
+title: 'Your First Task'
+---
+
+## Your First Task
+
+### 3.1 Starting a Session
+
+<Tabs>
+  <Tab title="Claude Code">
+  Open the Claude Code terminal. The `session-start.py` Hook fires automatically and context is injected. You can describe your task directly, or run `/start` to see the full flow.
+
+  The AI automatically performs the following:
+  1. Reads `workflow.md` to understand the development workflow
+  2. Runs `get-context.py` to get current state (your identity, Git status, active tasks)
+  3. Reads `spec/frontend/index.md` and `spec/backend/index.md` to understand project specs
+  4. Asks you: **"What would you like to work on?"**
+  </Tab>
+  <Tab title="Cursor">
+  Open Cursor. **You must first enter**:
+
+  ```
+  /start
+  ```
+
+  Only then will the AI load context. Cursor's Hook support is still in development, so context loading currently requires manual command invocation.
+  </Tab>
+  <Tab title="Codex">
+  Codex provides base context via `AGENTS.md`, but you need to run `$start` to get full project context (identity, Git status, active tasks, etc.).
+  </Tab>
+  <Tab title="OpenCode">
+  OpenCode's Hook system auto-injects context at session start, no need to manually run `/start`.
+  Users can describe tasks immediately after opening the terminal. Optionally run `/start` for a more detailed context report.
+  </Tab>
+</Tabs>
+
+### 3.2 AI Creates the Task and Develops
+
+You say: "Add user login feature". The AI will:
+
+```
+1. Invoke Research Agent to analyze the codebase
+   → Find relevant spec files and code patterns
+
+2. Create a task directory
+   → .trellis/tasks/02-27-user-login/
+   → Generate task.json, prd.md, implement.jsonl, etc.
+
+3. Activate the task
+   → task.py start (set .current-task)
+
+4. Invoke Implement Agent
+   → Hook auto-injects all specs configured in implement.jsonl
+   → Agent implements the feature following specs
+
+5. Invoke Check Agent
+   → Hook injects check specs configured in check.jsonl
+   → Agent checks code quality and auto-fixes issues
+   → Ralph Loop ensures lint/typecheck passes
+```
+
+### 3.3 Testing and Committing
+
+After the AI finishes, it will prompt you:
+
+```bash
+# Run project tests
+pnpm lint && pnpm typecheck && pnpm test
+
+# Commit after confirming everything works
+git add src/components/LoginForm.tsx src/api/auth.ts
+git commit -m "feat(auth): add user login feature"
+```
+
+### 3.4 Recording the Session
+
+```
+/record-session
+```
+
+The AI calls `add-session.py` to append the session content to your journal file and update your personal index.
+
+### 3.5 Coming Back the Next Day — Cross-Session Memory
+
+The next day, open a new session and enter `/start`:
+
+```
+AI: "Hi Alice! Yesterday you completed the user login feature (commit abc1234),
+     including: LoginForm component, JWT middleware, users table.
+     What would you like to work on today?"
+```
+
+The AI reads your workspace journal through the `session-start.py` Hook, remembering what you worked on last time.
+
+<Info>
+**Platform differences**: Claude Code and OpenCode automatically read journals via Hooks for cross-session memory.
+Cursor and Codex users need to manually trigger context loading via `/start` (or `$start`) to get cross-session memory.
+</Info>

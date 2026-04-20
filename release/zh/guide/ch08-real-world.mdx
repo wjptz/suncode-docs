@@ -1,0 +1,233 @@
+---
+title: '实战场景'
+---
+
+## 实战场景
+
+### 8.1 简单功能开发（单会话）
+
+**任务**：添加用户登录功能
+
+<Tabs>
+  <Tab title="Claude Code">
+  ```bash
+  # 1. 打开终端（Hook 自动注入上下文，可跳过 /start）
+
+  # 2. 描述任务
+  "添加用户登录功能"
+
+  # 3. AI 自动工作...
+  #    Hook 注入规范 → 创建任务 → 调用 Implement Agent → Check Agent → Ralph Loop 验证
+
+  # 4. 测试
+  pnpm lint && pnpm typecheck && pnpm test
+
+  # 5. 提交
+  git add .
+  git commit -m "feat(auth): add user login feature"
+
+  # 6. 记录会话
+  /record-session
+  ```
+  </Tab>
+  <Tab title="Cursor">
+  ```bash
+  # 1. 启动会话（必须）
+  /start
+
+  # 2. 描述任务
+  "添加用户登录功能"
+
+  # 3. AI 自动工作...
+  #    读取规范 → 实现功能
+
+  # 4. 手动检查代码质量
+  /trellis-check-backend
+
+  # 5. 测试
+  pnpm lint && pnpm typecheck && pnpm test
+
+  # 6. 提交
+  git add .
+  git commit -m "feat(auth): add user login feature"
+
+  # 7. 记录会话
+  /trellis-record-session
+  ```
+  </Tab>
+</Tabs>
+
+### 8.2 复杂并行开发（多 Agent worktree）
+
+<Warning>此场景仅适用于 Claude Code。Cursor、Codex 等平台不支持 Multi-Agent Pipeline。</Warning>
+
+**任务**：并行开发三个独立功能
+
+```bash
+# 1. 启动并行模式
+/parallel
+
+# 2. 描述需求
+"我需要并行开发三个功能：
+1. 用户个人资料页面
+2. 邮件通知系统
+3. 数据导出功能"
+
+# 3. AI 自动为每个功能创建 worktree 并启动 Agent
+
+# 4. 监控进度
+./.trellis/scripts/multi-agent/status.py
+# Task 1: user-profile     ✅ Complete (PR #123)
+# Task 2: email-notify     🔄 In Progress (Check phase)
+# Task 3: data-export      🔄 In Progress (Implement phase)
+
+# 5. 审查并合并 PR
+
+# 6. 清理 worktree
+./.trellis/scripts/multi-agent/cleanup.py user-profile
+```
+
+### 8.3 跨层功能开发
+
+**任务**：添加商品评论功能（数据库 + API + 前端）
+
+<Tabs>
+  <Tab title="Claude Code">
+  ```bash
+  # 1. 打开终端（Hook 自动注入）
+
+  # 2. 描述任务
+  "添加商品评论功能，需要数据库、API、前端"
+
+  # 3. AI 自动读取跨层思维指南
+  #    mapping: UI → API → DB → API → UI
+
+  # 4. AI 按层次开发
+  #    Phase 1: Database (comments 表)
+  #    Phase 2: Backend API (POST /api/comments)
+  #    Phase 3: Frontend (CommentForm 组件)
+
+  # 5. 跨层检查（Hook 自动触发，或手动运行）
+  /check-cross-layer
+  ```
+  </Tab>
+  <Tab title="Cursor">
+  ```bash
+  # 1. 启动（必须）
+  /start
+
+  # 2. 加载后端 + 前端规范
+  /trellis-before-backend-dev
+  /trellis-before-frontend-dev
+
+  # 3. 描述任务
+  "添加商品评论功能，需要数据库、API、前端"
+
+  # 4. AI 按层次开发...
+
+  # 5. 手动跨层检查
+  /trellis-check-cross-layer
+  ```
+  </Tab>
+</Tabs>
+
+```bash
+# ✅ Database Layer: comments table created
+# ✅ API Layer: POST /api/comments endpoint
+# ✅ UI Layer: CommentForm component
+# ✅ Data Flow: UI → API → DB ✓
+
+# 6. 测试、提交、记录
+```
+
+### 8.4 团队协作
+
+<Tip>
+团队协作的核心机制（Spec 共享、任务指派）是平台无关的。不同平台的团队成员可以共用同一套 Spec。
+</Tip>
+
+```bash
+# Alice 开发并总结规范（以 Claude Code 为例，Cursor 用 /start）
+trellis init -u alice
+/start
+# ... 开发认证系统 ...
+# 将 auth 相关最佳实践手动写入 spec
+git add .trellis/spec/
+git commit -m "docs: add auth guidelines"
+git push
+
+# Bob 拉取后自动受益
+git pull
+trellis init -u bob
+/start
+"添加权限管理"
+# AI 自动读取 Alice 写的 auth guidelines
+# Bob 的代码自动遵循 Alice 的规范
+```
+
+### 8.5 Bug 调试与 break-loop
+
+```bash
+# 1. 启动
+/start
+
+# 2. 修 bug
+"用户在某些情况下无法登录"
+
+# 3. AI 调试修复...
+
+# 4. 深度分析
+/break-loop
+
+# AI 输出：
+# Root Cause: B - Cross-layer Contract Violation
+#   前端发送的 token 格式和后端期望的不一致
+#
+# Prevention:
+#   - 更新 spec: 定义 token 格式契约
+#   - 添加类型约束: 共享 Token interface
+#   - 添加测试: token 格式验证
+
+# 5. 手动更新 spec
+# 将 token 格式契约写入 .trellis/spec/ 文件
+```
+
+### 8.6 规范迭代飞轮
+
+```bash
+# 发现模式
+# AI 在开发中发现：所有 API 错误都应该返回统一格式
+# { error: string, code: number, details?: any }
+
+# 手动更新 spec
+# 将这个模式写入 .trellis/spec/backend/error-handling.md
+
+# 下次任何人做 API 开发
+# Hook 自动注入 error-handling.md
+# AI 自动遵循统一错误格式
+# → 所有 API 错误格式一致
+```
+
+### 8.7 从零搭建新项目
+
+```bash
+# 1. 创建项目
+mkdir my-app && cd my-app
+git init
+
+# 2. 安装 Trellis
+npm install -g @mindfoldhq/trellis@latest
+trellis init -u your-name
+
+# 3. trellis init 已自动创建 bootstrap 引导任务（00-bootstrap-guidelines）
+/start
+# AI 会自动检测 bootstrap 任务，分析你的代码库并帮你填充 spec
+
+# 4. 手动补充核心规范
+# 编辑 .trellis/spec/backend/index.md 等
+# 写下你的技术栈选择、编码约定、目录结构
+
+# 5. 开始开发
+/start
+"搭建项目基础架构"
+```

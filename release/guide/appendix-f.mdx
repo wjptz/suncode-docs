@@ -1,0 +1,164 @@
+---
+title: 'Appendix F: FAQ'
+---
+
+## Appendix F: FAQ
+
+### Q1: When should I use `/start` vs `/parallel`?
+
+| Dimension | `/start` | `/parallel` |
+|------|---------|------------|
+| Task complexity | Simple to moderate | Complex, can be split |
+| Estimated time | < 30 minutes | > 30 minutes |
+| Independence | Single task | Multiple independent subtasks |
+| Isolation | Not needed | Needed (worktree) |
+
+### Q2: When do I need `/check-cross-layer`?
+
+**Must use**: When changes span frontend + backend + database
+**Recommended**: When modifying API interfaces or database schemas
+**Not needed**: For pure frontend UI tweaks or pure backend internal logic
+
+### Q3: What should I do after `/break-loop` analysis?
+
+After `/break-loop` performs deep analysis, you should manually update the analysis results into spec files under `.trellis/spec/`, then git push. The next session's Hook will automatically inject the updated specs.
+
+```
+Fix Bug → /break-loop deep analysis → manually update spec → git push → auto-prevented next time
+```
+
+### Q4: How do I monitor multi-Agent parallel tasks?
+
+```bash
+./.trellis/scripts/multi-agent/status.py                  # Overview
+./.trellis/scripts/multi-agent/status.py --log <name>     # View logs
+./.trellis/scripts/multi-agent/status.py --watch <name>   # Live monitoring
+```
+
+Logs are located under the worktree directory in `.dispatch-log` and `.plan-log`.
+
+### Q5: Where is session history stored?
+
+```
+.trellis/workspace/
+├── index.md              # Master index (all developers)
+└── {your-name}/
+    ├── index.md          # Personal index (session count, last active, history table)
+    └── journal-N.md      # Session journal (max 2,000 lines per file)
+```
+
+### Q6: How detailed should specs be?
+
+**200-500 lines per file, 20-50 lines per section**
+
+Principles:
+- Specific enough to include code examples
+- Explain "why", not just "what"
+- Concise — one concept per section
+- Actionable — AI can follow directly
+- Current — update immediately when outdated
+
+### Q7: Will multiple people using Trellis cause conflicts?
+
+**No conflicts**: workspace (per-developer isolation), .developer (gitignored), parallel worktrees
+**Potential conflicts**: spec files (resolve via PR review), task management (use `--assignee` for clear assignment)
+
+### Q8: How do I migrate an existing project to Trellis?
+
+1. `npm install -g @mindfoldhq/trellis@latest`
+2. `trellis init -u your-name` (auto-creates bootstrap guide task)
+3. Run `/start` — AI auto-detects the bootstrap task and helps fill specs
+4. Manually supplement core specs
+5. Add `.trellis/` and `.claude/` to Git
+6. Commit and push; team members pull then run `trellis init -u their-name`
+
+### Q9: What if Ralph Loop verification fails?
+
+1. Check Agent auto-attempts fixes (up to 5 iterations)
+2. If still failing after 5 attempts, Ralph Loop force-passes with a warning
+3. You can manually check and fix, then re-run check
+4. If the verify commands themselves are problematic, adjust the `verify` config in `worktree.yaml`
+
+### Q10: How do I update Trellis without losing custom configuration?
+
+```bash
+# Preview updates first
+trellis update --dry-run
+
+# Execute update
+trellis update
+# Trellis auto-detects files you've modified
+# Unmodified files are updated directly
+# Modified files prompt you to choose: overwrite / skip / merge
+```
+
+### Q11: Can Cursor users get the same automation as Claude Code?
+
+Not entirely. Cursor doesn't support the Hook system, so:
+- **No auto-injection** — you need to manually run `/start` to load context
+- **No Ralph Loop** — you need to manually run `/trellis-check-backend` and similar check commands
+- **No Multi-Agent Pipeline** — `/parallel` orchestration is not supported
+- **Core features retained** — Spec management, Task management, cross-session memory (via `/start`), and all check commands remain available
+
+Cursor users can achieve roughly 80% of the Claude Code experience through manual command invocation. See [13.2 Cursor Integration](#132-cursor-integration) for details.
+
+### Q12: How do Windows users install Trellis?
+
+All Trellis scripts have been migrated to Python, natively supporting Windows:
+
+```bash
+# 1. Ensure Node.js and Python 3.8+ are installed
+
+# 2. Install Trellis
+npm install -g @mindfoldhq/trellis@latest
+
+# 3. Initialize normally
+cd your-project
+trellis init -u your-name
+```
+
+### Q13: Do I need to reconfigure when switching from Cursor to Claude Code?
+
+No. `trellis init` generates both `.claude/` and `.cursor/` configurations during initialization.
+If your project already has `.cursor/commands/` but not `.claude/`, simply re-run:
+
+```bash
+trellis init -u your-name
+```
+
+Trellis auto-detects the environment and fills in missing configurations. Your `.trellis/` directory (Spec, Workspace, Tasks) is fully shared — no need to recreate.
+
+### Q14: What's the difference between Kilo Code and Claude Code multi-Agent?
+
+Both support multi-Agent parallelism, but the mechanisms differ:
+
+| Dimension | Claude Code (Trellis) | Kilo Code |
+|------|----------------------|-----------|
+| **Isolation method** | git worktree physical isolation | Independent conversation context (Orchestrator Mode) |
+| **Orchestration method** | Hook-driven (dispatch → implement → check) | Mode switching (Code / Architect / Debug, etc.) |
+| **Parallel count** | Depends on number of worktrees | Depends on modes and context |
+| **Code merging** | Each worktree creates independent PR → merge | Within the same workspace |
+| **Configuration** | `worktree.yaml` + Hook scripts | Built-in, no extra config needed |
+
+### Q15: How do Kiro's Spec mode and Trellis's task management work together?
+
+Kiro's Spec-Driven Development and Trellis's task system are complementary:
+
+1. **Create task with Trellis**: `task.py create "New feature"` generates `prd.md`
+2. **Refine with Kiro Spec**: In Kiro, select Spec mode to auto-generate `requirements.md` → `design.md` → `tasks.md` based on `prd.md`
+3. **Kiro implements via tasks.md**: Agent Hooks auto-trigger checks on file changes
+4. **Record with Trellis**: `/record-session` records the session, `task.py finish` archives the task
+
+Kiro's `.kiro/specs/` and Trellis's `.trellis/tasks/` manage their own concerns independently, with no conflicts.
+
+### Q16: Are Kilo Code Skills and Trellis Skills the same thing?
+
+Yes, they follow the same **Agent Skills open standard**. A single SKILL.md file can be used across Kilo Code, Cursor, Claude Code, and other platforms that support the standard.
+
+Kilo Skills are stored at `.kilocode/skills/*/SKILL.md`, while Claude Code Skills are at `.claude/skills/` or `.agents/skills/`. The formats are compatible and can be copied between platforms.
+
+### Q17: Are OpenCode and Codex Trellis configurations compatible?
+
+Partially. Both share the `.agents/skills/` directory. Codex relies on `AGENTS.md` as its entry file; OpenCode supports session hook auto-injection, uses `/` prefix for commands (e.g., `/start`), and provides an experience closer to Claude Code.
+
+---

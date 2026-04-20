@@ -1,0 +1,219 @@
+---
+title: '命令全解'
+---
+
+## 命令全解
+
+Trellis 提供 13 个 Slash 命令（Claude Code），分为 6 个类别。Cursor 版本有 12 个（不含 `/parallel`）。
+
+#### 跨平台命令对照表
+
+| 功能 | Claude Code / OpenCode | Cursor | Codex |
+|------|----------------------|--------|-------|
+| 启动会话 | `/start`（可选，Hook 自动注入） | `/start`（必须） | `$start` |
+| 后端准备 | `/before-backend-dev`（可选） | `/trellis-before-backend-dev`（推荐） | `$before-backend-dev` |
+| 前端准备 | `/before-frontend-dev`（可选） | `/trellis-before-frontend-dev`（推荐） | `$before-frontend-dev` |
+| 检查后端 | `/check-backend`（Ralph Loop 自动触发） | `/trellis-check-backend`（手动） | `$check-backend` |
+| 检查前端 | `/check-frontend`（Ralph Loop 自动触发） | `/trellis-check-frontend`（手动） | `$check-frontend` |
+| 跨层检查 | `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` |
+| 完工清单 | `/finish-work` | `/trellis-finish-work` | `$finish-work` |
+| 并行编排 | `/parallel` | ❌ 不支持 | ❌ 不支持 |
+| 记录会话 | `/record-session` | `/trellis-record-session` | `$record-session` |
+| 头脑风暴 | `/brainstorm` | `/trellis-brainstorm` | `$brainstorm` |
+| Bug 分析 | `/break-loop` | `/trellis-break-loop` | `$break-loop` |
+| 新成员入门 | `/onboard` | `/trellis-onboard` | `$onboard` |
+| 创建命令 | `/create-command` | `/trellis-create-command` | `$create-command` |
+| 集成 Skill | `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` |
+
+### 5.1 会话管理
+
+#### `/start` — 启动开发会话
+
+**何时使用**：每次打开 AI 编码助手开始工作时。Claude Code 用户因 Hook 自动注入上下文，`/start` 为可选（但推荐首次使用时运行以了解完整流程）。Cursor 用户**必须**运行 `/start`。
+
+**执行流程**：
+
+1. 读取 `workflow.md` 了解工作流
+2. 运行 `get-context.py` 获取上下文（身份、Git 状态、活跃任务）
+3. 读取 spec 索引了解项目规范
+4. 报告上下文并询问："What would you like to work on?"
+
+**任务分类决策**：
+
+| 类型 | 判断标准 | 工作流 |
+|------|---------|--------|
+| 问答 | 用户问代码、架构相关问题 | 直接回答 |
+| 简单修复 | 改错字、单行修改，< 5 分钟 | 直接编辑 |
+| 开发任务 | 修改逻辑、添加功能、修 bug、涉及多文件 | **走 Task Workflow** |
+
+> **疑问就走 Task Workflow**。Task Workflow 确保 Agent 接收到规范注入，代码质量更高。
+
+#### `/parallel` — 多 Agent 并行编排
+
+<Warning>仅 Claude Code 支持。Cursor、Codex 等平台不支持 Multi-Agent Pipeline。</Warning>
+
+**何时使用**：
+- 任务复杂度高，需要 > 30 分钟
+- 可以拆分为多个独立子任务
+- 需要在独立 worktree 中隔离开发
+
+**两阶段流程**：
+
+**阶段一：Plan（规划）**
+
+```bash
+./.trellis/scripts/multi-agent/plan.py \
+  --name "feature-name" \
+  --type "backend|frontend|fullstack" \
+  --requirement "用户需求描述"
+```
+
+Plan Agent 会：
+1. 评估需求是否清晰（可能拒绝，见第 6 章）
+2. 调用 Research Agent 分析代码库
+3. 创建任务目录并配置 JSONL 上下文
+4. 生成 prd.md 需求文档
+
+**阶段二：Execute（执行）**
+
+```bash
+./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
+```
+
+自动创建 Git worktree，Dispatch Agent 按顺序执行 implement → check → finish → create-pr。
+
+**监控命令**：
+
+```bash
+./.trellis/scripts/multi-agent/status.py                  # 概览
+./.trellis/scripts/multi-agent/status.py --log <name>     # 查看日志
+./.trellis/scripts/multi-agent/status.py --watch <name>   # 实时监控
+./.trellis/scripts/multi-agent/cleanup.py <branch>        # 清理 worktree
+```
+
+#### `/record-session` — 记录会话
+
+**何时使用**：用户测试并 commit 代码之后。
+
+**前提**：AI 不执行 git commit，只读取 git 历史。
+
+**执行流程**：
+
+```bash
+./.trellis/scripts/add-session.py \
+  --title "Session Title" \
+  --commit "hash1,hash2" \
+  --summary "本次完成了什么"
+```
+
+自动完成：
+- 追加会话记录到 `journal-N.md`
+- 检测行数，超过 2000 行自动创建新文件
+- 更新 `index.md`（会话总数 +1、最后活跃时间、历史表）
+
+#### `/onboard` — 新成员入门
+
+**何时使用**：新团队成员加入时。
+
+包含三部分：
+1. 核心概念讲解（spec / workspace / task / hook）
+2. 5 个实战练习（bug 修复、规划会话、Code Review 修复、大型重构、调试会话）
+3. 规范定制指导
+
+### 5.2 开发准备
+
+#### `/before-backend-dev` — 后端开发准备
+
+读取后端 spec 索引及相关规范文档（数据库、错误处理、日志、类型安全、质量指南），确保 AI 了解后端编码标准后再写代码。
+
+#### `/before-frontend-dev` — 前端开发准备
+
+读取前端 spec 索引及相关规范文档（组件、Hook、状态管理、类型安全、质量指南）。
+
+### 5.3 质量检查
+
+#### `/check-backend` — 后端代码检查
+
+执行流程：
+1. `git status` 查看变更
+2. 重新读取后端 spec
+3. 逐条对比代码与规范
+4. 自动修复违规项（Ralph Loop 驱动，最多 3 轮）
+
+检查项：目录结构、数据库操作、错误处理、日志规范、类型定义、禁止 `console.log`、禁止 `any` 类型、禁止非空断言。
+
+#### `/check-frontend` — 前端代码检查
+
+检查项：组件命名（PascalCase）、Props 接口、Hook 使用、状态管理、样式一致性、TypeScript 错误、ESLint 错误、未使用 import。
+
+同样使用 Ralph Loop 自修复循环。
+
+#### `/check-cross-layer` — 跨层一致性检查
+
+读取跨层思维指南，分析 6 个维度：
+
+1. **数据流一致性** — 前端 → API → 数据库 → API → 前端
+2. **类型定义同步** — 前后端 interface 一致
+3. **错误处理连续性** — 各层错误正确传递
+4. **常量同步** — 前后端共享常量
+5. **代码复用** — 避免重复实现
+6. **Import 路径正确** — 无断裂引用
+
+### 5.4 并行开发
+
+#### `/parallel`
+
+详见 5.1 节。
+
+### 5.5 知识积累
+
+#### `/break-loop` — 深度 Bug 分析
+
+**何时使用**：解决了一个棘手的 bug 之后，做深度分析防止类似问题再发。
+
+**5 维分析框架**：
+
+1. **Root Cause 根因分类**：
+   - A — Missing Spec（缺少规范）
+   - B — Cross-layer Contract Violation（跨层契约违反）
+   - C — Change Propagation Failure（变更传播失败）
+   - D — Test Coverage Gap（测试覆盖缺口）
+   - E — Implicit Assumption（隐式假设）
+
+2. **Why Fixes Failed** — 分析为什么之前的修复尝试失败了
+
+3. **Prevention Mechanisms**（6 种预防机制）：
+   - Spec 更新
+   - 类型约束
+   - Lint 规则
+   - 测试用例
+   - 代码审查检查项
+   - 文档更新
+
+4. **Systematic Expansion** — 搜索相同模式的其他潜在问题
+
+5. **Knowledge Capture** — 将分析结果固化到 spec
+
+**核心理念**：
+
+> 调试的价值不是修复这个 bug，而是确保这类 bug 再也不会发生。
+
+### 5.6 辅助命令
+
+#### `/finish-work` — 完工检查清单
+
+提交前的 6 维度检查：
+1. 代码质量（lint、type-check、test）
+2. 文档同步
+3. API 变更
+4. 数据库变更
+5. 跨层验证
+6. 手动测试
+
+#### `/create-command` — 创建自定义命令
+
+在 `.claude/commands/trellis/` 和 `.cursor/commands/` 下生成双 IDE 命令文件。详见第 9 章。
+
+#### `/integrate-skill` — 集成外部 Skill
+
+将社区 Skill 集成到项目中，创建统一的 `/use-[skill-name]` 命令。详见第 12 章。

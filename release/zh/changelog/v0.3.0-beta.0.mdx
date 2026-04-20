@@ -1,0 +1,27 @@
+---
+title: 'v0.3.0-beta.0'
+description: '2026-01-25'
+---
+
+**破坏性变更**：Shell 脚本迁移到 Python + 命令命名空间变更。
+
+## Shell 脚本迁移到 Python
+
+所有 `.sh` 脚本替换为 `.py` 等效脚本。需要 Python 3.10+。
+
+| 旧                              | 新                              |
+| ------------------------------- | ------------------------------- |
+| `.trellis/scripts/*.sh`         | `.trellis/scripts/*.py`         |
+| `.trellis/scripts/multi-agent/` | `.trellis/scripts/multi_agent/` |
+| `./script.sh`                   | `python3 ./script.py`           |
+
+## 命令命名空间
+
+命令移动到命名空间路径：
+
+| 平台        | 旧                          | 新                                  |
+| ----------- | --------------------------- | ----------------------------------- |
+| Claude Code | `.claude/commands/start.md` | `.claude/commands/trellis/start.md` |
+| Cursor      | `.cursor/commands/start.md` | `.cursor/commands/trellis-start.md` |
+
+运行 `trellis update --migrate` 应用变更。

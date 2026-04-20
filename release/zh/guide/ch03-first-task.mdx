@@ -1,0 +1,98 @@
+---
+title: '你的第一个任务'
+---
+
+## 你的第一个任务
+
+### 3.1 启动会话
+
+<Tabs>
+  <Tab title="Claude Code">
+  打开 Claude Code 终端，`session-start.py` Hook 自动触发，上下文已注入。你可以直接描述任务，也可以运行 `/start` 了解完整流程。
+
+  AI 会自动执行以下操作：
+  1. 读取 `workflow.md` 了解开发流程
+  2. 运行 `get-context.py` 获取当前状态（你的身份、Git 状态、活跃任务）
+  3. 读取 `spec/frontend/index.md` 和 `spec/backend/index.md` 了解项目规范
+  4. 问你：**"What would you like to work on?"**
+  </Tab>
+  <Tab title="Cursor">
+  打开 Cursor，**必须先输入**：
+
+  ```
+  /start
+  ```
+
+  AI 才会读取上下文。Cursor 的 Hook 支持尚在开发中，当前需要通过命令手动触发上下文加载。
+  </Tab>
+  <Tab title="Codex">
+  Codex 通过 `AGENTS.md` 提供基础上下文，但需要运行 `$start` 获取完整的项目上下文（身份、Git 状态、活跃任务等）。
+  </Tab>
+  <Tab title="OpenCode">
+  OpenCode 的 Hook 系统在会话开始时自动注入上下文，无需手动输入 `/start`。
+  用户打开终端即可直接描述任务。可选运行 `/start` 获取更详细的上下文报告。
+  </Tab>
+</Tabs>
+
+### 3.2 AI 创建任务并开发
+
+你说："添加用户登录功能"。AI 会：
+
+```
+1. 调用 Research Agent 分析代码库
+   → 找到相关 spec 文件和代码模式
+
+2. 创建任务目录
+   → .trellis/tasks/02-27-user-login/
+   → 生成 task.json、prd.md、implement.jsonl 等
+
+3. 激活任务
+   → task.py start（设置 .current-task）
+
+4. 调用 Implement Agent
+   → Hook 自动注入 implement.jsonl 中配置的所有 spec
+   → Agent 按规范实现功能
+
+5. 调用 Check Agent
+   → Hook 注入 check.jsonl 中配置的检查规范
+   → Agent 检查代码质量并自动修复
+   → Ralph Loop 确保 lint/typecheck 通过
+```
+
+### 3.3 测试和提交
+
+AI 完成后会提示你：
+
+```bash
+# 运行项目测试
+pnpm lint && pnpm typecheck && pnpm test
+
+# 确认功能正常后提交
+git add src/components/LoginForm.tsx src/api/auth.ts
+git commit -m "feat(auth): add user login feature"
+```
+
+### 3.4 记录会话
+
+```
+/record-session
+```
+
+AI 会调用 `add-session.py`，将本次会话内容追加到你的 journal 文件中，并更新个人索引。
+
+### 3.5 第二天回来 — 跨会话记忆
+
+第二天打开新会话，输入 `/start`：
+
+```
+AI: "Hi Alice! 昨天你完成了用户登录功能 (commit abc1234)，
+     包括: LoginForm 组件、JWT middleware、users 表。
+     今天想做什么？"
+```
+
+AI 通过 `session-start.py` Hook 读取了你的 workspace journal，记住了上次的工作内容。
+
+<Info>
+**平台差异**: Claude Code 和 OpenCode 通过 Hook 自动读取 journal 实现跨会话记忆。
+Cursor、Codex 用户需要通过 `/start`（或 `$start`）命令手动触发上下文加载，才能获得跨会话记忆。
+</Info>

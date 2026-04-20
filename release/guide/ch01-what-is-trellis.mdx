@@ -1,0 +1,54 @@
+---
+title: 'What is Trellis'
+---
+
+## What is Trellis
+
+### 1.1 One-Line Summary
+
+**Trellis is scaffolding for AI coding assistants** — it automatically injects your project specs into every AI session, so the AI writes code following your standards instead of improvising.
+
+> AI's capabilities grow like vines — full of vitality but spreading everywhere.
+> Trellis is scaffolding for AI, guiding it along the path of your conventions.
+
+### 1.2 Pain Points Addressed
+
+| Pain Point | Current State | Trellis Solution |
+|------|------|-------------|
+| **AI ignores your specs** | You write CLAUDE.md, but AI forgets it after 5 conversation turns | Hook auto-injection ensures specs are included in every conversation |
+| **Fix A, break B cycle** | AI fixes one bug but introduces another | Thinking Guides + Ralph Loop: think first, then act, then verify |
+| **Inconsistent code** | AI-generated code runs but doesn't integrate well | Cross-Layer Guide: map data flow before writing code |
+| **Scope creep** | You ask for a button, AI writes 9,000 lines | Plan Agent: rejects and splits oversized requirements |
+| **Inconsistent team quality** | Each person's AI produces different coding styles | Shared Spec library — one person optimizes, the whole team benefits |
+| **Cross-session amnesia** | New sessions require re-explaining project context | Session persistence — AI remembers context across sessions |
+
+### 1.3 Comparison with Traditional Approaches
+
+| Dimension | `.cursorrules` | `CLAUDE.md` | Skills | **Trellis** |
+|------|---------------|-------------|--------|------------|
+| Spec injection method | Manually loaded each conversation | Auto-loaded but easily truncated | User-initiated | **Hook auto-injection, precisely loaded per task** |
+| Spec granularity | One large file | One large file | One per Skill | **Modular files, composed per task** |
+| Cross-session memory | None | None | None | **Workspace journal persistence** |
+| Parallel development | Not supported | Not supported | Not supported | **Multi-Agent worktree parallelism** |
+| Quality control | None | None | None | **Ralph Loop automatic verification** |
+| Team sharing | Single user | Single user | Shareable but no standard | **Git-versioned Spec library** |
+| Platform support | Cursor only | Claude Code only | Per platform | **Claude Code + Cursor + Codex + OpenCode + Kilo + Kiro** |
+
+### 1.4 Core Concepts at a Glance
+
+| Concept | Description | Location |
+|------|------|---------|
+| **Spec** | Your coding standards, written in Markdown. AI reads specs before writing code | `.trellis/spec/` |
+| **Workspace** | Each developer's session logs, letting AI remember what was done last time | `.trellis/workspace/` |
+| **Task** | A work unit containing requirements docs and context configuration | `.trellis/tasks/` |
+| **Hook** | Auto-triggered scripts that inject context at session start, Agent invocations, etc. `[Claude Code exclusive]` | `.claude/hooks/` |
+| **Agent** | Specialized AI sub-processes such as Implement, Check, Debug, etc. `[Claude Code exclusive]` | `.claude/agents/` |
+| **Skill** | Reusable AI capability modules, shareable across projects | `.claude/skills/` |
+| **Journal** | Session log files recording what was done in each development session | `.trellis/workspace/{name}/journal-N.md` |
+
+<Info>
+Hook and Agent systems are Claude Code exclusive features. Cursor, Codex, and other platforms load specs manually via Slash commands,
+achieving the same effect. Spec, Workspace, Task, Journal, and other core concepts are universal across all platforms.
+</Info>
+
+---

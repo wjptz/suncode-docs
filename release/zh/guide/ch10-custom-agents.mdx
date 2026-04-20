@@ -1,0 +1,107 @@
+---
+title: '定制 Agent'
+---
+
+## 定制 Agent
+
+### 10.1 Agent 定义文件格式
+
+Agent 定义文件存放在 `.claude/agents/{name}.md`，使用 YAML front matter：
+
+```markdown
+---
+name: agent-name
+description: |
+  One-line description of what this agent does.
+tools: Read, Write, Edit, Bash, Glob, Grep
+model: opus
+---
+# Agent Name
+
+Agent instructions go here...
+```
+
+### 10.2 Agent 可用工具和模型选择
+
+**可用工具**：
+
+| 工具 | 说明 |
+|------|------|
+| Read | 读取文件 |
+| Write | 写入文件 |
+| Edit | 编辑文件 |
+| Bash | 执行命令 |
+| Glob | 文件搜索 |
+| Grep | 内容搜索 |
+| Task | 调用子 Agent |
+| Skill | 调用 Skill |
+| mcp__exa__web_search_exa | 网络搜索 |
+| mcp__exa__get_code_context_exa | 代码搜索 |
+| mcp__chrome-devtools__* | 浏览器自动化 |
+
+**模型选择**：
+
+| 模型 | 适用场景 |
+|------|---------|
+| `opus` | 复杂任务（实现、检查、调试） |
+| `sonnet` | 中等任务 |
+| `haiku` | 简单快速任务 |
+
+### 10.3 修改现有 Agent
+
+例如，给 Check Agent 增加超时控制：
+
+```markdown
+---
+name: check
+description: |
+  Code quality check expert with 10-minute timeout.
+tools: Read, Write, Edit, Bash, Glob, Grep
+model: opus
+timeout: 600000
+---
+```
+
+### 10.4 创建全新 Agent
+
+```markdown
+---
+name: test
+description: |
+  Test writing expert. Writes comprehensive tests for code changes.
+tools: Read, Write, Edit, Bash, Glob, Grep
+model: opus
+---
+# Test Agent
+
+You are the Test Agent in the Trellis workflow.
+
+## Core Responsibilities
+
+1. **Analyze code changes** - Understand what was modified
+2. **Write unit tests** - Cover new functionality
+3. **Write integration tests** - Test cross-module interactions
+4. **Run tests** - Verify all tests pass
+
+## Workflow
+
+### Step 1: Get Changes
+
+```bash
+git diff --name-only
+```
+
+### Step 2: Identify Testable Code
+
+For each changed file, identify functions/components that need tests.
+
+### Step 3: Write Tests
+
+Follow existing test patterns in the codebase.
+
+### Step 4: Run Tests
+
+```bash
+pnpm test
+```
+```

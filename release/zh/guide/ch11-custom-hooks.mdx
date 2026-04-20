@@ -1,0 +1,211 @@
+---
+title: '定制 Hook'
+---
+
+## 定制 Hook
+
+### 11.1 Hook 类型
+
+| Hook 类型 | 触发时机 | 用途 |
+|-----------|---------|------|
+| `SessionStart` | 新会话开始 | 加载上下文、初始化环境 |
+| `PreToolUse` | 工具调用前 | 拦截并修改参数、注入上下文 |
+| `PostToolUse` | 工具调用后 | 记录日志、触发后续操作 |
+| `SubagentStop` | 子 Agent 停止时 | 验证输出质量、控制循环 |
+
+### 11.2 settings.json 配置格式
+
+`.claude/settings.json` 中配置 Hook：
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-subagent-context.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "check",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/ralph-loop.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**配置说明**：
+
+- 每个事件类型是一个数组，包含 `{ matcher, hooks }` 对象
+- `matcher`：匹配规则（`"startup"` 匹配会话启动，`"Task"` 匹配 Task 工具调用，`"check"` 匹配 check Agent 停止）
+- `hooks`：匹配时执行的 Hook 数组，按顺序执行
+- `$CLAUDE_PROJECT_DIR`：Claude Code 自动展开为项目根目录
+- `timeout`：超时秒数，超时则 Hook 被跳过
+
+### 11.3 现有 Hook 源码解读
+
+#### session-start.py — 上下文加载
+
+**触发**：`SessionStart`
+
+**功能**：
+- 读取 `.trellis/.developer` 获取开发者身份
+- 读取 `workflow.md` 获取工作流指南
+- 读取 `workspace/{name}/index.md` 获取会话历史
+- 读取 `git log` 获取最近提交
+- 读取活跃任务列表
+
+**输出**：将所有上下文作为系统消息注入到会话开头。
+
+#### inject-subagent-context.py — 规范注入引擎
+
+**触发**：`PreToolUse`，匹配 `Task` 工具调用
+
+**功能**（详见 4.3 节）：
+- 拦截 Task 工具调用
+- 根据 subagent_type 读取对应 JSONL 文件
+- 读取 JSONL 引用的所有文件
+- 构建完整的 Agent prompt（规范 + 需求 + 原始指令）
+- 替换原始 prompt
+- 更新 task.json 的 current_phase
+
+**关键设计**：
+- Dispatch Agent 不需要读 spec，保持简单
+- 每个 Agent 收到完整上下文，不需要 resume
+- `[finish]` 标记触发轻量上下文注入
+
+#### ralph-loop.py — 质量循环
+
+**触发**：`SubagentStop`，匹配 `check` Agent
+
+**功能**（详见 4.4 节）：
+- 检查 verify 命令或 completion markers
+- 通过则允许停止，失败则阻止停止
+- 最多 5 次循环
+- 状态跟踪在 `.ralph-state.json`
+
+### 11.4 编写自定义 Hook
+
+Hook 通过 stdin 接收 JSON 输入，通过 stdout 输出 JSON 结果。
+
+**输入格式**（PreToolUse 示例）：
+
+```json
+{
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Task",
+  "tool_input": {
+    "subagent_type": "implement",
+    "prompt": "..."
+  },
+  "cwd": "/path/to/project"
+}
+```
+
+**输出格式**：
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "allow",
+    "updatedInput": {
+      "subagent_type": "implement",
+      "prompt": "modified prompt..."
+    }
+  }
+}
+```
+
+### 11.5 案例：添加自动运行测试的 Hook
+
+`.claude/hooks/auto-test.py`:
+
+```python
+#!/usr/bin/env python3
+"""Run tests automatically after Edit tool completes."""
+
+import json
+import os
+import subprocess
+import sys
+
+def main():
+    input_data = json.load(sys.stdin)
+
+    hook_event = input_data.get("hook_event_name", "")
+    tool_name = input_data.get("tool_name", "")
+
+    # Only trigger after Edit tool
+    if hook_event != "PostToolUse" or tool_name != "Edit":
+        sys.exit(0)
+
+    # Get the edited file
+    file_path = input_data.get("tool_input", {}).get("file_path", "")
+
+    # Only for .ts/.tsx files
+    if not file_path.endswith((".ts", ".tsx")):
+        sys.exit(0)
+
+    # Run typecheck
+    result = subprocess.run(
+        ["pnpm", "typecheck"],
+        capture_output=True,
+        timeout=30
+    )
+
+    if result.returncode != 0:
+        output = {
+            "hookSpecificOutput": {
+                "message": f"TypeCheck failed after editing {file_path}:\n{result.stderr.decode()}"
+            }
+        }
+        print(json.dumps(output))
+
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()
+```
+
+在 `settings.json` 中注册：
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "type": "command",
+        "command": "python3 .claude/hooks/auto-test.py"
+      }
+    ]
+  }
+}
+```

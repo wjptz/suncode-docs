@@ -1,0 +1,101 @@
+---
+title: '定制 Slash 命令'
+---
+
+## 定制 Slash 命令
+
+### 9.1 命令文件格式和存放位置
+
+| 平台 | 位置 | 命名规则 |
+|------|------|---------|
+| Claude Code | `.claude/commands/trellis/{name}.md` | 调用方式: `/{name}` |
+| Cursor | `.cursor/commands/{name}.md` | 调用方式: `/{name}` |
+
+命令文件就是 Markdown 文件，其内容会作为 prompt 注入给 AI。
+
+### 9.2 使用 `/create-command` 生成命令
+
+```
+/create-command
+```
+
+AI 会询问：
+1. 命令名称
+2. 命令目的
+3. 需要读取的文件
+4. 执行步骤
+
+然后自动生成双 IDE 命令文件。
+
+### 9.3 命令设计最佳实践
+
+**好的命令结构**：
+
+```markdown
+# Command Name
+
+Brief description of what this command does.
+
+---
+
+## Operation Types
+
+| Marker | Meaning | Executor |
+|--------|---------|----------|
+| `[AI]` | AI 执行 | You (AI) |
+| `[USER]` | 用户执行 | User |
+
+---
+
+## Step 1: Read Context `[AI]`
+
+```bash
+cat .trellis/spec/relevant-spec.md
+```
+
+## Step 2: Analyze `[AI]`
+
+Describe what to analyze...
+
+## Step 3: Report
+
+Output format...
+```
+
+**原则**：
+- 每个命令只做一件事
+- 明确标注哪些步骤是 AI 做、哪些是用户做
+- 列出需要读取的文件
+- 定义输出格式
+
+### 9.4 案例：创建 `/deploy-check` 命令
+
+`.claude/commands/deploy-check.md`:
+
+```markdown
+# Deploy Check
+
+Pre-deployment verification checklist.
+
+---
+
+## Step 1: Read deployment config `[AI]`
+
+```bash
+cat deploy.config.js
+cat .env.production
+```
+
+## Step 2: Verify `[AI]`
+
+Check these items:
+- [ ] All tests pass
+- [ ] No TODO comments in production code
+- [ ] Environment variables are set
+- [ ] Database migrations are up to date
+- [ ] API endpoints are documented
+
+## Step 3: Report
+
+Output a deployment readiness report.
+```

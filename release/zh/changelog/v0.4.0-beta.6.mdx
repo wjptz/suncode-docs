@@ -1,0 +1,20 @@
+---
+title: 'v0.4.0-beta.6'
+description: '2026-03-22'
+---
+
+CodeBuddy 平台支持、OpenCode 插件修复、Skill 描述优化。
+
+## 增强
+
+- **CodeBuddy 平台支持**：新增 [CodeBuddy](https://copilot.tencent.com/)（腾讯云代码助手）作为第 11 个支持平台。使用嵌套 slash commands，文件位于 `.codebuddy/commands/trellis/<name>.md`（如 `/trellis:start`）。包含类型注册、配置器、12 个命令模板、CLI flag（`--codebuddy`）及 Python `cli_adapter` 集成
+- **Skill 描述优化**：增强 Codex、Kiro 和 Qoder 的 YAML frontmatter 描述，提高 AI 自动触发准确性。描述现包含具体使用场景和触发条件
+
+## 修复
+
+- **OpenCode 插件目录**：修复 OpenCode 配置器中插件目录名从 `plugin/` 到 `plugins/` 的拼写错误（#103）
+
+## 说明
+
+- 运行 `trellis update` 同步更新
+- 无需迁移

@@ -1,0 +1,33 @@
+---
+title: '附录 E：worktree.yaml 配置参考'
+---
+
+## 附录 E：worktree.yaml 配置参考
+
+```yaml
+# ─── Paths ───────────────────────────────────
+worktree_dir: ../trellis-worktrees  # Worktree 存储目录（相对路径）
+
+# ─── Files to Copy ──────────────────────────
+copy:                               # 每个 worktree 独立副本的文件
+  - .env
+  - .env.local
+  - .trellis/.developer
+
+# ─── Post-Create Hooks ──────────────────────
+post_create:                        # 创建后执行的命令（按序执行）
+  - pnpm install --frozen-lockfile
+
+# ─── Ralph Loop Verification ────────────────
+verify:                             # 质量验证命令（全部通过才放行）
+  - pnpm lint
+  - pnpm typecheck
+  - pnpm test
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `worktree_dir` | string | 否 | Worktree 存储目录，默认 `../trellis-worktrees` |
+| `copy` | string[] | 否 | 需要复制到 worktree 的文件列表 |
+| `post_create` | string[] | 否 | Worktree 创建后运行的命令，失败则中止 |
+| `verify` | string[] | 否 | Ralph Loop 验证命令，全部返回 0 才放行 |

@@ -1,0 +1,11 @@
+---
+title: 'v0.3.0-rc.1'
+description: '2026-02-07'
+---
+
+Fix CLI version comparison for prerelease versions.
+
+## Changes
+
+- Fixed rc version comparison (`0.3.0-rc.0` was incorrectly sorted below `0.3.0-beta.16`)
+- Deduplicated `compareVersions()` across 3 modules into shared `utils/compare-versions.ts`

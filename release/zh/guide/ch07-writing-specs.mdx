@@ -1,0 +1,176 @@
+---
+title: '规范编写指南'
+---
+
+## 规范编写指南
+
+### 7.1 Spec 目录结构和分层
+
+```
+.trellis/spec/
+├── frontend/                    # 前端规范
+│   ├── index.md                 #   索引：列出所有规范及状态
+│   ├── component-guidelines.md  #   组件规范
+│   ├── hook-guidelines.md       #   Hook 规范
+│   ├── state-management.md      #   状态管理
+│   ├── type-safety.md           #   类型安全
+│   ├── quality-guidelines.md    #   质量指南
+│   └── directory-structure.md   #   目录结构
+│
+├── backend/                     # 后端规范
+│   ├── index.md
+│   ├── database-guidelines.md
+│   ├── error-handling.md
+│   ├── logging-guidelines.md
+│   ├── quality-guidelines.md
+│   └── directory-structure.md
+│
+└── guides/                      # 思维指南
+    ├── index.md
+    ├── cross-layer-thinking-guide.md
+    └── code-reuse-thinking-guide.md
+```
+
+**分层原则**：
+- `index.md` 是入口，列出所有规范文件及其状态
+- 每个文件专注一个主题，200-500 行
+- 每个章节 20-50 行
+- 语言用英文（技术术语天然英文），中文项目可用中文
+
+### 7.2 从空模板到完整规范
+
+`trellis init` 会生成空模板，标记 "(To be filled by the team)"。填充步骤：
+
+**Step 1**：从实际代码中提取模式
+
+```bash
+# 看看现有代码是怎么组织的
+ls src/components/     # 组件结构
+ls src/services/       # 服务结构
+```
+
+**Step 2**：写下你的约定
+
+```markdown
+# Component Guidelines
+
+## File Structure
+
+- One component per file
+- Use PascalCase for filenames: `UserProfile.tsx`
+- Co-locate styles: `UserProfile.module.css`
+- Co-locate tests: `UserProfile.test.tsx`
+
+## Patterns
+
+### Required
+
+- Functional components + hooks (no class components)
+- TypeScript with explicit Props interface
+- `export default` for page components, named export for shared
+
+### Forbidden
+
+- No `any` type in Props
+- No inline styles (use CSS Modules)
+- No direct DOM manipulation
+```
+
+**Step 3**：添加代码示例
+
+```markdown
+### Good Example
+
+```tsx
+interface UserProfileProps {
+  userId: string;
+  onUpdate: (user: User) => void;
+}
+
+export function UserProfile({ userId, onUpdate }: UserProfileProps) {
+  // ...
+}
+```
+
+### Bad Example
+
+```tsx
+// Don't: no Props interface, using any
+export default function UserProfile(props: any) {
+  // ...
+}
+```
+```
+
+**Step 4**：更新 index.md 状态
+
+```markdown
+| Guideline | File | Status |
+|-----------|------|--------|
+| Component Guidelines | component-guidelines.md | **Filled** |
+| Hook Guidelines | hook-guidelines.md | To fill |
+```
+
+### 7.3 好的规范 vs 差的规范
+
+**好的规范**（具体、有代码、有原因）：
+
+```markdown
+### Database Query Pattern
+
+**Always use parameterized queries** to prevent SQL injection.
+
+```sql
+-- Good
+SELECT * FROM users WHERE id = $1
+
+-- Bad
+SELECT * FROM users WHERE id = '${userId}'
+```
+
+**Why**: Parameterized queries are automatically escaped by the database driver.
+```
+
+**差的规范**（太模糊、没代码、没原因）：
+
+```markdown
+### Database
+- Use good query patterns
+- Be careful with SQL
+- Follow best practices
+```
+
+**过度规范**（太细碎、限制创造力）：
+
+```markdown
+### Variable Naming
+- All boolean variables must start with `is` or `has`
+- All arrays must end with `List`
+- All functions must be less than 20 lines
+- All files must be less than 200 lines
+```
+
+### 7.4 Bootstrap 引导首次填充
+
+`trellis init` 时会自动创建 bootstrap 引导任务（`00-bootstrap-guidelines`），AI 在首次 `/start` 时会自动检测并引导你填充空白的 spec 文件。
+
+AI 在这个引导任务中会分析代码库，提取现有模式，自动填充 spec 模板。
+
+### 7.5 规范的持续演进
+
+规范不是一次写好就不动的，而是随开发不断演进：
+
+| 触发时机 | 更新频率 | 示例 |
+|---------|---------|------|
+| 修了一个不明显的 bug | 立即 | 加到 "Common Mistakes" |
+| 发现了更好的实践 | 当天 | 加到 "Patterns" |
+| 团队约定新规范 | 当天 | 加到 "Conventions" |
+| 日常改进 | 每周 | 优化措辞、补充示例 |
+
+**演进飞轮**：
+
+```
+开发 → 发现模式/问题 → 手动更新 Spec 文件 → git push
+                                                   ↓
+  全员受益 ← Hook 自动注入 ← 下次会话自动加载 ← git pull
+```

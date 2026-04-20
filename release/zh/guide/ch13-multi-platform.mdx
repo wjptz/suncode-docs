@@ -1,0 +1,385 @@
+---
+title: '多平台与团队配置'
+---
+
+## 多平台与团队配置
+
+### 13.1 Claude Code 完整体验
+
+Claude Code 是 Trellis 的主力平台，拥有最完整的自动化能力。三大 Hook 构成自动化闭环：
+
+| Hook | 触发时机 | 能力 |
+|------|---------|------|
+| `session-start.py` | SessionStart | 自动注入上下文（身份、历史、任务） |
+| `inject-subagent-context.py` | PreToolUse (Task) | 自动为 Agent 注入精准的 Spec 上下文 |
+| `ralph-loop.py` | SubagentStop (check) | 自动验证代码质量（Ralph Loop） |
+
+**Claude Code 独有功能**：
+- Hook 自动注入 — 打开终端即开始工作，无需手动 `/start`
+- Multi-Agent Pipeline — `/parallel` 并行编排多个 worktree Agent
+- Ralph Loop — 自动质量门，Check Agent 失败自动重试
+- Agent 系统 — 6 个专业 Agent（dispatch、plan、implement、check、debug、research）
+
+### 13.2 Cursor 集成
+
+`trellis init` 自动在 `.cursor/commands/` 下生成 Trellis 命令文件：
+
+| Claude Code 命令 | Cursor 对应 |
+|-----------------|------------|
+| `/trellis:start` | `/trellis-start` |
+| `/trellis:before-dev` | `/trellis-before-dev` |
+| `/trellis:brainstorm` | `/trellis-brainstorm` |
+| `/trellis:check` | `/trellis-check` |
+| `/trellis:check-cross-layer` | `/trellis-check-cross-layer` |
+| `/trellis:finish-work` | `/trellis-finish-work` |
+| `/trellis:break-loop` | `/trellis-break-loop` |
+| `/trellis:create-command` | `/trellis-create-command` |
+| `/trellis:integrate-skill` | `/trellis-integrate-skill` |
+| `/trellis:onboard` | `/trellis-onboard` |
+| `/trellis:record-session` | `/trellis-record-session` |
+| `/trellis:update-spec` | `/trellis-update-spec` |
+
+**与 Claude Code 的差异**：
+- 文件位于 `.cursor/commands/trellis-{name}.md`
+- Cursor 共 12 个命令（不含 `/parallel`，因为 Cursor 不支持 Multi-Agent Pipeline）
+- 无 Hook 支持 — 规范注入需要通过命令手动触发
+- 无 Agent 系统 — 所有工作在主对话中完成
+- 无 Ralph Loop — 需要手动运行 check 命令
+
+**Cursor 用户推荐工作流**：
+
+```bash
+# 1. 启动会话（必须，替代 Hook 自动注入）
+/trellis-start
+
+# 2. 加载相关规范（推荐，替代 PreToolUse Hook）
+/trellis-before-dev
+
+# 3. 描述任务，AI 开发...
+
+# 4. 手动检查代码质量（替代 Ralph Loop）
+/trellis-check
+/trellis-check-cross-layer     # 跨层检查
+
+# 5. 完工清单
+/trellis-finish-work
+```
+
+### 13.3 Codex 集成
+
+```bash
+trellis init --codex -u your-name
+```
+
+会生成以下配置：
+
+- **`AGENTS.md`**（根目录） — Codex 的入口文件，提供项目基础上下文（类似 `CLAUDE.md` 的角色）
+- **`.agents/skills/`** — 共享 Agent Skills 目录（[agentskills.io](https://agentskills.io) 开放标准，Codex、Kimi CLI、Amp、Cline 等均可使用）
+- **`.codex/config.toml`** — 项目级 Codex 配置
+- **`.codex/agents/`** — 自定义 Codex agents（`implement.toml`、`research.toml`、`check.toml`）
+- **`.codex/skills/`** — Codex 专属 skills（如用于多 agent pipeline 的 `parallel`）
+- **`.codex/hooks/session-start.py`** + **`.codex/hooks.json`** — SessionStart hook，自动注入 Trellis 工作流、指南和任务上下文
+
+<Note>
+截至 Codex CLI v0.116.0（2026-03-24），hooks 仍是实验性功能，需要手动启用。在 `~/.codex/config.toml` 中添加：
+
+```toml
+[features]
+multi_agent = true
+codex_hooks = true
+```
+
+未来 Codex 正式支持 hooks 后可能不再需要此配置。
+</Note>
+
+### 13.4 Kilo Code 集成
+
+[Kilo Code](https://kilo.ai) 是一个开源（Apache 2.0）AI 编程 Agent 平台，支持 VS Code 扩展、JetBrains 插件和 CLI 三种形态，拥有 750K+ 用户。
+
+```bash
+trellis init --kilo -u your-name
+```
+
+会在 `.kilocode/` 目录下生成配置：
+
+**Trellis 为 Kilo 生成的内容**：
+
+`trellis init --kilo` 会在 `.kilocode/workflows/` 下生成工作流文件。这是 Kilo 的 slash command 等效物 — 在聊天中输入 `/start.md`、`/check.md` 等调用。
+
+| Trellis / Claude Code | Kilo Code（Trellis 生成） | 说明 |
+|----------------------|-----------|------|
+| `.claude/commands/*.md` | `.kilocode/workflows/*.md` | 工作流命令，输入 `/start.md` 等调用 |
+
+**生成的目录结构**：
+
+```
+project/
+├── .kilocode/
+│   └── workflows/                      # 命令（等同于 slash commands）
+│       ├── start.md                    # /start.md — 会话初始化
+│       ├── brainstorm.md               # /brainstorm.md
+│       ├── before-dev.md               # /before-dev.md
+│       ├── check.md                    # /check.md
+│       ├── check-cross-layer.md        # /check-cross-layer.md
+│       ├── finish-work.md              # /finish-work.md
+│       ├── break-loop.md               # /break-loop.md
+│       ├── create-command.md           # /create-command.md
+│       ├── integrate-skill.md          # /integrate-skill.md
+│       ├── onboard.md                  # /onboard.md
+│       ├── parallel.md                 # /parallel.md
+│       ├── record-session.md           # /record-session.md
+│       └── update-spec.md              # /update-spec.md
+```
+
+<Note>
+Kilo 还支持 `rules/`、`rules-code/`、`rules-architect/`、`skills/`、`launchConfig.json` 和 `mcp.json` — 但这些**不由 Trellis 生成**。如有需要可手动创建。详见 [Kilo Code 文档](https://kilo.ai)。
+</Note>
+
+**Kilo 用户推荐工作流**：
+
+```bash
+# 1. 运行 start workflow 获取完整上下文
+/start.md
+
+# 2. 切换到 Orchestrator 模式处理复杂任务
+# Kilo 自动拆解任务并分配给 Code/Architect 等模式
+
+# 3. 描述任务，AI 开发...
+
+# 4. 运行检查 workflow
+/check.md
+
+# 5. 完工
+/finish-work.md
+```
+
+<Info>
+Kilo 的 Orchestrator Mode 与 Trellis 的 Multi-Agent Pipeline 理念相似，但实现不同：
+Trellis 使用 git worktree 物理隔离 + Hook 编排，Kilo 使用内置模式切换 + 独立对话上下文。
+两者可以互补——Trellis 的 Spec 管理和 Task 系统为 Kilo 提供结构化的项目上下文。
+</Info>
+
+### 13.5 Kiro 集成
+
+[Kiro](https://kiro.dev) 是 Amazon 推出的 AI IDE，基于 Code OSS（VS Code 开源内核），主打 **Spec-Driven Development（规范驱动开发）**。支持 IDE、CLI 和 Autonomous Agent 三种形态。
+
+```bash
+trellis init --kiro -u your-name
+```
+
+**Trellis 为 Kiro 生成的内容**：
+
+`trellis init --kiro` 会在 `.kiro/skills/` 下生成 skill 文件。每个 skill 是一个带 YAML frontmatter 的 `SKILL.md` 文件，遵循 [Agent Skills 开放标准](https://agentskills.io)。
+
+| Trellis / Claude Code | Kiro（Trellis 生成） | 说明 |
+|----------------------|------|------|
+| `.claude/commands/*.md` | `.kiro/skills/*/SKILL.md` | 12 个带 YAML frontmatter 的 skill |
+
+**生成的目录结构**：
+
+```
+project/
+├── .kiro/
+│   └── skills/                         # Agent Skills（YAML frontmatter + 指令）
+│       ├── start/SKILL.md
+│       ├── brainstorm/SKILL.md
+│       ├── before-dev/SKILL.md
+│       ├── check/SKILL.md
+│       ├── check-cross-layer/SKILL.md
+│       ├── finish-work/SKILL.md
+│       ├── break-loop/SKILL.md
+│       ├── create-command/SKILL.md
+│       ├── integrate-skill/SKILL.md
+│       ├── onboard/SKILL.md
+│       ├── record-session/SKILL.md
+│       └── update-spec/SKILL.md
+```
+
+<Note>
+Kiro 还支持 `steering/`、`hooks/`、`specs/`、`prompts/`、`agents/` 和 `settings/` 目录 — 但这些**不由 Trellis 生成**。如有需要可手动创建。详见 [Kiro 文档](https://kiro.dev)。
+</Note>
+
+**Kiro 用户推荐工作流**：
+
+```bash
+# 1. 使用 start skill 初始化会话上下文
+# 2. 描述任务，AI 开发...
+# 3. 使用 check skill 验证代码质量
+# 4. 使用 finish-work skill 进行提交前检查
+# 5. 完成后提交代码
+```
+
+### 13.5b CodeBuddy 集成
+
+[CodeBuddy](https://copilot.tencent.com/) 是腾讯云推出的 AI 编程助手，支持 IDE 和 CLI 形态，具备 MCP 扩展能力。
+
+```bash
+trellis init --codebuddy -u your-name
+```
+
+**Trellis 为 CodeBuddy 生成的内容**：
+
+`trellis init --codebuddy` 会在 `.codebuddy/commands/trellis/` 下生成命令文件。在聊天中输入 `/trellis:start`、`/trellis:check` 等调用。
+
+| Trellis / Claude Code | CodeBuddy（Trellis 生成） | 说明 |
+|----------------------|-----------|------|
+| `.claude/commands/*.md` | `.codebuddy/commands/trellis/*.md` | Trellis 命名空间下的 12 个 slash 命令 |
+
+**生成的目录结构**：
+
+```
+project/
+├── .codebuddy/
+│   └── commands/                      # Slash 命令
+│       └── trellis/                   #   Trellis 命名空间
+│           ├── start.md               #   /trellis:start
+│           ├── brainstorm.md          #   /trellis:brainstorm
+│           ├── before-dev.md          #   /trellis:before-dev
+│           ├── check.md               #   /trellis:check
+│           ├── check-cross-layer.md   #   /trellis:check-cross-layer
+│           ├── finish-work.md         #   /trellis:finish-work
+│           ├── break-loop.md          #   /trellis:break-loop
+│           ├── create-command.md      #   /trellis:create-command
+│           ├── integrate-skill.md     #   /trellis:integrate-skill
+│           ├── onboard.md             #   /trellis:onboard
+│           ├── record-session.md      #   /trellis:record-session
+│           └── update-spec.md         #   /trellis:update-spec
+```
+
+<Note>
+CodeBuddy 还支持 `.rules/`、`agents/`、`settings.json` 和 hooks — 但这些**不由 Trellis 生成**。如有需要可手动创建。详见 [CodeBuddy 文档](https://copilot.tencent.com/)。
+</Note>
+
+**与 Claude Code 的差异**：
+- 文件位于 `.codebuddy/commands/trellis/{name}.md`
+- CodeBuddy 共 12 个命令（不含 `/parallel`，因为 CodeBuddy 不支持 Multi-Agent Pipeline）
+- Trellis 层面无 Hook 支持 — 规范注入需要通过命令手动触发
+- 无 Agent 系统集成 — 所有工作在主对话中完成
+
+**CodeBuddy 用户推荐工作流**：
+
+```bash
+# 1. 启动会话（必须）
+/trellis:start
+
+# 2. 加载相关规范
+/trellis:before-dev
+
+# 3. 描述任务，AI 开发...
+
+# 4. 检查代码质量
+/trellis:check
+/trellis:check-cross-layer
+
+# 5. 完成检查清单
+/trellis:finish-work
+```
+
+### 13.6 操作系统兼容性
+
+| 操作系统 | 支持状态 | 说明 |
+|---------|---------|------|
+| **macOS** | ✅ 完整支持 | 主力开发平台，所有功能均已验证 |
+| **Linux** | ✅ 完整支持 | 所有功能均已验证 |
+| **Windows** | ✅ 完整支持 | 脚本已全部迁移为 Python，原生支持 Windows |
+
+**跨平台注意事项**：
+
+| 注意事项 | 说明 |
+|---------|------|
+| Python 脚本 | `.trellis/scripts/` 下的脚本为 Python，需要 Python 3.8+，跨平台兼容 |
+| Python Hook | `.claude/hooks/` 下的 Hook 脚本需要 Python 3.8+，跨平台兼容 |
+| 路径分隔符 | Trellis 内部使用 `/`，Python 自动处理路径转换 |
+| Git worktree | Multi-Agent Pipeline 依赖 git worktree，各平台均支持 |
+
+### 13.7 多开发者协作
+
+**不冲突的部分**（各人独立）：
+- `workspace/{name}/` — 每人独立目录
+- `.developer` — gitignored，每人独立
+- 并行任务的 worktree — 物理隔离
+
+**可能冲突的部分**（需要协调）：
+- `spec/` — 多人可能同时修改同一规范
+- `tasks/` — 多人可能操作同一任务
+
+**最佳实践**：
+- Spec 修改通过 PR 审查
+- 任务指派明确（`--assignee` 参数）
+- 重要的 spec 变更在团队会议上讨论
+
+### 13.8 worktree.yaml 完整配置
+
+```yaml
+# Worktree Configuration for Multi-Agent Pipeline
+
+#───────────────────────────────────────────────────
+# Paths
+#───────────────────────────────────────────────────
+
+# Worktree 存储目录（相对于项目根目录）
+worktree_dir: ../trellis-worktrees
+
+#───────────────────────────────────────────────────
+# Files to Copy
+#───────────────────────────────────────────────────
+
+# 每个 worktree 需要独立副本的文件
+# 这些文件包含敏感信息或需要独立配置
+copy:
+  - .env                     # 环境变量
+  - .env.local               # 本地环境变量
+  - .trellis/.developer      # 开发者身份
+
+#───────────────────────────────────────────────────
+# Post-Create Hooks
+#───────────────────────────────────────────────────
+
+# 创建 worktree 后执行的命令
+# 在 worktree 目录中按顺序执行，失败则中止
+post_create:
+  - pnpm install --frozen-lockfile
+  # - npm install
+  # - yarn install --frozen-lockfile
+
+#───────────────────────────────────────────────────
+# Check Agent Verification (Ralph Loop)
+#───────────────────────────────────────────────────
+
+# 验证代码质量的命令
+# 配置后，Ralph Loop 运行这些命令 — 全部通过才放行
+# 不配置则使用 completion markers 模式
+verify:
+  - pnpm lint
+  - pnpm typecheck
+  # - pnpm test
+```
+
+### 13.9 `trellis update` 与版本管理
+
+```bash
+# 查看当前版本
+cat .trellis/.version
+
+# 更新到最新版本
+trellis update
+
+# 预览更新（不实际应用）
+trellis update --dry-run
+
+# 强制覆盖所有文件
+trellis update -f
+
+# 跳过所有变更文件
+trellis update -s
+```
+
+**模板哈希机制**：
+
+`.trellis/.template-hashes.json` 存储了每个模板文件的 SHA-256 哈希。`trellis update` 时：
+
+1. 计算本地文件哈希
+2. 与记录的模板哈希对比
+3. 如果一致 → 文件未被用户修改 → 安全更新
+4. 如果不一致 → 文件被用户修改 → 提示冲突
+5. 用户选择：覆盖 / 跳过 / 合并

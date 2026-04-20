@@ -1,0 +1,103 @@
+---
+title: 'Custom Slash Commands'
+---
+
+## Custom Slash Commands
+
+### 9.1 Command File Format and Location
+
+| Platform | Location | Naming Convention |
+|------|------|---------|
+| Claude Code | `.claude/commands/trellis/{name}.md` | Invoked as: `/{name}` |
+| Cursor | `.cursor/commands/{name}.md` | Invoked as: `/{name}` |
+
+Command files are simply Markdown files whose content is injected as a prompt to the AI.
+
+### 9.2 Using `/create-command` to Generate Commands
+
+```
+/create-command
+```
+
+The AI will ask:
+1. Command name
+2. Command purpose
+3. Files to read
+4. Execution steps
+
+Then automatically generates dual-IDE command files.
+
+### 9.3 Command Design Best Practices
+
+**Good command structure**:
+
+```markdown
+# Command Name
+
+Brief description of what this command does.
+
+---
+
+## Operation Types
+
+| Marker | Meaning | Executor |
+|--------|---------|----------|
+| `[AI]` | AI executes | You (AI) |
+| `[USER]` | User executes | User |
+
+---
+
+## Step 1: Read Context `[AI]`
+
+```bash
+cat .trellis/spec/relevant-spec.md
+```
+
+## Step 2: Analyze `[AI]`
+
+Describe what to analyze...
+
+## Step 3: Report
+
+Output format...
+```
+
+**Principles**:
+- Each command does one thing
+- Clearly mark which steps are AI's and which are the user's
+- List files that need to be read
+- Define output format
+
+### 9.4 Example: Creating a `/deploy-check` Command
+
+`.claude/commands/deploy-check.md`:
+
+```markdown
+# Deploy Check
+
+Pre-deployment verification checklist.
+
+---
+
+## Step 1: Read deployment config `[AI]`
+
+```bash
+cat deploy.config.js
+cat .env.production
+```
+
+## Step 2: Verify `[AI]`
+
+Check these items:
+- [ ] All tests pass
+- [ ] No TODO comments in production code
+- [ ] Environment variables are set
+- [ ] Database migrations are up to date
+- [ ] API endpoints are documented
+
+## Step 3: Report
+
+Output a deployment readiness report.
+```
+
+---

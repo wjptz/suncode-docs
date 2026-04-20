@@ -1,0 +1,233 @@
+---
+title: 'Real-World Scenarios'
+---
+
+## Real-World Scenarios
+
+### 8.1 Simple Feature Development (Single Session)
+
+**Task**: Add user login feature
+
+<Tabs>
+  <Tab title="Claude Code">
+  ```bash
+  # 1. Open terminal (Hook auto-injects context, can skip /start)
+
+  # 2. Describe the task
+  "Add user login feature"
+
+  # 3. AI works automatically...
+  #    Hook injects specs → creates task → invokes Implement Agent → Check Agent → Ralph Loop verification
+
+  # 4. Test
+  pnpm lint && pnpm typecheck && pnpm test
+
+  # 5. Commit
+  git add .
+  git commit -m "feat(auth): add user login feature"
+
+  # 6. Record session
+  /record-session
+  ```
+  </Tab>
+  <Tab title="Cursor">
+  ```bash
+  # 1. Start session (required)
+  /start
+
+  # 2. Describe the task
+  "Add user login feature"
+
+  # 3. AI works automatically...
+  #    Reads specs → implements feature
+
+  # 4. Manually check code quality
+  /trellis-check-backend
+
+  # 5. Test
+  pnpm lint && pnpm typecheck && pnpm test
+
+  # 6. Commit
+  git add .
+  git commit -m "feat(auth): add user login feature"
+
+  # 7. Record session
+  /trellis-record-session
+  ```
+  </Tab>
+</Tabs>
+
+### 8.2 Complex Parallel Development (Multi-Agent Worktree)
+
+<Warning>This scenario is Claude Code only. Cursor, Codex, and other platforms do not support Multi-Agent Pipeline.</Warning>
+
+**Task**: Develop three independent features in parallel
+
+```bash
+# 1. Start parallel mode
+/parallel
+
+# 2. Describe requirements
+"I need to develop three features in parallel:
+1. User profile page
+2. Email notification system
+3. Data export feature"
+
+# 3. AI automatically creates a worktree for each feature and starts Agents
+
+# 4. Monitor progress
+./.trellis/scripts/multi-agent/status.py
+# Task 1: user-profile     ✅ Complete (PR #123)
+# Task 2: email-notify     🔄 In Progress (Check phase)
+# Task 3: data-export      🔄 In Progress (Implement phase)
+
+# 5. Review and merge PRs
+
+# 6. Clean up worktrees
+./.trellis/scripts/multi-agent/cleanup.py user-profile
+```
+
+### 8.3 Cross-Layer Feature Development
+
+**Task**: Add product review feature (database + API + frontend)
+
+<Tabs>
+  <Tab title="Claude Code">
+  ```bash
+  # 1. Open terminal (Hook auto-injects)
+
+  # 2. Describe the task
+  "Add product review feature, requiring database, API, and frontend"
+
+  # 3. AI automatically reads the cross-layer thinking guide
+  #    mapping: UI → API → DB → API → UI
+
+  # 4. AI develops layer by layer
+  #    Phase 1: Database (comments table)
+  #    Phase 2: Backend API (POST /api/comments)
+  #    Phase 3: Frontend (CommentForm component)
+
+  # 5. Cross-layer check (Hook auto-triggers, or run manually)
+  /check-cross-layer
+  ```
+  </Tab>
+  <Tab title="Cursor">
+  ```bash
+  # 1. Start (required)
+  /start
+
+  # 2. Load backend + frontend specs
+  /trellis-before-backend-dev
+  /trellis-before-frontend-dev
+
+  # 3. Describe the task
+  "Add product review feature, requiring database, API, and frontend"
+
+  # 4. AI develops layer by layer...
+
+  # 5. Manual cross-layer check
+  /trellis-check-cross-layer
+  ```
+  </Tab>
+</Tabs>
+
+```bash
+# ✅ Database Layer: comments table created
+# ✅ API Layer: POST /api/comments endpoint
+# ✅ UI Layer: CommentForm component
+# ✅ Data Flow: UI → API → DB ✓
+
+# 6. Test, commit, record
+```
+
+### 8.4 Team Collaboration
+
+<Tip>
+The core mechanisms for team collaboration (Spec sharing, task assignment) are platform-agnostic. Team members on different platforms can share the same Spec library.
+</Tip>
+
+```bash
+# Alice develops and documents specs (Claude Code example, Cursor uses /start)
+trellis init -u alice
+/start
+# ... develop authentication system ...
+# Manually write auth best practices into specs
+git add .trellis/spec/
+git commit -m "docs: add auth guidelines"
+git push
+
+# Bob pulls and automatically benefits
+git pull
+trellis init -u bob
+/start
+"Add permission management"
+# AI auto-reads Alice's auth guidelines
+# Bob's code automatically follows Alice's specs
+```
+
+### 8.5 Bug Debugging with break-loop
+
+```bash
+# 1. Start
+/start
+
+# 2. Fix the bug
+"Users can't log in under certain conditions"
+
+# 3. AI debugs and fixes...
+
+# 4. Deep analysis
+/break-loop
+
+# AI output:
+# Root Cause: B - Cross-layer Contract Violation
+#   Token format sent by frontend doesn't match backend expectations
+#
+# Prevention:
+#   - Update spec: define token format contract
+#   - Add type constraint: shared Token interface
+#   - Add test: token format validation
+
+# 5. Manually update specs
+# Write token format contract into .trellis/spec/ files
+```
+
+### 8.6 Spec Iteration Flywheel
+
+```bash
+# Discover a pattern
+# AI discovers during development: all API errors should return a uniform format
+# { error: string, code: number, details?: any }
+
+# Manually update specs
+# Write this pattern into .trellis/spec/backend/error-handling.md
+
+# Next time anyone does API development
+# Hook auto-injects error-handling.md
+# AI automatically follows the uniform error format
+# → All API errors are consistently formatted
+```
+
+### 8.7 Building a New Project from Scratch
+
+```bash
+# 1. Create project
+mkdir my-app && cd my-app
+git init
+
+# 2. Install Trellis
+npm install -g @mindfoldhq/trellis@latest
+trellis init -u your-name
+
+# 3. trellis init has auto-created the bootstrap guide task (00-bootstrap-guidelines)
+/start
+# AI auto-detects the bootstrap task, analyzes your codebase, and helps fill in specs
+
+# 4. Manually supplement core specs
+# Edit .trellis/spec/backend/index.md, etc.
+# Write down your tech stack choices, coding conventions, directory structure
+
+# 5. Start developing
+/start
+"Set up the project foundation"
+```

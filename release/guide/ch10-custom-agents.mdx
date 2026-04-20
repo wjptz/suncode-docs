@@ -1,0 +1,109 @@
+---
+title: 'Custom Agents'
+---
+
+## Custom Agents
+
+### 10.1 Agent Definition File Format
+
+Agent definition files are stored at `.claude/agents/{name}.md`, using YAML front matter:
+
+```markdown
+---
+name: agent-name
+description: |
+  One-line description of what this agent does.
+tools: Read, Write, Edit, Bash, Glob, Grep
+model: opus
+---
+# Agent Name
+
+Agent instructions go here...
+```
+
+### 10.2 Available Tools and Model Selection
+
+**Available tools**:
+
+| Tool | Description |
+|------|------|
+| Read | Read files |
+| Write | Write files |
+| Edit | Edit files |
+| Bash | Execute commands |
+| Glob | File search |
+| Grep | Content search |
+| Task | Invoke sub-Agents |
+| Skill | Invoke Skills |
+| mcp__exa__web_search_exa | Web search |
+| mcp__exa__get_code_context_exa | Code search |
+| mcp__chrome-devtools__* | Browser automation |
+
+**Model selection**:
+
+| Model | Use Case |
+|------|---------|
+| `opus` | Complex tasks (implementation, checking, debugging) |
+| `sonnet` | Medium tasks |
+| `haiku` | Simple, fast tasks |
+
+### 10.3 Modifying Existing Agents
+
+For example, adding timeout control to the Check Agent:
+
+```markdown
+---
+name: check
+description: |
+  Code quality check expert with 10-minute timeout.
+tools: Read, Write, Edit, Bash, Glob, Grep
+model: opus
+timeout: 600000
+---
+```
+
+### 10.4 Creating a New Agent
+
+```markdown
+---
+name: test
+description: |
+  Test writing expert. Writes comprehensive tests for code changes.
+tools: Read, Write, Edit, Bash, Glob, Grep
+model: opus
+---
+# Test Agent
+
+You are the Test Agent in the Trellis workflow.
+
+## Core Responsibilities
+
+1. **Analyze code changes** - Understand what was modified
+2. **Write unit tests** - Cover new functionality
+3. **Write integration tests** - Test cross-module interactions
+4. **Run tests** - Verify all tests pass
+
+## Workflow
+
+### Step 1: Get Changes
+
+```bash
+git diff --name-only
+```
+
+### Step 2: Identify Testable Code
+
+For each changed file, identify functions/components that need tests.
+
+### Step 3: Write Tests
+
+Follow existing test patterns in the codebase.
+
+### Step 4: Run Tests
+
+```bash
+pnpm test
+```
+```
+
+---

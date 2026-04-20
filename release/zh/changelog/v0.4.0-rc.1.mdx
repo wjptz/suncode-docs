@@ -1,0 +1,42 @@
+---
+title: 'v0.4.0-rc.1'
+description: '2026-04-14'
+---
+
+**RC 后期增量功能。** 两处纯增量改动——零迁移、对现有平台零行为变更。RC 中途升级是安全的。
+
+## Factory Droid 平台支持
+
+[Factory Droid](https://factory.ai) 现在是 Trellis 的一等公民。Cursor 级别的支持范围：仅 commands，无 hooks/agents。
+
+- `trellis init --droid` 会把 12 个 Trellis 命令写入 `.factory/commands/trellis/<name>.md`
+- 每个文件自带可选 YAML frontmatter（`description: ...`），Droid 的 `/commands` 自动补全会显示一行说明
+- 目录采用嵌套 `trellis/` 子目录，跟 Claude Code 一致（Droid 文档说嵌套不支持，但实测二进制能识别——发布前已验证）
+- `cli_adapter.py` 完整集成 droid，确保 Trellis Python 脚本（status / archive / journal）能正确识别 `.factory/` 项目
+- 多 agent CLI `run`/`resume` 当前 `raise ValueError`（与 Copilot/Windsurf 一致），错误信息为 "not yet integrated with Trellis multi-agent"——后续如有需求可扩展
+
+## Codex 选项提示 `.agents/skills/` 共享层
+
+`trellis init` 交互式列表里 Codex 那一行现在显示为：
+
+```
+Codex (also writes .agents/skills/ — read by Cursor, Gemini CLI, GitHub Copilot, Amp, Kimi Code)
+```
+
+Trellis 只在 Codex 启用时才写 `.agents/skills/`，但根据 [agentskills.io](https://agentskills.io) 开放标准，该目录被很多客户端读取。在勾选项里把这个事实显式化——选 Codex 的用户能立刻看到这是顺带覆盖多个工具的，而不是 Codex 私有。
+
+逐一核对了各客户端的官方文档：
+
+- [Cursor Skills](https://cursor.com/docs/skills) — 明确列出 `.agents/skills/`
+- [Gemini CLI Skills](https://geminicli.com/docs/cli/skills) — `.agents/skills/` 称为跨客户端 "alias"，优先级高于 `.gemini/skills/`
+- [VS Code Copilot Agent Skills](https://code.visualstudio.com/docs/copilot/customization/agent-skills) — 与 `.github/skills/`、`.claude/skills/` 并列
+- [Amp Owner's Manual](https://ampcode.com/manual) — `.agents/skills/` 是 Amp 唯一的项目级 skill 位置
+- [Kimi Code CLI Skills](https://moonshotai.github.io/kimi-cli/en/customization/skills.html) — 从 `.agents/skills/`（或 `.kimi/skills/`、`.claude/skills/`）发现
+
+注意：Claude Code 故意没列进去。它的[官方 skills 文档](https://code.claude.com/docs/en/skills)只有 `.claude/skills/` 和 `~/.claude/skills/`——Claude Code **不读** `.agents/skills/`，跟某些第三方博客的说法相反。
+
+## 说明
+
+- 纯增量更新。RC 用户可以放心 `trellis update`——零文件改名、零行为变更、零迁移
+- 想试试 Factory Droid，跑 `trellis init --droid`
+- RC 安装：`npm install -g @mindfoldhq/trellis@rc`

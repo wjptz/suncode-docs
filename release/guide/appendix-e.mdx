@@ -1,0 +1,35 @@
+---
+title: 'Appendix E: worktree.yaml Configuration Reference'
+---
+
+## Appendix E: worktree.yaml Configuration Reference
+
+```yaml
+# ─── Paths ───────────────────────────────────
+worktree_dir: ../trellis-worktrees  # Worktree storage directory (relative path)
+
+# ─── Files to Copy ──────────────────────────
+copy:                               # Files needing independent copies per worktree
+  - .env
+  - .env.local
+  - .trellis/.developer
+
+# ─── Post-Create Hooks ──────────────────────
+post_create:                        # Commands to run after creation (sequential)
+  - pnpm install --frozen-lockfile
+
+# ─── Ralph Loop Verification ────────────────
+verify:                             # Quality verification commands (all must pass)
+  - pnpm lint
+  - pnpm typecheck
+  - pnpm test
+```
+
+| Field | Type | Required | Description |
+|------|------|------|------|
+| `worktree_dir` | string | No | Worktree storage directory, defaults to `../trellis-worktrees` |
+| `copy` | string[] | No | List of files to copy to each worktree |
+| `post_create` | string[] | No | Commands to run after worktree creation; aborts on failure |
+| `verify` | string[] | No | Ralph Loop verification commands; all must return 0 to pass |
+
+---

@@ -1,0 +1,28 @@
+---
+title: 'v0.3.0-rc.6'
+description: '2026-02-26'
+---
+
+新增 4 个平台 — Trellis 现已支持 8 种 AI 编程工具。
+
+## 新平台
+
+- **Kilo CLI**：纯命令平台，支持子目录命名空间（`.kilocode/commands/trellis/`）
+- **Kiro Code**：基于 Skills 的平台（`.kiro/skills/`）
+- **Gemini CLI**：首个 TOML 格式命令平台（`.gemini/commands/trellis/*.toml`）
+- **Antigravity**：基于工作流的平台，改编自 Codex skills（`.agent/workflows/`）
+
+## Bug 修复
+
+- 修复 init-context 默认值中不存在的 `spec/shared/` 引用
+- 修复 iFlow start/finish-work 模板内容
+- 修正 license 徽章从 FSL 到 AGPL-3.0
+- 修复 start 流程问题
+
+## 测试
+
+- 新增 50+ 测试，覆盖全部 4 个新平台（模板、配置器、init 集成、回归测试）
+
+## 迁移
+
+无需迁移。运行 `trellis init --kilo`、`--kiro`、`--gemini` 或 `--antigravity` 以添加新平台支持。

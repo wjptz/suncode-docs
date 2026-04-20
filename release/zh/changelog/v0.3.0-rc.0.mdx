@@ -1,0 +1,17 @@
+---
+title: 'v0.3.0-rc.0'
+description: '2026-02-06'
+---
+
+重大内部重构：集中式平台注册表、远程规范模板、完善测试覆盖。
+
+## 新功能
+
+- **远程规范模板**：`trellis init -t electron-fullstack` 下载并应用规范模板
+- **集中式平台注册表**：所有平台元数据集中管理，派生辅助函数替代分散的硬编码列表
+- **测试覆盖**：17 个文件 312 个测试，Vitest 覆盖率报告
+
+## 变更
+
+- 提取 `resolvePlaceholders()` 到共享模块，删除 templates.ts 分发器
+- 发布工具支持 beta/rc/release 工作流

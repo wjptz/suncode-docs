@@ -1,0 +1,166 @@
+---
+title: '文档'
+description: '如何为 Trellis 文档做贡献 (mindfold-ai/docs)'
+---
+
+## 用 AI 辅助贡献
+
+最简单的贡献方式是使用 Claude Code。我们内置了一个 skill 来引导你完成贡献流程。
+
+### 第一步：Fork 并克隆
+
+```bash
+# 先在 GitHub 上 Fork，然后：
+git clone https://github.com/YOUR_USERNAME/docs.git
+cd docs
+pnpm install
+```
+
+### 第二步：告诉 Claude 你想贡献什么
+
+在项目中打开 Claude Code，描述你想添加的内容：
+
+- "我想添加一个 Next.js 项目的规范模板"
+- "我想改进并行会话的文档"
+
+### 第三步：Claude 自动使用 contribute skill
+
+Claude 会读取 `contribute` skill 并引导你：
+
+- 文件应该放在哪里
+- 哪些关联文件需要更新（docs.json、索引页面）
+- 双语要求（EN + ZH）
+- 如何本地测试
+
+### 第四步：审查并提交 PR
+
+审查修改，用 `pnpm dev` 测试，push 到你的 fork，然后向原仓库开 PR。
+
+<Tip>contribute skill 了解项目结构和规范。它处理细节，你只需专注于内容。</Tip>
+
+---
+
+## 贡献方式
+
+### 报告问题
+
+发现文档有问题？开一个 issue：
+
+https://github.com/mindfold-ai/docs/issues
+
+包含：
+
+- 哪个页面有问题
+- 哪里有错或者不清楚
+- 建议的修复方案（如果有的话）
+
+### 建议改进
+
+有改进文档的想法？开一个 discussion：
+
+https://github.com/mindfold-ai/docs/discussions
+
+### 贡献 Skill
+
+Skill 扩展 AI 的能力。添加新 skill：
+
+1. Fork [Trellis 主仓库](https://github.com/mindfold-ai/Trellis)
+2. 创建 skill 目录：
+   ```
+   marketplace/skills/your-skill/
+   └── SKILL.md
+   ```
+3. 向 Trellis 主仓库提 PR
+4. （可选）在 docs 仓库创建文档页面（`skills-market/your-skill.mdx` + 中文版）
+
+SKILL.md 格式参考 [Claude Code Skills 文档](https://code.claude.com/docs/en/skills)。
+
+<Note>Skill 托管在 [Trellis 主仓库](https://github.com/mindfold-ai/Trellis)，不在 docs 仓库。</Note>
+
+### 贡献 Spec 模板
+
+Spec 模板是 Trellis 项目规范（不是 Claude 功能）。添加新模板：
+
+1. Fork 仓库
+2. 创建 `marketplace/specs/your-template/` 目录和规范文件
+3. 创建文档页面（`templates/specs-your-template.mdx` + 中文版）
+4. 更新 `docs.json` 导航
+5. 开 PR
+
+好的贡献：
+
+- 具体可执行
+- 文档完善
+- 在真实项目上测试过
+
+### 修错别字、改进表述
+
+小修复：直接在 GitHub 上编辑并提交 PR。
+
+大改动：克隆到本地，修改后用 `pnpm dev` 测试。
+
+---
+
+## 开发环境
+
+```bash
+# 安装依赖
+pnpm install
+
+# 启动本地开发服务器
+pnpm dev
+
+# 检查 markdown lint
+pnpm lint:md
+
+# 验证文档结构
+pnpm verify
+
+# 格式化文件
+pnpm format
+```
+
+---
+
+## 双语要求
+
+所有用户可见内容必须有中英文版本：
+
+| 英文                    | 中文                       |
+| ----------------------- | -------------------------- |
+| `guides/example.mdx`    | `zh/guides/example.mdx`    |
+| `templates/example.mdx` | `zh/templates/example.mdx` |
+
+两种语言的 `docs.json` 导航都要更新。
+
+---
+
+## Commit 信息
+
+使用 conventional commits：
+
+```
+docs: add Next.js spec template
+fix: correct broken link in quickstart
+feat: add new skill to marketplace
+```
+
+---
+
+## PR 流程
+
+1. 创建 PR，写清楚描述
+2. 确保 CI 检查通过（lint、verify）
+3. 等审查
+4. 处理反馈
+5. 批准后合并
+
+---
+
+## 许可证
+
+贡献采用 MIT 许可证。贡献即表示同意。
+
+## 有问题？
+
+开 discussion 或发邮件到 taosu@mindfold.ai。

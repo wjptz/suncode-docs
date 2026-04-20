@@ -1,0 +1,221 @@
+---
+title: 'Complete Command Reference'
+---
+
+## Complete Command Reference
+
+Trellis provides 13 Slash commands (Claude Code), organized into 6 categories. The Cursor version has 12 (excluding `/parallel`).
+
+#### Cross-Platform Command Reference
+
+| Function | Claude Code / OpenCode | Cursor | Codex |
+|------|----------------------|--------|-------|
+| Start session | `/start` (optional, Hook auto-injects) | `/start` (required) | `$start` |
+| Backend prep | `/before-backend-dev` (optional) | `/trellis-before-backend-dev` (recommended) | `$before-backend-dev` |
+| Frontend prep | `/before-frontend-dev` (optional) | `/trellis-before-frontend-dev` (recommended) | `$before-frontend-dev` |
+| Check backend | `/check-backend` (Ralph Loop auto-triggers) | `/trellis-check-backend` (manual) | `$check-backend` |
+| Check frontend | `/check-frontend` (Ralph Loop auto-triggers) | `/trellis-check-frontend` (manual) | `$check-frontend` |
+| Cross-layer check | `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` |
+| Finish checklist | `/finish-work` | `/trellis-finish-work` | `$finish-work` |
+| Parallel orchestration | `/parallel` | ❌ Not supported | ❌ Not supported |
+| Record session | `/record-session` | `/trellis-record-session` | `$record-session` |
+| Brainstorm | `/brainstorm` | `/trellis-brainstorm` | `$brainstorm` |
+| Bug analysis | `/break-loop` | `/trellis-break-loop` | `$break-loop` |
+| New member onboarding | `/onboard` | `/trellis-onboard` | `$onboard` |
+| Create command | `/create-command` | `/trellis-create-command` | `$create-command` |
+| Integrate Skill | `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` |
+
+### 5.1 Session Management
+
+#### `/start` — Start a Development Session
+
+**When to use**: Every time you open your AI coding assistant to start work. Claude Code users have context auto-injected via Hooks, so `/start` is optional (but recommended for first-time use to see the full flow). Cursor users **must** run `/start`.
+
+**Execution flow**:
+
+1. Read `workflow.md` to understand the workflow
+2. Run `get-context.py` to get context (identity, Git status, active tasks)
+3. Read spec indexes to understand project specs
+4. Report context and ask: "What would you like to work on?"
+
+**Task classification decisions**:
+
+| Type | Criteria | Workflow |
+|------|---------|--------|
+| Q&A | User asks about code or architecture | Answer directly |
+| Quick fix | Typo fix, single-line change, < 5 minutes | Edit directly |
+| Development task | Logic changes, new features, bug fixes, multi-file changes | **Use Task Workflow** |
+
+> **When in doubt, use Task Workflow**. Task Workflow ensures Agents receive spec injection, resulting in higher code quality.
+
+#### `/parallel` — Multi-Agent Parallel Orchestration
+
+<Warning>Claude Code only. Cursor, Codex, and other platforms do not support Multi-Agent Pipeline.</Warning>
+
+**When to use**:
+- High task complexity, requiring > 30 minutes
+- Can be split into multiple independent subtasks
+- Needs isolation in independent worktrees
+
+**Two-phase flow**:
+
+**Phase 1: Plan**
+
+```bash
+./.trellis/scripts/multi-agent/plan.py \
+  --name "feature-name" \
+  --type "backend|frontend|fullstack" \
+  --requirement "User requirement description"
+```
+
+The Plan Agent will:
+1. Assess whether requirements are clear (may reject, see Chapter 6)
+2. Invoke Research Agent to analyze the codebase
+3. Create task directory and configure JSONL context
+4. Generate the prd.md requirements document
+
+**Phase 2: Execute**
+
+```bash
+./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
+```
+
+Automatically creates a Git worktree. The Dispatch Agent executes implement, check, finish, and create-pr in sequence.
+
+**Monitoring commands**:
+
+```bash
+./.trellis/scripts/multi-agent/status.py                  # Overview
+./.trellis/scripts/multi-agent/status.py --log <name>     # View logs
+./.trellis/scripts/multi-agent/status.py --watch <name>   # Live monitoring
+./.trellis/scripts/multi-agent/cleanup.py <branch>        # Clean up worktree
+```
+
+#### `/record-session` — Record a Session
+
+**When to use**: After the user has tested and committed code.
+
+**Prerequisite**: The AI does not execute git commit; it only reads git history.
+
+**Execution flow**:
+
+```bash
+./.trellis/scripts/add-session.py \
+  --title "Session Title" \
+  --commit "hash1,hash2" \
+  --summary "What was accomplished in this session"
+```
+
+Automatically completes:
+- Appends session record to `journal-N.md`
+- Detects line count and auto-creates a new file when exceeding 2,000 lines
+- Updates `index.md` (session count +1, last active time, history table)
+
+#### `/onboard` — New Member Onboarding
+
+**When to use**: When a new team member joins.
+
+Includes three parts:
+1. Core concept walkthrough (spec / workspace / task / hook)
+2. 5 hands-on exercises (bug fix, planning session, Code Review fix, large refactor, debugging session)
+3. Spec customization guidance
+
+### 5.2 Development Preparation
+
+#### `/before-backend-dev` — Backend Development Prep
+
+Reads the backend spec index and related spec documents (database, error handling, logging, type safety, quality guidelines), ensuring the AI understands backend coding standards before writing code.
+
+#### `/before-frontend-dev` — Frontend Development Prep
+
+Reads the frontend spec index and related spec documents (components, Hooks, state management, type safety, quality guidelines).
+
+### 5.3 Quality Checks
+
+#### `/check-backend` — Backend Code Check
+
+Execution flow:
+1. `git status` to view changes
+2. Re-read backend specs
+3. Compare code against specs line by line
+4. Auto-fix violations (Ralph Loop driven, up to 3 rounds)
+
+Check items: directory structure, database operations, error handling, logging conventions, type definitions, no `console.log`, no `any` types, no non-null assertions.
+
+#### `/check-frontend` — Frontend Code Check
+
+Check items: component naming (PascalCase), Props interfaces, Hook usage, state management, style consistency, TypeScript errors, ESLint errors, unused imports.
+
+Also uses the Ralph Loop self-fix cycle.
+
+#### `/check-cross-layer` — Cross-Layer Consistency Check
+
+Reads the cross-layer thinking guide and analyzes 6 dimensions:
+
+1. **Data flow consistency** — Frontend, API, Database, API, Frontend
+2. **Type definition sync** — Frontend and backend interfaces match
+3. **Error handling continuity** — Errors properly propagated across layers
+4. **Constant synchronization** — Shared constants between frontend and backend
+5. **Code reuse** — No duplicate implementations
+6. **Import path correctness** — No broken references
+
+### 5.4 Parallel Development
+
+#### `/parallel`
+
+See section 5.1.
+
+### 5.5 Knowledge Accumulation
+
+#### `/break-loop` — Deep Bug Analysis
+
+**When to use**: After resolving a tricky bug, to perform deep analysis and prevent similar issues.
+
+**5-Dimension Analysis Framework**:
+
+1. **Root Cause Classification**:
+   - A — Missing Spec
+   - B — Cross-layer Contract Violation
+   - C — Change Propagation Failure
+   - D — Test Coverage Gap
+   - E — Implicit Assumption
+
+2. **Why Fixes Failed** — Analyze why previous fix attempts failed
+
+3. **Prevention Mechanisms** (6 types):
+   - Spec update
+   - Type constraints
+   - Lint rules
+   - Test cases
+   - Code review checklist items
+   - Documentation updates
+
+4. **Systematic Expansion** — Search for other potential issues with the same pattern
+
+5. **Knowledge Capture** — Solidify analysis results into specs
+
+**Core philosophy**:
+
+> The value of debugging is not fixing this bug, but ensuring this class of bugs never happens again.
+
+### 5.6 Utility Commands
+
+#### `/finish-work` — Pre-Commit Checklist
+
+6-dimension check before committing:
+1. Code quality (lint, type-check, test)
+2. Documentation sync
+3. API changes
+4. Database changes
+5. Cross-layer verification
+6. Manual testing
+
+#### `/create-command` — Create Custom Commands
+
+Generates dual-IDE command files under `.claude/commands/trellis/` and `.cursor/commands/`. See Chapter 9 for details.
+
+#### `/integrate-skill` — Integrate External Skills
+
+Integrates community Skills into your project, creating a unified `/use-[skill-name]` command. See Chapter 12 for details.
+
+---

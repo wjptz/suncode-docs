@@ -1,0 +1,16 @@
+---
+title: 'v0.4.0-beta.2'
+description: '2026-03-12'
+---
+
+修复 monorepo 初始化时 npm scoped 包名导致的目录嵌套问题。
+
+## Bug 修复
+
+- **Scoped 包名修复** — 在包含 scoped npm 包名（如 `@zhubao/desktop`）的 monorepo 中运行 `trellis init`，不再在 `.trellis/spec/` 下创建嵌套的 `@scope/` 目录。现在会去掉 scope 前缀，`@zhubao/desktop` 在文件系统路径和 `config.yaml` 键名中变为 `desktop`。仅展示用途保留完整的 scoped 名称。
+
+## 迁移指南
+
+如果你之前在包含 scoped 包名的 monorepo 中运行过 `trellis init`，可能需要：
+1. 将 `.trellis/spec/@scope/name/` 重命名为 `.trellis/spec/name/`
+2. 更新 `.trellis/config.yaml` 中的包键名（如 `@scope/name:` → `name:`）
