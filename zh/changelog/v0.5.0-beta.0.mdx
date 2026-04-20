@@ -63,6 +63,36 @@ Session-start 总 payload：16.7 KB —— 在 Claude Code 的 ~20 KB `additiona
 
 所有清理都做 **hash 校验**：如果你本地改过这些文件就保留并警告；只有原版 Trellis 写入的文件会被删。126 条 safe-file-delete 条目覆盖全部 13 平台（`allowed_hashes` 从历史 git 版本中提取，确保任何 0.3.x / 0.4.x 版本的用户都能干净迁移）。
 
+## Command → Skill 迁移（新增 80 条 manifest）
+
+5 个不再由用户手动触发的 skill（`before-dev` / `brainstorm` / `break-loop` / `check` / `update-spec`）在所有平台下都移动到 `<platform>/skills/trellis-<name>/SKILL.md`。如果不做迁移，用户从 0.4.x 升上来就会出现旧命令文件和新 skill 文件同时存在。manifest 完整处理：
+
+- **65 条 rename**（13 平台 × 5 命令）—— 用 mv 保留用户本地改动，再由后续 template-write prompt 让用户选择（不粗暴直接删）
+- **3 条 rename** 处理 skill-only 平台（`.kiro` / `.qoder` / `.agents` 共享层）的 `finish-work` —— 也加上 `trellis-` 前缀
+- **10 条 safe-file-delete** 清理老版 `start` 命令（agent-capable + skill-only 平台）—— session-start hook 已替代该命令
+- **2 条 safe-file-delete** 移除老 `improve-ut`（`.agent/workflows/` + `.agents/skills/`）
+
+`MigrationItem` 新增 `reason?` 字段 —— 版本特定的上下文（比如"0.4.0 init 漏写这个路径的 hash，导致未改过的文件也显示 modified"）由 manifest 作者就地写入，在 confirm prompt 里渲染。不再把版本相关的硬编码塞进 `update.ts` 里慢慢烂掉。
+
+## breaking 版本现在强制 `--migrate`
+
+如果项目当前版本到最新 CLI 之间跨越了 `breaking: true + recommendMigrate: true` 的 manifest，`trellis update` **会 exit 1** 并明确提示用户加 `--migrate`。之前的行为是：安静跳过 rename/delete 条目但仍然推进 `.version` 戳，留下"半迁移"状态（老路径和新模板并存）。`--dry-run` 会绕过这个 gate，方便先预览。
+
+## Confirm prompt 重设计
+
+当文件 hash 不匹配需要确认时，交互 prompt 现在显示：
+
+1. **What** —— 这条迁移在做什么（取自 manifest 的 `description`）
+2. **Why prompted** —— 每条的 `reason`（manifest 里写），没有就退化成通用文案
+3. 每个选项（Backup / Rename / Skip）的**推荐使用场景 + 后果提示**（比如 skip 会留下旧路径，未来 update 还会反复 flag）
+
+默认选项从 `skip` 改为 `backup-rename` —— 一路 Enter 不会丢用户修改也不会留孤儿文件。
+
+## Bug 修复
+
+- **Backup 不再打包平台 worktree 目录。** `createFullBackup` 排除任何 `/worktrees/` 或 `/worktree/` 路径，所以 Claude Code 的 `.claude/worktrees/`、Cursor 的 `.cursor/worktrees/`、Gemini CLI 的 `.gemini/worktrees/` 不会在每次 `trellis update` 时都被重复快照（用户开了 worktree 后，原来一次 backup 可能轻松膨胀到数百 MB）。
+- **`copy-templates` build 步骤残留旧模板。** build 链加上 `clean`（`clean && tsc && copy-templates`），`src/` 里删掉的模板不会在 `dist/` 残留、被打包发到 npm。修复前 safe-file-delete 会和 dist 里的旧模板反复打架：刚删就又被重写回去。
+
 ## 其它值得一提的改动
 
 - `task.py create` 不再写 legacy 的 `current_phase` / `next_action` 字段。FP 分析结论：workflow.md 里的 Phase N.M 是文档分层，不是运行时状态 —— `task.json.status` 才是任务级状态的单一事实源。
@@ -80,7 +110,7 @@ Session-start 总 payload：16.7 KB —— 在 Claude Code 的 ~20 KB `additiona
 
 ## 测试
 
-572 个 tests 全过，lint + typecheck 全绿。本周期新加了 18 个 tests：workflow-state per-turn 面包屑（7 个 case，含 hyphen / no_task / CWD drift）、Phase Index 扩容、paths-only guidelines、`update_current_phase` 删除回归、UserPromptSubmit 平台接线 invariant。
+595 个 tests 全过，lint + typecheck 全绿。本周期共新加 41 个 tests：workflow-state per-turn 面包屑（7 个 case）、Phase Index 扩容、paths-only guidelines、`update_current_phase` 删除回归、UserPromptSubmit 平台接线 invariant、breaking-change gate（3 个 case：拦截 / dry-run 放行 / `--migrate` 放行）、0.5.0-beta.0 manifest 形状（65 条覆盖 / 各平台路径 invariant / breaking + recommendMigrate flag）、worktree backup 排除（12 个 case：各平台 worktree 惯例 + 用户数据 + 边界情况）。
 
 ## 延后到后续 beta / rc
 
@@ -91,7 +121,9 @@ Session-start 总 payload：16.7 KB —— 在 Claude Code 的 ~20 KB `additiona
 
 ## 迁移
 
-跑 `trellis update` 拉新模板 + 执行 126 条 safe-file-delete。你本地改过的文件会保留并给警告；只有原版 Trellis 写入的文件会被清理。
+跑 `trellis update --migrate`（本次 `--migrate` 必加 —— 68 条 rename 条目不加这个 flag 不会执行，新的 gate 也会 exit 1 提醒加上）。然后 138 条 safe-file-delete 会执行。你本地改过的文件会保留并给警告；只有原版 Trellis 写入的文件会被清理。想先预览可以先跑 `trellis update --migrate --dry-run`。
+
+**`/trellis:record-session` 用户：** 这个命令被移除了。它原本唯一的职责（调 `add_session.py` 写 session journal）现在是 `/trellis:finish-work` 的 Step 3，同时 finish-work 还覆盖了 Quality Gate 和 Commit 提醒。如果你的 alias 或脚本引用了 `record-session`，请改成 `finish-work`。
 
 **Codex 用户：** 在 `~/.codex/config.toml` 里设置 `features.codex_hooks = true` 来启用 SessionStart + UserPromptSubmit 面包屑注入。不设置 flag 的话 `hooks.json` 会被 Codex 静默忽略。
 
