@@ -90,13 +90,13 @@ ls src/services/       # 服务结构
 
 ## Patterns
 
-### Required
+#### Required
 
 - Functional components + hooks (no class components)
 - TypeScript with explicit Props interface
 - `export default` for page components, named export for shared
 
-### Forbidden
+#### Forbidden
 
 - No `any` type in Props
 - No inline styles (use CSS Modules)
@@ -106,7 +106,7 @@ ls src/services/       # 服务结构
 **Step 3**：添加代码示例
 
 ````markdown
-### Good Example
+#### Good Example
 
 ```tsx
 interface UserProfileProps {
@@ -119,7 +119,7 @@ export function UserProfile({ userId, onUpdate }: UserProfileProps) {
 }
 ```
 
-### Bad Example
+#### Bad Example
 
 ```tsx
 // Don't: no Props interface, using any
@@ -183,7 +183,7 @@ export default function UserProfile(props: any) {
 一条合格的 **Convention**（放在 `backend/database-guidelines.md`）：
 
 ````markdown
-### Convention：用 ORM batch 方法，别在循环里一条一条写 DB
+#### Convention：用 ORM batch 方法，别在循环里一条一条写 DB
 
 **What**：对 N 条数据，调一次 ORM 的 batch 方法（`createMany` / `updateMany` / `deleteMany`）。不要把单行 `create` / `update` / `delete` 套进 `for` 或 `Promise.all`。
 
@@ -211,7 +211,7 @@ await Promise.all(users.map(user => prisma.user.create({ data: user })));
 一条**差的 spec**——没签名、没示例、没 why、没测试点：
 
 ```markdown
-### Database
+#### Database
 - Use good query patterns
 - Be careful with SQL
 - Follow best practices
@@ -220,7 +220,7 @@ await Promise.all(users.map(user => prisma.user.create({ data: user })));
 一条**过度规范**——机械规则、没有原因、扼杀判断：
 
 ```markdown
-### Variable Naming
+#### Variable Naming
 - All boolean variables must start with `is` or `has`
 - All arrays must end with `List`
 - All functions must be less than 20 lines

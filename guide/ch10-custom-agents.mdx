@@ -36,7 +36,7 @@ Key frontmatter fields on Claude Code:
 | `tools`       | Comma-separated list of tools the sub-agent may call                                 |
 | `model`       | Optional model override. Omit to inherit the session model (recommended since 0.5.0-beta.5, so Cursor users and similar are not billed on a forced Opus default) |
 
-### 10.2 Agent file format is platform-specific
+### 10.2 Sub-agent file format is platform-specific
 
 The file extension, frontmatter shape, and tool-declaration syntax differ per platform:
 
@@ -97,21 +97,21 @@ You are the trellis-test sub-agent in the Trellis workflow.
 
 ## Flow
 
-### Step 1: Get changes
+#### Step 1: Get changes
 
 ```bash
 git diff --name-only HEAD
 ```
 
-### Step 2: Identify testable code
+#### Step 2: Identify testable code
 
 For each changed file, identify functions or components that need tests.
 
-### Step 3: Write tests
+#### Step 3: Write tests
 
 Follow the existing test patterns in the repository. Do not invent a new test style.
 
-### Step 4: Run tests
+#### Step 4: Run tests
 
 ```bash
 pnpm test

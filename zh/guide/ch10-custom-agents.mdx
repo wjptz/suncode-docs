@@ -36,7 +36,7 @@ Claude Code 上的关键 frontmatter 字段：
 | `tools`       | 用逗号分隔的 sub-agent 可调用工具列表                                                 |
 | `model`       | 可选的模型覆盖。省略则继承会话模型（0.5.0-beta.5 起推荐省略，避免 Cursor 等用户被强制按 Opus 计费） |
 
-### 10.2 Agent 文件格式按平台不同
+### 10.2 Sub-agent 文件格式按平台不同
 
 文件扩展名、frontmatter 形状、工具声明语法各平台不一样：
 
@@ -97,21 +97,21 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 
 ## 流程
 
-### Step 1：拿变更
+#### Step 1：拿变更
 
 ```bash
 git diff --name-only HEAD
 ```
 
-### Step 2：识别可测代码
+#### Step 2：识别可测代码
 
 对每个变更文件，找出需要测试的函数或组件。
 
-### Step 3：写测试
+#### Step 3：写测试
 
 沿用仓库已有的测试模式，不要自创风格。
 
-### Step 4：跑测试
+#### Step 4：跑测试
 
 ```bash
 pnpm test

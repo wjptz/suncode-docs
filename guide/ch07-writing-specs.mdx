@@ -90,13 +90,13 @@ ls src/services/       # Service structure
 
 ## Patterns
 
-### Required
+#### Required
 
 - Functional components + hooks (no class components)
 - TypeScript with explicit Props interface
 - `export default` for page components, named export for shared
 
-### Forbidden
+#### Forbidden
 
 - No `any` type in Props
 - No inline styles (use CSS Modules)
@@ -106,7 +106,7 @@ ls src/services/       # Service structure
 **Step 3**: Add code examples
 
 ````markdown
-### Good Example
+#### Good Example
 
 ```tsx
 interface UserProfileProps {
@@ -119,7 +119,7 @@ export function UserProfile({ userId, onUpdate }: UserProfileProps) {
 }
 ```
 
-### Bad Example
+#### Bad Example
 
 ```tsx
 // Don't: no Props interface, using any
@@ -183,7 +183,7 @@ Skip any of these and the skill prompts you to fill them; that's the "executable
 A **good Convention entry** (`backend/database-guidelines.md`):
 
 ````markdown
-### Convention: Use ORM batch methods, never loop single-row DB calls
+#### Convention: Use ORM batch methods, never loop single-row DB calls
 
 **What**: For any collection of N rows, call the ORM's batch method (`createMany`, `updateMany`, `deleteMany`) once. Never wrap a single-row `create` / `update` / `delete` in a `for` / `Promise.all` loop.
 
@@ -211,7 +211,7 @@ await Promise.all(users.map(user => prisma.user.create({ data: user })));
 A **bad spec entry** — no signature, no example, no why, no test point:
 
 ```markdown
-### Database
+#### Database
 - Use good query patterns
 - Be careful with SQL
 - Follow best practices
@@ -220,7 +220,7 @@ A **bad spec entry** — no signature, no example, no why, no test point:
 An **over-specified spec** — mechanical rules with no reasoning, stifles judgment:
 
 ```markdown
-### Variable Naming
+#### Variable Naming
 - All boolean variables must start with `is` or `has`
 - All arrays must end with `List`
 - All functions must be less than 20 lines
