@@ -23,9 +23,9 @@ title: '附录 C：task.json Schema 参考'
   "completedAt": "string",  // YYYY-MM-DD 完成日期（未完成为 null）
   "branch": "string",       // Feature 分支名（set-branch 前为 null）
   "base_branch": "string",  // PR 目标分支（创建时按当前分支记录）
-  "worktree_path": "string",// 遗留占位——创建时写 null，0.5 没有脚本再填它（Multi-Agent Pipeline 已移除）
-  "commit": "string",       // 遗留占位——创建时写 null，0.5 没有脚本再填它（archive 只改 status/completedAt）
-  "pr_url": "string",       // 遗留占位——创建时写 null，0.5 没有脚本再填它（没有 create-pr 子命令）
+  "worktree_path": "string",// Schema 占位——创建时写 null，没有脚本会填
+  "commit": "string",       // Schema 占位——创建时写 null，没有脚本会填
+  "pr_url": "string",       // Schema 占位——创建时写 null，没有脚本会填
   "subtasks": [],           // 任务内部的 todo checklist（{name, status} 对），与 children 无关
   "children": [],           // 子任务目录名数组（父→子链接）
   "parent": "string",       // 父任务目录名（顶层任务为 null）
@@ -38,15 +38,10 @@ title: '附录 C：task.json Schema 参考'
 字段顺序与 `.trellis/scripts/common/task_store.py` 里 `task_data` 一致——`task.py` 就按这个顺序写入。
 
 <Note>
-  `worktree_path` / `commit` / `pr_url` 三个字段 0.5 里**只是 schema 占位**，创建时写 null 之后没有任何 Trellis 脚本再动它们。想记 commit hash 或 PR URL 请用 `meta: {}` 自定义键，或在 `after_archive` hook 里往回写。保留这三个顶层字段是为了给魔改脚本 / 外部集成一个稳定的 schema 锚点。
+  `worktree_path` / `commit` / `pr_url` 是 schema 占位字段，创建时写 null 之后没有 Trellis 脚本再动它们。想记 commit hash 或 PR URL 请用 `meta: {}` 自定义键，或写个 `after_archive` hook 自己回写。
 </Note>
 
 早期版本创建的老任务可能少某些新字段（如 `package` 支持前的任务没有 `"package"` 键），`task.py` 把缺失字段按 null 处理，不会出错。
-
-**另外两套变体 schema**：
-
-- **Bootstrap 任务**（`trellis init` 自动建）——由 `packages/cli/src/commands/init.ts` 的 `getBootstrapTaskJson()` 写，字段子集略不同（无 `title` / `scope` / `package` / `branch` / `base_branch` / `worktree_path` / `pr_url`），`status` 初始 `in_progress`。
-- **Migration 任务**（`trellis update` 做破坏性升级时建）——由 `packages/cli/src/commands/update.ts` 写，包含两个仅在这类任务里出现的额外字段：`current_phase`（整数）和 `next_action`（`{phase, action}` 对象数组）。普通 `task.py create` 不写这两个字段。
 
 ### 父子关系 vs `subtasks`——别混
 

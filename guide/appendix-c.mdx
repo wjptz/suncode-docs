@@ -23,9 +23,9 @@ Matches `task.py create` in `.trellis/scripts/common/task_store.py`:
   "completedAt": "string",  // YYYY-MM-DD completion date (null if not done)
   "branch": "string",       // Feature branch name (null until set-branch)
   "base_branch": "string",  // PR target branch (captured from current branch at create time)
-  "worktree_path": "string",// Legacy slot — written as null on create; no 0.5 script fills it (Multi-Agent Pipeline removed)
-  "commit": "string",       // Legacy slot — written as null on create; no 0.5 script fills it (archive only updates status/completedAt)
-  "pr_url": "string",       // Legacy slot — written as null on create; no 0.5 script fills it (no create-pr subcommand)
+  "worktree_path": "string",// Schema slot — written as null on create; no script fills it
+  "commit": "string",       // Schema slot — written as null on create; no script fills it
+  "pr_url": "string",       // Schema slot — written as null on create; no script fills it
   "subtasks": [],           // Intra-task todo checklist ({name, status} pairs) — unrelated to children
   "children": [],           // Child task directory names (parent → child link)
   "parent": "string",       // Parent task directory name (null if top-level)
@@ -38,15 +38,10 @@ Matches `task.py create` in `.trellis/scripts/common/task_store.py`:
 Field order above matches `.trellis/scripts/common/task_store.py` verbatim — `task.py` writes them in this order.
 
 <Note>
-  `worktree_path` / `commit` / `pr_url` are **schema placeholders only** in 0.5 — they are written as null on create and no Trellis script updates them afterward. Store commit hashes / PR URLs under `meta: {}` as custom keys, or write them back from an `after_archive` hook. The three top-level fields are kept so forked scripts and external integrations have a stable schema anchor.
+  `worktree_path` / `commit` / `pr_url` are schema placeholders — written as null on create, and no Trellis script updates them afterward. Store commit hashes / PR URLs under `meta: {}` as custom keys, or write them back from an `after_archive` hook.
 </Note>
 
 Older tasks may be missing newer fields (e.g., pre-`package` tasks have no `"package"` key); `task.py` treats missing keys as null.
-
-**Two variant schemas also exist in 0.5**:
-
-- **Bootstrap task** (auto-created by `trellis init`) — written by `getBootstrapTaskJson()` in `packages/cli/src/commands/init.ts`. Slightly smaller field set (no `title` / `scope` / `package` / `branch` / `base_branch` / `worktree_path` / `pr_url`), and `status` starts at `in_progress`.
-- **Migration task** (created by `trellis update` on a breaking upgrade) — written by `packages/cli/src/commands/update.ts`. Includes two extra fields unique to this task type: `current_phase` (integer) and `next_action` (array of `{phase, action}` objects). Regular `task.py create` does not write these.
 
 ### Parent-child vs `subtasks` — know the difference
 
