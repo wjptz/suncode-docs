@@ -233,7 +233,7 @@ The design concepts above might still be abstract. Below is a real example showi
 
 I need to implement a keyboard shortcut feature on the frontend—pressing `Cmd+K` to open the search box. I've already created a Git branch `feat/keyboard-navigation` locally.
 
-### Step 1: Initialize AI Session
+### Initialize AI Session
 
 ```plaintext
 Me: /init-agent
@@ -261,7 +261,7 @@ I noticed the frontend spec has a "Keyboard System" chapter—I'll implement acc
 Ready. Tell me what specifically needs to be done.
 ```
 
-### Step 2: Describe Requirements
+### Describe Requirements
 
 ```plaintext
 Me: Help me implement a global keyboard shortcut—when pressing Cmd+K (Mac) or Ctrl+K (Windows),
@@ -291,11 +291,11 @@ Code is written, file path:
 You can run locally to see the effect.
 ```
 
-### Step 3: Local Testing
+### Local Testing
 
 I run the project locally, press `Cmd+K`, search box opens successfully. Feature works.
 
-### Step 4: Code Self-Check
+### Code Self-Check
 
 ```plaintext
 Me: /check-frontend
@@ -329,7 +329,7 @@ Already fixed for you—should be fine after running again.
 
 I retest and confirm no issues.
 
-### Step 5: Commit Code
+### Commit Code
 
 ```bash
 git add .
@@ -337,7 +337,7 @@ git commit -m "feat: add Cmd+K keyboard shortcut for search"
 git push origin feat/keyboard-navigation
 ```
 
-### Step 6: Record Flow
+### Record Flow
 
 ```plaintext
 Me: /record-agent-flow

@@ -9,7 +9,7 @@ description: 'Common questions about Trellis'
 
 <Accordion title="Looks useful but sounds complex. How do I actually get started?">
 
-Install with `npm install -g @mindfoldhq/trellis@latest`, then run `trellis init` in your project. That's it — you're ready to go.
+Install with `npm install -g @mindfoldhq/trellis@beta`, then run `trellis init` in your project. That's it — you're ready to go.
 
 1. **Claude Code / iFlow users** — Open a new session and start working directly. The session start hook automatically injects everything the AI needs (Trellis workflow, recent git history, your latest journal entries, project context). Describe your requirements, the AI creates tasks, generates PRDs, loads relevant specs, and delegates to specialized agents (implement, check, etc.). After you verify the result, use `/trellis:record-session` to save the journal. You can also run `/trellis:start` manually to see the full workflow.
 
@@ -28,7 +28,7 @@ Install with `npm install -g @mindfoldhq/trellis@latest`, then run `trellis init
 **Install (global recommended):**
 
 ```bash
-npm install -g @mindfoldhq/trellis@latest
+npm install -g @mindfoldhq/trellis@beta
 ```
 
 **Verify installation:**
@@ -54,7 +54,7 @@ trellis update                    # compare version diff and update
 trellis update --migrate          # apply file renames/deletes and other migrations
 ```
 
-**Roll back to stable release:** `npm install -g @mindfoldhq/trellis@latest`
+**Roll back to stable release:** `npm install -g @mindfoldhq/trellis@beta`
 
 `trellis update` never overwrites `.trellis/workspace/`, `.trellis/tasks/`, `.trellis/.developer`, `.trellis/spec/frontend/`, `.trellis/spec/backend/` — these paths are protected. Every update automatically creates a timestamped backup of all contents under `.trellis/`, `.cursor/`, `.claude/` etc. in a `.trellis/.backup-*` directory. No need to worry about destructive updates.
 
@@ -222,7 +222,7 @@ Trellis improves consistency but isn't a silver bullet. AI still makes mistakes.
 Update the CLI:
 
 ```bash
-npm install -g @mindfoldhq/trellis@latest
+npm install -g @mindfoldhq/trellis@beta
 ```
 
 Then update your project:

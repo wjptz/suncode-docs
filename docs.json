@@ -2,6 +2,10 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "js": "/terminal-demo.js",
+  "banner": {
+    "content": "📦 Reading **Beta** docs (0.5 track). Check your install: `trellis --version`. Install latest: `npm install -g @mindfoldhq/trellis@beta`. Switch to **Release** in the version dropdown ↘",
+    "dismissible": true
+  },
   "exclude": [
     ".trellis/**",
     "AGENTS.md",
@@ -22,148 +26,271 @@
     "languages": [
       {
         "language": "en",
-        "groups": [
+        "versions": [
           {
-            "group": "Welcome",
-            "pages": ["index"]
-          },
-          {
-            "group": "Getting Started",
-            "pages": [
-              "guide/ch01-what-is-trellis",
-              "guide/ch02-quick-start",
-              "guide/ch03-first-task"
-            ]
-          },
-          {
-            "group": "Mastery",
-            "pages": [
-              "guide/ch04-architecture",
-              "guide/ch05-commands",
-              "guide/ch06-task-management",
-              "guide/ch07-writing-specs",
-              "guide/ch08-real-world"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "guide/ch09-custom-commands",
-              "guide/ch10-custom-agents",
-              "guide/ch11-custom-hooks",
-              "guide/ch12-custom-skills",
-              "guide/ch13-multi-platform"
-            ]
-          },
-          {
-            "group": "Appendices",
-            "pages": [
-              "guide/appendix-a",
-              "guide/appendix-b",
-              "guide/appendix-c",
-              "guide/appendix-d",
-              "guide/appendix-e",
-              "guide/appendix-f",
-              "guide/resources"
-            ]
-          },
-          {
-            "group": "Use Cases",
-            "pages": ["use-cases/open-typeless"]
-          },
-          {
-            "group": "Resource Marketplace",
-            "pages": [
+            "version": "Beta",
+            "default": true,
+            "tag": "Latest",
+            "groups": [
               {
-                "group": "Skills",
-                "expanded": false,
-                "pages": ["skills-market/index", "skills-market/trellis-meta", "skills-market/cc-codex-spec-bootstrap", "skills-market/frontend-fullchain-optimization"]
+                "group": "Start Here",
+                "pages": [
+                  "index",
+                  "start/install-and-first-task",
+                  "start/everyday-use"
+                ]
               },
               {
-                "group": "Spec Templates",
-                "expanded": false,
-                "pages": ["templates/specs-index", "templates/specs-electron", "templates/specs-nextjs", "templates/specs-cf-workers"]
+                "group": "Advanced",
+                "pages": [
+                  "advanced/architecture",
+                  "advanced/custom-workflow",
+                  "advanced/custom-commands",
+                  "advanced/custom-agents",
+                  "advanced/custom-hooks",
+                  "advanced/custom-skills",
+                  "advanced/multi-platform",
+                  "advanced/appendix-a",
+                  "advanced/appendix-b",
+                  "advanced/appendix-c",
+                  "advanced/appendix-d",
+                  "advanced/appendix-f",
+                  "advanced/resources"
+                ]
+              },
+              {
+                "group": "Use Cases",
+                "pages": [
+                  "use-cases/open-typeless"
+                ]
+              },
+              {
+                "group": "Resource Marketplace",
+                "pages": [
+                  {
+                    "group": "Skills",
+                    "expanded": false,
+                    "pages": [
+                      "skills-market/index",
+                      "skills-market/trellis-meta",
+                      "skills-market/cc-codex-spec-bootstrap",
+                      "skills-market/frontend-fullchain-optimization"
+                    ]
+                  },
+                  {
+                    "group": "Spec Templates",
+                    "expanded": false,
+                    "pages": [
+                      "templates/specs-index",
+                      "templates/specs-electron",
+                      "templates/specs-nextjs",
+                      "templates/specs-cf-workers"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Community",
+                "pages": [
+                  {
+                    "group": "Showcase",
+                    "expanded": false,
+                    "pages": [
+                      "showcase/index",
+                      "showcase/terminal-demo",
+                      "showcase/open-typeless",
+                      "showcase/trellis-cursor"
+                    ]
+                  },
+                  {
+                    "group": "Contributing",
+                    "expanded": false,
+                    "pages": [
+                      "contribute/docs",
+                      "contribute/trellis"
+                    ]
+                  },
+                  {
+                    "group": "Tech Blog",
+                    "expanded": false,
+                    "pages": [
+                      "blog/index",
+                      "blog/use-k8s-to-know-trellis",
+                      "blog/ai-collaborative-dev-system"
+                    ]
+                  },
+                  {
+                    "group": "Changelog",
+                    "expanded": false,
+                    "pages": [
+                      "changelog/v0.5.0-beta.8",
+                      "changelog/v0.5.0-beta.7",
+                      "changelog/v0.5.0-beta.6",
+                      "changelog/v0.5.0-beta.5",
+                      "changelog/v0.5.0-beta.4",
+                      "changelog/v0.5.0-beta.3",
+                      "changelog/v0.5.0-beta.2",
+                      "changelog/v0.5.0-beta.1",
+                      "changelog/v0.5.0-beta.0",
+                      "changelog/v0.4.0",
+                      "changelog/v0.4.0-rc.1",
+                      "changelog/v0.4.0-rc.0",
+                      "changelog/v0.4.0-beta.10",
+                      "changelog/v0.4.0-beta.9",
+                      "changelog/v0.4.0-beta.8",
+                      "changelog/v0.4.0-beta.7",
+                      "changelog/v0.4.0-beta.6",
+                      "changelog/v0.4.0-beta.5",
+                      "changelog/v0.4.0-beta.4",
+                      "changelog/v0.4.0-beta.3",
+                      "changelog/v0.4.0-beta.2",
+                      "changelog/v0.4.0-beta.1",
+                      "changelog/v0.3.10",
+                      "changelog/v0.3.9",
+                      "changelog/v0.3.8",
+                      "changelog/v0.3.7",
+                      "changelog/v0.3.6",
+                      "changelog/v0.3.5",
+                      "changelog/v0.3.4",
+                      "changelog/v0.3.3",
+                      "changelog/v0.3.2",
+                      "changelog/v0.3.1",
+                      "changelog/v0.3.0-rc.6",
+                      "changelog/v0.3.0-rc.5",
+                      "changelog/v0.3.0-rc.4",
+                      "changelog/v0.3.0-rc.3",
+                      "changelog/v0.3.0-rc.2",
+                      "changelog/v0.3.0-rc.1",
+                      "changelog/v0.3.0-rc.0",
+                      "changelog/v0.3.0-beta.16",
+                      "changelog/v0.3.0-beta.15",
+                      "changelog/v0.3.0-beta.14",
+                      "changelog/v0.3.0-beta.13",
+                      "changelog/v0.3.0-beta.12",
+                      "changelog/v0.3.0-beta.11",
+                      "changelog/v0.3.0-beta.10",
+                      "changelog/v0.3.0-beta.9",
+                      "changelog/v0.3.0-beta.8",
+                      "changelog/v0.3.0-beta.7",
+                      "changelog/v0.3.0-beta.0",
+                      "changelog/v0.2.0",
+                      "changelog/v0.1.9"
+                    ]
+                  }
+                ]
               }
             ]
           },
           {
-            "group": "Community",
-            "pages": [
+            "version": "Release",
+            "tag": "Stable",
+            "groups": [
               {
-                "group": "Showcase",
-                "expanded": false,
-                "pages": ["showcase/index", "showcase/terminal-demo", "showcase/open-typeless", "showcase/trellis-cursor"]
-              },
-              {
-                "group": "Contributing",
-                "expanded": false,
-                "pages": ["contribute/docs", "contribute/trellis"]
-              },
-              {
-                "group": "Tech Blog",
-                "expanded": false,
+                "group": "Start Here",
                 "pages": [
-                  "blog/index",
-                  "blog/use-k8s-to-know-trellis",
-                  "blog/ai-collaborative-dev-system"
+                  "release/index",
+                  "release/start/install-and-first-task",
+                  "release/start/everyday-use"
                 ]
               },
               {
-                "group": "Changelog",
-                "expanded": false,
+                "group": "Advanced",
                 "pages": [
-                  "changelog/v0.5.0-beta.8",
-                  "changelog/v0.5.0-beta.7",
-                  "changelog/v0.5.0-beta.6",
-                  "changelog/v0.5.0-beta.5",
-                  "changelog/v0.5.0-beta.4",
-                  "changelog/v0.5.0-beta.3",
-                  "changelog/v0.5.0-beta.2",
-                  "changelog/v0.5.0-beta.1",
-                  "changelog/v0.5.0-beta.0",
-                  "changelog/v0.4.0",
-                  "changelog/v0.4.0-rc.1",
-                  "changelog/v0.4.0-rc.0",
-                  "changelog/v0.4.0-beta.10",
-                  "changelog/v0.4.0-beta.9",
-                  "changelog/v0.4.0-beta.8",
-                  "changelog/v0.4.0-beta.7",
-                  "changelog/v0.4.0-beta.6",
-                  "changelog/v0.4.0-beta.5",
-                  "changelog/v0.4.0-beta.4",
-                  "changelog/v0.4.0-beta.3",
-                  "changelog/v0.4.0-beta.2",
-                  "changelog/v0.4.0-beta.1",
-                  "changelog/v0.3.10",
-                  "changelog/v0.3.9",
-                  "changelog/v0.3.8",
-                  "changelog/v0.3.7",
-                  "changelog/v0.3.6",
-                  "changelog/v0.3.5",
-                  "changelog/v0.3.4",
-                  "changelog/v0.3.3",
-                  "changelog/v0.3.2",
-                  "changelog/v0.3.1",
-                  "changelog/v0.3.0-rc.6",
-                  "changelog/v0.3.0-rc.5",
-                  "changelog/v0.3.0-rc.4",
-                  "changelog/v0.3.0-rc.3",
-                  "changelog/v0.3.0-rc.2",
-                  "changelog/v0.3.0-rc.1",
-                  "changelog/v0.3.0-rc.0",
-                  "changelog/v0.3.0-beta.16",
-                  "changelog/v0.3.0-beta.15",
-                  "changelog/v0.3.0-beta.14",
-                  "changelog/v0.3.0-beta.13",
-                  "changelog/v0.3.0-beta.12",
-                  "changelog/v0.3.0-beta.11",
-                  "changelog/v0.3.0-beta.10",
-                  "changelog/v0.3.0-beta.9",
-                  "changelog/v0.3.0-beta.8",
-                  "changelog/v0.3.0-beta.7",
-                  "changelog/v0.3.0-beta.0",
-                  "changelog/v0.2.0",
-                  "changelog/v0.1.9"
+                  "release/advanced/architecture",
+                  "release/advanced/custom-commands",
+                  "release/advanced/custom-agents",
+                  "release/advanced/custom-hooks",
+                  "release/advanced/custom-skills",
+                  "release/advanced/multi-platform",
+                  "release/advanced/appendix-a",
+                  "release/advanced/appendix-b",
+                  "release/advanced/appendix-c",
+                  "release/advanced/appendix-d",
+                  "release/advanced/appendix-e",
+                  "release/advanced/appendix-f",
+                  "release/advanced/resources"
+                ]
+              },
+              {
+                "group": "Use Cases",
+                "pages": [
+                  "use-cases/open-typeless"
+                ]
+              },
+              {
+                "group": "Resource Marketplace",
+                "pages": [
+                  {
+                    "group": "Skills",
+                    "expanded": false,
+                    "pages": [
+                      "skills-market/index",
+                      "skills-market/trellis-meta",
+                      "skills-market/cc-codex-spec-bootstrap",
+                      "skills-market/frontend-fullchain-optimization"
+                    ]
+                  },
+                  {
+                    "group": "Spec Templates",
+                    "expanded": false,
+                    "pages": [
+                      "templates/specs-index",
+                      "templates/specs-electron",
+                      "templates/specs-nextjs",
+                      "templates/specs-cf-workers"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Community",
+                "pages": [
+                  {
+                    "group": "Showcase",
+                    "expanded": false,
+                    "pages": [
+                      "showcase/index",
+                      "showcase/terminal-demo",
+                      "showcase/open-typeless",
+                      "showcase/trellis-cursor"
+                    ]
+                  },
+                  {
+                    "group": "Contributing",
+                    "expanded": false,
+                    "pages": [
+                      "contribute/docs",
+                      "contribute/trellis"
+                    ]
+                  },
+                  {
+                    "group": "Tech Blog",
+                    "expanded": false,
+                    "pages": [
+                      "blog/index",
+                      "blog/use-k8s-to-know-trellis",
+                      "blog/ai-collaborative-dev-system"
+                    ]
+                  },
+                  {
+                    "group": "Changelog",
+                    "expanded": false,
+                    "pages": [
+                      "release/changelog/v0.4.0",
+                      "release/changelog/v0.3.10",
+                      "release/changelog/v0.3.9",
+                      "release/changelog/v0.3.8",
+                      "release/changelog/v0.3.7",
+                      "release/changelog/v0.3.6",
+                      "release/changelog/v0.3.5",
+                      "release/changelog/v0.3.4",
+                      "release/changelog/v0.3.3",
+                      "release/changelog/v0.3.2",
+                      "release/changelog/v0.3.1",
+                      "release/changelog/v0.2.0",
+                      "release/changelog/v0.1.9"
+                    ]
+                  }
                 ]
               }
             ]
@@ -172,153 +299,271 @@
       },
       {
         "language": "zh",
-        "groups": [
+        "versions": [
           {
-            "group": "开始使用",
-            "pages": ["zh/index"]
-          },
-          {
-            "group": "入门篇",
-            "pages": [
-              "zh/guide/ch01-what-is-trellis",
-              "zh/guide/ch02-quick-start",
-              "zh/guide/ch03-first-task"
-            ]
-          },
-          {
-            "group": "精通篇",
-            "pages": [
-              "zh/guide/ch04-architecture",
-              "zh/guide/ch05-commands",
-              "zh/guide/ch06-task-management",
-              "zh/guide/ch07-writing-specs",
-              "zh/guide/ch08-real-world"
-            ]
-          },
-          {
-            "group": "魔改篇",
-            "pages": [
-              "zh/guide/ch09-custom-commands",
-              "zh/guide/ch10-custom-agents",
-              "zh/guide/ch11-custom-hooks",
-              "zh/guide/ch12-custom-skills",
-              "zh/guide/ch13-multi-platform"
-            ]
-          },
-          {
-            "group": "附录",
-            "pages": [
-              "zh/guide/appendix-a",
-              "zh/guide/appendix-b",
-              "zh/guide/appendix-c",
-              "zh/guide/appendix-d",
-              "zh/guide/appendix-e",
-              "zh/guide/appendix-f",
-              "zh/guide/resources"
-            ]
-          },
-          {
-            "group": "Use Cases",
-            "pages": ["zh/use-cases/open-typeless"]
-          },
-          {
-            "group": "Resource Marketplace",
-            "pages": [
+            "version": "Beta",
+            "default": true,
+            "tag": "Latest",
+            "groups": [
               {
-                "group": "Skills",
-                "expanded": false,
-                "pages": ["zh/skills-market/index", "zh/skills-market/trellis-meta", "zh/skills-market/cc-codex-spec-bootstrap", "zh/skills-market/frontend-fullchain-optimization"]
+                "group": "开始使用",
+                "pages": [
+                  "zh/index",
+                  "zh/start/install-and-first-task",
+                  "zh/start/everyday-use"
+                ]
               },
               {
-                "group": "Spec Templates",
-                "expanded": false,
-                "pages": ["zh/templates/specs-index", "zh/templates/specs-electron", "zh/templates/specs-nextjs", "zh/templates/specs-cf-workers"]
+                "group": "进阶",
+                "pages": [
+                  "zh/advanced/architecture",
+                  "zh/advanced/custom-workflow",
+                  "zh/advanced/custom-commands",
+                  "zh/advanced/custom-agents",
+                  "zh/advanced/custom-hooks",
+                  "zh/advanced/custom-skills",
+                  "zh/advanced/multi-platform",
+                  "zh/advanced/appendix-a",
+                  "zh/advanced/appendix-b",
+                  "zh/advanced/appendix-c",
+                  "zh/advanced/appendix-d",
+                  "zh/advanced/appendix-f",
+                  "zh/advanced/resources"
+                ]
+              },
+              {
+                "group": "Use Cases",
+                "pages": [
+                  "zh/use-cases/open-typeless"
+                ]
+              },
+              {
+                "group": "Resource Marketplace",
+                "pages": [
+                  {
+                    "group": "Skills",
+                    "expanded": false,
+                    "pages": [
+                      "zh/skills-market/index",
+                      "zh/skills-market/trellis-meta",
+                      "zh/skills-market/cc-codex-spec-bootstrap",
+                      "zh/skills-market/frontend-fullchain-optimization"
+                    ]
+                  },
+                  {
+                    "group": "Spec Templates",
+                    "expanded": false,
+                    "pages": [
+                      "zh/templates/specs-index",
+                      "zh/templates/specs-electron",
+                      "zh/templates/specs-nextjs",
+                      "zh/templates/specs-cf-workers"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "社区",
+                "pages": [
+                  {
+                    "group": "项目展示",
+                    "expanded": false,
+                    "pages": [
+                      "zh/showcase/index",
+                      "zh/showcase/terminal-demo",
+                      "zh/showcase/open-typeless",
+                      "zh/showcase/trellis-cursor"
+                    ]
+                  },
+                  {
+                    "group": "贡献指南",
+                    "expanded": false,
+                    "pages": [
+                      "zh/contribute/docs",
+                      "zh/contribute/trellis"
+                    ]
+                  },
+                  {
+                    "group": "Tech Blog",
+                    "expanded": false,
+                    "pages": [
+                      "zh/blog/index",
+                      "zh/blog/use-k8s-to-know-trellis",
+                      "zh/blog/ai-collaborative-dev-system"
+                    ]
+                  },
+                  {
+                    "group": "Changelog",
+                    "expanded": false,
+                    "pages": [
+                      "zh/changelog/v0.5.0-beta.8",
+                      "zh/changelog/v0.5.0-beta.7",
+                      "zh/changelog/v0.5.0-beta.6",
+                      "zh/changelog/v0.5.0-beta.5",
+                      "zh/changelog/v0.5.0-beta.4",
+                      "zh/changelog/v0.5.0-beta.3",
+                      "zh/changelog/v0.5.0-beta.2",
+                      "zh/changelog/v0.5.0-beta.1",
+                      "zh/changelog/v0.5.0-beta.0",
+                      "zh/changelog/v0.4.0",
+                      "zh/changelog/v0.4.0-rc.1",
+                      "zh/changelog/v0.4.0-rc.0",
+                      "zh/changelog/v0.4.0-beta.10",
+                      "zh/changelog/v0.4.0-beta.9",
+                      "zh/changelog/v0.4.0-beta.8",
+                      "zh/changelog/v0.4.0-beta.7",
+                      "zh/changelog/v0.4.0-beta.6",
+                      "zh/changelog/v0.4.0-beta.5",
+                      "zh/changelog/v0.4.0-beta.4",
+                      "zh/changelog/v0.4.0-beta.3",
+                      "zh/changelog/v0.4.0-beta.2",
+                      "zh/changelog/v0.4.0-beta.1",
+                      "zh/changelog/v0.3.10",
+                      "zh/changelog/v0.3.9",
+                      "zh/changelog/v0.3.8",
+                      "zh/changelog/v0.3.7",
+                      "zh/changelog/v0.3.6",
+                      "zh/changelog/v0.3.5",
+                      "zh/changelog/v0.3.4",
+                      "zh/changelog/v0.3.3",
+                      "zh/changelog/v0.3.2",
+                      "zh/changelog/v0.3.1",
+                      "zh/changelog/v0.3.0-rc.6",
+                      "zh/changelog/v0.3.0-rc.5",
+                      "zh/changelog/v0.3.0-rc.4",
+                      "zh/changelog/v0.3.0-rc.3",
+                      "zh/changelog/v0.3.0-rc.2",
+                      "zh/changelog/v0.3.0-rc.1",
+                      "zh/changelog/v0.3.0-rc.0",
+                      "zh/changelog/v0.3.0-beta.16",
+                      "zh/changelog/v0.3.0-beta.15",
+                      "zh/changelog/v0.3.0-beta.14",
+                      "zh/changelog/v0.3.0-beta.13",
+                      "zh/changelog/v0.3.0-beta.12",
+                      "zh/changelog/v0.3.0-beta.11",
+                      "zh/changelog/v0.3.0-beta.10",
+                      "zh/changelog/v0.3.0-beta.9",
+                      "zh/changelog/v0.3.0-beta.8",
+                      "zh/changelog/v0.3.0-beta.7",
+                      "zh/changelog/v0.3.0-beta.0",
+                      "zh/changelog/v0.2.0",
+                      "zh/changelog/v0.1.9"
+                    ]
+                  }
+                ]
               }
             ]
           },
           {
-            "group": "社区",
-            "pages": [
+            "version": "Release",
+            "tag": "Stable",
+            "groups": [
               {
-                "group": "项目展示",
-                "expanded": false,
+                "group": "开始使用",
                 "pages": [
-                  "zh/showcase/index",
-                  "zh/showcase/terminal-demo",
-                  "zh/showcase/open-typeless",
-                  "zh/showcase/trellis-cursor"
+                  "zh/release/index",
+                  "zh/release/start/install-and-first-task",
+                  "zh/release/start/everyday-use"
                 ]
               },
               {
-                "group": "贡献指南",
-                "expanded": false,
-                "pages": ["zh/contribute/docs", "zh/contribute/trellis"]
-              },
-              {
-                "group": "Tech Blog",
-                "expanded": false,
+                "group": "进阶",
                 "pages": [
-                  "zh/blog/index",
-                  "zh/blog/use-k8s-to-know-trellis",
-                  "zh/blog/ai-collaborative-dev-system"
+                  "zh/release/advanced/architecture",
+                  "zh/release/advanced/custom-commands",
+                  "zh/release/advanced/custom-agents",
+                  "zh/release/advanced/custom-hooks",
+                  "zh/release/advanced/custom-skills",
+                  "zh/release/advanced/multi-platform",
+                  "zh/release/advanced/appendix-a",
+                  "zh/release/advanced/appendix-b",
+                  "zh/release/advanced/appendix-c",
+                  "zh/release/advanced/appendix-d",
+                  "zh/release/advanced/appendix-e",
+                  "zh/release/advanced/appendix-f",
+                  "zh/release/advanced/resources"
                 ]
               },
               {
-                "group": "Changelog",
-                "expanded": false,
+                "group": "Use Cases",
                 "pages": [
-                  "zh/changelog/v0.5.0-beta.8",
-                  "zh/changelog/v0.5.0-beta.7",
-                  "zh/changelog/v0.5.0-beta.6",
-                  "zh/changelog/v0.5.0-beta.5",
-                  "zh/changelog/v0.5.0-beta.4",
-                  "zh/changelog/v0.5.0-beta.3",
-                  "zh/changelog/v0.5.0-beta.2",
-                  "zh/changelog/v0.5.0-beta.1",
-                  "zh/changelog/v0.5.0-beta.0",
-                  "zh/changelog/v0.4.0",
-                  "zh/changelog/v0.4.0-rc.1",
-                  "zh/changelog/v0.4.0-rc.0",
-                  "zh/changelog/v0.4.0-beta.10",
-                  "zh/changelog/v0.4.0-beta.9",
-                  "zh/changelog/v0.4.0-beta.8",
-                  "zh/changelog/v0.4.0-beta.7",
-                  "zh/changelog/v0.4.0-beta.6",
-                  "zh/changelog/v0.4.0-beta.5",
-                  "zh/changelog/v0.4.0-beta.4",
-                  "zh/changelog/v0.4.0-beta.3",
-                  "zh/changelog/v0.4.0-beta.2",
-                  "zh/changelog/v0.4.0-beta.1",
-                  "zh/changelog/v0.3.10",
-                  "zh/changelog/v0.3.9",
-                  "zh/changelog/v0.3.8",
-                  "zh/changelog/v0.3.7",
-                  "zh/changelog/v0.3.6",
-                  "zh/changelog/v0.3.5",
-                  "zh/changelog/v0.3.4",
-                  "zh/changelog/v0.3.3",
-                  "zh/changelog/v0.3.2",
-                  "zh/changelog/v0.3.1",
-                  "zh/changelog/v0.3.0-rc.6",
-                  "zh/changelog/v0.3.0-rc.5",
-                  "zh/changelog/v0.3.0-rc.4",
-                  "zh/changelog/v0.3.0-rc.3",
-                  "zh/changelog/v0.3.0-rc.2",
-                  "zh/changelog/v0.3.0-rc.1",
-                  "zh/changelog/v0.3.0-rc.0",
-                  "zh/changelog/v0.3.0-beta.16",
-                  "zh/changelog/v0.3.0-beta.15",
-                  "zh/changelog/v0.3.0-beta.14",
-                  "zh/changelog/v0.3.0-beta.13",
-                  "zh/changelog/v0.3.0-beta.12",
-                  "zh/changelog/v0.3.0-beta.11",
-                  "zh/changelog/v0.3.0-beta.10",
-                  "zh/changelog/v0.3.0-beta.9",
-                  "zh/changelog/v0.3.0-beta.8",
-                  "zh/changelog/v0.3.0-beta.7",
-                  "zh/changelog/v0.3.0-beta.0",
-                  "zh/changelog/v0.2.0",
-                  "zh/changelog/v0.1.9"
+                  "zh/use-cases/open-typeless"
+                ]
+              },
+              {
+                "group": "Resource Marketplace",
+                "pages": [
+                  {
+                    "group": "Skills",
+                    "expanded": false,
+                    "pages": [
+                      "zh/skills-market/index",
+                      "zh/skills-market/trellis-meta",
+                      "zh/skills-market/cc-codex-spec-bootstrap",
+                      "zh/skills-market/frontend-fullchain-optimization"
+                    ]
+                  },
+                  {
+                    "group": "Spec Templates",
+                    "expanded": false,
+                    "pages": [
+                      "zh/templates/specs-index",
+                      "zh/templates/specs-electron",
+                      "zh/templates/specs-nextjs",
+                      "zh/templates/specs-cf-workers"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "社区",
+                "pages": [
+                  {
+                    "group": "项目展示",
+                    "expanded": false,
+                    "pages": [
+                      "zh/showcase/index",
+                      "zh/showcase/terminal-demo",
+                      "zh/showcase/open-typeless",
+                      "zh/showcase/trellis-cursor"
+                    ]
+                  },
+                  {
+                    "group": "贡献指南",
+                    "expanded": false,
+                    "pages": [
+                      "zh/contribute/docs",
+                      "zh/contribute/trellis"
+                    ]
+                  },
+                  {
+                    "group": "Tech Blog",
+                    "expanded": false,
+                    "pages": [
+                      "zh/blog/index",
+                      "zh/blog/use-k8s-to-know-trellis",
+                      "zh/blog/ai-collaborative-dev-system"
+                    ]
+                  },
+                  {
+                    "group": "Changelog",
+                    "expanded": false,
+                    "pages": [
+                      "zh/release/changelog/v0.4.0",
+                      "zh/release/changelog/v0.3.10",
+                      "zh/release/changelog/v0.3.9",
+                      "zh/release/changelog/v0.3.8",
+                      "zh/release/changelog/v0.3.7",
+                      "zh/release/changelog/v0.3.6",
+                      "zh/release/changelog/v0.3.5",
+                      "zh/release/changelog/v0.3.4",
+                      "zh/release/changelog/v0.3.3",
+                      "zh/release/changelog/v0.3.2",
+                      "zh/release/changelog/v0.3.1",
+                      "zh/release/changelog/v0.2.0",
+                      "zh/release/changelog/v0.1.9"
+                    ]
+                  }
                 ]
               }
             ]
@@ -362,7 +607,11 @@
     "deployBranch": "main"
   },
   "contextual": {
-    "options": ["chatgpt", "claude", "perplexity"]
+    "options": [
+      "chatgpt",
+      "claude",
+      "perplexity"
+    ]
   },
   "interaction": {
     "drilldown": true
@@ -372,5 +621,343 @@
       "x": "https://x.com/_kleinhe",
       "github": "https://github.com/mindfold-ai/Trellis"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/guide/ch01-what-is-trellis",
+      "destination": "/"
+    },
+    {
+      "source": "/start/what-is-trellis",
+      "destination": "/"
+    },
+    {
+      "source": "/guide/ch02-quick-start",
+      "destination": "/start/install-and-first-task"
+    },
+    {
+      "source": "/guide/ch03-first-task",
+      "destination": "/start/install-and-first-task"
+    },
+    {
+      "source": "/guide/ch04-architecture",
+      "destination": "/advanced/architecture"
+    },
+    {
+      "source": "/guide/ch05-commands",
+      "destination": "/start/everyday-use"
+    },
+    {
+      "source": "/guide/ch06-task-management",
+      "destination": "/start/everyday-use"
+    },
+    {
+      "source": "/guide/ch07-writing-specs",
+      "destination": "/start/everyday-use"
+    },
+    {
+      "source": "/guide/ch08-real-world",
+      "destination": "/start/everyday-use"
+    },
+    {
+      "source": "/guide/ch08-custom-workflow",
+      "destination": "/advanced/custom-workflow"
+    },
+    {
+      "source": "/guide/ch09-custom-commands",
+      "destination": "/advanced/custom-commands"
+    },
+    {
+      "source": "/guide/ch10-custom-agents",
+      "destination": "/advanced/custom-agents"
+    },
+    {
+      "source": "/guide/ch11-custom-hooks",
+      "destination": "/advanced/custom-hooks"
+    },
+    {
+      "source": "/guide/ch12-custom-skills",
+      "destination": "/advanced/custom-skills"
+    },
+    {
+      "source": "/guide/ch13-multi-platform",
+      "destination": "/advanced/multi-platform"
+    },
+    {
+      "source": "/guide/appendix-a",
+      "destination": "/advanced/appendix-a"
+    },
+    {
+      "source": "/guide/appendix-b",
+      "destination": "/advanced/appendix-b"
+    },
+    {
+      "source": "/guide/appendix-c",
+      "destination": "/advanced/appendix-c"
+    },
+    {
+      "source": "/guide/appendix-d",
+      "destination": "/advanced/appendix-d"
+    },
+    {
+      "source": "/guide/appendix-f",
+      "destination": "/advanced/appendix-f"
+    },
+    {
+      "source": "/guide/resources",
+      "destination": "/advanced/resources"
+    },
+    {
+      "source": "/zh/guide/ch01-what-is-trellis",
+      "destination": "/zh"
+    },
+    {
+      "source": "/zh/start/what-is-trellis",
+      "destination": "/zh"
+    },
+    {
+      "source": "/zh/guide/ch02-quick-start",
+      "destination": "/zh/start/install-and-first-task"
+    },
+    {
+      "source": "/zh/guide/ch03-first-task",
+      "destination": "/zh/start/install-and-first-task"
+    },
+    {
+      "source": "/zh/guide/ch04-architecture",
+      "destination": "/zh/advanced/architecture"
+    },
+    {
+      "source": "/zh/guide/ch05-commands",
+      "destination": "/zh/start/everyday-use"
+    },
+    {
+      "source": "/zh/guide/ch06-task-management",
+      "destination": "/zh/start/everyday-use"
+    },
+    {
+      "source": "/zh/guide/ch07-writing-specs",
+      "destination": "/zh/start/everyday-use"
+    },
+    {
+      "source": "/zh/guide/ch08-real-world",
+      "destination": "/zh/start/everyday-use"
+    },
+    {
+      "source": "/zh/guide/ch08-custom-workflow",
+      "destination": "/zh/advanced/custom-workflow"
+    },
+    {
+      "source": "/zh/guide/ch09-custom-commands",
+      "destination": "/zh/advanced/custom-commands"
+    },
+    {
+      "source": "/zh/guide/ch10-custom-agents",
+      "destination": "/zh/advanced/custom-agents"
+    },
+    {
+      "source": "/zh/guide/ch11-custom-hooks",
+      "destination": "/zh/advanced/custom-hooks"
+    },
+    {
+      "source": "/zh/guide/ch12-custom-skills",
+      "destination": "/zh/advanced/custom-skills"
+    },
+    {
+      "source": "/zh/guide/ch13-multi-platform",
+      "destination": "/zh/advanced/multi-platform"
+    },
+    {
+      "source": "/zh/guide/appendix-a",
+      "destination": "/zh/advanced/appendix-a"
+    },
+    {
+      "source": "/zh/guide/appendix-b",
+      "destination": "/zh/advanced/appendix-b"
+    },
+    {
+      "source": "/zh/guide/appendix-c",
+      "destination": "/zh/advanced/appendix-c"
+    },
+    {
+      "source": "/zh/guide/appendix-d",
+      "destination": "/zh/advanced/appendix-d"
+    },
+    {
+      "source": "/zh/guide/appendix-f",
+      "destination": "/zh/advanced/appendix-f"
+    },
+    {
+      "source": "/zh/guide/resources",
+      "destination": "/zh/advanced/resources"
+    },
+    {
+      "source": "/release/guide/ch01-what-is-trellis",
+      "destination": "/release"
+    },
+    {
+      "source": "/release/start/what-is-trellis",
+      "destination": "/release"
+    },
+    {
+      "source": "/release/guide/ch02-quick-start",
+      "destination": "/release/start/install-and-first-task"
+    },
+    {
+      "source": "/release/guide/ch03-first-task",
+      "destination": "/release/start/install-and-first-task"
+    },
+    {
+      "source": "/release/guide/ch04-architecture",
+      "destination": "/release/advanced/architecture"
+    },
+    {
+      "source": "/release/guide/ch05-commands",
+      "destination": "/release/start/everyday-use"
+    },
+    {
+      "source": "/release/guide/ch06-task-management",
+      "destination": "/release/start/everyday-use"
+    },
+    {
+      "source": "/release/guide/ch07-writing-specs",
+      "destination": "/release/start/everyday-use"
+    },
+    {
+      "source": "/release/guide/ch08-real-world",
+      "destination": "/release/start/everyday-use"
+    },
+    {
+      "source": "/release/guide/ch09-custom-commands",
+      "destination": "/release/advanced/custom-commands"
+    },
+    {
+      "source": "/release/guide/ch10-custom-agents",
+      "destination": "/release/advanced/custom-agents"
+    },
+    {
+      "source": "/release/guide/ch11-custom-hooks",
+      "destination": "/release/advanced/custom-hooks"
+    },
+    {
+      "source": "/release/guide/ch12-custom-skills",
+      "destination": "/release/advanced/custom-skills"
+    },
+    {
+      "source": "/release/guide/ch13-multi-platform",
+      "destination": "/release/advanced/multi-platform"
+    },
+    {
+      "source": "/release/guide/appendix-a",
+      "destination": "/release/advanced/appendix-a"
+    },
+    {
+      "source": "/release/guide/appendix-b",
+      "destination": "/release/advanced/appendix-b"
+    },
+    {
+      "source": "/release/guide/appendix-c",
+      "destination": "/release/advanced/appendix-c"
+    },
+    {
+      "source": "/release/guide/appendix-d",
+      "destination": "/release/advanced/appendix-d"
+    },
+    {
+      "source": "/release/guide/appendix-e",
+      "destination": "/release/advanced/appendix-e"
+    },
+    {
+      "source": "/release/guide/appendix-f",
+      "destination": "/release/advanced/appendix-f"
+    },
+    {
+      "source": "/release/guide/resources",
+      "destination": "/release/advanced/resources"
+    },
+    {
+      "source": "/zh/release/guide/ch01-what-is-trellis",
+      "destination": "/zh/release"
+    },
+    {
+      "source": "/zh/release/start/what-is-trellis",
+      "destination": "/zh/release"
+    },
+    {
+      "source": "/zh/release/guide/ch02-quick-start",
+      "destination": "/zh/release/start/install-and-first-task"
+    },
+    {
+      "source": "/zh/release/guide/ch03-first-task",
+      "destination": "/zh/release/start/install-and-first-task"
+    },
+    {
+      "source": "/zh/release/guide/ch04-architecture",
+      "destination": "/zh/release/advanced/architecture"
+    },
+    {
+      "source": "/zh/release/guide/ch05-commands",
+      "destination": "/zh/release/start/everyday-use"
+    },
+    {
+      "source": "/zh/release/guide/ch06-task-management",
+      "destination": "/zh/release/start/everyday-use"
+    },
+    {
+      "source": "/zh/release/guide/ch07-writing-specs",
+      "destination": "/zh/release/start/everyday-use"
+    },
+    {
+      "source": "/zh/release/guide/ch08-real-world",
+      "destination": "/zh/release/start/everyday-use"
+    },
+    {
+      "source": "/zh/release/guide/ch09-custom-commands",
+      "destination": "/zh/release/advanced/custom-commands"
+    },
+    {
+      "source": "/zh/release/guide/ch10-custom-agents",
+      "destination": "/zh/release/advanced/custom-agents"
+    },
+    {
+      "source": "/zh/release/guide/ch11-custom-hooks",
+      "destination": "/zh/release/advanced/custom-hooks"
+    },
+    {
+      "source": "/zh/release/guide/ch12-custom-skills",
+      "destination": "/zh/release/advanced/custom-skills"
+    },
+    {
+      "source": "/zh/release/guide/ch13-multi-platform",
+      "destination": "/zh/release/advanced/multi-platform"
+    },
+    {
+      "source": "/zh/release/guide/appendix-a",
+      "destination": "/zh/release/advanced/appendix-a"
+    },
+    {
+      "source": "/zh/release/guide/appendix-b",
+      "destination": "/zh/release/advanced/appendix-b"
+    },
+    {
+      "source": "/zh/release/guide/appendix-c",
+      "destination": "/zh/release/advanced/appendix-c"
+    },
+    {
+      "source": "/zh/release/guide/appendix-d",
+      "destination": "/zh/release/advanced/appendix-d"
+    },
+    {
+      "source": "/zh/release/guide/appendix-e",
+      "destination": "/zh/release/advanced/appendix-e"
+    },
+    {
+      "source": "/zh/release/guide/appendix-f",
+      "destination": "/zh/release/advanced/appendix-f"
+    },
+    {
+      "source": "/zh/release/guide/resources",
+      "destination": "/zh/release/advanced/resources"
+    }
+  ]
 }

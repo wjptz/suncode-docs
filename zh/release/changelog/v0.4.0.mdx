@@ -1,0 +1,71 @@
+---
+title: 'v0.4.0'
+description: '2026-04-15'
+---
+
+经过 11 个 beta + 2 个 rc，Trellis v0.4.0 稳定版正式发布！
+
+## Monorepo 原生支持
+
+`trellis init` 现在会识别 monorepo，按包创建独立的 spec 目录，每个 package 都能有自己的一套编码规范和任务。配套地，9 个平台上的 `before-backend-dev` / `before-frontend-dev` / `check-backend` / `check-frontend` 合并成了通用的 `before-dev` / `check`，命令矩阵不会因为 package 数量爆炸。
+
+## 平台支持更多
+
+- **GitHub Copilot** — `--copilot`
+- **Windsurf** — `--windsurf`
+- **Qoder** — `--qoder`
+- **Factory Droid** — `--droid`
+
+例如同时启用多个平台：
+
+```bash
+trellis init --codex --gemini --copilot -u your-name
+```
+
+## Codex 满血支持
+
+- **启用了 Codex 的 SessionStart hook**：现在 Codex 用户可以跟 Claude Code 用户一样，无需再手动调用 `/start` 命令，启动 session 就能直接对话，task 状态、workflow、guidelines 自动注入
+- **支持了 sub-agent 的定义**：`.codex/agents/` 下新增 TOML 格式的 `implement` / `research` / `check` agent，跟 Claude Code 的 `Agent` 工具语义对齐
+- **shared skills 共享层**：Codex 写入 `.agents/skills/`（[agentskills.io](https://agentskills.io) 标准目录），同一份输出会被 Cursor、Gemini CLI、GitHub Copilot、Amp、Kimi Code 自动读取——勾一个 Codex 选项覆盖一大片工具链
+
+## 其他改进
+
+- **自定义 spec 模板 Registry**：`trellis init -r <source>` 从自定义 git 仓库（GitHub / GitLab / Bitbucket，含自托管 GitLab 的 HTTPS / SSH）拉 spec 模板，而不是从默认 marketplace 拉。团队可以把自家编码规范维护在内网 git 服务器上分发
+- **重新 init 的快速路径**：`trellis init --codex` 在已有项目里追加配置 Codex；不带参数会弹菜单
+- **分支感知**：session 和 journal 带上 git 分支上下文，多分支并行不混乱
+- **Claude Code Statusline 集成**
+- **多 Agent 流水线**：支持 worktree submodule 和 PR 状态追踪
+
+## 关键修复
+
+- **SessionStart 瘦身**：从约 29 KB 缩到约 7 KB，修了一个会让 Claude Code 静默截断 task 状态的大坑
+- **Windows**：statusline GBK 编码崩溃（感谢 @xiangagou163）、Codex `hooks.json` 的 `{{PYTHON_CMD}}` 占位符解析
+
+**其他修复（节选）**
+
+- fix(update): rename 迁移允许指向受保护路径 + 配置解析失败时告警
+- fix(update): 创建迁移任务时从 `.developer` 解析名字
+- fix(hooks): 跨平台规范化 `.current-task` 路径引用（#130）
+- fix(hooks): ralph-loop 的 `SubagentStop` 事件字段名（#152）
+- fix(opencode): dispatch 等待子任务（#147）
+- fix(init): monorepo 包目录去掉 npm scope 前缀
+- fix(init): 模板选择器把 "empty templates" 改成 "from scratch"
+- fix(scripts): `start.py` 保留 submodule 的 status 前缀
+
+## 安装与升级
+
+```bash
+# 新装
+npm install -g @mindfoldhq/trellis@latest --registry=https://registry.npmjs.org
+
+# 升级（已装过 trellis）
+trellis update
+```
+
+从 0.3.x 升级会自动处理 36 个命令文件的合并——带 hash 校验，**你的本地修改会被保留**，没被改过的文件才删。
+
+---
+
+- 完整 changelog：https://docs.trytrellis.app/zh/changelog/v0.4.0
+- Repo：https://github.com/mindfold-ai/Trellis
+- Doc：https://docs.trytrellis.app/zh

@@ -1,0 +1,70 @@
+---
+title: 'Trellis'
+description: '面向 Claude Code 和 Cursor 的一站式 AI 框架和工具集'
+---
+
+## Trellis 是什么？
+
+AI 的能力像藤蔓一样生长——充满活力但四处蔓延。Trellis 是 AI 的脚手架，引导它沿着规范的路径前进。
+
+### 一句话定位
+
+**Trellis 是 AI 编码助手的脚手架** — 通过自动化机制注入项目规范，让 AI 每次都按你的标准写代码，而不是随机发挥。
+
+> AI's capabilities grow like vines — full of vitality but spreading everywhere.
+> Trellis is scaffolding for AI, guiding it along the path of your conventions.
+
+### vs 传统方法对比
+
+| 维度 | `.cursorrules` | `CLAUDE.md` | Skills | **Trellis** |
+|------|---------------|-------------|--------|------------|
+| 规范注入方式 | 每次对话手动加载 | 自动加载但容易被截断 | 用户主动调用 | **Hook 自动注入，按任务精准加载** |
+| 规范粒度 | 一个大文件 | 一个大文件 | 每个 Skill 独立 | **按模块分文件，按任务组合** |
+| 跨会话记忆 | 无 | 无 | 无 | **workspace journal 持久化** |
+| 并行开发 | 不支持 | 不支持 | 不支持 | **Multi-Agent worktree 并行** |
+| 质量控制 | 无 | 无 | 无 | **Ralph Loop 自动验证循环** |
+| 团队共享 | 单人 | 单人 | 可分享但无标准 | **Git 版本化 Spec 库** |
+| 支持平台 | Cursor 专属 | Claude Code 专属 | 按平台 | **14 个平台**（Claude Code、Cursor、OpenCode、Codex、iFlow、Gemini CLI、Kilo、Kiro、Qoder、GitHub Copilot、Windsurf、CodeBuddy、Antigravity、Factory Droid） |
+
+### 核心概念速览
+
+| 概念 | 说明 | 存放位置 |
+|------|------|---------|
+| **Spec（规范）** | 你的编码标准，用 Markdown 写成。AI 写代码前先读规范 | `.trellis/spec/` |
+| **Workspace（工作区）** | 每个开发者的会话日志，让 AI 记住上次做了什么 | `.trellis/workspace/` |
+| **Task（任务）** | 工作单元，包含需求文档和上下文配置 | `.trellis/tasks/` |
+| **Hook（钩子）** | 自动触发的脚本，在会话启动、Agent 调用等时机注入上下文 `[Claude Code 专属]` | `.claude/hooks/` |
+| **Agent（代理）** | 专门角色的 AI 子进程，如 Implement、Check、Debug 等 `[Claude Code 专属]` | `.claude/agents/` |
+| **Skill（技能）** | 可复用的 AI 能力模块，可跨项目共享 | `.claude/skills/` |
+| **Journal（日志）** | 会话记录文件，记录每次开发做了什么 | `.trellis/workspace/{name}/journal-N.md` |
+
+<Info>
+Hook 和 Agent 系统是 Claude Code 专属功能。Cursor、Codex 等平台通过 Slash 命令手动加载规范，
+实现相同的效果。Spec、Workspace、Task、Journal 等核心概念在所有平台上通用。
+</Info>
+
+## 为什么用 Trellis？
+
+| 功能             | 解决什么问题                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| **自动注入**     | 规范和工作流自动注入每次对话，写一次，永久生效                                                               |
+| **自更新规范库** | 最佳实践存在自更新的 spec 文件中，用得越多，AI 越懂你                                                        |
+| **并行会话**     | 一个会话窗口可以在后台启动多个会话窗口，每个会话窗口都可以调用多个 Agent 同时工作，运行在各自独立的 worktree |
+| **团队共享**     | 团队共享规范，团队里有一个高人搞一版好的规范，拉高全员的 AI coding 水平                                      |
+| **会话持久化**   | 工作记录持久化到仓库，AI 跨会话记住项目上下文，不用每次再费劲告诉 AI 你的项目情况是什么                      |
+
+<CardGroup cols={2}>
+  <Card title="快速开始" icon="rocket" href="/zh/start/install-and-first-task">
+    5 分钟安装 Trellis，搭建你的第一个项目。
+  </Card>
+  <Card title="架构全景" icon="book" href="/zh/advanced/architecture">
+    了解 Specs、Tasks、Hook 和 Workspace。
+  </Card>
+  <Card title="命令全解" icon="terminal" href="/zh/start/everyday-use">
+    13 条 Slash 命令的完整用法。
+  </Card>
+  <Card title="实战场景" icon="code" href="/zh/start/everyday-use">
+    从 Bug 修复到全栈开发的真实案例。
+  </Card>
+</CardGroup>
+

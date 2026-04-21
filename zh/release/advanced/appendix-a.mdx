@@ -1,0 +1,172 @@
+---
+title: '附录 A：关键文件路径速查'
+---
+
+## 附录 A：关键文件路径速查
+
+### 核心文档
+
+| 文件 | 说明 | 何时读取 |
+|------|------|---------|
+| `.trellis/workflow.md` | 开发工作流指南 | 每次会话启动 |
+| `.trellis/worktree.yaml` | Multi-Agent worktree 配置 | 并行开发时 |
+| `.trellis/.version` | 当前 Trellis 版本 | 更新时 |
+
+### 命令定义
+
+| 文件 | 命令 |
+|------|------|
+| `.claude/commands/trellis/start.md` | `/trellis:start` |
+| `.claude/commands/trellis/parallel.md` | `/trellis:parallel` |
+| `.claude/commands/trellis/before-dev.md` | `/trellis:before-dev` |
+| `.claude/commands/trellis/brainstorm.md` | `/trellis:brainstorm` |
+| `.claude/commands/trellis/check.md` | `/trellis:check` |
+| `.claude/commands/trellis/check-cross-layer.md` | `/trellis:check-cross-layer` |
+| `.claude/commands/trellis/finish-work.md` | `/trellis:finish-work` |
+| `.claude/commands/trellis/break-loop.md` | `/trellis:break-loop` |
+| `.claude/commands/trellis/create-command.md` | `/trellis:create-command` |
+| `.claude/commands/trellis/integrate-skill.md` | `/trellis:integrate-skill` |
+| `.claude/commands/trellis/onboard.md` | `/trellis:onboard` |
+| `.claude/commands/trellis/record-session.md` | `/trellis:record-session` |
+| `.claude/commands/trellis/update-spec.md` | `/trellis:update-spec` |
+
+### Agent 定义
+
+| 文件 | Agent | 角色 |
+|------|-------|------|
+| `.claude/agents/dispatch.md` | Dispatch | 纯调度器 |
+| `.claude/agents/plan.md` | Plan | 需求评估 |
+| `.claude/agents/implement.md` | Implement | 代码实现 |
+| `.claude/agents/check.md` | Check | 质量检查 |
+| `.claude/agents/debug.md` | Debug | Bug 修复 |
+| `.claude/agents/research.md` | Research | 信息搜索（只读） |
+
+### Hook 脚本
+
+| 文件 | 触发时机 | 功能 |
+|------|---------|------|
+| `.claude/hooks/session-start.py` | SessionStart | 自动注入上下文 |
+| `.claude/hooks/inject-subagent-context.py` | PreToolUse (Task) | 规范注入引擎 |
+| `.claude/hooks/ralph-loop.py` | SubagentStop (check) | 质量控制循环 |
+
+### Cursor 命令定义
+
+| 文件 | 命令 |
+|------|------|
+| `.cursor/commands/trellis-start.md` | `/trellis-start` |
+| `.cursor/commands/trellis-before-dev.md` | `/trellis-before-dev` |
+| `.cursor/commands/trellis-brainstorm.md` | `/trellis-brainstorm` |
+| `.cursor/commands/trellis-check.md` | `/trellis-check` |
+| `.cursor/commands/trellis-check-cross-layer.md` | `/trellis-check-cross-layer` |
+| `.cursor/commands/trellis-finish-work.md` | `/trellis-finish-work` |
+| `.cursor/commands/trellis-break-loop.md` | `/trellis-break-loop` |
+| `.cursor/commands/trellis-create-command.md` | `/trellis-create-command` |
+| `.cursor/commands/trellis-integrate-skill.md` | `/trellis-integrate-skill` |
+| `.cursor/commands/trellis-onboard.md` | `/trellis-onboard` |
+| `.cursor/commands/trellis-record-session.md` | `/trellis-record-session` |
+| `.cursor/commands/trellis-update-spec.md` | `/trellis-update-spec` |
+
+### OpenCode 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.opencode/commands/trellis/*.md` | Slash 命令——Trellis 生成 12 个命令 |
+| `.opencode/agents/*.md` | Sub-agent（`implement.md`、`research.md`、`check.md`） |
+| `.agents/skills/*/SKILL.md` | 共享 Agent Skills 层（Codex 等 agentskills.io 兼容 agent 也读这里） |
+
+### Codex 配置
+
+| 文件 | 说明 |
+|------|------|
+| `AGENTS.md` | 入口文件，Codex 每次会话自动加载 |
+| `.agents/skills/*/SKILL.md` | 共享 Agent Skills（OpenCode / Kimi CLI / Amp / Cline 也用） |
+| `.codex/config.toml` | 项目级 Codex 配置 |
+| `.codex/agents/*.toml` | 自定义 Codex agents（`implement.toml`、`research.toml`、`check.toml`） |
+| `.codex/skills/parallel/SKILL.md` | Codex 专属 skill（多 agent pipeline） |
+| `.codex/hooks/session-start.py` | SessionStart hook（需在 `~/.codex/config.toml` 里设 `codex_hooks = true`） |
+| `.codex/hooks.json` | Hooks 配置 |
+
+### iFlow 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.iflow/commands/trellis/*.md` | Slash 命令——Trellis 生成 13 个命令 |
+| `.iflow/hooks/session-start.py` | SessionStart hook（与 Claude Code 共享同一份 Python 脚本） |
+| `.iflow/hooks.json` | Hooks 配置 |
+| `.iflow/settings.json` | 项目级 iFlow 配置 |
+
+### Gemini CLI 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.gemini/commands/trellis/*.toml` | TOML 命令文件——Trellis 生成 13 个命令 |
+| `.agents/skills/*/SKILL.md` | 共享 Agent Skills 层（Gemini CLI 读 agentskills.io 规范路径） |
+
+### Kilo Code 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.kilocode/workflows/*.md` | Workflow 命令（等同于 slash commands）——Trellis 生成 13 个工作流 |
+
+### Kiro 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.kiro/skills/*/SKILL.md` | Agent Skills（YAML frontmatter + 指令）——Trellis 生成 12 个 skill |
+
+### Qoder 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.qoder/skills/*/SKILL.md` | Agent Skills——Trellis 生成 12 个 skill（全部工作流走 skill；`.qoder/commands/` 留给用户自己的 Custom Commands） |
+
+### GitHub Copilot 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.github/copilot-instructions.md` | 自动加载的 prelude（每次 Chat 会话带上 Trellis 上下文） |
+| `.github/prompts/trellis-*.prompt.md` | 各命令 prompt（通过 "Run Prompt" 选择器调用）——Trellis 生成 13 个 prompt |
+
+### Windsurf 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.windsurf/workflows/trellis-*.md` | Workflow——Trellis 生成 13 个 workflow |
+| `.windsurf/rules/trellis.md` | 常驻规则（承载 Trellis prelude） |
+
+### CodeBuddy 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.codebuddy/commands/trellis/*.md` | Slash 命令——Trellis 生成 12 个命令（调用方式 `/trellis:start` 等） |
+
+### Antigravity 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.agent/workflows/*.md` | Workflow 文件——内容从共享的 Codex skill 源适配而来；通过 Antigravity 的 workflow 选择器调用 |
+
+### Factory Droid 配置
+
+| 文件 | 说明 |
+|------|------|
+| `.factory/commands/trellis/*.md` | Slash 命令——Trellis 生成 13 个命令 |
+| `.factory/agents/*.md` | Sub-agent（`implement.md`、`research.md`、`check.md`） |
+| `.factory/skills/*/SKILL.md` | Auto-trigger skills |
+| `.factory/hooks/session-start.py` + `.factory/hooks.json` | SessionStart hook |
+
+### 脚本工具
+
+| 脚本 | 功能 |
+|------|------|
+| `.trellis/scripts/task.py` | 任务管理（14 个子命令） |
+| `.trellis/scripts/get_context.py` | 获取会话上下文 |
+| `.trellis/scripts/get_developer.py` | 获取开发者身份 |
+| `.trellis/scripts/init_developer.py` | 初始化开发者 |
+| `.trellis/scripts/add_session.py` | 记录会话 |
+| `.trellis/scripts/create_bootstrap.py` | 首次 spec 引导 |
+| `.trellis/scripts/multi_agent/plan.py` | Plan 阶段脚本 |
+| `.trellis/scripts/multi_agent/start.py` | 启动 worktree Agent |
+| `.trellis/scripts/multi_agent/status.py` | 查看状态 |
+| `.trellis/scripts/multi_agent/create_pr.py` | 创建 PR |
+| `.trellis/scripts/multi_agent/cleanup.py` | 清理 worktree |

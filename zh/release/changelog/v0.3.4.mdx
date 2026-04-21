@@ -1,0 +1,23 @@
+---
+title: 'v0.3.4'
+description: '2026-03-05'
+---
+
+Qoder 平台支持、Kilo workflows 迁移、record-session 任务感知。
+
+## 新增功能
+
+- **Qoder 平台**：新增 Qoder 平台支持（skills-based），通过 `--qoder` 启用，模板路径 `.qoder/skills/{name}/SKILL.md`
+- **Record-session prompt 优化**：`/record-session` 执行前强制检查活跃任务，已完成的必须先归档再记录；`get_context.py` 新增 `--mode record` 输出精简上下文，MY ACTIVE TASKS 优先展示
+- **Task archive 自动提交**：`task.py archive` 执行后自动提交，新增 `--no-commit` 参数可跳过
+
+## Bug 修复
+
+- **Kilo workflows**：`commands/trellis/` 重命名为 `workflows/`，匹配 Kilo 官方规范 `kilo.ai/docs/customize/workflows`
+- **iFlow 非交互模式**：session-start hook 新增 `IFLOW_NON_INTERACTIVE` 环境变量检查，修复非交互模式下的跨层一致性问题
+- **Multi-agent 嵌套会话**：清除继承的 `CLAUDECODE` 环境变量，修复 Claude Code v2.1.39+ 嵌套会话拦截导致子进程启动失败的问题
+- **Update 保护用户文件**：`trellis update` 不再覆盖 `workflow.md` 和 `workspace/index.md`，这两个用户可自定义的文件仅在 init 时创建
+
+## 迁移
+
+Kilo 用户：`trellis update` 会自动将 `.kilocode/commands/trellis/` 迁移至 `.kilocode/workflows/`。

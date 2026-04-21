@@ -1,0 +1,22 @@
+---
+title: 'v0.3.1'
+description: '2026-03-02'
+---
+
+SessionStart 重注入 & 模板精准感知。
+
+## 新增功能
+
+- **SessionStart 重注入**：Hook 现在在 `clear` 和 `compact` 事件时也会触发（之前仅 `startup`），确保会话重置后上下文始终被重新注入（Claude + iFlow）
+- **新增斜杠命令**：`/trellis:create-manifest`，引导 AI 完成完整的版本 manifest 创建流程
+
+## Bug 修复
+
+- 修复 iFlow command 模板写入路径缺少 `trellis/` 子目录的问题
+- 修复 `trellis update` 会向纯前端/纯后端项目注入不存在的 spec 目录文件的问题
+- 修复 `trellis init` 不区分项目类型、始终创建全量 spec 目录的问题
+- 清理死代码：移除 `guidesCrossPlatformThinkingGuideContent` 导出及 guides/index.md 中的失效链接
+
+## 迁移
+
+无需迁移。运行 `trellis update` 即可同步模板变更。

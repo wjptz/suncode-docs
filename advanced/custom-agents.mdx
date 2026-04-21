@@ -1,0 +1,131 @@
+---
+title: 'Custom Sub-agents'
+---
+
+## Custom Sub-agents
+
+Trellis ships three sub-agents (`trellis-implement`, `trellis-check`, `trellis-research`). You can modify them or add your own. This chapter walks through the Claude Code format as the main example, then lists the frontmatter differences on other platforms.
+
+<Note>
+  Sub-agents ship on 10 of 13 configured platforms: Claude Code, Cursor, OpenCode, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid. The agent file format varies by platform (Markdown / TOML / JSON), and on platforms without a `PreToolUse` hook the sub-agents read `implement.jsonl` / `check.jsonl` themselves via a pull-based prelude instead of having it injected. Kilo, Antigravity, and Windsurf do not expose a sub-agent primitive — the implement / check work runs inline in the main session.
+</Note>
+
+### Sub-agent definition (Claude Code example)
+
+A sub-agent definition file lives at `.claude/agents/{name}.md` and uses YAML frontmatter:
+
+```markdown
+---
+name: agent-name
+description: |
+  One-line description of what this sub-agent does, used by the platform to decide when to spawn it.
+tools: Read, Write, Edit, Bash, Glob, Grep
+---
+
+# Agent Name
+
+Instructions for the sub-agent go here. Treat it as the sub-agent's system prompt.
+```
+
+Key frontmatter fields on Claude Code:
+
+| Field         | Meaning                                                                              |
+| ------------- | ------------------------------------------------------------------------------------ |
+| `name`        | Sub-agent identifier used in `Task(subagent_type="...")` calls                       |
+| `description` | Used by the main session to decide when to spawn this sub-agent                      |
+| `tools`       | Comma-separated list of tools the sub-agent may call                                 |
+| `model`       | Optional model override. Omit to inherit the session model (recommended since 0.5.0-beta.5, so Cursor users and similar are not billed on a forced Opus default) |
+
+### Sub-agent file format is platform-specific
+
+The file extension, frontmatter shape, and tool-declaration syntax differ per platform:
+
+| Platform    | File                                  | Tool / permission field                     | Example value                                                     |
+| ----------- | ------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
+| Claude Code | `.claude/agents/{name}.md`            | `tools:` (comma list)                       | `Read, Write, Edit, Bash, Glob, Grep, Task, Skill`                |
+| Claude Code | (MCP tools)                           | same field, prefixed names                  | `mcp__exa__web_search_exa`, `mcp__chrome-devtools__*`             |
+| Cursor      | `.cursor/agents/{name}.md`            | CC-style `tools:` comma list                | `Read, Write, Edit, Bash`                                         |
+| OpenCode    | `.opencode/agents/{name}.md`          | `permission:` (object)                      | `{ read: allow, write: allow, bash: allow, "mcp__exa__*": allow }`|
+| Codex       | `.codex/agents/{name}.toml`           | TOML `sandbox_mode` + tool toggles          | `sandbox_mode = "workspace-write"`                                |
+| Kiro        | `.kiro/agents/{name}.json`            | JSON `tools:` (lowercase array)             | `["read", "write", "bash"]`                                       |
+| Gemini CLI  | `.gemini/agents/{name}.md`            | CC-style `tools:` comma list                | `Read, Write, Edit, Bash`                                         |
+| Qoder       | `.qoder/agents/{name}.md`             | CC-style `tools:` comma list                | `Read, Write, Edit, Bash`                                         |
+| CodeBuddy   | `.codebuddy/agents/{name}.md`         | CC-style `tools:` comma list                | `Read, Write, Edit, Bash`                                         |
+| Copilot     | `.github/agents/{name}.agent.md`      | CC-style `tools:` comma list                | `Read, Write, Edit, Bash`                                         |
+| Droid       | `.factory/droids/{name}.md`           | CC-style `tools:` comma list                | `Read, Write, Edit, Bash`                                         |
+
+If you author a sub-agent that should work on multiple platforms, put the canonical Claude-Code version in `packages/cli/src/templates/claude/agents/` and add platform adapters in `packages/cli/src/configurators/` that translate the frontmatter into each platform's native syntax. Trellis already does this for the shipped `trellis-implement` / `trellis-check` / `trellis-research`.
+
+### Modifying a shipped sub-agent
+
+Example: add a timeout and a stricter tool budget to `trellis-check`.
+
+```markdown
+---
+name: trellis-check
+description: |
+  Code quality check expert. Reviews diffs against specs, runs lint/typecheck/test, self-fixes.
+tools: Read, Write, Edit, Bash, Glob, Grep
+timeout: 600000
+---
+```
+
+If you plan to roll this out across your team, put the change in `.trellis/spec/backend/` (or wherever your convention lives) instead of the agent definition, so the sub-agent's behavior changes through spec injection rather than a fork.
+
+### Creating a new sub-agent
+
+Example: a `trellis-test` sub-agent that writes tests for the current diff.
+
+````markdown
+---
+name: trellis-test
+description: |
+  Writes comprehensive tests for the current diff. Runs them and reports pass/fail.
+tools: Read, Write, Edit, Bash, Glob, Grep
+---
+
+# trellis-test
+
+You are the trellis-test sub-agent in the Trellis workflow.
+
+## Responsibilities
+
+1. Analyze the current diff to identify testable units.
+2. Write unit tests for new functions and components.
+3. Write integration tests for cross-module interactions.
+4. Run the test suite and report results.
+
+## Flow
+
+#### Get changes
+
+```bash
+git diff --name-only HEAD
+```
+
+#### Identify testable code
+
+For each changed file, identify functions or components that need tests.
+
+#### Write tests
+
+Follow the existing test patterns in the repository. Do not invent a new test style.
+
+#### Run tests
+
+```bash
+pnpm test
+```
+````
+
+### Context injection
+
+If you want your sub-agent to receive spec context the way the shipped ones do:
+
+1. Accept a JSONL name convention (e.g. `test.jsonl`) in each task directory.
+2. On platforms with a `PreToolUse` (sub-agent) hook — Claude Code, Cursor, OpenCode, CodeBuddy, Droid — edit `inject-subagent-context` to handle the new sub-agent type.
+3. On platforms without that hook (Codex, Kiro, Gemini, Qoder, Copilot), follow the "pull-based prelude" pattern the shipped sub-agents use: prepend a block at the top of the agent file telling the sub-agent to `Read` its own JSONL before acting.
+
+For a detailed walkthrough, see chapter 11 on hooks.
+
+---
