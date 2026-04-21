@@ -148,7 +148,7 @@ Layout:
 trellis init -u your-name --qoder
 ```
 
-Qoder is skill-first (no user-invokable slash command). Trellis ships start / finish-work / continue as skills:
+Qoder does support Custom Commands (typed with `/` in the agent input, stored under `~/.qoder/commands/` or `<project>/.qoder/commands/`), but Trellis's design choice is to deliver everything as auto-trigger skills on Qoder, leaving `.qoder/commands/` free for your own custom commands.
 
 Layout:
 - `.qoder/skills/trellis-{name}/SKILL.md`: **all** templates (start, finish-work, continue, brainstorm, before-dev, check, update-spec, break-loop) delivered as skills; skill matching drives everything

@@ -148,7 +148,7 @@ trellis init -u your-name --gemini
 trellis init -u your-name --qoder
 ```
 
-Qoder 是 skill-first（没有用户可主动调用的 slash 命令）。Trellis 把 start / finish-work / continue 也做成 skill：
+Qoder 本身支持 Custom Commands（在 Agent 输入框输入 `/` 调用，存放在 `~/.qoder/commands/` 或 `<项目>/.qoder/commands/`），但 Trellis 在 Qoder 上的设计选择是全部以 auto-trigger skill 交付，把 `.qoder/commands/` 留给用户自己的 Custom Commands：
 
 布局：
 - `.qoder/skills/trellis-{name}/SKILL.md`：**所有**模板（start、finish-work、continue、brainstorm、before-dev、check、update-spec、break-loop）都以 skill 形式交付，靠 skill 匹配驱动

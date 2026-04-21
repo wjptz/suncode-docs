@@ -8,13 +8,16 @@ Trellis ships only **three** slash commands per platform. Everything else is an 
 
 ### Slash Commands (per platform)
 
-| Purpose               | Claude Code / OpenCode / Droid / Cursor / CodeBuddy | Codex              | Gemini CLI               | Kiro                    |
-| --------------------- | --------------------------------------------------- | ------------------ | ------------------------ | ----------------------- |
-| Start a session       | `/trellis:start`                                    | `/trellis:start`   | `/trellis:start`         | `@trellis:start`        |
-| Finish work           | `/trellis:finish-work`                              | `/trellis:finish-work` | `/trellis:finish-work` | `@trellis:finish-work`  |
-| Continue active task  | `/trellis:continue`                                 | `/trellis:continue` | `/trellis:continue`     | `@trellis:continue`     |
+Trellis ships **three** user-invoked commands per platform (`start`, `finish-work`, `continue`). The invocation syntax differs per platform:
 
-Qoder and Copilot have no slash-command primitive: behavior is delivered via rules file (Qoder) or `copilot-instructions.md` (Copilot).
+| Platform | Start | Finish | Continue | Delivery form |
+|---|---|---|---|---|
+| Claude Code / OpenCode / Cursor / CodeBuddy / Codex / Gemini CLI / Droid | `/trellis:start` | `/trellis:finish-work` | `/trellis:continue` | Slash command |
+| Kiro | `@trellis:start` | `@trellis:finish-work` | `@trellis:continue` | Skill via `@` picker |
+| Kilo | `/start.md` | `/finish-work.md` | `/continue.md` | Workflow file (`.kilocode/workflows/`) |
+| Antigravity / Windsurf | workflow picker → `start` / `finish-work` / `continue` | | | Workflow file |
+| GitHub Copilot | Run Prompt → `trellis-start` / `trellis-finish-work` / `trellis-continue` | | | Prompt file (`.github/prompts/`) |
+| Qoder | (skill picker) `start` / `finish-work` / `continue` | | | Skill — Qoder's native Custom Commands are left free for your own use |
 
 ### Auto-trigger Skills
 
