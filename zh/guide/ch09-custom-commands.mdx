@@ -4,9 +4,9 @@ title: '定制 Slash 命令'
 
 ## 定制 Slash 命令
 
-Trellis 0.5 只原生带三个 slash 命令（`/trellis:start`、`/trellis:finish-work`、`/trellis:continue`）；过去的其他命令已经迁成 auto-trigger skill（见第 11 章）。当你需要一个用户显式调用的入口时，才新增 slash 命令。
+Trellis 0.5 只原生带三个 slash 命令（`/trellis:start`、`/trellis:finish-work`、`/trellis:continue`）；过去的其他命令已经迁成 auto-trigger skill（见第 12 章）。当你需要一个用户显式调用的入口时，才新增 slash 命令。
 
-### 8.1 命令文件格式和位置
+### 9.1 命令文件格式和位置
 
 13 个平台按交付形态分三组：
 
@@ -40,7 +40,7 @@ Trellis 0.5 只原生带三个 slash 命令（`/trellis:start`、`/trellis:finis
 | Kiro  | `.kiro/skills/trellis-{name}/SKILL.md`   | skill 匹配（或 `@trellis:{name}`）|
 | Qoder | `.qoder/skills/trellis-{name}/SKILL.md`  | AI 按意图自动触发                 |
 
-### 8.2 什么时候用命令，什么时候用 skill
+### 9.2 什么时候用命令，什么时候用 skill
 
 | 用 slash 命令                                | 用 skill                                       |
 | -------------------------------------------- | ---------------------------------------------- |
@@ -51,7 +51,7 @@ Trellis 0.5 只原生带三个 slash 命令（`/trellis:start`、`/trellis:finis
 
 如果两个都需要，做成 skill，然后再配一个手动触发该 skill 的命令。
 
-### 8.3 编写命令
+### 9.3 编写命令
 
 好的命令文件：
 
@@ -82,7 +82,7 @@ cat .trellis/spec/relevant-spec.md
 输出格式和字段。
 ````
 
-### 8.4 示例：`/trellis:deploy-check` 命令
+### 9.4 示例：`/trellis:deploy-check` 命令
 
 `.claude/commands/trellis/deploy-check.md`：
 

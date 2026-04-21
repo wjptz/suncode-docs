@@ -6,7 +6,7 @@ title: 'Custom Skills'
 
 Skills are the primary extension point in Trellis 0.5. Most of the shipped workflow (brainstorm, before-dev, check, update-spec, break-loop) is delivered as auto-trigger skills. This chapter explains how to add your own.
 
-### 11.1 Commands vs. sub-agents vs. skills
+### 12.1 Commands vs. sub-agents vs. skills
 
 |                  | Command                       | Sub-agent                            | Skill                                    |
 | ---------------- | ----------------------------- | ------------------------------------ | ---------------------------------------- |
@@ -17,7 +17,7 @@ Skills are the primary extension point in Trellis 0.5. Most of the shipped workf
 
 Use a skill when the AI should trigger it automatically based on context; use a command when the user should decide; use a sub-agent when the work needs isolation with its own prompt and restrictions.
 
-### 11.2 Skill file format
+### 12.2 Skill file format
 
 A skill is a folder containing `SKILL.md`:
 
@@ -67,7 +67,7 @@ Skills ship on all 13 configured platforms — the location differs per platform
 
 `.agents/skills/{name}/SKILL.md` (the [agentskills.io](https://agentskills.io) cross-platform shared layer) is written by the Codex configurator and is directly usable by Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and other agents that read the standard.
 
-### 11.3 Writing a skill that triggers reliably
+### 12.3 Writing a skill that triggers reliably
 
 The `description` field is what platforms match on. Write it as a description of the **condition that should cause this skill to fire**, not a description of the skill's name.
 
@@ -89,7 +89,7 @@ The skill body should:
 2. Tell the AI exactly which files to read before acting.
 3. Give a fixed output format so the result is consistent across invocations.
 
-### 11.4 Example: an `api-doc` skill
+### 12.4 Example: an `api-doc` skill
 
 `.claude/skills/api-doc/SKILL.md`:
 
@@ -127,7 +127,7 @@ Removed endpoints:
 ```
 ````
 
-### 11.5 Sharing skills
+### 12.5 Sharing skills
 
 To distribute a skill across projects:
 

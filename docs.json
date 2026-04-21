@@ -58,11 +58,12 @@
               {
                 "group": "Customization",
                 "pages": [
-                  "guide/ch08-custom-commands",
-                  "guide/ch09-custom-agents",
-                  "guide/ch10-custom-hooks",
-                  "guide/ch11-custom-skills",
-                  "guide/ch12-multi-platform"
+                  "guide/ch08-custom-workflow",
+                  "guide/ch09-custom-commands",
+                  "guide/ch10-custom-agents",
+                  "guide/ch11-custom-hooks",
+                  "guide/ch12-custom-skills",
+                  "guide/ch13-multi-platform"
                 ]
               },
               {
@@ -370,11 +371,12 @@
               {
                 "group": "魔改篇",
                 "pages": [
-                  "zh/guide/ch08-custom-commands",
-                  "zh/guide/ch09-custom-agents",
-                  "zh/guide/ch10-custom-hooks",
-                  "zh/guide/ch11-custom-skills",
-                  "zh/guide/ch12-multi-platform"
+                  "zh/guide/ch08-custom-workflow",
+                  "zh/guide/ch09-custom-commands",
+                  "zh/guide/ch10-custom-agents",
+                  "zh/guide/ch11-custom-hooks",
+                  "zh/guide/ch12-custom-skills",
+                  "zh/guide/ch13-multi-platform"
                 ]
               },
               {
