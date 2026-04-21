@@ -6,7 +6,7 @@ title: '定制 Skill'
 
 Skill 是 Trellis 0.5 的主要扩展点。出厂的大部分工作流（brainstorm、before-dev、check、update-spec、break-loop）都以 auto-trigger skill 的形式交付。本章说明如何添加自己的 skill。
 
-### 12.1 Command vs. Sub-agent vs. Skill
+### 11.1 Command vs. Sub-agent vs. Skill
 
 |                  | Command                       | Sub-agent                            | Skill                                    |
 | ---------------- | ----------------------------- | ------------------------------------ | ---------------------------------------- |
@@ -17,7 +17,7 @@ Skill 是 Trellis 0.5 的主要扩展点。出厂的大部分工作流（brainst
 
 AI 应该基于上下文自动触发时用 skill；由用户决定时用 command；需要隔离 prompt 和约束时用 sub-agent。
 
-### 12.2 Skill 文件格式
+### 11.2 Skill 文件格式
 
 Skill 是包含 `SKILL.md` 的文件夹：
 
@@ -67,7 +67,7 @@ Skill 在全部 13 个配置平台上都可用，位置按平台不同：
 
 `.agents/skills/{name}/SKILL.md`（[agentskills.io](https://agentskills.io) 跨平台共享层）由 Codex 的 configurator 写入，可被 Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等读该标准的 agent 直接消费。
 
-### 12.3 写出能稳定触发的 skill
+### 11.3 写出能稳定触发的 skill
 
 `description` 字段是平台用来匹配的。把它写成「什么情况下应该触发这个 skill」的条件描述，而不是 skill 自己的身份介绍。
 
@@ -89,7 +89,7 @@ Skill body 应该：
 2. 告诉 AI 动手前要读哪些文件。
 3. 给一个固定的输出格式，让每次调用的结果一致。
 
-### 12.4 示例：一个 `api-doc` skill
+### 11.4 示例：一个 `api-doc` skill
 
 `.claude/skills/api-doc/SKILL.md`：
 
@@ -127,7 +127,7 @@ description: |
 ```
 ````
 
-### 12.5 分享 skill
+### 11.5 分享 skill
 
 跨项目分发一个 skill：
 

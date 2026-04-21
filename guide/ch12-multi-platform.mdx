@@ -6,7 +6,7 @@ title: 'Multi-Platform and Team Configuration'
 
 Trellis ships on 13 platforms (Claude Code, Cursor, OpenCode, Codex, Kiro, Kilo, Gemini CLI, Antigravity, Windsurf, Qoder, CodeBuddy, GitHub Copilot, Droid) and additionally supports any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more). The `.trellis/` core is identical everywhere; what differs is **how hooks, skills, sub-agents, and commands are delivered** on each platform.
 
-### 13.1 Capability Matrix
+### 12.1 Capability Matrix
 
 | Capability                          | Claude Code | Cursor | OpenCode | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid |
 | ----------------------------------- | :---------: | :----: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: |
@@ -20,7 +20,7 @@ Legend: ✅ Trellis wires the config and the platform executes it · ⚡ Partial
 
 `.kilocode/`, `.agent/` (Antigravity), and `.windsurf/` are workflow-and-skill only: no sub-agents and no hooks. `.agents/skills/` is written by every platform as a cross-platform shared layer.
 
-### 13.2 Claude Code
+### 12.2 Claude Code
 
 Most complete automation. Hook layout:
 
@@ -34,7 +34,7 @@ Sub-agents: `trellis-implement`, `trellis-check`, `trellis-research` under `.cla
 Skills: `trellis-brainstorm`, `trellis-before-dev`, `trellis-check`, `trellis-update-spec`, `trellis-break-loop` under `.claude/skills/`.
 Commands: `start`, `finish-work`, `continue` under `.claude/commands/trellis/`.
 
-### 13.3 Cursor
+### 12.3 Cursor
 
 ```bash
 trellis init -u your-name --cursor
@@ -49,7 +49,7 @@ Layout:
 - `.cursor/hooks/`: shared Python hook scripts (Claude-Code-compatible)
 - `.cursor/hooks.json`: hook configuration (Cursor uses a separate file, not `settings.json`)
 
-### 13.4 OpenCode
+### 12.4 OpenCode
 
 ```bash
 trellis init -u your-name --opencode
@@ -64,7 +64,7 @@ OpenCode 1.2.x is a class-1 platform (real hooks + real sub-agents):
 
 Plugins are factory functions (OpenCode 1.2+). Trellis generates them so behavior parity with Claude Code is the goal.
 
-### 13.5 Codex
+### 12.5 Codex
 
 ```bash
 trellis init -u your-name --codex
@@ -88,7 +88,7 @@ codex_hooks = true
 Without this, Codex falls back to prelude-only (reads `AGENTS.md` every session): same content, just no event-driven injection.
 </Note>
 
-### 13.6 Kiro
+### 12.6 Kiro
 
 ```bash
 trellis init -u your-name --kiro
@@ -101,7 +101,7 @@ Layout:
 
 Kiro's Agent Hooks can auto-run Trellis skills on file save or build success, but that's user-configured; Trellis doesn't install any Kiro Agent Hook out of the box.
 
-### 13.7 Gemini CLI
+### 12.7 Gemini CLI
 
 ```bash
 trellis init -u your-name --gemini
@@ -114,7 +114,7 @@ Layout:
 - `.gemini/hooks/session-start.py`: SessionStart hook
 - `.gemini/settings.json`: hook configuration (SessionStart only)
 
-### 13.8 Qoder
+### 12.8 Qoder
 
 ```bash
 trellis init -u your-name --qoder
@@ -128,7 +128,7 @@ Layout:
 - `.qoder/hooks/session-start.py`: SessionStart hook
 - `.qoder/settings.json`: hook configuration (SessionStart only — Qoder has no sub-agent `PreToolUse` hook)
 
-### 13.9 CodeBuddy
+### 12.9 CodeBuddy
 
 ```bash
 trellis init -u your-name --codebuddy
@@ -143,7 +143,7 @@ Layout:
 - `.codebuddy/hooks/*.py`: shared Python hook scripts
 - `.codebuddy/settings.json`: hook configuration (SessionStart + `PreToolUse` sub-agent injection)
 
-### 13.10 GitHub Copilot
+### 12.10 GitHub Copilot
 
 ```bash
 trellis init -u your-name --copilot
@@ -157,7 +157,7 @@ Layout:
 - `.github/copilot/hooks/*.py`: Copilot-specific + shared Python hook scripts
 - `.github/copilot/hooks.json`: hook configuration (SessionStart only — sub-agent `PreToolUse` is absent)
 
-### 13.11 Droid
+### 12.11 Droid
 
 ```bash
 trellis init -u your-name --droid
@@ -169,7 +169,7 @@ Droid (factory.ai) is a class-1 platform with hooks + sub-agents:
 - `.factory/skills/`: the five trellis skills
 - `.factory/hooks/`: SessionStart + sub-agent injection
 
-### 13.12 Other supported platforms
+### 12.12 Other supported platforms
 
 Trellis also ships configurators for platforms not covered by the capability matrix:
 
@@ -179,7 +179,7 @@ Trellis also ships configurators for platforms not covered by the capability mat
 
 Beyond the 13 configured platforms, Trellis can be consumed by any AI coding agent that follows the `.agents/skills/` convention (the [agentskills.io](https://agentskills.io) standard). Codex writes its skills there, and the files are directly usable by other agents in that ecosystem (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more). On those platforms you manage Trellis through the `.trellis/` core plus whatever prelude file the agent reads.
 
-### 13.13 Operating Systems
+### 12.13 Operating Systems
 
 | OS         | Status   | Notes                                                        |
 | ---------- | -------- | ------------------------------------------------------------ |
@@ -189,7 +189,7 @@ Beyond the 13 configured platforms, Trellis can be consumed by any AI coding age
 
 Python 3.10+ is required for `.trellis/scripts/` and any Python hooks. OpenCode plugins use Node.js 18+.
 
-### 13.14 Multi-Developer Collaboration
+### 12.14 Multi-Developer Collaboration
 
 Per-developer isolation (no conflicts):
 - `.trellis/workspace/{name}/`: each developer's own journals and index
@@ -202,7 +202,7 @@ Shared state (coordinate via PR):
 
 Important spec changes should be discussed in reviews; treat the spec library as team code.
 
-### 13.15 `trellis update` and Version Management
+### 12.15 `trellis update` and Version Management
 
 ```bash
 cat .trellis/.version          # current version

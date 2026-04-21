@@ -13,7 +13,7 @@ title: 'Custom Hooks'
   - **Kilo, Antigravity, Windsurf** have no hook primitive at all; behavior is delivered via workflow files + skills.
 </Note>
 
-### 11.1 Hook types
+### 10.1 Hook types
 
 | Hook              | Trigger                       | Purpose                                        |
 | ----------------- | ----------------------------- | ---------------------------------------------- |
@@ -24,7 +24,7 @@ title: 'Custom Hooks'
 
 Claude Code, Cursor, CodeBuddy, and Droid share a Python-hook layout compatible with CC's event model (`settings.json` or `hooks.json` referencing Python scripts). OpenCode uses JS plugins (factory functions in `.opencode/plugins/`) with the same event semantics. The rest of the hook-capable platforms (Codex, Gemini, Qoder, Copilot) run a `session-start.py` only — no `PreToolUse` — and configure it via a platform-native config file.
 
-### 11.2 `settings.json` configuration (Claude Code)
+### 10.2 `settings.json` configuration (Claude Code)
 
 Configure hooks in `.claude/settings.json`:
 
@@ -79,7 +79,7 @@ Notes:
 - `$CLAUDE_PROJECT_DIR`: expanded by Claude Code to the project root.
 - `timeout`: seconds; if exceeded, the hook is skipped.
 
-### 11.3 Shipped hooks
+### 10.3 Shipped hooks
 
 #### `session-start.py`: context loading
 
@@ -117,7 +117,7 @@ Design decisions:
 - Each sub-agent receives its full context at launch; there is no resume.
 - Only `trellis-*` sub-agents are hooked; custom sub-agents must opt in by editing this file or using their own injection.
 
-### 11.4 Writing a custom hook
+### 10.4 Writing a custom hook
 
 Hooks receive JSON input on stdin and emit JSON results on stdout.
 
@@ -150,7 +150,7 @@ Hooks receive JSON input on stdin and emit JSON results on stdout.
 }
 ```
 
-### 11.5 Example: an auto-test hook
+### 10.5 Example: an auto-test hook
 
 `.claude/hooks/auto-test.py`:
 

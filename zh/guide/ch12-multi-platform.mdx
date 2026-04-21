@@ -6,7 +6,7 @@ title: '多平台与团队配置'
 
 Trellis 支持 13 个平台（Claude Code、Cursor、OpenCode、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Windsurf、Qoder、CodeBuddy、GitHub Copilot、Droid），以及任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）。`.trellis/` 核心跨平台一致；差异在于**各平台如何交付 hook、skill、sub-agent、command**。
 
-### 13.1 能力矩阵
+### 12.1 能力矩阵
 
 | 能力                                | Claude Code | Cursor | OpenCode | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid |
 | ----------------------------------- | :---------: | :----: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: |
@@ -20,7 +20,7 @@ Trellis 支持 13 个平台（Claude Code、Cursor、OpenCode、Codex、Kiro、K
 
 `.kilocode/`、`.agent/`（Antigravity）、`.windsurf/` 只有 workflow 和 skill，没有 sub-agent 也没有 hook。`.agents/skills/` 在所有平台都会写一份，作为跨平台共享层。
 
-### 13.2 Claude Code
+### 12.2 Claude Code
 
 自动化最完整。Hook 布局：
 
@@ -34,7 +34,7 @@ Sub-agent：`trellis-implement`、`trellis-check`、`trellis-research`，在 `.c
 Skill：`trellis-brainstorm`、`trellis-before-dev`、`trellis-check`、`trellis-update-spec`、`trellis-break-loop`，在 `.claude/skills/`。
 Command：`start`、`finish-work`、`continue`，在 `.claude/commands/trellis/`。
 
-### 13.3 Cursor
+### 12.3 Cursor
 
 ```bash
 trellis init -u your-name --cursor
@@ -49,7 +49,7 @@ Trellis 0.5 起 Cursor 是完整 class-1 平台：真 hook、真 sub-agent、真
 - `.cursor/hooks/`：共享 Python hook 脚本（与 Claude Code 兼容）
 - `.cursor/hooks.json`：hook 配置（Cursor 用独立文件，不是 `settings.json`）
 
-### 13.4 OpenCode
+### 12.4 OpenCode
 
 ```bash
 trellis init -u your-name --opencode
@@ -64,7 +64,7 @@ OpenCode 1.2.x 是 class-1 平台（真 hook + 真 sub-agent）：
 
 插件是 factory function（OpenCode 1.2+）。Trellis 生成的版本对齐 Claude Code 行为。
 
-### 13.5 Codex
+### 12.5 Codex
 
 ```bash
 trellis init -u your-name --codex
@@ -88,7 +88,7 @@ codex_hooks = true
 不开启时 Codex 走纯 prelude（每次读 `AGENTS.md`），内容一致，只是没有事件驱动注入。
 </Note>
 
-### 13.6 Kiro
+### 12.6 Kiro
 
 ```bash
 trellis init -u your-name --kiro
@@ -101,7 +101,7 @@ trellis init -u your-name --kiro
 
 Kiro 的 Agent Hook 可以在文件保存或构建成功时自动跑 Trellis skill，但这是用户自己配的；Trellis 不出厂任何 Kiro Agent Hook。
 
-### 13.7 Gemini CLI
+### 12.7 Gemini CLI
 
 ```bash
 trellis init -u your-name --gemini
@@ -114,7 +114,7 @@ trellis init -u your-name --gemini
 - `.gemini/hooks/session-start.py`：SessionStart hook
 - `.gemini/settings.json`：hook 配置（只有 SessionStart）
 
-### 13.8 Qoder
+### 12.8 Qoder
 
 ```bash
 trellis init -u your-name --qoder
@@ -128,7 +128,7 @@ Qoder 是 skill-first（没有用户可主动调用的 slash 命令）。Trellis
 - `.qoder/hooks/session-start.py`：SessionStart hook
 - `.qoder/settings.json`：hook 配置（只有 SessionStart——Qoder 没有 sub-agent `PreToolUse` hook）
 
-### 13.9 CodeBuddy
+### 12.9 CodeBuddy
 
 ```bash
 trellis init -u your-name --codebuddy
@@ -143,7 +143,7 @@ CodeBuddy 是完整 class-1 平台（真 hook + 真 sub-agent）。
 - `.codebuddy/hooks/*.py`：共享 Python hook 脚本
 - `.codebuddy/settings.json`：hook 配置（SessionStart + sub-agent `PreToolUse` 注入）
 
-### 13.10 GitHub Copilot
+### 12.10 GitHub Copilot
 
 ```bash
 trellis init -u your-name --copilot
@@ -157,7 +157,7 @@ trellis init -u your-name --copilot
 - `.github/copilot/hooks/*.py`：Copilot 专属 + 共享 Python hook 脚本
 - `.github/copilot/hooks.json`：hook 配置（只有 SessionStart——sub-agent `PreToolUse` 不可用）
 
-### 13.11 Droid
+### 12.11 Droid
 
 ```bash
 trellis init -u your-name --droid
@@ -169,7 +169,7 @@ Droid（factory.ai）是 class-1 平台，有 hook + sub-agent：
 - `.factory/skills/`：5 个 trellis skill
 - `.factory/hooks/`：SessionStart + sub-agent injection
 
-### 13.12 其他支持平台
+### 12.12 其他支持平台
 
 Trellis 还出厂了上面能力矩阵之外几个平台的配置器：
 
@@ -179,7 +179,7 @@ Trellis 还出厂了上面能力矩阵之外几个平台的配置器：
 
 除了 13 个已配置平台，Trellis 还能被任何遵循 `.agents/skills/` 约定（[agentskills.io](https://agentskills.io) 规范）的 AI 编码 agent 直接使用。Codex 的 skill 就写在这个目录下，这些文件也能被该生态的其他 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）直接读取。这些平台上你通过 `.trellis/` 核心加上各自 agent 读取的 prelude 文件来管理 Trellis。
 
-### 13.13 操作系统
+### 12.13 操作系统
 
 | OS         | 状态     | 备注                                                                                           |
 | ---------- | -------- | ---------------------------------------------------------------------------------------------- |
@@ -189,7 +189,7 @@ Trellis 还出厂了上面能力矩阵之外几个平台的配置器：
 
 `.trellis/scripts/` 和 Python hook 需要 Python 3.10+。OpenCode 插件需要 Node.js 18+。
 
-### 13.14 多开发者协作
+### 12.14 多开发者协作
 
 按开发者隔离（不冲突）：
 - `.trellis/workspace/{name}/`：各自的 journal 和索引
@@ -202,7 +202,7 @@ Trellis 还出厂了上面能力矩阵之外几个平台的配置器：
 
 Spec 的重要改动应在 review 中讨论；把 spec 库当成团队代码来对待。
 
-### 13.15 `trellis update` 与版本管理
+### 12.15 `trellis update` 与版本管理
 
 ```bash
 cat .trellis/.version          # 当前版本

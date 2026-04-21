@@ -6,7 +6,7 @@ title: 'Custom Slash Commands'
 
 In Trellis 0.5, only three slash commands ship out of the box (`/trellis:start`, `/trellis:finish-work`, `/trellis:continue`); anything else that used to be a command has moved to auto-trigger skills (see chapter 12). Use slash commands when you need an explicit entry point that the user will invoke on demand.
 
-### 9.1 Command File Format and Location
+### 8.1 Command File Format and Location
 
 Trellis groups the 13 configured platforms into three delivery models:
 
@@ -40,7 +40,7 @@ Command files are Markdown; Gemini uses TOML (with a `prompt = """..."""` field)
 | Kiro     | `.kiro/skills/trellis-{name}/SKILL.md`   | skill match (or `@trellis:{name}`)  |
 | Qoder    | `.qoder/skills/trellis-{name}/SKILL.md`  | auto-triggered by user intent match |
 
-### 9.2 When to use a command vs. a skill
+### 8.2 When to use a command vs. a skill
 
 | Use a slash command when…                                      | Use a skill when…                                          |
 | -------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -51,7 +51,7 @@ Command files are Markdown; Gemini uses TOML (with a `prompt = """..."""` field)
 
 If the answer is "both", ship a skill and expose a command that manually triggers the skill.
 
-### 9.3 Writing a command
+### 8.3 Writing a command
 
 A good command file:
 
@@ -82,7 +82,7 @@ Describe what to analyze and against which rules.
 Output format and fields.
 ````
 
-### 9.4 Example: a `/trellis:deploy-check` command
+### 8.4 Example: a `/trellis:deploy-check` command
 
 `.claude/commands/trellis/deploy-check.md`:
 

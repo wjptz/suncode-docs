@@ -10,7 +10,7 @@ Trellis ships three sub-agents (`trellis-implement`, `trellis-check`, `trellis-r
   Sub-agents ship on 10 of 13 configured platforms: Claude Code, Cursor, OpenCode, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid. The agent file format varies by platform (Markdown / TOML / JSON), and on platforms without a `PreToolUse` hook the sub-agents read `implement.jsonl` / `check.jsonl` themselves via a pull-based prelude instead of having it injected. Kilo, Antigravity, and Windsurf do not expose a sub-agent primitive — the implement / check work runs inline in the main session.
 </Note>
 
-### 10.1 Sub-agent definition (Claude Code example)
+### 9.1 Sub-agent definition (Claude Code example)
 
 A sub-agent definition file lives at `.claude/agents/{name}.md` and uses YAML frontmatter:
 
@@ -36,7 +36,7 @@ Key frontmatter fields on Claude Code:
 | `tools`       | Comma-separated list of tools the sub-agent may call                                 |
 | `model`       | Optional model override. Omit to inherit the session model (recommended since 0.5.0-beta.5, so Cursor users and similar are not billed on a forced Opus default) |
 
-### 10.2 Sub-agent file format is platform-specific
+### 9.2 Sub-agent file format is platform-specific
 
 The file extension, frontmatter shape, and tool-declaration syntax differ per platform:
 
@@ -56,7 +56,7 @@ The file extension, frontmatter shape, and tool-declaration syntax differ per pl
 
 If you author a sub-agent that should work on multiple platforms, put the canonical Claude-Code version in `packages/cli/src/templates/claude/agents/` and add platform adapters in `packages/cli/src/configurators/` that translate the frontmatter into each platform's native syntax. Trellis already does this for the shipped `trellis-implement` / `trellis-check` / `trellis-research`.
 
-### 10.3 Modifying a shipped sub-agent
+### 9.3 Modifying a shipped sub-agent
 
 Example: add a timeout and a stricter tool budget to `trellis-check`.
 
@@ -72,7 +72,7 @@ timeout: 600000
 
 If you plan to roll this out across your team, put the change in `.trellis/spec/backend/` (or wherever your convention lives) instead of the agent definition, so the sub-agent's behavior changes through spec injection rather than a fork.
 
-### 10.4 Creating a new sub-agent
+### 9.4 Creating a new sub-agent
 
 Example: a `trellis-test` sub-agent that writes tests for the current diff.
 
@@ -118,7 +118,7 @@ pnpm test
 ```
 ````
 
-### 10.5 Context injection
+### 9.5 Context injection
 
 If you want your sub-agent to receive spec context the way the shipped ones do:
 
