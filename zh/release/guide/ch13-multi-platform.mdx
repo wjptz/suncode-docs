@@ -209,73 +209,117 @@ Kiro 还支持 `steering/`、`hooks/`、`specs/`、`prompts/`、`agents/` 和 `s
 # 5. 完成后提交代码
 ```
 
-### 13.5b CodeBuddy 集成
+### 13.6 OpenCode 集成
 
-[CodeBuddy](https://copilot.tencent.com/) 是腾讯云推出的 AI 编程助手，支持 IDE 和 CLI 形态，具备 MCP 扩展能力。
+[OpenCode](https://opencode.ai) 是基于 Bun 的开源 AI 编程 CLI。Trellis 把 OpenCode 当成接近 Claude Code 级别的平台对待——`.opencode/plugins/` 的插件机制提供了等价于 SessionStart 的 hook。
 
 ```bash
-trellis init --codebuddy -u your-name
+trellis init --opencode -u your-name
 ```
 
-**Trellis 为 CodeBuddy 生成的内容**：
+生成：
 
-`trellis init --codebuddy` 会在 `.codebuddy/commands/trellis/` 下生成命令文件。在聊天中输入 `/trellis:start`、`/trellis:check` 等调用。
+- `.opencode/commands/trellis/` — slash 命令（`start.md`、`before-dev.md`、`check.md`、`finish-work.md` 等 0.4 全套命令）
+- `.opencode/agents/` — sub-agent 定义（`implement.md`、`research.md`、`check.md`），对接 OpenCode 的 Task 原语
+- `.opencode/plugins/session-start.js` — 会话开始插件，自动注入 Trellis 上下文
+- `.agents/skills/` — 共享 Agent Skills 层（OpenCode 也读这个目录）
 
-| Trellis / Claude Code | CodeBuddy（Trellis 生成） | 说明 |
-|----------------------|-----------|------|
-| `.claude/commands/*.md` | `.codebuddy/commands/trellis/*.md` | Trellis 命名空间下的 12 个 slash 命令 |
+调用方式：`/trellis:start`、`/trellis:before-dev` 等。OpenCode 是为数不多能真正隔离 spawn sub-agent 的非 Claude 平台。
 
-**生成的目录结构**：
+### 13.7 iFlow 集成
 
+[iFlow](https://iflow.cn) 是通义系衍生的 AI 编程 CLI。Trellis 与 iFlow 共享 Claude Code 的 Python hook 布局，自动化能力与 Claude Code 相当。
+
+```bash
+trellis init --iflow -u your-name
 ```
-project/
-├── .codebuddy/
-│   └── commands/                      # Slash 命令
-│       └── trellis/                   #   Trellis 命名空间
-│           ├── start.md               #   /trellis:start
-│           ├── brainstorm.md          #   /trellis:brainstorm
-│           ├── before-dev.md          #   /trellis:before-dev
-│           ├── check.md               #   /trellis:check
-│           ├── check-cross-layer.md   #   /trellis:check-cross-layer
-│           ├── finish-work.md         #   /trellis:finish-work
-│           ├── break-loop.md          #   /trellis:break-loop
-│           ├── create-command.md      #   /trellis:create-command
-│           ├── integrate-skill.md     #   /trellis:integrate-skill
-│           ├── onboard.md             #   /trellis:onboard
-│           ├── record-session.md      #   /trellis:record-session
-│           └── update-spec.md         #   /trellis:update-spec
-```
+
+生成：
+
+- `.iflow/commands/trellis/` — slash 命令（`/trellis:start`、`/trellis:before-dev` 等）
+- `.iflow/hooks/session-start.py` + `.iflow/hooks.json` — SessionStart hook（与 Claude Code 共用同一份 Python 脚本）
+- `.iflow/settings.json` — 项目级 iFlow 配置
 
 <Note>
-CodeBuddy 还支持 `.rules/`、`agents/`、`settings.json` 和 hooks — 但这些**不由 Trellis 生成**。如有需要可手动创建。详见 [CodeBuddy 文档](https://copilot.tencent.com/)。
+  iFlow 在 0.5.0-beta.0 被移除。0.4.0 GA 上完全支持；升级到 0.5 会删除 `.iflow/` 目录。
 </Note>
 
-**与 Claude Code 的差异**：
-- 文件位于 `.codebuddy/commands/trellis/{name}.md`
-- CodeBuddy 共 12 个命令（不含 `/parallel`，因为 CodeBuddy 不支持 Multi-Agent Pipeline）
-- Trellis 层面无 Hook 支持 — 规范注入需要通过命令手动触发
-- 无 Agent 系统集成 — 所有工作在主对话中完成
+### 13.8 Gemini CLI 集成
 
-**CodeBuddy 用户推荐工作流**：
+[Gemini CLI](https://ai.google.dev/gemini-api/docs/cli) 是 Google 官方出品的 Gemini 终端 agent。
 
 ```bash
-# 1. 启动会话（必须）
-/trellis:start
-
-# 2. 加载相关规范
-/trellis:before-dev
-
-# 3. 描述任务，AI 开发...
-
-# 4. 检查代码质量
-/trellis:check
-/trellis:check-cross-layer
-
-# 5. 完成检查清单
-/trellis:finish-work
+trellis init --gemini -u your-name
 ```
 
-### 13.6 操作系统兼容性
+生成：
+
+- `.gemini/commands/trellis/{name}.toml` — 0.4 命令集的 TOML 文件。Gemini CLI 按 TOML 命令格式加载，每个命令的 prompt 写在 `prompt = """..."""` 块里。
+- `.agents/skills/` — 共享 skills 层（Gemini CLI 读 agentskills.io 规范路径）
+
+Gemini CLI 不提供 SessionStart hook，因此 prelude 需要显式跑 `/trellis:start` 来加载。
+
+### 13.9 Qoder 集成
+
+[Qoder](https://qoder.com) 本身支持 Custom Commands（在 Agent 输入框里输入 `/` 调用，存放在 `~/.qoder/commands/` 或 `<项目>/.qoder/commands/`）。但 Trellis 在 Qoder 上的设计选择是**把工作流以 auto-trigger skill 的形式交付**，让用户不用记命令名。Trellis 不往 `.qoder/commands/` 写东西——那个空间留给你自己的 Custom Commands。
+
+```bash
+trellis init --qoder -u your-name
+```
+
+生成：
+
+- `.qoder/skills/trellis-{name}/SKILL.md` — 每个 Trellis 工作流渲染成带 YAML frontmatter 的 skill（平台根据用户意图自动匹配）
+- `.qoder/rules/trellis.md` — 常驻规则，把 Trellis prelude 带进每一次对话
+
+Qoder 没有 Trellis 层的 hook 系统，`.qoder/rules/` 承担了 `SessionStart` 的职能。
+
+### 13.10 GitHub Copilot 集成
+
+GitHub Copilot Chat 没有原生的 slash 命令原语。Trellis 把 0.4 命令集做成 prompt 文件，另加一份常驻的 instructions 文件。
+
+```bash
+trellis init --copilot -u your-name
+```
+
+生成：
+
+- `.github/copilot-instructions.md` — 每次 Chat 会话自动加载，承载 Trellis prelude
+- `.github/prompts/trellis-{name}.prompt.md` — 各命令的 prompt 文件（`trellis-start.prompt.md`、`trellis-check.prompt.md` 等），通过 Copilot 的 "Run Prompt" 选择器调用
+
+不支持 hook。prelude 由 instructions 文件顶替 `SessionStart`。
+
+### 13.11 Windsurf 集成
+
+[Windsurf](https://codeium.com/windsurf)（Codeium 的 agent IDE）用 workflow 文件 + 常驻 rules 构建。Trellis 把命令映射到 Windsurf workflow，prelude 映射到 Windsurf rules。
+
+```bash
+trellis init --windsurf -u your-name
+```
+
+生成：
+
+- `.windsurf/workflows/trellis-{name}.md` — 每个 Trellis 命令对应一个 workflow，从 Windsurf 工作流选择器调用
+- `.windsurf/rules/trellis.md` — 常驻规则，承载 Trellis prelude
+
+没有 hook。workflow 手动调用，rule 文件保证上下文常在。
+
+### 13.12 Factory Droid 集成
+
+[Factory Droid](https://factory.ai) 是 Factory.ai 的 agent-capable CLI，有 hook、有 sub-agent，Trellis 对它走接近 Claude Code 的完整流程。
+
+```bash
+trellis init --droid -u your-name
+```
+
+生成：
+
+- `.factory/commands/trellis/{name}.md` — slash 命令
+- `.factory/agents/{name}.md` — sub-agent 定义（`implement`、`research`、`check`）
+- `.factory/skills/` — auto-trigger skills
+- `.factory/hooks/session-start.py` + `.factory/hooks.json` — SessionStart hook（与 Claude Code 同一套 Python 脚本）
+
+### 13.13 操作系统兼容性
 
 | 操作系统 | 支持状态 | 说明 |
 |---------|---------|------|
@@ -292,7 +336,7 @@ CodeBuddy 还支持 `.rules/`、`agents/`、`settings.json` 和 hooks — 但这
 | 路径分隔符 | Trellis 内部使用 `/`，Python 自动处理路径转换 |
 | Git worktree | Multi-Agent Pipeline 依赖 git worktree，各平台均支持 |
 
-### 13.7 多开发者协作
+### 13.14 多开发者协作
 
 **不冲突的部分**（各人独立）：
 - `workspace/{name}/` — 每人独立目录
@@ -308,7 +352,7 @@ CodeBuddy 还支持 `.rules/`、`agents/`、`settings.json` 和 hooks — 但这
 - 任务指派明确（`--assignee` 参数）
 - 重要的 spec 变更在团队会议上讨论
 
-### 13.8 worktree.yaml 完整配置
+### 13.15 worktree.yaml 完整配置
 
 ```yaml
 # Worktree Configuration for Multi-Agent Pipeline
@@ -355,7 +399,7 @@ verify:
   # - pnpm test
 ```
 
-### 13.9 `trellis update` 与版本管理
+### 13.16 `trellis update` 与版本管理
 
 ```bash
 # 查看当前版本

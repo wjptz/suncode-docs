@@ -20,31 +20,44 @@ cd your-project
 
 <Tabs>
   <Tab title="Claude Code">
-    ```bash trellis init -u your-name ``` 自动检测 Claude Code 环境，配置 `.claude/`
-    目录（commands、agents、hooks）。
+    `trellis init -u your-name` —— 自动检测 Claude Code，配置 `.claude/`（commands、agents、hooks）。
   </Tab>
   <Tab title="Cursor">
-    ```bash trellis init -u your-name ``` 自动检测 Cursor 环境，配置 `.cursor/commands/` 目录。
-  </Tab>
-  <Tab title="Codex">
-    ```bash trellis init --codex -u your-name ``` 配置 `AGENTS.md` 和 `.agents/skills/`。
+    `trellis init -u your-name` —— 自动检测 Cursor，配置 `.cursor/commands/`。
   </Tab>
   <Tab title="OpenCode">
-    ```bash trellis init --opencode -u your-name ``` 配置 `.agents/skills/`。支持 session hook
-    自动注入上下文。
+    `trellis init --opencode -u your-name` —— 写入 `.opencode/commands/trellis/`、`.opencode/agents/`、`.opencode/plugins/`（session-start hook）。
+  </Tab>
+  <Tab title="Codex">
+    `trellis init --codex -u your-name` —— 写入 `AGENTS.md`、`.agents/skills/`、`.codex/agents/`、`.codex/hooks/`。`~/.codex/config.toml` 里开 `codex_hooks = true` 可启用完整 hook 支持。
+  </Tab>
+  <Tab title="iFlow">
+    `trellis init --iflow -u your-name` —— 写入 `.iflow/commands/trellis/` + `.iflow/hooks/session-start.py`（与 Claude Code 同一套 Python hook）。
+  </Tab>
+  <Tab title="Gemini CLI">
+    `trellis init --gemini -u your-name` —— 写入 TOML 命令文件到 `.gemini/commands/trellis/` + 共享 `.agents/skills/`。
   </Tab>
   <Tab title="Kilo">
-    ```bash trellis init --kilo -u your-name ``` 配置 `.kilocode/`
-    目录（workflows、rules、skills）。
+    `trellis init --kilo -u your-name` —— 写入 workflow 文件到 `.kilocode/workflows/`（调用方式 `/start.md` 等）。
   </Tab>
   <Tab title="Kiro">
-    ```bash trellis init --kiro -u your-name ``` 配置 `.kiro/` 目录（steering、hooks、prompts）。
+    `trellis init --kiro -u your-name` —— 写入 skill 形态的命令到 `.kiro/skills/`。
   </Tab>
-  <Tab title="CodeBuddy">
-    ```bash trellis init --codebuddy -u your-name ``` 配置 `.codebuddy/commands/trellis/`
-    目录（嵌套子目录命名空间的 slash commands）。
+  <Tab title="Qoder">
+    `trellis init --qoder -u your-name` —— 写入 `.qoder/skills/trellis-{name}/SKILL.md`（auto-trigger skill）+ `.qoder/rules/trellis.md`。
+  </Tab>
+  <Tab title="GitHub Copilot">
+    `trellis init --copilot -u your-name` —— 写入 `.github/copilot-instructions.md` + `.github/prompts/trellis-{name}.prompt.md`。
+  </Tab>
+  <Tab title="Windsurf">
+    `trellis init --windsurf -u your-name` —— 写入 `.windsurf/workflows/trellis-{name}.md` + `.windsurf/rules/trellis.md`。
+  </Tab>
+  <Tab title="Factory Droid">
+    `trellis init --droid -u your-name` —— 写入 `.factory/commands/trellis/` + `.factory/agents/` + `.factory/hooks/session-start.py`。
   </Tab>
 </Tabs>
+
+一条命令可以带多个平台 flag：`trellis init --codex --gemini --copilot -u your-name`。
 
 `your-name` 会成为你的开发者身份标识，并创建个人工作区 `.trellis/workspace/your-name/`。
 
@@ -52,25 +65,31 @@ cd your-project
 
 `trellis init` 会自动检测并配置已安装的平台：
 
-| 平台            | 配置目录                                                         | 命令格式    |
-| --------------- | ---------------------------------------------------------------- | ----------- |
-| **Claude Code** | `.claude/commands/trellis/`, `.claude/agents/`, `.claude/hooks/` | `/start`    |
-| **Cursor**      | `.cursor/commands/*.md`                                          | `/start`    |
-| **Codex**       | `AGENTS.md`, `.agents/skills/`                                   | `$start`    |
-| **OpenCode**    | `.agents/skills/`                                                | `/start`    |
-| **Kilo**        | `.kilocode/workflows/`, `.kilocode/rules/`, `.kilocode/skills/`  | `/start.md` |
-| **Kiro**        | `.kiro/steering/`, `.kiro/hooks/`, `.kiro/prompts/`              | `@start`    |
-| **CodeBuddy**   | `.codebuddy/commands/trellis/*.md`                               | `/trellis:start` |
+| 平台                | 配置目录                                                                  | 命令格式         |
+| ------------------- | ------------------------------------------------------------------------- | ---------------- |
+| **Claude Code**     | `.claude/commands/trellis/`、`.claude/agents/`、`.claude/hooks/`          | `/trellis:start` |
+| **Cursor**          | `.cursor/commands/*.md`                                                   | `/trellis-start` |
+| **OpenCode**        | `.opencode/commands/trellis/`、`.opencode/agents/`、`.opencode/plugins/`  | `/trellis:start` |
+| **Codex**           | `AGENTS.md`、`.agents/skills/`、`.codex/agents/`、`.codex/hooks/`         | `$start`         |
+| **iFlow**           | `.iflow/commands/trellis/`、`.iflow/hooks/`                               | `/trellis:start` |
+| **Gemini CLI**      | `.gemini/commands/trellis/*.toml`                                         | `/trellis:start` |
+| **Kilo**            | `.kilocode/workflows/`                                                    | `/start.md`      |
+| **Kiro**            | `.kiro/skills/*/SKILL.md`                                                 | `@start`         |
+| **Qoder**           | `.qoder/skills/`、`.qoder/rules/`                                         | skill 自动匹配   |
+| **GitHub Copilot**  | `.github/copilot-instructions.md`、`.github/prompts/`                     | Run Prompt       |
+| **Windsurf**        | `.windsurf/workflows/`、`.windsurf/rules/`                                | workflow 选择器  |
+| **Factory Droid**   | `.factory/commands/trellis/`、`.factory/agents/`、`.factory/hooks/`       | `/trellis:start` |
 
 #### 平台能力对比
 
-| 能力                 |     Claude Code      |     Cursor     |    Codex     | OpenCode |            Kilo            |        Kiro         |         CodeBuddy          |
-| -------------------- | :------------------: | :------------: | :----------: | :------: | :------------------------: | :-----------------: | :------------------------: |
-| 会话自动注入         |       ✅ Hook        | ❌ 手动 /start | ⚡ AGENTS.md | ✅ Hook  |  ⚡ rules/ + launchConfig  |    ⚡ steering/     | ❌ 手动 /trellis:start     |
-| 子 Agent 规范注入    |  ✅ PreToolUse Hook  |       ❌       |      ❌      |    ❌    |    ⚡ Orchestrator Mode    |  ⚡ Custom Agents   |             ❌             |
-| Ralph Loop 质量门    | ✅ SubagentStop Hook |       ❌       |      ❌      |    ❌    |             ❌             |   ⚡ Agent Hooks    |             ❌             |
-| Multi-Agent Pipeline |          ✅          |       ❌       |      ❌      |    ❌    | ✅ Orchestrator + worktree | ✅ Autonomous Agent |             ❌             |
-| 命令数量             |          13          |       12       |      13      |    13    |         workflows          |       prompts       |             12             |
+| 能力                 | Claude Code | Cursor | OpenCode | Codex   | iFlow | Gemini | Kilo | Kiro | Qoder | Copilot | Windsurf | Droid |
+| -------------------- | :---------: | :----: | :------: | :-----: | :---: | :----: | :--: | :--: | :---: | :-----: | :------: | :---: |
+| 会话自动注入         | ✅ Hook     | ❌     | ✅ Hook  | ⚡ 可选 | ✅ Hook | ❌   | ⚡   | ⚡   | ⚡    | ⚡      | ⚡       | ✅ Hook |
+| 子 Agent 规范注入    | ✅          | ❌     | ✅       | ⚡      | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ✅    |
+| Ralph Loop 质量门    | ✅          | ❌     | ⚡       | ❌      | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ⚡    |
+| Multi-Agent Pipeline | ✅          | ❌     | ✅       | ❌      | ❌    | ❌     | ✅   | ✅   | ❌    | ❌      | ❌       | ❌    |
+
+图例：✅ 完整 / ⚡ 部分（通过手动调用或 opt-in 平台 flag）/ ❌ 不支持。
 
 {/* markdownlint-disable MD024 MD001 */}
 
@@ -168,24 +187,11 @@ cd your-project
 ````
 
   </Tab>
-  <Tab title="CodeBuddy">
-  ```bash
-  # 步骤 1：打开 CodeBuddy，必须先调用
-  /trellis:start
-
-# 步骤 2：描述你要做什么
-
-"添加用户登录功能"
-
-# 步骤 3：AI 自动工作
-
-# AI 会读取规范 → 创建任务 → 实现 → 你手动运行 /trellis:check 检查
-
-# 完成后你测试、提交、记录会话即可
-
-````
-</Tab>
 </Tabs>
+
+<Note>
+  上面 Tab 展示的是最常用平台。Gemini CLI、iFlow、Qoder、GitHub Copilot、Windsurf、Factory Droid 安装后工作流跟 Claude Code 一致——详见第 13 章各平台章节。
+</Note>
 
 ### 2.5 远程 Spec 模板
 
@@ -398,10 +404,27 @@ your-project/
 │   ├── prompts/                       #   自定义提示词
 │   └── specs/                         #   Spec-Driven Development 文档
 │
-└── .codebuddy/                        # CodeBuddy 配置
-    └── commands/
-        └── trellis/                   #   Trellis 命令集（嵌套）
-            ├── start.md
-            ├── check.md
-            └── ...
+├── .iflow/                            # iFlow 配置
+│   ├── commands/trellis/              #   Slash 命令
+│   └── hooks/                         #   SessionStart hook
+│
+├── .gemini/                           # Gemini CLI 配置
+│   └── commands/trellis/              #   TOML 命令
+│
+├── .qoder/                            # Qoder 配置
+│   ├── skills/                        #   Auto-trigger skill
+│   └── rules/                         #   常驻 prelude
+│
+├── .github/                           # GitHub Copilot 配置
+│   ├── copilot-instructions.md        #   自动加载的 prelude
+│   └── prompts/                       #   各命令 prompt
+│
+├── .windsurf/                         # Windsurf 配置
+│   ├── workflows/                     #   命令 workflow
+│   └── rules/                         #   常驻 prelude
+│
+└── .factory/                          # Factory Droid 配置
+    ├── commands/trellis/              #   Slash 命令
+    ├── agents/                        #   Sub-agent 定义
+    └── hooks/                         #   SessionStart hook
 ```

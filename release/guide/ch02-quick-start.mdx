@@ -23,33 +23,44 @@ Choose the init command based on your platform:
 
 <Tabs>
   <Tab title="Claude Code">
-    ```bash trellis init -u your-name ``` Automatically detects the Claude Code environment and
-    configures the `.claude/` directory (commands, agents, hooks).
+    `trellis init -u your-name` — auto-detects Claude Code and configures `.claude/` (commands, agents, hooks).
   </Tab>
   <Tab title="Cursor">
-    ```bash trellis init -u your-name ``` Automatically detects the Cursor environment and
-    configures the `.cursor/commands/` directory.
-  </Tab>
-  <Tab title="Codex">
-    ```bash trellis init --codex -u your-name ``` Configures `AGENTS.md` and `.agents/skills/`.
+    `trellis init -u your-name` — auto-detects Cursor and configures `.cursor/commands/`.
   </Tab>
   <Tab title="OpenCode">
-    ```bash trellis init --opencode -u your-name ``` Configures `.agents/skills/`. Supports session
-    hook for automatic context injection.
+    `trellis init --opencode -u your-name` — writes `.opencode/commands/trellis/`, `.opencode/agents/`, `.opencode/plugins/` (session-start hook).
+  </Tab>
+  <Tab title="Codex">
+    `trellis init --codex -u your-name` — writes `AGENTS.md`, `.agents/skills/`, `.codex/agents/`, `.codex/hooks/`. Enable `codex_hooks = true` in `~/.codex/config.toml` for full hook support.
+  </Tab>
+  <Tab title="iFlow">
+    `trellis init --iflow -u your-name` — writes `.iflow/commands/trellis/` + `.iflow/hooks/session-start.py` (same Python hook family as Claude Code).
+  </Tab>
+  <Tab title="Gemini CLI">
+    `trellis init --gemini -u your-name` — writes TOML command files under `.gemini/commands/trellis/` + shared `.agents/skills/`.
   </Tab>
   <Tab title="Kilo">
-    ```bash trellis init --kilo -u your-name ``` Configures the `.kilocode/` directory (workflows,
-    rules, skills).
+    `trellis init --kilo -u your-name` — writes workflow files under `.kilocode/workflows/` (invoked as `/start.md`, etc.).
   </Tab>
   <Tab title="Kiro">
-    ```bash trellis init --kiro -u your-name ``` Configures the `.kiro/` directory (steering, hooks,
-    prompts).
+    `trellis init --kiro -u your-name` — writes skill-based commands under `.kiro/skills/`.
   </Tab>
-  <Tab title="CodeBuddy">
-    ```bash trellis init --codebuddy -u your-name ``` Configures `.codebuddy/commands/trellis/`
-    directory (slash commands with nested namespacing).
+  <Tab title="Qoder">
+    `trellis init --qoder -u your-name` — writes `.qoder/skills/trellis-{name}/SKILL.md` (auto-trigger skills) + `.qoder/rules/trellis.md`.
+  </Tab>
+  <Tab title="GitHub Copilot">
+    `trellis init --copilot -u your-name` — writes `.github/copilot-instructions.md` + `.github/prompts/trellis-{name}.prompt.md`.
+  </Tab>
+  <Tab title="Windsurf">
+    `trellis init --windsurf -u your-name` — writes `.windsurf/workflows/trellis-{name}.md` + `.windsurf/rules/trellis.md`.
+  </Tab>
+  <Tab title="Factory Droid">
+    `trellis init --droid -u your-name` — writes `.factory/commands/trellis/` + `.factory/agents/` + `.factory/hooks/session-start.py`.
   </Tab>
 </Tabs>
+
+You can pass multiple platform flags in one command: `trellis init --codex --gemini --copilot -u your-name`.
 
 `your-name` becomes your developer identity and creates your personal workspace at `.trellis/workspace/your-name/`.
 
@@ -57,25 +68,31 @@ Choose the init command based on your platform:
 
 `trellis init` automatically detects and configures installed platforms:
 
-| Platform        | Config Directory                                                 | Command Format |
-| --------------- | ---------------------------------------------------------------- | -------------- |
-| **Claude Code** | `.claude/commands/trellis/`, `.claude/agents/`, `.claude/hooks/` | `/start`       |
-| **Cursor**      | `.cursor/commands/*.md`                                          | `/start`       |
-| **Codex**       | `AGENTS.md`, `.agents/skills/`                                   | `$start`       |
-| **OpenCode**    | `.agents/skills/`                                                | `/start`       |
-| **Kilo**        | `.kilocode/workflows/`, `.kilocode/rules/`, `.kilocode/skills/`  | `/start.md`    |
-| **Kiro**        | `.kiro/steering/`, `.kiro/hooks/`, `.kiro/prompts/`              | `@start`       |
-| **CodeBuddy**   | `.codebuddy/commands/trellis/*.md`                               | `/trellis:start` |
+| Platform            | Config Directory                                                          | Command Format   |
+| ------------------- | ------------------------------------------------------------------------- | ---------------- |
+| **Claude Code**     | `.claude/commands/trellis/`, `.claude/agents/`, `.claude/hooks/`          | `/trellis:start` |
+| **Cursor**          | `.cursor/commands/*.md`                                                   | `/trellis-start` |
+| **OpenCode**        | `.opencode/commands/trellis/`, `.opencode/agents/`, `.opencode/plugins/`  | `/trellis:start` |
+| **Codex**           | `AGENTS.md`, `.agents/skills/`, `.codex/agents/`, `.codex/hooks/`         | `$start`         |
+| **iFlow**           | `.iflow/commands/trellis/`, `.iflow/hooks/`                               | `/trellis:start` |
+| **Gemini CLI**      | `.gemini/commands/trellis/*.toml`                                         | `/trellis:start` |
+| **Kilo**            | `.kilocode/workflows/`                                                    | `/start.md`      |
+| **Kiro**            | `.kiro/skills/*/SKILL.md`                                                 | `@start`         |
+| **Qoder**           | `.qoder/skills/`, `.qoder/rules/`                                         | skill auto-match |
+| **GitHub Copilot**  | `.github/copilot-instructions.md`, `.github/prompts/`                     | Run Prompt       |
+| **Windsurf**        | `.windsurf/workflows/`, `.windsurf/rules/`                                | workflow picker  |
+| **Factory Droid**   | `.factory/commands/trellis/`, `.factory/agents/`, `.factory/hooks/`       | `/trellis:start` |
 
 #### Platform Capability Comparison
 
-| Capability               |     Claude Code      |      Cursor      |    Codex     | OpenCode |            Kilo            |        Kiro         |         CodeBuddy          |
-| ------------------------ | :------------------: | :--------------: | :----------: | :------: | :------------------------: | :-----------------: | :------------------------: |
-| Session auto-injection   |       ✅ Hook        | ❌ Manual /start | ⚡ AGENTS.md | ✅ Hook  |  ⚡ rules/ + launchConfig  |    ⚡ steering/     | ❌ Manual /trellis:start   |
-| Sub-Agent spec injection |  ✅ PreToolUse Hook  |        ❌        |      ❌      |    ❌    |    ⚡ Orchestrator Mode    |  ⚡ Custom Agents   |             ❌             |
-| Ralph Loop quality gate  | ✅ SubagentStop Hook |        ❌        |      ❌      |    ❌    |             ❌             |   ⚡ Agent Hooks    |             ❌             |
-| Multi-Agent Pipeline     |          ✅          |        ❌        |      ❌      |    ❌    | ✅ Orchestrator + worktree | ✅ Autonomous Agent |             ❌             |
-| Number of commands       |          13          |        12        |      13      |    13    |         workflows          |       prompts       |             12             |
+| Capability               | Claude Code | Cursor | OpenCode | Codex  | iFlow | Gemini | Kilo | Kiro | Qoder | Copilot | Windsurf | Droid |
+| ------------------------ | :---------: | :----: | :------: | :----: | :---: | :----: | :--: | :--: | :---: | :-----: | :------: | :---: |
+| Session auto-injection   | ✅ Hook     | ❌     | ✅ Hook  | ⚡ opt-in | ✅ Hook | ❌    | ⚡   | ⚡   | ⚡    | ⚡      | ⚡       | ✅ Hook |
+| Sub-Agent spec injection | ✅          | ❌     | ✅       | ⚡     | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ✅    |
+| Ralph Loop quality gate  | ✅          | ❌     | ⚡       | ❌     | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ⚡    |
+| Multi-Agent Pipeline     | ✅          | ❌     | ✅       | ❌     | ❌    | ❌     | ✅   | ✅   | ❌    | ❌      | ❌       | ❌    |
+
+Legend: ✅ full / ⚡ partial / ❌ not supported. "Partial" means the capability exists via a manual invocation or an opt-in platform flag rather than built-in automation.
 
 {/* markdownlint-disable MD024 MD001 */}
 
@@ -173,24 +190,11 @@ Choose the init command based on your platform:
 ````
 
   </Tab>
-  <Tab title="CodeBuddy">
-  ```bash
-  # Step 1: Open CodeBuddy, run
-  /trellis:start
-
-# Step 2: Describe what you want to do
-
-"Add user login feature"
-
-# Step 3: AI works automatically
-
-# AI reads specs → creates task → implements → manually run /trellis:check to check
-
-# Once done, you test, commit, and record the session
-
-````
-</Tab>
 </Tabs>
+
+<Note>
+  Tabs above show the most-used platforms. Gemini CLI, iFlow, Qoder, GitHub Copilot, Windsurf, and Factory Droid follow the same Claude-Code-style workflow once installed — see chapter 13 for per-platform details.
+</Note>
 
 ### 2.5 Remote Spec Templates
 
@@ -403,12 +407,29 @@ your-project/
 │   ├── prompts/                       #   Custom prompts
 │   └── specs/                         #   Spec-Driven Development docs
 │
-└── .codebuddy/                        # CodeBuddy configuration
-    └── commands/
-        └── trellis/                   #   Trellis command set (nested)
-            ├── start.md
-            ├── check.md
-            └── ...
+├── .iflow/                            # iFlow configuration
+│   ├── commands/trellis/              #   Slash commands
+│   └── hooks/                         #   SessionStart hook
+│
+├── .gemini/                           # Gemini CLI configuration
+│   └── commands/trellis/              #   TOML commands
+│
+├── .qoder/                            # Qoder configuration
+│   ├── skills/                        #   Auto-trigger skills
+│   └── rules/                         #   Always-on prelude
+│
+├── .github/                           # GitHub Copilot configuration
+│   ├── copilot-instructions.md        #   Always-loaded prelude
+│   └── prompts/                       #   Per-command prompts
+│
+├── .windsurf/                         # Windsurf configuration
+│   ├── workflows/                     #   Command workflows
+│   └── rules/                         #   Always-on prelude
+│
+└── .factory/                          # Factory Droid configuration
+    ├── commands/trellis/              #   Slash commands
+    ├── agents/                        #   Sub-agent definitions
+    └── hooks/                         #   SessionStart hook
 ```
 
 ---
