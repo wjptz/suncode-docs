@@ -8,26 +8,30 @@ Trellis 支持 13 个平台（Claude Code、Cursor、OpenCode、Codex、Kiro、K
 
 ### 12.1 加入已初始化的 Trellis 项目
 
-项目已经被别人 `trellis init` 过了，你作为新成员加入——此时只需要初始化**开发者身份**，不要再跑 `trellis init`（那会覆盖现有配置）。
+项目已经被别人 `trellis init` 过了，你作为新成员加入——直接跑 `trellis init`，CLI 会识别出已初始化，给你三个选项：
 
-```bash
-# 1. 拉代码
-git clone <repo> && cd <repo>
-
-# 2. 初始化你自己的开发者身份
-python3 ./.trellis/scripts/init_developer.py <your-name>
+```
+? Trellis is already initialized. What would you like to do?
+❯ Add AI platform(s)
+  Set up developer identity on this device
+  Full re-initialize
 ```
 
-这一步只改两个地方：
+| 选项                                   | 何时选                                                              |
+| -------------------------------------- | ------------------------------------------------------------------- |
+| **Add AI platform(s)**                 | 想给当前项目加一个别人没装的平台（如你用 Cursor、但别人只装了 CC） |
+| **Set up developer identity on this device** | 你是新成员，只要把**自己的身份**写到本机                      |
+| **Full re-initialize**                 | 项目配置坏了，重来一遍                                              |
 
-- 写 `.trellis/.developer`，记录你的开发者名（gitignored，每台机器独立）
-- 在 `.trellis/workspace/<your-name>/` 下建出你自己的 journal 目录
+新成员选第 2 个。CLI 会问你想用的开发者名（默认取自 Git user），然后：
 
-之后在支持 SessionStart hook 的平台上开新会话，就会自动注入上下文；没 hook 的平台跑 `/trellis:start`（Kiro 上是 `@trellis:start`）。
+- 写 `.trellis/.developer` 记录你的开发者名（gitignored，每台机器独立）
+- 在 `.trellis/workspace/<your-name>/` 下建你自己的 journal 目录
+
+完成后，在支持 SessionStart hook 的平台上开新会话就自动注入 Trellis 上下文；没 hook 的平台跑 `/trellis:start`（Kiro 上 `@trellis:start`）。
 
 <Note>
-  `init_developer.py` 会先检查 `.trellis/.developer` 是否已存在。若存在则打印当前身份并退出，不会覆盖。想换身份先手动删 `.trellis/.developer` 再跑。
-</Note>
+  不要选 **Full re-initialize**——那会覆盖 `.trellis/`、`.claude/` 等已有配置，影响全团队。</Note>
 
 ### 12.2 能力矩阵
 

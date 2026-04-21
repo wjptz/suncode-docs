@@ -8,25 +8,30 @@ Trellis ships on 13 platforms (Claude Code, Cursor, OpenCode, Codex, Kiro, Kilo,
 
 ### 12.1 Joining an Already-Initialized Trellis Project
 
-Someone else already ran `trellis init` on the repo and you're joining as a new team member. You only need to initialize your **developer identity** — do NOT run `trellis init` again (it would overwrite existing configuration).
+Someone else already ran `trellis init` on the repo and you're joining as a new team member. Just run `trellis init` — the CLI detects the existing setup and offers three choices:
 
-```bash
-# 1. Clone the repo
-git clone <repo> && cd <repo>
-
-# 2. Initialize your own developer identity
-python3 ./.trellis/scripts/init_developer.py <your-name>
+```
+? Trellis is already initialized. What would you like to do?
+❯ Add AI platform(s)
+  Set up developer identity on this device
+  Full re-initialize
 ```
 
-This only changes two things:
+| Option                                       | When to pick                                                          |
+| -------------------------------------------- | --------------------------------------------------------------------- |
+| **Add AI platform(s)**                       | You want to add a platform others haven't configured (e.g. you use Cursor but the team only set up Claude Code) |
+| **Set up developer identity on this device** | You're a new member, you just need to write your **identity** on your machine |
+| **Full re-initialize**                       | Project config is broken and you want a clean slate                   |
+
+New members pick the second option. The CLI asks for your developer name (defaulting to your Git user), then:
 
 - Writes `.trellis/.developer` with your developer name (gitignored, per-machine)
 - Creates `.trellis/workspace/<your-name>/` for your own journal
 
-After that, on platforms with a SessionStart hook, opening a new session auto-injects the context. On platforms without hooks, run `/trellis:start` (or `@trellis:start` on Kiro).
+After that, on platforms with a SessionStart hook, opening a new session auto-injects Trellis context. On platforms without hooks, run `/trellis:start` (or `@trellis:start` on Kiro).
 
 <Note>
-  `init_developer.py` checks whether `.trellis/.developer` already exists. If it does, it prints the current identity and exits without overwriting. To switch identities, delete `.trellis/.developer` manually first.
+  Don't pick **Full re-initialize** — it overwrites existing `.trellis/`, `.claude/`, etc. configuration and affects the whole team.
 </Note>
 
 ### 12.2 Capability Matrix
