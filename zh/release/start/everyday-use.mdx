@@ -1,0 +1,971 @@
+---
+title: '日常使用'
+---
+
+## 命令全解
+
+Trellis 0.4.0 提供 11 个 Slash 命令（Claude Code），分为 6 个类别。Cursor 版本有 10 个（不含 `/parallel`）。
+
+#### 跨平台命令对照表
+
+| 功能 | Claude Code / OpenCode | Cursor | Codex |
+|------|----------------------|--------|-------|
+| 启动会话 | `/start`（可选，Hook 自动注入） | `/start`（必须） | `$start` |
+| 开发准备 | `/before-dev`（可选） | `/trellis-before-dev`（推荐） | `$before-dev` |
+| 代码检查 | `/check`（Ralph Loop 自动触发） | `/trellis-check`（手动） | `$check` |
+| 跨层检查 | `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` |
+| 完工清单 | `/finish-work` | `/trellis-finish-work` | `$finish-work` |
+| 并行编排 | `/parallel` | ❌ 不支持 | ❌ 不支持 |
+| 记录会话 | `/record-session` | `/trellis-record-session` | `$record-session` |
+| 头脑风暴 | `/brainstorm` | `/trellis-brainstorm` | `$brainstorm` |
+| Bug 分析 | `/break-loop` | `/trellis-break-loop` | `$break-loop` |
+| 新成员入门 | `/onboard` | `/trellis-onboard` | `$onboard` |
+| 创建命令 | `/create-command` | `/trellis-create-command` | `$create-command` |
+| 集成 Skill | `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` |
+
+<Note>
+  0.4.0 把 `/before-backend-dev` + `/before-frontend-dev` 合并成 `/before-dev`，把 `/check-backend` + `/check-frontend` 合并成 `/check`。这样 monorepo 项目的命令数不会随包数量爆炸。具体跑哪一层的 spec 由 spec 目录（`.trellis/spec/backend/` vs `.trellis/spec/frontend/`）和当前 package 决定。
+</Note>
+
+### 会话管理
+
+#### `/start` — 启动开发会话
+
+**何时使用**：每次打开 AI 编码助手开始工作时。Claude Code 用户因 Hook 自动注入上下文，`/start` 为可选（但推荐首次使用时运行以了解完整流程）。Cursor 用户**必须**运行 `/start`。
+
+**执行流程**：
+
+1. 读取 `workflow.md` 了解工作流
+2. 运行 `get-context.py` 获取上下文（身份、Git 状态、活跃任务）
+3. 读取 spec 索引了解项目规范
+4. 报告上下文并询问："What would you like to work on?"
+
+**任务分类决策**：
+
+| 类型 | 判断标准 | 工作流 |
+|------|---------|--------|
+| 问答 | 用户问代码、架构相关问题 | 直接回答 |
+| 简单修复 | 改错字、单行修改，< 5 分钟 | 直接编辑 |
+| 开发任务 | 修改逻辑、添加功能、修 bug、涉及多文件 | **走 Task Workflow** |
+
+> **疑问就走 Task Workflow**。Task Workflow 确保 Agent 接收到规范注入，代码质量更高。
+
+#### `/parallel` — 多 Agent 并行编排
+
+<Warning>仅 Claude Code 支持。Cursor、Codex 等平台不支持 Multi-Agent Pipeline。</Warning>
+
+**何时使用**：
+- 任务复杂度高，需要 > 30 分钟
+- 可以拆分为多个独立子任务
+- 需要在独立 worktree 中隔离开发
+
+**两阶段流程**：
+
+**阶段一：Plan（规划）**
+
+```bash
+./.trellis/scripts/multi-agent/plan.py \
+  --name "feature-name" \
+  --type "backend|frontend|fullstack" \
+  --requirement "用户需求描述"
+```
+
+Plan Agent 会：
+1. 评估需求是否清晰（可能拒绝，见第 6 章）
+2. 调用 Research Agent 分析代码库
+3. 创建任务目录并配置 JSONL 上下文
+4. 生成 prd.md 需求文档
+
+**阶段二：Execute（执行）**
+
+```bash
+./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
+```
+
+自动创建 Git worktree，Dispatch Agent 按顺序执行 implement → check → finish → create-pr。
+
+**监控命令**：
+
+```bash
+./.trellis/scripts/multi-agent/status.py                  # 概览
+./.trellis/scripts/multi-agent/status.py --log <name>     # 查看日志
+./.trellis/scripts/multi-agent/status.py --watch <name>   # 实时监控
+./.trellis/scripts/multi-agent/cleanup.py <branch>        # 清理 worktree
+```
+
+#### `/record-session` — 记录会话
+
+**何时使用**：用户测试并 commit 代码之后。
+
+**前提**：AI 不执行 git commit，只读取 git 历史。
+
+**执行流程**：
+
+```bash
+./.trellis/scripts/add-session.py \
+  --title "Session Title" \
+  --commit "hash1,hash2" \
+  --summary "本次完成了什么"
+```
+
+自动完成：
+- 追加会话记录到 `journal-N.md`
+- 检测行数，超过 2000 行自动创建新文件
+- 更新 `index.md`（会话总数 +1、最后活跃时间、历史表）
+
+#### `/onboard` — 新成员入门
+
+**何时使用**：新团队成员加入时。
+
+包含三部分：
+1. 核心概念讲解（spec / workspace / task / hook）
+2. 5 个实战练习（bug 修复、规划会话、Code Review 修复、大型重构、调试会话）
+3. 规范定制指导
+
+### 开发准备
+
+#### `/before-dev` — 开发准备
+
+根据当前任务的 `dev_type` 自动定位 spec 层（backend 或 frontend），读取相关规范文档（目录结构、错误处理、日志、类型安全、质量指南，以及组件、Hook、状态管理等），确保 AI 了解项目编码标准后再写代码。
+
+Monorepo 项目里 spec 读取范围限定到当前 package（`.trellis/spec/<package>/<layer>/`），避免跨 package 规范混进来。
+
+### 质量检查
+
+#### `/check` — 代码检查
+
+执行流程：
+1. `git status` 查看变更
+2. 根据改动文件重读对应的 spec 层
+3. 逐条对比代码与规范
+4. 自动修复违规项（Ralph Loop 驱动，最多 3 轮）
+
+检查项涵盖前后端两侧，按 diff 涉及的层动态应用：目录结构、数据库操作、错误处理、日志规范、类型定义、组件命名、Props 接口、Hook 使用、状态管理、禁止 `console.log` / `any` / 非空断言、ESLint 错误、未使用 import。
+
+#### `/check-cross-layer` — 跨层一致性检查
+
+读取跨层思维指南，分析 6 个维度：
+
+1. **数据流一致性** — 前端 → API → 数据库 → API → 前端
+2. **类型定义同步** — 前后端 interface 一致
+3. **错误处理连续性** — 各层错误正确传递
+4. **常量同步** — 前后端共享常量
+5. **代码复用** — 避免重复实现
+6. **Import 路径正确** — 无断裂引用
+
+### 并行开发
+
+#### `/parallel`
+
+详见 5.1 节。
+
+### 知识积累
+
+#### `/break-loop` — 深度 Bug 分析
+
+**何时使用**：解决了一个棘手的 bug 之后，做深度分析防止类似问题再发。
+
+**5 维分析框架**：
+
+1. **Root Cause 根因分类**：
+   - A — Missing Spec（缺少规范）
+   - B — Cross-layer Contract Violation（跨层契约违反）
+   - C — Change Propagation Failure（变更传播失败）
+   - D — Test Coverage Gap（测试覆盖缺口）
+   - E — Implicit Assumption（隐式假设）
+
+2. **Why Fixes Failed** — 分析为什么之前的修复尝试失败了
+
+3. **Prevention Mechanisms**（6 种预防机制）：
+   - Spec 更新
+   - 类型约束
+   - Lint 规则
+   - 测试用例
+   - 代码审查检查项
+   - 文档更新
+
+4. **Systematic Expansion** — 搜索相同模式的其他潜在问题
+
+5. **Knowledge Capture** — 将分析结果固化到 spec
+
+**核心理念**：
+
+> 调试的价值不是修复这个 bug，而是确保这类 bug 再也不会发生。
+
+### 辅助命令
+
+#### `/finish-work` — 完工检查清单
+
+提交前的 6 维度检查：
+1. 代码质量（lint、type-check、test）
+2. 文档同步
+3. API 变更
+4. 数据库变更
+5. 跨层验证
+6. 手动测试
+
+#### `/create-command` — 创建自定义命令
+
+在 `.claude/commands/trellis/` 和 `.cursor/commands/` 下生成双 IDE 命令文件。详见第 9 章。
+
+#### `/integrate-skill` — 集成外部 Skill
+
+将社区 Skill 集成到项目中，创建统一的 `/use-[skill-name]` 命令。详见第 12 章。
+
+## 任务管理全流程
+
+### 任务生命周期
+
+```
+create → init-context → add-context → start → implement/check → finish → archive
+  │           │              │           │          │               │         │
+  │           │              │           │          │               │         │
+  ▼           ▼              ▼           ▼          ▼               ▼         ▼
+创建目录    初始化JSONL   添加上下文    设为当前     开发/检查      清除当前   归档到
+task.json   配置文件      条目         任务指针     循环           任务      archive/
+```
+
+### task.py 14 个子命令详解
+
+#### 任务创建
+
+```bash
+# 创建任务
+TASK_DIR=$(./.trellis/scripts/task.py create "添加用户登录" \
+  --slug user-login \          # 目录名后缀 (可选，否则自动 slugify)
+  --assignee alice \           # 指派人 (可选)
+  --priority P1 \              # 优先级: P0/P1/P2/P3 (可选，默认 P2)
+  --description "实现JWT登录")  # 描述 (可选)
+
+# 创建的目录: .trellis/tasks/02-27-user-login/
+# 创建的文件: task.json
+```
+
+#### 上下文配置
+
+```bash
+# 初始化 JSONL 配置
+./.trellis/scripts/task.py init-context "$TASK_DIR" backend
+# dev_type: backend | frontend | fullstack | test | docs
+# 可选: --platform cursor (默认 claude)
+
+# 添加额外上下文条目
+./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
+  "src/services/auth.ts" "Existing auth patterns"
+# 目标: implement | check | debug (简写，自动加 .jsonl)
+# 会自动检测是文件还是目录
+
+# 验证所有 JSONL 引用的文件是否存在
+./.trellis/scripts/task.py validate "$TASK_DIR"
+
+# 查看所有 JSONL 条目
+./.trellis/scripts/task.py list-context "$TASK_DIR"
+```
+
+#### 任务控制
+
+```bash
+# 设为当前任务（Hook 会读取此指针进行注入）
+./.trellis/scripts/task.py start "$TASK_DIR"
+
+# 清除当前任务（无需参数，自动读取 .current-task）
+./.trellis/scripts/task.py finish
+
+# 设置 Git 分支名
+./.trellis/scripts/task.py set-branch "$TASK_DIR" "feature/user-login"
+
+# 设置 PR 目标分支
+./.trellis/scripts/task.py set-base-branch "$TASK_DIR" "main"
+
+# 设置 scope（用于 commit message: feat(scope): ...）
+./.trellis/scripts/task.py set-scope "$TASK_DIR" "auth"
+```
+
+#### 任务管理
+
+```bash
+# 列出活跃任务
+./.trellis/scripts/task.py list
+./.trellis/scripts/task.py list --mine        # 只看自己的
+./.trellis/scripts/task.py list --status review  # 按状态过滤
+
+# 归档完成的任务
+./.trellis/scripts/task.py archive user-login
+# 移动到 archive/2026-02/
+
+# 列出归档任务
+./.trellis/scripts/task.py list-archive
+./.trellis/scripts/task.py list-archive 2026-02  # 按月过滤
+
+# 创建 PR（委托给 multi-agent/create-pr.py）
+./.trellis/scripts/task.py create-pr
+```
+
+### task.json Schema
+
+```json
+{
+  "id": "02-27-user-login",
+  "name": "user-login",
+  "title": "添加用户登录",
+  "description": "实现 JWT 登录流程",
+  "status": "in_progress",
+  "dev_type": "backend",
+  "scope": "auth",
+  "priority": "P1",
+  "creator": "alice",
+  "assignee": "alice",
+  "createdAt": "2026-02-27T10:00:00Z",
+  "completedAt": null,
+  "branch": "feature/user-login",
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 1,
+  "next_action": [
+    { "phase": 1, "action": "implement" },
+    { "phase": 2, "action": "check" },
+    { "phase": 3, "action": "finish" },
+    { "phase": 4, "action": "create-pr" }
+  ],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "relatedFiles": [],
+  "notes": ""
+}
+```
+
+**状态流转**：
+
+```
+planning → in_progress → review → completed
+       ↘ rejected
+```
+
+### JSONL 上下文配置实战
+
+#### 自动生成的默认配置
+
+`task.py init-context` 会根据 dev_type 生成默认的 JSONL 文件：
+
+**backend 类型默认 implement.jsonl**：
+
+```jsonl
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
+{"file": ".trellis/spec/backend/api-module.md", "reason": "API module conventions"}
+{"file": ".trellis/spec/backend/quality.md", "reason": "Code quality requirements"}
+```
+
+**backend 类型默认 check.jsonl**（Claude Code 平台）：
+
+```jsonl
+{"file": ".claude/commands/trellis/finish-work.md", "reason": "Finish work checklist"}
+{"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
+{"file": ".claude/commands/trellis/check.md", "reason": "Backend check spec"}
+```
+
+**fullstack 类型**会同时包含前端和后端的 spec 文件。
+
+#### 添加自定义上下文
+
+```bash
+# 添加现有代码作为参考（文件）
+./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
+  "src/services/user.ts" "Existing user service patterns"
+
+# 添加整个目录（自动读取所有 .md 文件）
+./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
+  "src/services/" "Existing service patterns"
+
+# 添加自定义 check 上下文
+./.trellis/scripts/task.py add-context "$TASK_DIR" check \
+  ".trellis/spec/guides/cross-layer-thinking-guide.md" "Cross-layer verification"
+```
+
+### Plan Agent 与需求评估
+
+Plan Agent 在接受需求前会进行严格评估，可能会拒绝。
+
+**5 类拒绝原因**：
+
+| 拒绝类型                   | 触发条件         | 示例                             |
+| -------------------------- | ---------------- | -------------------------------- |
+| **Unclear or Vague**       | 没有具体结果定义 | "Make it better"、"Fix the bugs" |
+| **Incomplete Information** | 缺少关键实现细节 | 引用了未知系统                   |
+| **Out of Scope**           | 不属于本项目     | 需要修改外部系统                 |
+| **Potentially Harmful**    | 安全风险         | 故意开后门                       |
+| **Too Large**              | 应该拆分         | 一次要做 6 个功能                |
+
+**拒绝时**：
+
+- `task.json` 状态设为 `"rejected"`
+- 生成 `REJECTED.md` 包含原因和改进建议
+- 任务目录保留供用户查看
+
+**拒绝示例**：
+
+```
+Input: "Add user authentication, authorization, password reset,
+        2FA, OAuth integration, and audit logging"
+
+=== PLAN REJECTED ===
+
+Reason: Too Large / Should Be Split
+
+Details:
+This requirement bundles 6 distinct features:
+1. User authentication (login/logout)
+2. Authorization (roles/permissions)
+3. Password reset flow
+4. Two-factor authentication
+5. OAuth integration
+6. Audit logging
+
+Suggestions:
+- Start with basic authentication first
+- Create separate features for each capability
+```
+
+### Monorepo 支持
+
+0.4.0 的头条特性：`trellis init` 自动识别 monorepo 布局，为**每个 package 建独立 spec 目录**，每个包执行自己的编码约定。
+
+```
+my-monorepo/
+├── packages/
+│   ├── api/
+│   ├── web/
+│   └── shared/
+└── .trellis/
+    ├── spec/
+    │   ├── api/         # API 包约定
+    │   │   ├── backend/index.md
+    │   │   └── ...
+    │   ├── web/         # Web 包约定
+    │   │   ├── frontend/index.md
+    │   │   └── ...
+    │   ├── shared/      # 共享包约定
+    │   └── guides/      # 共享 thinking guides
+    └── tasks/...
+```
+
+#### 建一个属于某个 package 的任务
+
+```bash
+# 显式指定
+python3 ./.trellis/scripts/task.py create "新增登录接口" \
+  --slug add-login \
+  --package api
+
+# 生成目录：.trellis/tasks/MM-DD-add-login/（task.json.package = "api"）
+```
+
+#### 为该 package 初始化上下文
+
+```bash
+python3 ./.trellis/scripts/task.py init-context "$TASK_DIR" backend --package api
+# implement.jsonl 只写入 .trellis/spec/api/backend/* 相关条目
+```
+
+#### 推断 package
+
+不带 `--package` 时，Trellis 读 `.trellis/config.yaml` 里的 `default_package`（由 init 时写入）。大多数工作集中在一个包、但想保留 monorepo-aware schema 时很方便。
+
+#### 按包隔离约定
+
+`--package <name>` flag 强制隔离：scoped 到 `api` 的任务**只**加载 `.trellis/spec/api/...`，不会串到 `.trellis/spec/web/...`。跨包任务（`--package shared`，或显式跨模块时不传 `--package`）加载 shared spec。
+
+<Note>
+  在 monorepo 里跑 `trellis init`，Trellis 会写 `.trellis/config.yaml`，列出自动识别到的每个 package 和其类型（`backend` / `frontend` / `fullstack`）。识别漏掉的 package 可手动加——`packages:` key 接受任意 `name → { path, type }` 映射。
+</Note>
+
+### 任务生命周期 Hooks
+
+你可以配置在任务生命周期事件发生时自动执行的 shell 命令。适用于同步任务到 Linear、发送 Slack 通知、触发 CI 流水线等场景。
+
+#### 配置方式
+
+在 `.trellis/config.yaml` 中添加 `hooks` 块：
+
+```yaml
+hooks:
+  after_create:
+    - 'python3 .trellis/scripts/hooks/linear_sync.py create'
+  after_start:
+    - 'python3 .trellis/scripts/hooks/linear_sync.py start'
+  after_finish:
+    - "echo 'Task finished'"
+  after_archive:
+    - 'python3 .trellis/scripts/hooks/linear_sync.py archive'
+```
+
+<Note>默认的 `config.yaml` 中 hooks 部分是**注释掉的**。需要手动取消注释并编辑才能激活。</Note>
+
+#### 支持的事件
+
+| 事件            | 触发时机                        | 典型用途                        |
+| --------------- | ------------------------------- | ------------------------------- |
+| `after_create`  | `task.py create` 完成后         | 在项目管理工具中创建关联 issue  |
+| `after_start`   | `task.py start` 设置当前任务后  | 更新 issue 状态为 "In Progress" |
+| `after_finish`  | `task.py finish` 清除当前任务后 | 通知团队、触发评审              |
+| `after_archive` | `task.py archive` 归档任务后    | 标记 issue 为 "Done"            |
+
+#### 环境变量
+
+每个 Hook 都会收到：
+
+| 变量             | 值                          |
+| ---------------- | --------------------------- |
+| `TASK_JSON_PATH` | 任务 `task.json` 的绝对路径 |
+
+父进程的所有其他环境变量也会被继承。
+
+#### 执行行为
+
+- **工作目录**：仓库根目录
+- **Shell**：命令通过系统 shell 执行（`shell=True`）
+- **失败不阻塞**：Hook 失败会在 stderr 输出 `[WARN]`，但不会阻止任务操作完成
+- **顺序执行**：同一事件的多个 Hook 按列表顺序执行；某个失败不会跳过后续 Hook
+- **stdout 被捕获**：Hook 的 stdout 不会显示给用户 — 诊断信息请输出到 stderr
+
+<Warning>
+  `after_archive` Hook 收到的 `TASK_JSON_PATH` 指向的是**归档后**的位置（如
+  `.trellis/tasks/archive/2026-03/task-name/task.json`），不是原始路径。
+</Warning>
+
+#### 示例：Linear 同步 Hook
+
+Trellis 内置了一个示例 Hook 脚本 `.trellis/scripts/hooks/linear_sync.py`，可将任务生命周期事件同步到 [Linear](https://linear.app)。
+
+**功能说明**：
+
+| 动作      | 触发事件        | 效果                                                           |
+| --------- | --------------- | -------------------------------------------------------------- |
+| `create`  | `after_create`  | 从 task.json 创建 Linear issue（标题、优先级、指派人、父任务） |
+| `start`   | `after_start`   | 更新关联 issue 状态为 "In Progress"                            |
+| `archive` | `after_archive` | 更新关联 issue 状态为 "Done"                                   |
+| `sync`    | 手动调用        | 将 `prd.md` 内容推送到 Linear issue 描述                       |
+
+**前置条件**：
+
+1. 安装 [`linearis`](https://www.npmjs.com/package/linearis) CLI 并设置 `LINEAR_API_KEY`
+2. 创建 `.trellis/hooks.local.json`（已被 gitignore）并填入团队配置：
+
+```json
+{
+  "linear": {
+    "team": "ENG",
+    "project": "My Project",
+    "assignees": {
+      "alice": "linear-user-id-for-alice"
+    }
+  }
+}
+```
+
+Hook 会将 Linear issue 标识符写回 `task.json` 的 `meta.linear_issue` 字段（如 `"ENG-123"`），确保后续事件幂等。
+
+## 规范编写指南
+
+### Spec 目录结构和分层
+
+```
+.trellis/spec/
+├── frontend/                    # 前端规范
+│   ├── index.md                 #   索引：列出所有规范及状态
+│   ├── component-guidelines.md  #   组件规范
+│   ├── hook-guidelines.md       #   Hook 规范
+│   ├── state-management.md      #   状态管理
+│   ├── type-safety.md           #   类型安全
+│   ├── quality-guidelines.md    #   质量指南
+│   └── directory-structure.md   #   目录结构
+│
+├── backend/                     # 后端规范
+│   ├── index.md
+│   ├── database-guidelines.md
+│   ├── error-handling.md
+│   ├── logging-guidelines.md
+│   ├── quality-guidelines.md
+│   └── directory-structure.md
+│
+└── guides/                      # 思维指南
+    ├── index.md
+    ├── cross-layer-thinking-guide.md
+    └── code-reuse-thinking-guide.md
+```
+
+**分层原则**：
+- `index.md` 是入口，列出所有规范文件及其状态
+- 每个文件专注一个主题，200-500 行
+- 每个章节 20-50 行
+- 语言用英文（技术术语天然英文），中文项目可用中文
+
+### 从空模板到完整规范
+
+`trellis init` 会生成空模板，标记 "(To be filled by the team)"。填充步骤：
+
+**Step 1**：从实际代码中提取模式
+
+```bash
+# 看看现有代码是怎么组织的
+ls src/components/     # 组件结构
+ls src/services/       # 服务结构
+```
+
+**Step 2**：写下你的约定
+
+```markdown
+# Component Guidelines
+
+## File Structure
+
+- One component per file
+- Use PascalCase for filenames: `UserProfile.tsx`
+- Co-locate styles: `UserProfile.module.css`
+- Co-locate tests: `UserProfile.test.tsx`
+
+## Patterns
+
+### Required
+
+- Functional components + hooks (no class components)
+- TypeScript with explicit Props interface
+- `export default` for page components, named export for shared
+
+### Forbidden
+
+- No `any` type in Props
+- No inline styles (use CSS Modules)
+- No direct DOM manipulation
+```
+
+**Step 3**：添加代码示例
+
+```markdown
+### Good Example
+
+```tsx
+interface UserProfileProps {
+  userId: string;
+  onUpdate: (user: User) => void;
+}
+
+export function UserProfile({ userId, onUpdate }: UserProfileProps) {
+  // ...
+}
+```
+
+### Bad Example
+
+```tsx
+// Don't: no Props interface, using any
+export default function UserProfile(props: any) {
+  // ...
+}
+```
+```
+
+**Step 4**：更新 index.md 状态
+
+```markdown
+| Guideline | File | Status |
+|-----------|------|--------|
+| Component Guidelines | component-guidelines.md | **Filled** |
+| Hook Guidelines | hook-guidelines.md | To fill |
+```
+
+### 好的规范 vs 差的规范
+
+**好的规范**（具体、有代码、有原因）：
+
+```markdown
+### Database Query Pattern
+
+**Always use parameterized queries** to prevent SQL injection.
+
+```sql
+-- Good
+SELECT * FROM users WHERE id = $1
+
+-- Bad
+SELECT * FROM users WHERE id = '${userId}'
+```
+
+**Why**: Parameterized queries are automatically escaped by the database driver.
+```
+
+**差的规范**（太模糊、没代码、没原因）：
+
+```markdown
+### Database
+- Use good query patterns
+- Be careful with SQL
+- Follow best practices
+```
+
+**过度规范**（太细碎、限制创造力）：
+
+```markdown
+### Variable Naming
+- All boolean variables must start with `is` or `has`
+- All arrays must end with `List`
+- All functions must be less than 20 lines
+- All files must be less than 200 lines
+```
+
+### Bootstrap 引导首次填充
+
+`trellis init` 时会自动创建 bootstrap 引导任务（`00-bootstrap-guidelines`），AI 在首次 `/start` 时会自动检测并引导你填充空白的 spec 文件。
+
+AI 在这个引导任务中会分析代码库，提取现有模式，自动填充 spec 模板。
+
+### 规范的持续演进
+
+规范不是一次写好就不动的，而是随开发不断演进：
+
+| 触发时机 | 更新频率 | 示例 |
+|---------|---------|------|
+| 修了一个不明显的 bug | 立即 | 加到 "Common Mistakes" |
+| 发现了更好的实践 | 当天 | 加到 "Patterns" |
+| 团队约定新规范 | 当天 | 加到 "Conventions" |
+| 日常改进 | 每周 | 优化措辞、补充示例 |
+
+**演进飞轮**：
+
+```
+开发 → 发现模式/问题 → 手动更新 Spec 文件 → git push
+                                                   ↓
+  全员受益 ← Hook 自动注入 ← 下次会话自动加载 ← git pull
+```
+
+## 实战场景
+
+### 简单功能开发（单会话）
+
+**任务**：添加用户登录功能
+
+<Tabs>
+  <Tab title="Claude Code">
+  ```bash
+  # 1. 打开终端（Hook 自动注入上下文，可跳过 /start）
+
+  # 2. 描述任务
+  "添加用户登录功能"
+
+  # 3. AI 自动工作...
+  #    Hook 注入规范 → 创建任务 → 调用 Implement Agent → Check Agent → Ralph Loop 验证
+
+  # 4. 测试
+  pnpm lint && pnpm typecheck && pnpm test
+
+  # 5. 提交
+  git add .
+  git commit -m "feat(auth): add user login feature"
+
+  # 6. 记录会话
+  /record-session
+  ```
+  </Tab>
+  <Tab title="Cursor">
+  ```bash
+  # 1. 启动会话（必须）
+  /start
+
+  # 2. 描述任务
+  "添加用户登录功能"
+
+  # 3. AI 自动工作...
+  #    读取规范 → 实现功能
+
+  # 4. 手动检查代码质量
+  /trellis-check
+
+  # 5. 测试
+  pnpm lint && pnpm typecheck && pnpm test
+
+  # 6. 提交
+  git add .
+  git commit -m "feat(auth): add user login feature"
+
+  # 7. 记录会话
+  /trellis-record-session
+  ```
+  </Tab>
+</Tabs>
+
+### 复杂并行开发（多 Agent worktree）
+
+<Warning>此场景仅适用于 Claude Code。Cursor、Codex 等平台不支持 Multi-Agent Pipeline。</Warning>
+
+**任务**：并行开发三个独立功能
+
+```bash
+# 1. 启动并行模式
+/parallel
+
+# 2. 描述需求
+"我需要并行开发三个功能：
+1. 用户个人资料页面
+2. 邮件通知系统
+3. 数据导出功能"
+
+# 3. AI 自动为每个功能创建 worktree 并启动 Agent
+
+# 4. 监控进度
+./.trellis/scripts/multi-agent/status.py
+# Task 1: user-profile     ✅ Complete (PR #123)
+# Task 2: email-notify     🔄 In Progress (Check phase)
+# Task 3: data-export      🔄 In Progress (Implement phase)
+
+# 5. 审查并合并 PR
+
+# 6. 清理 worktree
+./.trellis/scripts/multi-agent/cleanup.py user-profile
+```
+
+### 跨层功能开发
+
+**任务**：添加商品评论功能（数据库 + API + 前端）
+
+<Tabs>
+  <Tab title="Claude Code">
+  ```bash
+  # 1. 打开终端（Hook 自动注入）
+
+  # 2. 描述任务
+  "添加商品评论功能，需要数据库、API、前端"
+
+  # 3. AI 自动读取跨层思维指南
+  #    mapping: UI → API → DB → API → UI
+
+  # 4. AI 按层次开发
+  #    Phase 1: Database (comments 表)
+  #    Phase 2: Backend API (POST /api/comments)
+  #    Phase 3: Frontend (CommentForm 组件)
+
+  # 5. 跨层检查（Hook 自动触发，或手动运行）
+  /check-cross-layer
+  ```
+  </Tab>
+  <Tab title="Cursor">
+  ```bash
+  # 1. 启动（必须）
+  /start
+
+  # 2. 加载后端 + 前端规范
+  /trellis-before-dev
+  /trellis-before-dev
+
+  # 3. 描述任务
+  "添加商品评论功能，需要数据库、API、前端"
+
+  # 4. AI 按层次开发...
+
+  # 5. 手动跨层检查
+  /trellis-check-cross-layer
+  ```
+  </Tab>
+</Tabs>
+
+```bash
+# ✅ Database Layer: comments table created
+# ✅ API Layer: POST /api/comments endpoint
+# ✅ UI Layer: CommentForm component
+# ✅ Data Flow: UI → API → DB ✓
+
+# 6. 测试、提交、记录
+```
+
+### 团队协作
+
+<Tip>
+团队协作的核心机制（Spec 共享、任务指派）是平台无关的。不同平台的团队成员可以共用同一套 Spec。
+</Tip>
+
+```bash
+# Alice 开发并总结规范（以 Claude Code 为例，Cursor 用 /start）
+trellis init -u alice
+/start
+# ... 开发认证系统 ...
+# 将 auth 相关最佳实践手动写入 spec
+git add .trellis/spec/
+git commit -m "docs: add auth guidelines"
+git push
+
+# Bob 拉取后自动受益
+git pull
+trellis init -u bob
+/start
+"添加权限管理"
+# AI 自动读取 Alice 写的 auth guidelines
+# Bob 的代码自动遵循 Alice 的规范
+```
+
+### Bug 调试与 break-loop
+
+```bash
+# 1. 启动
+/start
+
+# 2. 修 bug
+"用户在某些情况下无法登录"
+
+# 3. AI 调试修复...
+
+# 4. 深度分析
+/break-loop
+
+# AI 输出：
+# Root Cause: B - Cross-layer Contract Violation
+#   前端发送的 token 格式和后端期望的不一致
+#
+# Prevention:
+#   - 更新 spec: 定义 token 格式契约
+#   - 添加类型约束: 共享 Token interface
+#   - 添加测试: token 格式验证
+
+# 5. 手动更新 spec
+# 将 token 格式契约写入 .trellis/spec/ 文件
+```
+
+### 规范迭代飞轮
+
+```bash
+# 发现模式
+# AI 在开发中发现：所有 API 错误都应该返回统一格式
+# { error: string, code: number, details?: any }
+
+# 手动更新 spec
+# 将这个模式写入 .trellis/spec/backend/error-handling.md
+
+# 下次任何人做 API 开发
+# Hook 自动注入 error-handling.md
+# AI 自动遵循统一错误格式
+# → 所有 API 错误格式一致
+```
+
+### 从零搭建新项目
+
+```bash
+# 1. 创建项目
+mkdir my-app && cd my-app
+git init
+
+# 2. 安装 Trellis
+npm install -g @mindfoldhq/trellis@latest
+trellis init -u your-name
+
+# 3. trellis init 已自动创建 bootstrap 引导任务（00-bootstrap-guidelines）
+/start
+# AI 会自动检测 bootstrap 任务，分析你的代码库并帮你填充 spec
+
+# 4. 手动补充核心规范
+# 编辑 .trellis/spec/backend/index.md 等
+# 写下你的技术栈选择、编码约定、目录结构
+
+# 5. 开始开发
+/start
+"搭建项目基础架构"
+```

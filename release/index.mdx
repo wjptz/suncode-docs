@@ -7,6 +7,44 @@ description: 'All-in-one AI framework & toolkit for Claude Code & Cursor'
 
 AI's capabilities grow like vines — full of vitality but spreading everywhere. Trellis is scaffolding for AI, guiding it along the path of your conventions.
 
+### One-Line Summary
+
+**Trellis is scaffolding for AI coding assistants** — it automatically injects your project specs into every AI session, so the AI writes code following your standards instead of improvising.
+
+> AI's capabilities grow like vines — full of vitality but spreading everywhere.
+> Trellis is scaffolding for AI, guiding it along the path of your conventions.
+
+### Comparison with Traditional Approaches
+
+| Dimension | `.cursorrules` | `CLAUDE.md` | Skills | **Trellis** |
+|------|---------------|-------------|--------|------------|
+| Spec injection method | Manually loaded each conversation | Auto-loaded but easily truncated | User-initiated | **Hook auto-injection, precisely loaded per task** |
+| Spec granularity | One large file | One large file | One per Skill | **Modular files, composed per task** |
+| Cross-session memory | None | None | None | **Workspace journal persistence** |
+| Parallel development | Not supported | Not supported | Not supported | **Multi-Agent worktree parallelism** |
+| Quality control | None | None | None | **Ralph Loop automatic verification** |
+| Team sharing | Single user | Single user | Shareable but no standard | **Git-versioned Spec library** |
+| Platform support | Cursor only | Claude Code only | Per platform | **14 platforms** (Claude Code, Cursor, OpenCode, Codex, iFlow, Gemini CLI, Kilo, Kiro, Qoder, GitHub Copilot, Windsurf, CodeBuddy, Antigravity, Factory Droid) |
+
+### Core Concepts at a Glance
+
+| Concept | Description | Location |
+|------|------|---------|
+| **Spec** | Your coding standards, written in Markdown. AI reads specs before writing code | `.trellis/spec/` |
+| **Workspace** | Each developer's session logs, letting AI remember what was done last time | `.trellis/workspace/` |
+| **Task** | A work unit containing requirements docs and context configuration | `.trellis/tasks/` |
+| **Hook** | Auto-triggered scripts that inject context at session start, Agent invocations, etc. `[Claude Code exclusive]` | `.claude/hooks/` |
+| **Agent** | Specialized AI sub-processes such as Implement, Check, Debug, etc. `[Claude Code exclusive]` | `.claude/agents/` |
+| **Skill** | Reusable AI capability modules, shareable across projects | `.claude/skills/` |
+| **Journal** | Session log files recording what was done in each development session | `.trellis/workspace/{name}/journal-N.md` |
+
+<Info>
+Hook and Agent systems are Claude Code exclusive features. Cursor, Codex, and other platforms load specs manually via Slash commands,
+achieving the same effect. Spec, Workspace, Task, Journal, and other core concepts are universal across all platforms.
+</Info>
+
+---
+
 ## Why Trellis?
 
 | Feature                       | Problem Solved                                                                              |
@@ -18,16 +56,16 @@ AI's capabilities grow like vines — full of vitality but spreading everywhere.
 | **Session Persistence**       | Work traces persist in your repo. AI remembers project context across sessions              |
 
 <CardGroup cols={2}>
-  <Card title="Quick Start" icon="rocket" href="/guide/ch02-quick-start">
+  <Card title="Quick Start" icon="rocket" href="/start/install-and-first-task">
     Install Trellis and set up your first project in 5 minutes.
   </Card>
-  <Card title="Architecture" icon="book" href="/guide/ch04-architecture">
+  <Card title="Architecture" icon="book" href="/advanced/architecture">
     Understand specs, tasks, hooks, and workspaces.
   </Card>
-  <Card title="Commands" icon="terminal" href="/guide/ch05-commands">
+  <Card title="Commands" icon="terminal" href="/start/everyday-use">
     Complete reference for all 13 slash commands.
   </Card>
-  <Card title="Real-World Scenarios" icon="code" href="/guide/ch08-real-world">
+  <Card title="Real-World Scenarios" icon="code" href="/start/everyday-use">
     From bug fixes to full-stack development.
   </Card>
 </CardGroup>

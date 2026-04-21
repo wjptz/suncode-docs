@@ -24,7 +24,7 @@ title: 'Understanding Trellis Through Kubernetes'
 
 ## 1. K8s Core Concepts Overview
 
-### 1.1 Imperative vs Declarative
+### Imperative vs Declarative
 
 **Imperative**: Describe "how to do it"
 
@@ -58,7 +58,7 @@ spec:
 | Idempotency    | Requires extra handling     | Naturally idempotent   |
 | Error Recovery | Requires user intervention  | Self-healing           |
 
-### 1.2 Control Loop
+### Control Loop
 
 The core of K8s is the **Control Loop**:
 
@@ -86,7 +86,7 @@ No manual intervention needed. System auto-detects, auto-recovers, auto-adapts.
 
 ## 2. Trellis and K8s Analogy
 
-### 2.1 Architecture Mapping
+### Architecture Mapping
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -104,7 +104,7 @@ No manual intervention needed. System auto-detects, auto-recovers, auto-adapts.
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2 Core Component Mapping
+### Core Component Mapping
 
 | Kubernetes          | Trellis        | Description                     |
 | ------------------- | -------------- | ------------------------------- |
@@ -115,7 +115,7 @@ No manual intervention needed. System auto-detects, auto-recovers, auto-adapts.
 | ConfigMap           | jsonl + Hook   | Injects config/context          |
 | Actual State        | Final Code     | Product after reconciliation    |
 
-### 2.3 Key Insight
+### Key Insight
 
 K8s solves: **Infrastructure complexity** — Uses declarative to abstract away details, Controller handles reconciliation.
 
@@ -135,7 +135,7 @@ Common ground:
 
 Trellis reconciliation is achieved through two mechanisms working together: **Hook Injection** and **Ralph Loop**.
 
-### 3.1 Hook Injection
+### Hook Injection
 
 **Timing**: Automatically triggered each time a Subagent is called
 
@@ -170,7 +170,7 @@ Plan/Research Agent finds needed files in advance
 - Traceable — jsonl records what context each task used
 - Decoupled — Agent doesn't need to search, focuses on execution
 
-### 3.2 Ralph Loop
+### Ralph Loop
 
 **Essence**: A programmatic quality gate that intercepts Agent stop requests and forces continuation if verification fails.
 
@@ -229,7 +229,7 @@ verify:
 
 ## 4. Complete Workflow
 
-### 4.1 Phase Overview
+### Phase Overview
 
 ```
 Task Directory
@@ -281,7 +281,7 @@ Task Directory
     Compliant Code + PR
 ```
 
-### 4.2 Exception Path
+### Exception Path
 
 If Check Agent reports unfixable issues, Dispatch can call **Debug Agent** for deep analysis. This is not the default flow, but exception handling.
 
@@ -289,7 +289,7 @@ If Check Agent reports unfixable issues, Dispatch can call **Debug Agent** for d
 
 ## 5. Why This Design
 
-### 5.1 One-Click Complete Workflow
+### One-Click Complete Workflow
 
 `/trellis:start` or `/trellis:parallel` (Claude Code only) launches with one click, AI completes the entire flow:
 
@@ -299,7 +299,7 @@ Plan → Implement → Check → Finish → PR
 
 Users don't need to guide step-by-step. What to do at each phase, which guidelines to reference — it's all predefined.
 
-### 5.2 Continuous Accumulation of Development Guidelines
+### Continuous Accumulation of Development Guidelines
 
 ```
 Guidelines stored in .trellis/spec/
@@ -313,7 +313,7 @@ AI executes with guidelines ──> Finds issues ──> Updates guidelines
 
 Thinking Guides help discover "didn't think of that" problems.
 
-### 5.3 Preventing Context Rot
+### Preventing Context Rot
 
 Too much context causes LLM to:
 
@@ -329,7 +329,7 @@ Trellis injects by phase:
 
 Each phase's Agent only receives context relevant to its task.
 
-### 5.4 Programmatic Quality Control
+### Programmatic Quality Control
 
 ```
 Traditional approach:
@@ -341,7 +341,7 @@ Trellis approach:
 
 Doesn't rely on AI's self-judgment, uses programmatic enforcement.
 
-### 5.5 Traceability
+### Traceability
 
 | Record    | Content                      |
 | --------- | ---------------------------- |

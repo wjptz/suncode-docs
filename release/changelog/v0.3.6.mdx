@@ -8,7 +8,7 @@ Task lifecycle hooks, custom template registries, parent-child subtasks, and Pre
 ## Enhancements
 
 - **Custom template registries**: `trellis init --registry` supports fetching Spec templates from custom GitHub/GitLab/Bitbucket repositories. Automatically detects marketplace mode (`index.json`) and direct download mode
-- **Task lifecycle hooks**: `.trellis/config.yaml` gains a `hooks` configuration block supporting four events: `after_create`, `after_start`, `after_finish`, and `after_archive`. Task information is passed via the `TASK_JSON_PATH` environment variable. Ships with a Linear sync hook example. See: [Task Management](/guide/ch06-task-management)
+- **Task lifecycle hooks**: `.trellis/config.yaml` gains a `hooks` configuration block supporting four events: `after_create`, `after_start`, `after_finish`, and `after_archive`. Task information is passed via the `TASK_JSON_PATH` environment variable. Ships with a Linear sync hook example. See: [Task Management](/start/everyday-use)
 - **Parent-child subtasks**: `task.py add-subtask` / `remove-subtask` commands for linking tasks. `task.json` gains `children`, `parent`, and `meta` fields. `task.py create --parent` creates a child task directly
 - **Record-session prompt improvement**: Archive decision is now based on actual work state rather than the `task.json` status field
 - **Brainstorm prompt update**: `/brainstorm` now includes a subtask decomposition step for complex tasks
