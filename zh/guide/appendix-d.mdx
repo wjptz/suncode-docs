@@ -38,10 +38,4 @@ title: '附录 D：JSONL 配置格式参考'
 | `check.jsonl`     | `trellis-check`     | 质量 checklist spec + lint / typecheck 规则       |
 | `research.jsonl`  | `trellis-research`  | 项目结构概览 + 调研目标                           |
 
-### 0.5.0-beta.0 移除的内容
-
-旧版本还引用过 `debug.jsonl` 和独立的 `debug` sub-agent。文件和 agent 都已移除，bug 修复在主会话或通过 `trellis-break-loop` 完成。
-
-旧的 **completion marker** 机制（把 `reason` 字段转成 `TYPECHECK_FINISH` 这类字符串，供 Ralph Loop 判断 check agent 是否"完成"）也移除了。`trellis-check` sub-agent 自带的重试循环不再依赖这种 marker。
-
 ---

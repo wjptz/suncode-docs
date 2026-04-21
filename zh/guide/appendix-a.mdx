@@ -51,17 +51,21 @@ title: '附录 A：关键文件路径速查'
 
 ### 其他平台
 
-各平台写到自己的目录下（完整布局见 §13）：
+各平台写到自己的目录下（完整布局见第 13 章）：
 
-- `.cursor/commands/`、`.cursor/rules/trellis.mdc`
+- `.cursor/commands/`、`.cursor/skills/`、`.cursor/agents/`、`.cursor/hooks/`、`.cursor/hooks.json`、`.cursor/rules/trellis.mdc`
 - `.opencode/commands/trellis/`、`.opencode/agents/`、`.opencode/skills/`、`.opencode/plugins/`
 - `.codex/prompts/`、`.codex/skills/`、`.codex/agents/`（TOML）、`.codex/hooks/`、`AGENTS.md`
-- `.kiro/steering/`、`.kiro/prompts/`、`.kiro/skills/`
-- `.gemini/commands/trellis/`（TOML）
-- `.qoder/rules/`、`.qoder/skills/`
-- `.codebuddy/commands/trellis/`
-- `.factory/commands/trellis/`、`.factory/agents/`、`.factory/skills/`、`.factory/hooks/`
-- `.github/copilot-instructions.md`、`.github/prompts/`
+- `.kiro/steering/`、`.kiro/prompts/`、`.kiro/skills/`、`.kiro/agents/`
+- `.gemini/commands/trellis/`（TOML）、`.gemini/skills/`、`.gemini/agents/`、`.gemini/hooks/`
+- `.qoder/rules/`、`.qoder/skills/`、`.qoder/agents/`、`.qoder/hooks/`
+- `.codebuddy/commands/trellis/`、`.codebuddy/skills/`、`.codebuddy/agents/`、`.codebuddy/hooks/`
+- `.factory/commands/trellis/`、`.factory/droids/`、`.factory/skills/`、`.factory/hooks/`
+- `.github/copilot-instructions.md`、`.github/prompts/`、`.github/skills/`、`.github/agents/`、`.github/copilot/hooks/`
+- `.kilocode/workflows/`、`.kilocode/skills/`
+- `.agent/workflows/`、`.agent/skills/`（Antigravity）
+- `.windsurf/workflows/`、`.windsurf/rules/`
+- `.agents/skills/`（跨平台共享层，由 Codex configurator 写入）
 
 ### 脚本
 
@@ -73,22 +77,5 @@ title: '附录 A：关键文件路径速查'
 | `.trellis/scripts/create_bootstrap.py` | 首次 spec bootstrap               |
 | `.trellis/scripts/get_developer.py`    | 开发者身份工具                    |
 | `.trellis/scripts/init_developer.py`   | 开发者初始化                      |
-
-### 0.5.0-beta.0 移除的内容
-
-| 路径                                               | 原因                                                |
-| -------------------------------------------------- | --------------------------------------------------- |
-| `.trellis/worktree.yaml`                           | Multi-Agent Pipeline 移除                           |
-| `.trellis/scripts/multi-agent/`                    | Multi-Agent Pipeline 移除                           |
-| `.trellis/.ralph-state.json`                       | Ralph Loop 移除                                     |
-| `.claude/agents/dispatch.md`                       | 主会话直接编排                                      |
-| `.claude/agents/plan.md`                           | 由 `trellis-brainstorm` skill 替代                  |
-| `.claude/agents/debug.md`                          | 折入主会话 + `trellis-break-loop`                   |
-| `.claude/hooks/ralph-loop.py`                      | `trellis-check` sub-agent 自带循环                  |
-| `.claude/commands/trellis/parallel.md`             | Multi-Agent Pipeline 移除                           |
-| `.claude/commands/trellis/record-session.md`       | 折入 `/trellis:finish-work`                         |
-| `.claude/commands/trellis/before-{backend,frontend}-dev.md` | `trellis-before-dev` skill               |
-| `.claude/commands/trellis/check-{backend,frontend,cross-layer}.md` | `trellis-check` skill + sub-agent |
-| `.claude/commands/trellis/{onboard,create-command,integrate-skill}.md` | 从原生命令集移除         |
 
 ---

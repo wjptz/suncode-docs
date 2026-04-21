@@ -51,17 +51,21 @@ title: 'Appendix A: Key File Paths Quick Reference'
 
 ### Other platforms
 
-Each platform writes into its own directory (see §13 for the full layout):
+Each platform writes into its own directory (see chapter 13 for the full layout):
 
-- `.cursor/commands/`, `.cursor/rules/trellis.mdc`
+- `.cursor/commands/`, `.cursor/skills/`, `.cursor/agents/`, `.cursor/hooks/`, `.cursor/hooks.json`, `.cursor/rules/trellis.mdc`
 - `.opencode/commands/trellis/`, `.opencode/agents/`, `.opencode/skills/`, `.opencode/plugins/`
 - `.codex/prompts/`, `.codex/skills/`, `.codex/agents/` (TOML), `.codex/hooks/`, `AGENTS.md`
-- `.kiro/steering/`, `.kiro/prompts/`, `.kiro/skills/`
-- `.gemini/commands/trellis/` (TOML)
-- `.qoder/rules/`, `.qoder/skills/`
-- `.codebuddy/commands/trellis/`
-- `.factory/commands/trellis/`, `.factory/agents/`, `.factory/skills/`, `.factory/hooks/`
-- `.github/copilot-instructions.md`, `.github/prompts/`
+- `.kiro/steering/`, `.kiro/prompts/`, `.kiro/skills/`, `.kiro/agents/`
+- `.gemini/commands/trellis/` (TOML), `.gemini/skills/`, `.gemini/agents/`, `.gemini/hooks/`
+- `.qoder/rules/`, `.qoder/skills/`, `.qoder/agents/`, `.qoder/hooks/`
+- `.codebuddy/commands/trellis/`, `.codebuddy/skills/`, `.codebuddy/agents/`, `.codebuddy/hooks/`
+- `.factory/commands/trellis/`, `.factory/droids/`, `.factory/skills/`, `.factory/hooks/`
+- `.github/copilot-instructions.md`, `.github/prompts/`, `.github/skills/`, `.github/agents/`, `.github/copilot/hooks/`
+- `.kilocode/workflows/`, `.kilocode/skills/`
+- `.agent/workflows/`, `.agent/skills/` (Antigravity)
+- `.windsurf/workflows/`, `.windsurf/rules/`
+- `.agents/skills/` (shared cross-platform layer, written by Codex configurator)
 
 ### Scripts
 
@@ -73,22 +77,5 @@ Each platform writes into its own directory (see §13 for the full layout):
 | `.trellis/scripts/create_bootstrap.py` | First-time spec bootstrap          |
 | `.trellis/scripts/get_developer.py`    | Developer identity utility         |
 | `.trellis/scripts/init_developer.py`   | Developer initialization           |
-
-### What was removed in 0.5.0-beta.0
-
-| Path                                               | Why                                                |
-| -------------------------------------------------- | -------------------------------------------------- |
-| `.trellis/worktree.yaml`                           | Multi-Agent Pipeline removed                       |
-| `.trellis/scripts/multi-agent/`                    | Multi-Agent Pipeline removed                       |
-| `.trellis/.ralph-state.json`                       | Ralph Loop removed                                 |
-| `.claude/agents/dispatch.md`                       | Main session orchestrates directly                 |
-| `.claude/agents/plan.md`                           | Replaced by `trellis-brainstorm` skill             |
-| `.claude/agents/debug.md`                          | Folded into main session + `trellis-break-loop`    |
-| `.claude/hooks/ralph-loop.py`                      | `trellis-check` sub-agent owns its own loop        |
-| `.claude/commands/trellis/parallel.md`             | Multi-Agent Pipeline removed                       |
-| `.claude/commands/trellis/record-session.md`       | Folded into `/trellis:finish-work`                 |
-| `.claude/commands/trellis/before-{backend,frontend}-dev.md` | `trellis-before-dev` skill              |
-| `.claude/commands/trellis/check-{backend,frontend,cross-layer}.md` | `trellis-check` skill + sub-agent |
-| `.claude/commands/trellis/{onboard,create-command,integrate-skill}.md` | Removed from shipped surface |
 
 ---

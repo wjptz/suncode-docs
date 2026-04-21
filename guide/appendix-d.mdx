@@ -38,10 +38,4 @@ For directory entries, the hook reads all `.md` files in the directory, up to 20
 | `check.jsonl`     | `trellis-check`     | quality checklist specs + lint / typecheck rules  |
 | `research.jsonl`  | `trellis-research`  | project structure overview + investigation targets|
 
-### Removed in 0.5.0-beta.0
-
-Earlier versions also referenced `debug.jsonl` for a separate `debug` sub-agent. Both the file and the sub-agent were removed; bug fixing now happens in the main session or through `trellis-break-loop`.
-
-The old **completion marker** scheme (generating strings like `TYPECHECK_FINISH` from `reason` fields so the Ralph Loop could detect when the check agent was "done") is also gone. The `trellis-check` sub-agent's own retry loop no longer relies on markers.
-
 ---

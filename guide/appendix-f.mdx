@@ -6,11 +6,11 @@ title: 'Appendix F: FAQ'
 
 ### Q1: Should I trigger anything at the start of a session?
 
-On Claude Code, OpenCode, and Droid the SessionStart hook injects context automatically, so the answer is "no, just describe your task". On other platforms, run `/trellis:start` (or `@trellis:start` on Kiro) to load the full context report.
+On platforms with a SessionStart hook (Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid — plus Codex if you set `codex_hooks = true`), context is injected automatically, so the answer is "no, just describe your task". On platforms without a SessionStart hook (Kiro, Kilo, Antigravity, Windsurf), run `/trellis:start` (or `@trellis:start` on Kiro) to load the full context report.
 
-### Q2: I used to rely on `/parallel`. What's the replacement?
+### Q2: How do I develop in parallel?
 
-There isn't one. The Multi-Agent Pipeline was removed in 0.5.0-beta.0. To develop in parallel today, open multiple sessions on separate branches and manage them manually.
+Open multiple sessions on separate branches. Most modern agent CLIs and IDEs now have native worktree support — use that for isolation. Trellis's older `/parallel` pipeline and `worktree.yaml` were removed in 0.5 because native tooling is better.
 
 ### Q3: How do I make the AI verify quality before I commit?
 
@@ -75,7 +75,7 @@ cd your-project
 trellis init -u your-name
 ```
 
-Claude Code on Windows requires `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` in `.claude/settings.json` so hook scripts resolve paths correctly. `trellis init` writes this automatically.
+`trellis init` writes `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` into `.claude/settings.json` automatically (since 0.5.0-beta.8). That env var keeps the Bash tool's cwd stable so hook scripts resolve paths correctly on Windows — no manual setup required.
 
 ### Q12: Do I need to reconfigure when I switch between AI coding tools?
 
@@ -95,22 +95,24 @@ The `.trellis/` directory (spec, workspace, tasks) is shared across all tools; o
 | Skill      | Platform (auto-match) | Phase-level workflows (brainstorm, before-dev, check, update-spec, break-loop) |
 | Sub-agent  | Main session (spawn) | Isolated roles (implement, check, research)       |
 
-See chapter 12 for guidance on picking the right one.
+See chapters 9–12 for guidance on picking the right primitive.
 
 ### Q14: Are shared skills (`.agents/skills/`) still a thing?
 
-Not in 0.5. Earlier Trellis versions wrote some skills to a shared `.agents/skills/` directory that Codex / Kimi CLI / Amp / Cline could read. Since 0.5.0-beta.0, skills are delivered per-platform under `.{platform}/skills/`. You can still author portable skills by copying `SKILL.md` into each platform's directory.
+Yes. The Codex configurator writes all five Trellis skills to `.agents/skills/` as a cross-platform shared layer following the [agentskills.io](https://agentskills.io) standard. Any agent that reads that location (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, etc.) picks them up without needing a dedicated configurator.
 
 ### Q15: What changed from 0.4 → 0.5?
 
 The headline changes:
 
-- Skill-first: `brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` run as auto-trigger skills instead of slash commands.
-- Three sub-agents replaced six: `trellis-research` / `trellis-implement` / `trellis-check`. `dispatch` / `plan` / `debug` were removed.
-- Ralph Loop (the external SubagentStop hook that forced the check agent to retry) was removed. The check sub-agent owns its own loop.
-- Multi-Agent Pipeline, `/parallel`, and `worktree.yaml` were removed.
-- Platform support grew to 10+ (added Gemini CLI, Qoder, CodeBuddy, Droid, Copilot, Antigravity, Windsurf).
+- **Skill-first**: `brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` moved from slash commands to auto-trigger skills that the platform matches based on user intent.
+- **`workflow.md` is the single source of truth**: Phase definitions, skill routing, and per-turn workflow-state reminders all live in `.trellis/workflow.md`. Fork the workflow by editing one markdown file — no Python or hook changes needed (see chapter 8).
+- **Per-turn workflow-state breadcrumbs**: a new `inject-workflow-state.py` hook fires on every user message and injects a `<workflow-state>` block driven by the current task's status, keeping the AI aligned with the Plan → Execute → Finish phases.
+- **Three sub-agents replaced six**: `trellis-research` / `trellis-implement` / `trellis-check`. `dispatch` / `plan` / `debug` were removed; Ralph Loop and its SubagentStop hook were removed (the check sub-agent owns its retry loop now).
+- **Seven platforms upgraded to agent-capable**: Cursor / OpenCode / Gemini CLI / Qoder / CodeBuddy / Copilot / Droid all got sub-agents and hooks; `.trellis/` core is unchanged across 13 platforms.
+- **Multi-Agent Pipeline, `/parallel`, `worktree.yaml` removed**: native worktree support in modern agent CLIs replaces them.
+- **Forced migration gate**: breaking releases require `trellis update --migrate` and exit with instructions instead of silently leaving half-migrated files.
 
-For a full list, read the migration notes in the changelog for `v0.5.0-beta.0`.
+For the full list, read the changelog for `v0.5.0-beta.0`.
 
 ---

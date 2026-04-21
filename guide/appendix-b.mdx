@@ -54,7 +54,8 @@ Available as real sub-agents on Claude Code, OpenCode, Codex, Droid. On other pl
 | `set-branch`      | Set branch name        | `task.py set-branch "$DIR" "feature/xxx"`                                     |
 | `set-base-branch` | Set PR target branch   | `task.py set-base-branch "$DIR" "main"`                                       |
 | `set-scope`       | Set scope              | `task.py set-scope "$DIR" "auth"`                                             |
-| `create-pr`       | Create PR              | `task.py create-pr`                                                           |
+| `add-subtask`     | Link child to parent   | `task.py add-subtask <parent-dir> <child-dir>`                                |
+| `remove-subtask`  | Unlink child from parent | `task.py remove-subtask <parent-dir> <child-dir>`                           |
 | `archive`         | Archive task           | `task.py archive <name>`                                                      |
 | `list`            | List active tasks      | `task.py list [--mine] [--status <s>]`                                        |
 | `list-archive`    | List archived tasks    | `task.py list-archive [YYYY-MM]`                                              |
@@ -74,19 +75,5 @@ Available as real sub-agents on Claude Code, OpenCode, Codex, Droid. On other pl
 # Spec bootstrap (first-time)
 ./.trellis/scripts/create_bootstrap.py
 ```
-
-### What was removed in 0.5.0-beta.0
-
-| Removed                                    | Replacement                                                        |
-| ------------------------------------------ | ------------------------------------------------------------------ |
-| `/parallel` + Multi-Agent Pipeline         | (removed, no replacement)                                          |
-| `/record-session`                          | `/trellis:finish-work` step 3                                      |
-| `/before-backend-dev`, `/before-frontend-dev` | `trellis-before-dev` skill                                      |
-| `/check-backend`, `/check-frontend`, `/check-cross-layer` | `trellis-check` skill + sub-agent                   |
-| `/brainstorm`, `/break-loop`, `/update-spec` | `trellis-brainstorm` / `trellis-break-loop` / `trellis-update-spec` skills |
-| `/onboard`, `/create-command`, `/integrate-skill` | (removed from shipped surface)                                |
-| `worktree.yaml`                            | (removed along with Multi-Agent Pipeline)                          |
-| `current_phase` / `next_action` in task.json | Simplified task schema; sub-agents drive flow                    |
-| Ralph Loop (`ralph-loop.py` hook)          | `trellis-check` sub-agent has its own internal loop               |
 
 ---

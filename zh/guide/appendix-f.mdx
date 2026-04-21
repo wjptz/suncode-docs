@@ -6,11 +6,11 @@ title: '附录 F：FAQ'
 
 ### Q1: 每次开会话要先跑点什么吗？
 
-Claude Code、OpenCode、Droid 上 SessionStart hook 自动注入上下文，直接描述任务就行。其他平台跑 `/trellis:start`（Kiro 是 `@trellis:start`）加载完整上下文报告。
+有 SessionStart hook 的平台（Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid——以及开了 `codex_hooks = true` 的 Codex）上下文自动注入，直接描述任务就行。没有 SessionStart hook 的平台（Kiro、Kilo、Antigravity、Windsurf）跑 `/trellis:start`（Kiro 是 `@trellis:start`）加载完整上下文报告。
 
-### Q2: 我以前靠 `/parallel`，现在用什么？
+### Q2: 怎么做并行开发？
 
-没有替代。Multi-Agent Pipeline 在 0.5.0-beta.0 移除。今天要并行开发，自己手动在不同分支上开多个会话。
+在不同分支上开多个会话即可。现在主流的 agent CLI / IDE 都有原生 worktree 支持，用那个做隔离。Trellis 老的 `/parallel` pipeline 和 `worktree.yaml` 在 0.5 已移除，因为原生工具更好用。
 
 ### Q3: 怎么让 AI 在我 commit 前验证质量？
 
@@ -75,7 +75,7 @@ cd your-project
 trellis init -u your-name
 ```
 
-Windows 上的 Claude Code 需要在 `.claude/settings.json` 里写 `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1`，让 hook 脚本正确解析路径。`trellis init` 自动写好这项。
+`trellis init` 会自动把 `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` 写进 `.claude/settings.json`（0.5.0-beta.8 起）。这个环境变量让 Bash 工具的 cwd 保持稳定，hook 脚本在 Windows 上也能正确解析路径——不需要手动配。
 
 ### Q12: 切换 AI 编码工具时要重配吗？
 
@@ -95,22 +95,24 @@ trellis init -u your-name --claude
 | Skill      | 平台自动匹配          | 阶段工作流（brainstorm、before-dev、check、update-spec、break-loop） |
 | Sub-agent  | 主会话 spawn          | 隔离角色（implement、check、research）             |
 
-选型指南见第 12 章。
+选型指南见第 9–12 章。
 
 ### Q14: `.agents/skills/` 共享目录还有吗？
 
-0.5 已经没有。早期版本把部分 skill 写到 `.agents/skills/`，供 Codex / Kimi CLI / Amp / Cline 共享读取。0.5.0-beta.0 起，skill 按平台写在各自的 `.{platform}/skills/`。需要跨平台可移植 skill 时，把 `SKILL.md` 拷到每个平台的目录。
+有。Codex configurator 把 Trellis 五个 skill 都写到 `.agents/skills/` 作为跨平台共享层，遵循 [agentskills.io](https://agentskills.io) 规范。任何读这个位置的 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）都能直接用，不需要单独出一个 configurator。
 
 ### Q15: 0.4 → 0.5 改了什么？
 
 主要变化：
 
-- Skill-first：`brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` 从 slash 命令改为 auto-trigger skill。
-- 3 个 sub-agent 取代 6 个：`trellis-research` / `trellis-implement` / `trellis-check`；`dispatch` / `plan` / `debug` 移除。
-- Ralph Loop（那个强制 check agent 重试的外部 SubagentStop hook）移除，check sub-agent 自带循环。
-- Multi-Agent Pipeline、`/parallel`、`worktree.yaml` 移除。
-- 支持平台扩到 10+（新增 Gemini CLI、Qoder、CodeBuddy、Droid、Copilot、Antigravity、Windsurf）。
+- **Skill-first**：`brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` 从 slash 命令改为 auto-trigger skill，由平台根据用户意图自动匹配。
+- **`workflow.md` 是单一事实源**：Phase 定义、skill 路由、每轮 workflow-state 提醒都在 `.trellis/workflow.md` 里。Fork 工作流 = 改一个 markdown 文件，不用动 Python、不用改 hook（见第 8 章）。
+- **每轮 workflow-state 面包屑**：新增 `inject-workflow-state.py` hook，每条用户消息触发一次，按当前任务 status 注入 `<workflow-state>` 块，帮 AI 稳定走完 Plan → Execute → Finish 三阶段。
+- **3 个 sub-agent 取代 6 个**：`trellis-research` / `trellis-implement` / `trellis-check`；`dispatch` / `plan` / `debug` 移除；Ralph Loop 和它的 SubagentStop hook 也移除（check sub-agent 自带重试循环）。
+- **7 个平台升级为 agent-capable**：Cursor / OpenCode / Gemini CLI / Qoder / CodeBuddy / Copilot / Droid 都拿到了 sub-agent + hook；`.trellis/` 核心跨 13 个平台保持一致。
+- **Multi-Agent Pipeline、`/parallel`、`worktree.yaml` 移除**：现代 agent CLI 的原生 worktree 支持已经替代它。
+- **强制迁移 gate**：破坏性版本必须加 `--migrate`，没加会 exit 并打印说明，不再静默留下半迁移状态。
 
-完整清单见 `v0.5.0-beta.0` changelog 的迁移说明。
+完整清单见 `v0.5.0-beta.0` changelog。
 
 ---
