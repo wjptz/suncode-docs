@@ -8,19 +8,15 @@ title: 'Appendix F: FAQ'
 
 On platforms with a SessionStart hook (Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid — plus Codex if you set `codex_hooks = true`), context is injected automatically, so the answer is "no, just describe your task". On platforms without a SessionStart hook (Kiro, Kilo, Antigravity, Windsurf), run `/trellis:start` (or `@trellis:start` on Kiro) to load the full context report.
 
-### Q2: How do I develop in parallel?
-
-Open multiple sessions on separate branches. Most modern agent CLIs and IDEs now have native worktree support — use that for isolation. Trellis's older `/parallel` pipeline and `worktree.yaml` were removed in 0.5 because native tooling is better.
-
-### Q3: How do I make the AI verify quality before I commit?
+### Q2: How do I make the AI verify quality before I commit?
 
 That's what the `trellis-check` sub-agent does. After the implementation phase, the main session spawns it (or, on platforms without sub-agents, the skill runs inline). It reads the relevant specs, runs `lint` / `typecheck` / `test`, compares the diff against the quality checklist, and self-fixes violations. No external retry loop is involved.
 
-### Q4: What should I do after `trellis-break-loop` analyzes a bug?
+### Q3: What should I do after `trellis-break-loop` analyzes a bug?
 
 The skill analyzes the root cause and proposes prevention mechanisms. Route the findings into the `trellis-update-spec` skill, which writes them into `.trellis/spec/`. Next time anyone works in that area, the updated spec is injected automatically.
 
-### Q5: Where is session history stored?
+### Q4: Where is session history stored?
 
 ```
 .trellis/workspace/
@@ -30,15 +26,15 @@ The skill analyzes the root cause and proposes prevention mechanisms. Route the 
     └── journal-N.md      # Session journal (new file every ~2000 lines)
 ```
 
-### Q6: How detailed should specs be?
+### Q5: How detailed should specs be?
 
 Aim for 200-500 lines per file, 20-50 lines per section. Concrete code examples beat abstract rules. Update specs as soon as something is out of date.
 
-### Q7: Will multiple developers using Trellis cause conflicts?
+### Q6: Will multiple developers using Trellis cause conflicts?
 
 Per-developer state is isolated (`workspace/{name}/`, `.developer`, `.current-task`). Shared state is `.trellis/spec/` and `.trellis/tasks/`; they go through PR review like any code. Use `--assignee` when creating a task to avoid collisions.
 
-### Q8: How do I migrate an existing project to Trellis?
+### Q7: How do I migrate an existing project to Trellis?
 
 1. `npm install -g @mindfoldhq/trellis@beta`
 2. `trellis init -u your-name` in the project root (auto-creates a bootstrap task).
@@ -47,7 +43,7 @@ Per-developer state is isolated (`workspace/{name}/`, `.developer`, `.current-ta
 5. Add `.trellis/` and whichever `.{platform}/` directories you use to git and commit.
 6. Teammates pull, then run `trellis init -u their-name`.
 
-### Q9: How do I update Trellis without losing my customizations?
+### Q8: How do I update Trellis without losing my customizations?
 
 ```bash
 trellis update --dry-run   # preview
@@ -58,11 +54,11 @@ Trellis hashes every template file at install time. Files you've modified are de
 
 For major versions, add `--migrate` to apply rename / delete entries from the migration manifest. Without `--migrate`, a breaking manifest will exit with instructions rather than silently renaming files.
 
-### Q10: Can Cursor users get the same automation as Claude Code?
+### Q9: Can Cursor users get the same automation as Claude Code?
 
 Mostly. Cursor doesn't have a SessionStart hook, but `.cursor/rules/trellis.mdc` is an `alwaysApply` rule that carries the Trellis prelude into every conversation. Sub-agents don't exist in Cursor, so the work that would happen in `trellis-implement` / `trellis-check` runs inline in the main session instead. Skills are delivered as rule content and matched by Cursor's rule system.
 
-### Q11: How do Windows users install Trellis?
+### Q10: How do Windows users install Trellis?
 
 All Trellis scripts are Python, cross-platform:
 
@@ -77,7 +73,7 @@ trellis init -u your-name
 
 `trellis init` writes `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` into `.claude/settings.json` automatically (since 0.5.0-beta.8). That env var keeps the Bash tool's cwd stable so hook scripts resolve paths correctly on Windows — no manual setup required.
 
-### Q12: Do I need to reconfigure when I switch between AI coding tools?
+### Q11: Do I need to reconfigure when I switch between AI coding tools?
 
 No. `trellis init` with multiple platform flags writes all of them. If you started with Cursor only and later add Claude Code, re-run:
 
@@ -87,7 +83,7 @@ trellis init -u your-name --claude
 
 The `.trellis/` directory (spec, workspace, tasks) is shared across all tools; only the `.{platform}/` directory is new.
 
-### Q13: What's the difference between a command, a skill, and a sub-agent?
+### Q12: What's the difference between a command, a skill, and a sub-agent?
 
 | Primitive  | Triggered by         | Typical use                                       |
 | ---------- | -------------------- | ------------------------------------------------- |
@@ -97,11 +93,11 @@ The `.trellis/` directory (spec, workspace, tasks) is shared across all tools; o
 
 See chapters 9–12 for guidance on picking the right primitive.
 
-### Q14: Are shared skills (`.agents/skills/`) still a thing?
+### Q13: Are shared skills (`.agents/skills/`) still a thing?
 
 Yes. The Codex configurator writes all five Trellis skills to `.agents/skills/` as a cross-platform shared layer following the [agentskills.io](https://agentskills.io) standard. Any agent that reads that location (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, etc.) picks them up without needing a dedicated configurator.
 
-### Q15: What changed from 0.4 → 0.5?
+### Q14: What changed from 0.4 → 0.5?
 
 The headline changes:
 
