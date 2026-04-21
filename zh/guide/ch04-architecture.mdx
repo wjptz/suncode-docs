@@ -80,7 +80,7 @@ title: '架构全景'
     Codex 每个 session 自动读仓库根的 `AGENTS.md`。在 `~/.codex/config.toml` 里打开 `codex_hooks = true` 后 SessionStart hook 也会跑，行为和上面的 hook 可用 Tab 一致；不开启则只有 prelude 兜底。
   </Tab>
   <Tab title="Kiro">
-    Kiro 通过 `.kiro/` 下的 skill 文件交付 Trellis 内容。Kiro 的 Agent Hook 是用户自己配的（文件保存、构建成功等触发），Trellis 不出厂任何。想看完整上下文报告跑 `@trellis:start`。
+    Kiro 通过 `.kiro/` 下的 skill 文件交付 Trellis 内容。Kiro 的 Agent Hook 是用户自己配的（文件保存、构建成功等触发），Trellis 不原生带任何。想看完整上下文报告跑 `@trellis:start`。
   </Tab>
   <Tab title="Kilo / Antigravity / Windsurf">
     这三个平台只有 workflow + skill，没有 hook。手动跑入口 workflow（`/start.md` / `.agent/workflows/start.md` / `/trellis-start`），AI 内联读 `workflow.md` + `get_context.py` + spec 索引后询问你要做什么。
@@ -222,7 +222,7 @@ JSONL 里该放什么，取决于 sub-agent 执行这个任务需要什么：
 
 ### 4.4 Sub-agent 系统
 
-Trellis 出厂 3 个 sub-agent，每个角色明确、约束清晰、有独立的 JSONL spec 注入通道：
+Trellis 原生带有 3 个 sub-agent，每个角色明确、约束清晰、有独立的 JSONL spec 注入通道：
 
 | Sub-agent            | 角色                 | 约束                  | 主要上下文              |
 | -------------------- | -------------------- | --------------------- | ----------------------- |

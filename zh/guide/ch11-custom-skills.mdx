@@ -4,7 +4,7 @@ title: '定制 Skill'
 
 ## 定制 Skill
 
-Skill 是 Trellis 0.5 的主要扩展点。出厂的大部分工作流（brainstorm、before-dev、check、update-spec、break-loop）都以 auto-trigger skill 的形式交付。本章说明如何添加自己的 skill。
+Skill 是 Trellis 0.5 的主要扩展点。原生带有的大部分工作流（brainstorm、before-dev、check、update-spec、break-loop）都以 auto-trigger skill 的形式交付。本章说明如何添加自己的 skill。
 
 ### 11.1 Command vs. Sub-agent vs. Skill
 
@@ -135,6 +135,6 @@ description: |
 2. 在每个平台的 configurator 里加一步，把 skill 拷贝或适配进该平台的布局。
 3. Skill 随 Trellis 发布版本一起进化，保证 migration 一致。
 
-外部 skill：想引入社区 skill，把文件夹拉进对应平台目录并 commit。Trellis 目前没出厂自动化外部 skill 安装器。
+外部 skill：想引入社区 skill，把文件夹拉进对应平台目录并 commit。Trellis 目前没有原生的外部 skill 安装器。
 
 ---

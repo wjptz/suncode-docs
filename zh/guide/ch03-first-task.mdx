@@ -29,7 +29,7 @@ title: '你的第一个任务'
   之后和 Class-1 平台一样：打开终端，SessionStart hook 自动注入 Trellis 上下文，直接描述任务即可。
   </Tab>
   <Tab title="Kiro">
-  Kiro 默认通过 `.kiro/` 下的 agent / skill 文件交付 Trellis 内容。Kiro 的 Agent Hook 是用户自己配置的（文件保存触发、构建成功触发等），Trellis 不出厂任何 Agent Hook wiring。直接描述任务，Kiro 按 skill 匹配进入 brainstorm 流程；需要完整上下文报告时跑 `@trellis:start`。
+  Kiro 默认通过 `.kiro/` 下的 agent / skill 文件交付 Trellis 内容。Kiro 的 Agent Hook 是用户自己配置的（文件保存触发、构建成功触发等），Trellis 不原生带任何 Agent Hook wiring。直接描述任务，Kiro 按 skill 匹配进入 brainstorm 流程；需要完整上下文报告时跑 `@trellis:start`。
   </Tab>
   <Tab title="Kilo / Antigravity / Windsurf">
   这三个平台只有 workflow + skill，没有 hook 和 sub-agent。入口：

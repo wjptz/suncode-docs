@@ -99,7 +99,7 @@ trellis init -u your-name --kiro
 - `.kiro/prompts/trellis-*.md`：prompt 式命令
 - `.kiro/skills/*/SKILL.md`：auto-trigger skill（Kiro 按 description/YAML 匹配）
 
-Kiro 的 Agent Hook 可以在文件保存或构建成功时自动跑 Trellis skill，但这是用户自己配的；Trellis 不出厂任何 Kiro Agent Hook。
+Kiro 的 Agent Hook 可以在文件保存或构建成功时自动跑 Trellis skill，但这是用户自己配的；Trellis 不原生带任何 Kiro Agent Hook。
 
 ### 12.7 Gemini CLI
 
@@ -171,7 +171,7 @@ Droid（factory.ai）是 class-1 平台，有 hook + sub-agent：
 
 ### 12.12 其他支持平台
 
-Trellis 还出厂了上面能力矩阵之外几个平台的配置器：
+Trellis 还原生带有上面能力矩阵之外几个平台的配置器：
 
 - **Kilo**（`--kilo`）：写 `.kilocode/workflows/`（命令：`start`、`finish-work`）和 `.kilocode/skills/trellis-{name}/SKILL.md`（5 个 trellis skill）。没有 hook 集成。
 - **Antigravity**（`--antigravity`）：写 Antigravity 原生的 workflow 文件（3 个命令）。

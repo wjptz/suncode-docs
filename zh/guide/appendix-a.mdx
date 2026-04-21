@@ -15,7 +15,7 @@ title: '附录 A：关键文件路径速查'
 | `.trellis/.developer`             | 开发者身份                          | 每次会话                 |
 | `.trellis/.current-task`          | 指向当前任务                        | Sub-agent 启动           |
 
-### 出厂命令（Claude Code）
+### 原生命令（Claude Code）
 
 | 文件                                                | 调用方式                  |
 | --------------------------------------------------- | ------------------------- |
@@ -23,7 +23,7 @@ title: '附录 A：关键文件路径速查'
 | `.claude/commands/trellis/finish-work.md`           | `/trellis:finish-work`    |
 | `.claude/commands/trellis/continue.md`              | `/trellis:continue`       |
 
-### 出厂 sub-agent（Claude Code）
+### 原生 sub-agent（Claude Code）
 
 | 文件                                  | Sub-agent           | 角色                          |
 | ------------------------------------- | ------------------- | ----------------------------- |
@@ -31,7 +31,7 @@ title: '附录 A：关键文件路径速查'
 | `.claude/agents/trellis-check.md`     | `trellis-check`     | 验证 + 自修复                 |
 | `.claude/agents/trellis-research.md`  | `trellis-research`  | 只读代码搜索                  |
 
-### 出厂 skill（Claude Code）
+### 原生 skill（Claude Code）
 
 | 文件                                                 | Skill                   | 触发时机                                    |
 | ---------------------------------------------------- | ----------------------- | ------------------------------------------- |
@@ -89,6 +89,6 @@ title: '附录 A：关键文件路径速查'
 | `.claude/commands/trellis/record-session.md`       | 折入 `/trellis:finish-work`                         |
 | `.claude/commands/trellis/before-{backend,frontend}-dev.md` | `trellis-before-dev` skill               |
 | `.claude/commands/trellis/check-{backend,frontend,cross-layer}.md` | `trellis-check` skill + sub-agent |
-| `.claude/commands/trellis/{onboard,create-command,integrate-skill}.md` | 从出厂面板移除           |
+| `.claude/commands/trellis/{onboard,create-command,integrate-skill}.md` | 从原生命令集移除         |
 
 ---
