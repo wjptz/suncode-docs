@@ -168,17 +168,22 @@ Fields get populated over time:
   `worktree_path` / `commit` / `pr_url` are schema placeholders only; no 0.5 script populates them. Store commit hashes or PR URLs under `meta: {}`, or write them back from an `after_archive` hook.
 </Note>
 
-Older tasks created before a field existed may be missing some keys (e.g. tasks created pre-`package` support won't have `"package"`); `task.py` treats missing fields as null, so nothing breaks. Legacy `current_phase` / `next_action` from earlier Multi-Agent Pipeline versions are still read if present on old tasks, but `task.py create` no longer writes them.
+Older tasks created before a field existed may be missing some keys (e.g. tasks created pre-`package` support won't have `"package"`); `task.py` treats missing fields as null, so nothing breaks.
 
 **Status transitions**:
 
 ```
-task.py create     →  planning
-task.py start      →  in_progress
-task.py archive    →  completed (then moved to archive/)
+task.py create        →  status: "planning"
+task.py start         →  (only writes .trellis/.current-task; does NOT change status)
+(manual / future)     →  status: "in_progress"
+task.py archive       →  status: "completed" + move to archive/
 ```
 
-`planning` / `in_progress` / `completed` are the default set — they line up with the three phases in `workflow.md`. `task.py --status` also accepts `review` as a filter for custom workflows that introduce it; add any additional statuses you need by writing a matching `[workflow-state:<name>]` block in `workflow.md`.
+`planning` / `in_progress` / `completed` are the default set, aligned with the three phases in `workflow.md`. **Note: `task.py start` does not flip status to `in_progress`** — the per-turn workflow-state breadcrumb will still say `planning` (so the AI runs brainstorm / before-dev) until someone edits `task.json.status` manually (or an `after_start` hook does it). `task.py list --status` also accepts `review` as a filter for custom workflows that introduce it; add any additional statuses you need by writing a matching `[workflow-state:<name>]` block in `workflow.md`.
+
+<Note>
+  The **bootstrap** task (auto-created by `trellis init`) goes through a separate schema in `packages/cli/src/commands/init.ts` — slightly different field set (no `title` / `scope` / `package` / `branch` / `base_branch` / `worktree_path` / `pr_url`) and `status` is initialized to `in_progress`. The breaking-update **migration task** (`trellis update` breaking flow) uses yet another schema with additional `current_phase` / `next_action` fields — those two fields appear only on migration tasks.
+</Note>
 
 ### 6.4 JSONL Context Configuration in Practice
 

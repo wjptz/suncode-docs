@@ -168,17 +168,22 @@ TASK_DIR=$(./.trellis/scripts/task.py create "新增用户登录" \
   `worktree_path` / `commit` / `pr_url` 是 schema 占位字段，0.5 没有脚本主动写入。想记 commit 或 PR URL，建议用 `meta: {}` 自定义键或写 `after_archive` hook 自己回写。
 </Note>
 
-早期版本创建的任务可能少某些字段（如 `package` 支持前的任务没有 `"package"`），`task.py` 把缺失字段按 null 处理，不会出错。Multi-Agent Pipeline 时代的 `current_phase` / `next_action` 字段老任务上还在读，但 `task.py create` 不再主动写。
+早期版本创建的任务可能少某些字段（如 `package` 支持前的任务没有 `"package"`），`task.py` 把缺失字段按 null 处理，不会出错。
 
 **状态流转**：
 
 ```
-task.py create     →  planning
-task.py start      →  in_progress
-task.py archive    →  completed（同时移到 archive/）
+task.py create     →  status: "planning"
+task.py start      →  （只写 .trellis/.current-task，不改 status）
+（手动或未来脚本）  →  status: "in_progress"
+task.py archive    →  status: "completed" + 移到 archive/
 ```
 
-`planning` / `in_progress` / `completed` 是默认三状态，和 `workflow.md` 里的三个 Phase 对齐。`task.py --status` 也接受 `review` 作为过滤条件，供自定义流程使用；要加新状态直接在 `workflow.md` 里写 `[workflow-state:<name>]` 对应 block 就行。
+`planning` / `in_progress` / `completed` 是默认三状态，对齐 `workflow.md` 的三个 Phase。**注意：`task.py start` 不会把 status 切到 `in_progress`**——会话里 AI 读到面包屑说 `<workflow-state>planning</workflow-state>` 后会走 brainstorm / before-dev 流程；要让每轮面包屑切到 `in_progress` 面板，目前只能手动编辑 `task.json.status`（或写 hook）。`task.py list --status` 还接受 `review` 作为过滤条件，供自定义流程使用；要加新状态直接在 `workflow.md` 里加对应 `[workflow-state:<name>]` block 就行。
+
+<Note>
+  `bootstrap` 任务（`trellis init` 自动创建）走 `packages/cli/src/commands/init.ts` 里独立的 schema——字段子集略不同（无 `title` / `scope` / `package` / `branch` / `base_branch` / `worktree_path` / `pr_url`），且 `status` 初始就是 `in_progress`。`trellis update` 做破坏性升级时会建 migration task，又是另一套 schema，带有 `current_phase` / `next_action` 两个额外字段（这两个字段只在 migration 任务里出现）。
+</Note>
 
 ### 6.4 JSONL 上下文配置实战
 

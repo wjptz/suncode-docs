@@ -41,7 +41,12 @@ Field order above matches `.trellis/scripts/common/task_store.py` verbatim — `
   `worktree_path` / `commit` / `pr_url` are **schema placeholders only** in 0.5 — they are written as null on create and no Trellis script updates them afterward. Store commit hashes / PR URLs under `meta: {}` as custom keys, or write them back from an `after_archive` hook. The three top-level fields are kept so forked scripts and external integrations have a stable schema anchor.
 </Note>
 
-Older tasks may be missing newer fields (e.g., pre-`package` tasks have no `"package"` key); `task.py` treats missing keys as null. Legacy `current_phase` / `next_action` from the Multi-Agent Pipeline era are still read by `phase.py` for back-compat with archived tasks, but `task.py create` no longer writes them.
+Older tasks may be missing newer fields (e.g., pre-`package` tasks have no `"package"` key); `task.py` treats missing keys as null.
+
+**Two variant schemas also exist in 0.5**:
+
+- **Bootstrap task** (auto-created by `trellis init`) — written by `getBootstrapTaskJson()` in `packages/cli/src/commands/init.ts`. Slightly smaller field set (no `title` / `scope` / `package` / `branch` / `base_branch` / `worktree_path` / `pr_url`), and `status` starts at `in_progress`.
+- **Migration task** (created by `trellis update` on a breaking upgrade) — written by `packages/cli/src/commands/update.ts`. Includes two extra fields unique to this task type: `current_phase` (integer) and `next_action` (array of `{phase, action}` objects). Regular `task.py create` does not write these.
 
 ### Parent-child vs `subtasks` — know the difference
 
