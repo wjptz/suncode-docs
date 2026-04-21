@@ -253,7 +253,7 @@
               {
                 "group": "Use Cases",
                 "pages": [
-                  "release/use-cases/open-typeless"
+                  "use-cases/open-typeless"
                 ]
               },
               {
@@ -263,20 +263,20 @@
                     "group": "Skills",
                     "expanded": false,
                     "pages": [
-                      "release/skills-market/index",
-                      "release/skills-market/trellis-meta",
-                      "release/skills-market/cc-codex-spec-bootstrap",
-                      "release/skills-market/frontend-fullchain-optimization"
+                      "skills-market/index",
+                      "skills-market/trellis-meta",
+                      "skills-market/cc-codex-spec-bootstrap",
+                      "skills-market/frontend-fullchain-optimization"
                     ]
                   },
                   {
                     "group": "Spec Templates",
                     "expanded": false,
                     "pages": [
-                      "release/templates/specs-index",
-                      "release/templates/specs-electron",
-                      "release/templates/specs-nextjs",
-                      "release/templates/specs-cf-workers"
+                      "templates/specs-index",
+                      "templates/specs-electron",
+                      "templates/specs-nextjs",
+                      "templates/specs-cf-workers"
                     ]
                   }
                 ]
@@ -288,27 +288,27 @@
                     "group": "Showcase",
                     "expanded": false,
                     "pages": [
-                      "release/showcase/index",
-                      "release/showcase/terminal-demo",
-                      "release/showcase/open-typeless",
-                      "release/showcase/trellis-cursor"
+                      "showcase/index",
+                      "showcase/terminal-demo",
+                      "showcase/open-typeless",
+                      "showcase/trellis-cursor"
                     ]
                   },
                   {
                     "group": "Contributing",
                     "expanded": false,
                     "pages": [
-                      "release/contribute/docs",
-                      "release/contribute/trellis"
+                      "contribute/docs",
+                      "contribute/trellis"
                     ]
                   },
                   {
                     "group": "Tech Blog",
                     "expanded": false,
                     "pages": [
-                      "release/blog/index",
-                      "release/blog/use-k8s-to-know-trellis",
-                      "release/blog/ai-collaborative-dev-system"
+                      "blog/index",
+                      "blog/use-k8s-to-know-trellis",
+                      "blog/ai-collaborative-dev-system"
                     ]
                   },
                   {
@@ -565,7 +565,7 @@
               {
                 "group": "Use Cases",
                 "pages": [
-                  "zh/release/use-cases/open-typeless"
+                  "zh/use-cases/open-typeless"
                 ]
               },
               {
@@ -575,20 +575,20 @@
                     "group": "Skills",
                     "expanded": false,
                     "pages": [
-                      "zh/release/skills-market/index",
-                      "zh/release/skills-market/trellis-meta",
-                      "zh/release/skills-market/cc-codex-spec-bootstrap",
-                      "zh/release/skills-market/frontend-fullchain-optimization"
+                      "zh/skills-market/index",
+                      "zh/skills-market/trellis-meta",
+                      "zh/skills-market/cc-codex-spec-bootstrap",
+                      "zh/skills-market/frontend-fullchain-optimization"
                     ]
                   },
                   {
                     "group": "Spec Templates",
                     "expanded": false,
                     "pages": [
-                      "zh/release/templates/specs-index",
-                      "zh/release/templates/specs-electron",
-                      "zh/release/templates/specs-nextjs",
-                      "zh/release/templates/specs-cf-workers"
+                      "zh/templates/specs-index",
+                      "zh/templates/specs-electron",
+                      "zh/templates/specs-nextjs",
+                      "zh/templates/specs-cf-workers"
                     ]
                   }
                 ]
@@ -600,27 +600,27 @@
                     "group": "项目展示",
                     "expanded": false,
                     "pages": [
-                      "zh/release/showcase/index",
-                      "zh/release/showcase/terminal-demo",
-                      "zh/release/showcase/open-typeless",
-                      "zh/release/showcase/trellis-cursor"
+                      "zh/showcase/index",
+                      "zh/showcase/terminal-demo",
+                      "zh/showcase/open-typeless",
+                      "zh/showcase/trellis-cursor"
                     ]
                   },
                   {
                     "group": "贡献指南",
                     "expanded": false,
                     "pages": [
-                      "zh/release/contribute/docs",
-                      "zh/release/contribute/trellis"
+                      "zh/contribute/docs",
+                      "zh/contribute/trellis"
                     ]
                   },
                   {
                     "group": "Tech Blog",
                     "expanded": false,
                     "pages": [
-                      "zh/release/blog/index",
-                      "zh/release/blog/use-k8s-to-know-trellis",
-                      "zh/release/blog/ai-collaborative-dev-system"
+                      "zh/blog/index",
+                      "zh/blog/use-k8s-to-know-trellis",
+                      "zh/blog/ai-collaborative-dev-system"
                     ]
                   },
                   {
