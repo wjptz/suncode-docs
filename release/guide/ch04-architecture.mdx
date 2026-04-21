@@ -13,8 +13,9 @@ title: 'Architecture Overview'
                               │
                               ▼
 ┌──────────────────────────────────────────────────────────────┐
-│    Claude Code / Cursor / Codex / OpenCode / Kilo / Kiro     │
-│               (AI Coding Assistant Interface)                │
+│  Claude Code · Cursor · OpenCode · Codex · iFlow · Gemini    │
+│  CLI · Kilo · Kiro · GitHub Copilot · Windsurf · Qoder ·     │
+│  Factory Droid   (12 AI coding assistant platforms)          │
 └─────────────────────────────┬────────────────────────────────┘
                               │
                  ┌────────────┼────────────┐
@@ -121,7 +122,7 @@ When you enter `/start` (or when the Claude Code Hook fires automatically), here
 <Info>
   Automatic spec injection is a Claude Code exclusive feature, relying on the Hook system
   (`PreToolUse` intercepting `Task` tool calls). Cursor, Codex, OpenCode, and other platforms
-  require manually loading specs via commands (e.g., `/before-backend-dev`).
+  require manually loading specs via commands (e.g., `/before-dev`).
 </Info>
 
 `inject-subagent-context.py` is the core engine of Trellis. When the main Agent invokes a sub-Agent (e.g., Implement), this Hook automatically intercepts and injects context.
@@ -217,8 +218,8 @@ JSONL (JSON Lines) files define which files each Agent needs to read. Each line 
 
 <Info>
   Ralph Loop is a Claude Code exclusive quality control mechanism, relying on the `SubagentStop`
-  Hook. Cursor and other platforms require manually running `/check-backend`
-  (`/trellis-check-backend`) or `/check-frontend` for code checks.
+  Hook. Cursor and other platforms require manually running `/check`
+  (`/trellis-check`) or `/check` for code checks.
 </Info>
 
 Ralph Loop is based on the [Ralph Wiggum technique](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents), automatically verifying when the Check Agent finishes its work.

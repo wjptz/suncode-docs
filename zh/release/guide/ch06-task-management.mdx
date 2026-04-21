@@ -153,7 +153,7 @@ planning → in_progress → review → completed
 ```jsonl
 {"file": ".claude/commands/trellis/finish-work.md", "reason": "Finish work checklist"}
 {"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
-{"file": ".claude/commands/trellis/check-backend.md", "reason": "Backend check spec"}
+{"file": ".claude/commands/trellis/check.md", "reason": "Backend check spec"}
 ```
 
 **fullstack 类型**会同时包含前端和后端的 spec 文件。
@@ -218,7 +218,60 @@ Suggestions:
 - Create separate features for each capability
 ```
 
-### 6.6 任务生命周期 Hooks
+### 6.6 Monorepo 支持
+
+0.4.0 的头条特性：`trellis init` 自动识别 monorepo 布局，为**每个 package 建独立 spec 目录**，每个包执行自己的编码约定。
+
+```
+my-monorepo/
+├── packages/
+│   ├── api/
+│   ├── web/
+│   └── shared/
+└── .trellis/
+    ├── spec/
+    │   ├── api/         # API 包约定
+    │   │   ├── backend/index.md
+    │   │   └── ...
+    │   ├── web/         # Web 包约定
+    │   │   ├── frontend/index.md
+    │   │   └── ...
+    │   ├── shared/      # 共享包约定
+    │   └── guides/      # 共享 thinking guides
+    └── tasks/...
+```
+
+#### 建一个属于某个 package 的任务
+
+```bash
+# 显式指定
+python3 ./.trellis/scripts/task.py create "新增登录接口" \
+  --slug add-login \
+  --package api
+
+# 生成目录：.trellis/tasks/MM-DD-add-login/（task.json.package = "api"）
+```
+
+#### 为该 package 初始化上下文
+
+```bash
+python3 ./.trellis/scripts/task.py init-context "$TASK_DIR" backend --package api
+# implement.jsonl 只写入 .trellis/spec/api/backend/* 相关条目
+```
+
+#### 推断 package
+
+不带 `--package` 时，Trellis 读 `.trellis/config.yaml` 里的 `default_package`（由 init 时写入）。大多数工作集中在一个包、但想保留 monorepo-aware schema 时很方便。
+
+#### 按包隔离约定
+
+`--package <name>` flag 强制隔离：scoped 到 `api` 的任务**只**加载 `.trellis/spec/api/...`，不会串到 `.trellis/spec/web/...`。跨包任务（`--package shared`，或显式跨模块时不传 `--package`）加载 shared spec。
+
+<Note>
+  在 monorepo 里跑 `trellis init`，Trellis 会写 `.trellis/config.yaml`，列出自动识别到的每个 package 和其类型（`backend` / `frontend` / `fullstack`）。识别漏掉的 package 可手动加——`packages:` key 接受任意 `name → { path, type }` 映射。
+</Note>
+
+### 6.7 任务生命周期 Hooks
 
 你可以配置在任务生命周期事件发生时自动执行的 shell 命令。适用于同步任务到 Linear、发送 Slack 通知、触发 CI 流水线等场景。
 

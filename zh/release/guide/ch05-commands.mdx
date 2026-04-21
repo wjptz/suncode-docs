@@ -4,17 +4,15 @@ title: '命令全解'
 
 ## 命令全解
 
-Trellis 提供 13 个 Slash 命令（Claude Code），分为 6 个类别。Cursor 版本有 12 个（不含 `/parallel`）。
+Trellis 0.4.0 提供 11 个 Slash 命令（Claude Code），分为 6 个类别。Cursor 版本有 10 个（不含 `/parallel`）。
 
 #### 跨平台命令对照表
 
 | 功能 | Claude Code / OpenCode | Cursor | Codex |
 |------|----------------------|--------|-------|
 | 启动会话 | `/start`（可选，Hook 自动注入） | `/start`（必须） | `$start` |
-| 后端准备 | `/before-backend-dev`（可选） | `/trellis-before-backend-dev`（推荐） | `$before-backend-dev` |
-| 前端准备 | `/before-frontend-dev`（可选） | `/trellis-before-frontend-dev`（推荐） | `$before-frontend-dev` |
-| 检查后端 | `/check-backend`（Ralph Loop 自动触发） | `/trellis-check-backend`（手动） | `$check-backend` |
-| 检查前端 | `/check-frontend`（Ralph Loop 自动触发） | `/trellis-check-frontend`（手动） | `$check-frontend` |
+| 开发准备 | `/before-dev`（可选） | `/trellis-before-dev`（推荐） | `$before-dev` |
+| 代码检查 | `/check`（Ralph Loop 自动触发） | `/trellis-check`（手动） | `$check` |
 | 跨层检查 | `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` |
 | 完工清单 | `/finish-work` | `/trellis-finish-work` | `$finish-work` |
 | 并行编排 | `/parallel` | ❌ 不支持 | ❌ 不支持 |
@@ -24,6 +22,10 @@ Trellis 提供 13 个 Slash 命令（Claude Code），分为 6 个类别。Curso
 | 新成员入门 | `/onboard` | `/trellis-onboard` | `$onboard` |
 | 创建命令 | `/create-command` | `/trellis-create-command` | `$create-command` |
 | 集成 Skill | `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` |
+
+<Note>
+  0.4.0 把 `/before-backend-dev` + `/before-frontend-dev` 合并成 `/before-dev`，把 `/check-backend` + `/check-frontend` 合并成 `/check`。这样 monorepo 项目的命令数不会随包数量爆炸。具体跑哪一层的 spec 由 spec 目录（`.trellis/spec/backend/` vs `.trellis/spec/frontend/`）和当前 package 决定。
+</Note>
 
 ### 5.1 会话管理
 
@@ -122,31 +124,23 @@ Plan Agent 会：
 
 ### 5.2 开发准备
 
-#### `/before-backend-dev` — 后端开发准备
+#### `/before-dev` — 开发准备
 
-读取后端 spec 索引及相关规范文档（数据库、错误处理、日志、类型安全、质量指南），确保 AI 了解后端编码标准后再写代码。
+根据当前任务的 `dev_type` 自动定位 spec 层（backend 或 frontend），读取相关规范文档（目录结构、错误处理、日志、类型安全、质量指南，以及组件、Hook、状态管理等），确保 AI 了解项目编码标准后再写代码。
 
-#### `/before-frontend-dev` — 前端开发准备
-
-读取前端 spec 索引及相关规范文档（组件、Hook、状态管理、类型安全、质量指南）。
+Monorepo 项目里 spec 读取范围限定到当前 package（`.trellis/spec/<package>/<layer>/`），避免跨 package 规范混进来。
 
 ### 5.3 质量检查
 
-#### `/check-backend` — 后端代码检查
+#### `/check` — 代码检查
 
 执行流程：
 1. `git status` 查看变更
-2. 重新读取后端 spec
+2. 根据改动文件重读对应的 spec 层
 3. 逐条对比代码与规范
 4. 自动修复违规项（Ralph Loop 驱动，最多 3 轮）
 
-检查项：目录结构、数据库操作、错误处理、日志规范、类型定义、禁止 `console.log`、禁止 `any` 类型、禁止非空断言。
-
-#### `/check-frontend` — 前端代码检查
-
-检查项：组件命名（PascalCase）、Props 接口、Hook 使用、状态管理、样式一致性、TypeScript 错误、ESLint 错误、未使用 import。
-
-同样使用 Ralph Loop 自修复循环。
+检查项涵盖前后端两侧，按 diff 涉及的层动态应用：目录结构、数据库操作、错误处理、日志规范、类型定义、组件命名、Props 接口、Hook 使用、状态管理、禁止 `console.log` / `any` / 非空断言、ESLint 错误、未使用 import。
 
 #### `/check-cross-layer` — 跨层一致性检查
 

@@ -21,6 +21,7 @@ title: 'What is Trellis'
 | **Scope creep** | You ask for a button, AI writes 9,000 lines | Plan Agent: rejects and splits oversized requirements |
 | **Inconsistent team quality** | Each person's AI produces different coding styles | Shared Spec library — one person optimizes, the whole team benefits |
 | **Cross-session amnesia** | New sessions require re-explaining project context | Session persistence — AI remembers context across sessions |
+| **Monorepo chaos** | One generic rules file can't cover multiple packages with different conventions | `trellis init` auto-detects monorepo layout and creates **per-package** spec directories — each package enforces its own standards |
 
 ### 1.3 Comparison with Traditional Approaches
 
@@ -32,7 +33,7 @@ title: 'What is Trellis'
 | Parallel development | Not supported | Not supported | Not supported | **Multi-Agent worktree parallelism** |
 | Quality control | None | None | None | **Ralph Loop automatic verification** |
 | Team sharing | Single user | Single user | Shareable but no standard | **Git-versioned Spec library** |
-| Platform support | Cursor only | Claude Code only | Per platform | **Claude Code + Cursor + Codex + OpenCode + Kilo + Kiro** |
+| Platform support | Cursor only | Claude Code only | Per platform | **12 platforms** (Claude Code, Cursor, OpenCode, Codex, iFlow, Gemini CLI, Kilo, Kiro, GitHub Copilot, Windsurf, Qoder, Factory Droid) |
 
 ### 1.4 Core Concepts at a Glance
 

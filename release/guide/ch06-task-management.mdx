@@ -154,7 +154,7 @@ planning → in_progress → review → completed
 ```jsonl
 {"file": ".claude/commands/trellis/finish-work.md", "reason": "Finish work checklist"}
 {"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
-{"file": ".claude/commands/trellis/check-backend.md", "reason": "Backend check spec"}
+{"file": ".claude/commands/trellis/check.md", "reason": "Backend check spec"}
 ```
 
 **fullstack type** includes both frontend and backend spec files.
@@ -219,7 +219,60 @@ Suggestions:
 - Create separate features for each capability
 ```
 
-### 6.6 Task Lifecycle Hooks
+### 6.6 Monorepo Support
+
+0.4.0's headline feature: `trellis init` auto-detects monorepo layouts and creates **per-package** spec directories, so every package enforces its own coding conventions.
+
+```
+my-monorepo/
+├── packages/
+│   ├── api/
+│   ├── web/
+│   └── shared/
+└── .trellis/
+    ├── spec/
+    │   ├── api/         # API package conventions
+    │   │   ├── backend/index.md
+    │   │   └── ...
+    │   ├── web/         # Web package conventions
+    │   │   ├── frontend/index.md
+    │   │   └── ...
+    │   ├── shared/      # Shared package conventions
+    │   └── guides/      # Shared thinking guides
+    └── tasks/...
+```
+
+#### Creating a task scoped to one package
+
+```bash
+# Explicit
+python3 ./.trellis/scripts/task.py create "Add login endpoint" \
+  --slug add-login \
+  --package api
+
+# Directory: .trellis/tasks/MM-DD-add-login/ (task.json.package = "api")
+```
+
+#### Initializing context for the package
+
+```bash
+python3 ./.trellis/scripts/task.py init-context "$TASK_DIR" backend --package api
+# Populates implement.jsonl with .trellis/spec/api/backend/* entries only
+```
+
+#### Inferred package
+
+If you omit `--package`, Trellis reads `.trellis/config.yaml`'s `default_package` (set at `init` time). This is handy when most of your work lives in one package but you want the schema to stay monorepo-aware.
+
+#### Per-package conventions
+
+The `--package <name>` flag enforces isolation: a task scoped to `api` loads only `.trellis/spec/api/...`, never `.trellis/spec/web/...`. Cross-package tasks (`--package shared`, or no `--package` on an explicitly cross-cutting task) load the shared spec instead.
+
+<Note>
+  When you `trellis init` in a monorepo, Trellis writes `.trellis/config.yaml` listing every detected package and its type (`backend` / `frontend` / `fullstack`). Add packages manually if detection misses any — the `packages:` key accepts any `name → { path, type }` mapping.
+</Note>
+
+### 6.7 Task Lifecycle Hooks
 
 You can configure shell commands that run automatically when task lifecycle events occur. This enables integrations like syncing tasks to Linear, posting to Slack, or triggering CI pipelines.
 

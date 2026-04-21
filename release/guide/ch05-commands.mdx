@@ -4,17 +4,15 @@ title: 'Complete Command Reference'
 
 ## Complete Command Reference
 
-Trellis provides 13 Slash commands (Claude Code), organized into 6 categories. The Cursor version has 12 (excluding `/parallel`).
+Trellis 0.4.0 provides 11 slash commands (Claude Code), organized into 6 categories. The Cursor version has 10 (excluding `/parallel`).
 
 #### Cross-Platform Command Reference
 
 | Function | Claude Code / OpenCode | Cursor | Codex |
 |------|----------------------|--------|-------|
 | Start session | `/start` (optional, Hook auto-injects) | `/start` (required) | `$start` |
-| Backend prep | `/before-backend-dev` (optional) | `/trellis-before-backend-dev` (recommended) | `$before-backend-dev` |
-| Frontend prep | `/before-frontend-dev` (optional) | `/trellis-before-frontend-dev` (recommended) | `$before-frontend-dev` |
-| Check backend | `/check-backend` (Ralph Loop auto-triggers) | `/trellis-check-backend` (manual) | `$check-backend` |
-| Check frontend | `/check-frontend` (Ralph Loop auto-triggers) | `/trellis-check-frontend` (manual) | `$check-frontend` |
+| Development prep | `/before-dev` (optional) | `/trellis-before-dev` (recommended) | `$before-dev` |
+| Code check | `/check` (Ralph Loop auto-triggers) | `/trellis-check` (manual) | `$check` |
 | Cross-layer check | `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` |
 | Finish checklist | `/finish-work` | `/trellis-finish-work` | `$finish-work` |
 | Parallel orchestration | `/parallel` | ❌ Not supported | ❌ Not supported |
@@ -24,6 +22,10 @@ Trellis provides 13 Slash commands (Claude Code), organized into 6 categories. T
 | New member onboarding | `/onboard` | `/trellis-onboard` | `$onboard` |
 | Create command | `/create-command` | `/trellis-create-command` | `$create-command` |
 | Integrate Skill | `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` |
+
+<Note>
+  0.4.0 merged the type-specific `/before-backend-dev` + `/before-frontend-dev` into a unified `/before-dev`, and `/check-backend` + `/check-frontend` + `/check-cross-layer` are consolidated so the command matrix doesn't explode alongside package count in monorepos. The type routing is handled by the spec layer (`.trellis/spec/backend/` vs `.trellis/spec/frontend/`) based on which package you're working in.
+</Note>
 
 ### 5.1 Session Management
 
@@ -122,31 +124,23 @@ Includes three parts:
 
 ### 5.2 Development Preparation
 
-#### `/before-backend-dev` — Backend Development Prep
+#### `/before-dev` — Development Prep
 
-Reads the backend spec index and related spec documents (database, error handling, logging, type safety, quality guidelines), ensuring the AI understands backend coding standards before writing code.
+Reads the relevant spec index (backend or frontend, auto-detected from the current task's `dev_type`) and related guideline documents (directory structure, error handling, logging, type safety, quality guidelines, components, hooks, state management). Ensures the AI understands project coding standards before writing code.
 
-#### `/before-frontend-dev` — Frontend Development Prep
-
-Reads the frontend spec index and related spec documents (components, Hooks, state management, type safety, quality guidelines).
+In monorepo projects the spec read is scoped to the current package (`.trellis/spec/<package>/<layer>/`), so cross-package conventions don't leak in.
 
 ### 5.3 Quality Checks
 
-#### `/check-backend` — Backend Code Check
+#### `/check` — Code Check
 
 Execution flow:
 1. `git status` to view changes
-2. Re-read backend specs
+2. Re-read the relevant spec layer(s) for the changed files
 3. Compare code against specs line by line
 4. Auto-fix violations (Ralph Loop driven, up to 3 rounds)
 
-Check items: directory structure, database operations, error handling, logging conventions, type definitions, no `console.log`, no `any` types, no non-null assertions.
-
-#### `/check-frontend` — Frontend Code Check
-
-Check items: component naming (PascalCase), Props interfaces, Hook usage, state management, style consistency, TypeScript errors, ESLint errors, unused imports.
-
-Also uses the Ralph Loop self-fix cycle.
+Check items cover both backend and frontend conventions based on which layer the diff touches: directory structure, database operations, error handling, logging, type definitions, component naming, Props interfaces, Hook usage, state management, no `console.log` / `any` / non-null assertions, ESLint errors, unused imports.
 
 #### `/check-cross-layer` — Cross-Layer Consistency Check
 
