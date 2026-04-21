@@ -4,29 +4,44 @@ title: 'Appendix B: Complete Command Cheat Sheet'
 
 ## Appendix B: Complete Command Cheat Sheet
 
-### Slash Commands (Cross-Platform Reference)
+### Slash Commands
 
-| Claude Code / OpenCode | Cursor | Codex | Kilo | Kiro | Category | Description |
-|----------------------|--------|-------|------|------|------|------|
-| `/trellis:start` | `/trellis-start` | `$start` | `/start.md` | skill | Session | Start development session |
-| `/trellis:parallel` | ❌ | ❌ | `/parallel.md` | ❌ | Session | Multi-Agent parallel orchestration |
-| `/trellis:record-session` | `/trellis-record-session` | `$record-session` | `/record-session.md` | skill | Session | Record session history |
-| `/trellis:onboard` | `/trellis-onboard` | `$onboard` | `/onboard.md` | skill | Session | New member onboarding |
-| `/trellis:before-dev` | `/trellis-before-dev` | `$before-dev` | `/before-dev.md` | skill | Prep | Development prep |
-| `/trellis:check` | `/trellis-check` | `$check` | `/check.md` | skill | Quality | Code check |
-| `/trellis:check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` | `/check-cross-layer.md` | skill | Quality | Cross-layer consistency check |
-| `/trellis:finish-work` | `/trellis-finish-work` | `$finish-work` | `/finish-work.md` | skill | Quality | Pre-commit finish checklist |
-| `/trellis:brainstorm` | `/trellis-brainstorm` | `$brainstorm` | `/brainstorm.md` | skill | Knowledge | Brainstorming |
-| `/trellis:break-loop` | `/trellis-break-loop` | `$break-loop` | `/break-loop.md` | skill | Knowledge | Deep bug analysis |
-| `/trellis:update-spec` | `/trellis-update-spec` | `$update-spec` | `/update-spec.md` | skill | Knowledge | Update code-spec |
-| `/trellis:create-command` | `/trellis-create-command` | `$create-command` | `/create-command.md` | skill | Extension | Create custom command |
-| `/trellis:integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` | `/integrate-skill.md` | skill | Extension | Integrate external Skill |
+Every command below is available on **all 12 supported platforms** in 0.4.0 GA. The invocation syntax varies per platform (see the next subsection); semantics are identical.
 
-<Info>
-**Kilo** commands are implemented as Markdown files under `.kilocode/workflows/`, invoked in chat as `/start.md`, etc.
+| Command                   | Category   | Description                           |
+|---------------------------|------------|---------------------------------------|
+| `start`                   | Session    | Start development session             |
+| `parallel`                | Session    | Multi-Agent parallel orchestration (Claude Code only — other platforms have no equivalent) |
+| `record-session`          | Session    | Record session history                |
+| `onboard`                 | Session    | New team member onboarding            |
+| `before-dev`              | Prep       | Development prep (loads spec layer)   |
+| `check`                   | Quality    | Code check                            |
+| `check-cross-layer`       | Quality    | Cross-layer consistency check         |
+| `finish-work`             | Quality    | Pre-commit finish checklist           |
+| `brainstorm`              | Knowledge  | Brainstorming / requirements          |
+| `break-loop`              | Knowledge  | Deep bug analysis                     |
+| `update-spec`             | Knowledge  | Update code-spec                      |
+| `create-command`          | Extension  | Create custom command                 |
+| `integrate-skill`         | Extension  | Integrate external Skill              |
 
-**Kiro** commands are implemented as Agent Skills under `.kiro/skills/*/SKILL.md`.
-</Info>
+That's 13 commands total. Claude Code / OpenCode / iFlow / Factory Droid ship all 13. Other platforms ship 12 (no `parallel`).
+
+### Per-platform Invocation
+
+| Platform | Invocation example (for `start`) | Delivery form |
+|---|---|---|
+| **Claude Code**    | `/trellis:start`                 | Slash command under `.claude/commands/trellis/` |
+| **Cursor**         | `/trellis-start`                 | Flat-named slash command under `.cursor/commands/` |
+| **OpenCode**       | `/trellis:start`                 | Slash command under `.opencode/commands/trellis/` |
+| **Codex**          | `$start`                         | Slash prompt; `AGENTS.md` + `.codex/agents/*.toml` provide base context |
+| **iFlow**          | `/trellis:start`                 | Slash command under `.iflow/commands/trellis/` |
+| **Gemini CLI**     | `/trellis:start`                 | TOML command file under `.gemini/commands/trellis/` |
+| **Kilo Code**      | `/start.md`                      | Workflow file under `.kilocode/workflows/` |
+| **Kiro**           | (skill picker) `start`           | Agent Skill under `.kiro/skills/start/SKILL.md` — auto-match or pick from skill list |
+| **Qoder**          | (skill picker) `start`           | Agent Skill under `.qoder/skills/start/SKILL.md` — Qoder's native Custom Commands are left for your own use |
+| **GitHub Copilot** | Run Prompt → `trellis-start`     | Prompt file under `.github/prompts/trellis-start.prompt.md`; always-on prelude via `.github/copilot-instructions.md` |
+| **Windsurf**       | Workflow picker → `trellis-start`| Workflow file under `.windsurf/workflows/trellis-start.md`; always-on rule via `.windsurf/rules/trellis.md` |
+| **Factory Droid**  | `/trellis:start`                 | Slash command under `.factory/commands/trellis/` |
 
 ### task.py Subcommands
 
@@ -51,19 +66,19 @@ title: 'Appendix B: Complete Command Cheat Sheet'
 
 ```bash
 # Context management
-./.trellis/scripts/get-context.py           # Get full context
-./.trellis/scripts/get-context.py --json    # JSON format
-./.trellis/scripts/get-developer.py          # Get developer identity
+./.trellis/scripts/get_context.py           # Get full context
+./.trellis/scripts/get_context.py --json    # JSON format
+./.trellis/scripts/get_developer.py         # Get developer identity
 
 # Session recording
-./.trellis/scripts/add-session.py --title "..." --commit "..." --summary "..."
+./.trellis/scripts/add_session.py --title "..." --commit "..." --summary "..."
 
 # Multi-Agent
-./.trellis/scripts/multi-agent/plan.py --name "..." --type "..." --requirement "..."
-./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
-./.trellis/scripts/multi-agent/status.py [--log <name>] [--watch <name>]
-./.trellis/scripts/multi-agent/cleanup.py <branch>
-./.trellis/scripts/multi-agent/create-pr.py
+./.trellis/scripts/multi_agent/plan.py --name "..." --type "..." --requirement "..."
+./.trellis/scripts/multi_agent/start.py "$TASK_DIR"
+./.trellis/scripts/multi_agent/status.py [--log <name>] [--watch <name>]
+./.trellis/scripts/multi_agent/cleanup.py <branch>
+./.trellis/scripts/multi_agent/create_pr.py
 ```
 
 ---

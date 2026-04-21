@@ -4,29 +4,44 @@ title: '附录 B：全部命令速查表'
 
 ## 附录 B：全部命令速查表
 
-### Slash 命令（跨平台对照）
+### Slash 命令
 
-| Claude Code / OpenCode | Cursor | Codex | Kilo | Kiro | 类别 | 说明 |
-|----------------------|--------|-------|------|------|------|------|
-| `/trellis:start` | `/trellis-start` | `$start` | `/start.md` | skill | 会话 | 启动开发会话 |
-| `/trellis:parallel` | ❌ | ❌ | `/parallel.md` | ❌ | 会话 | 多 Agent 并行编排 |
-| `/trellis:record-session` | `/trellis-record-session` | `$record-session` | `/record-session.md` | skill | 会话 | 记录会话历史 |
-| `/trellis:onboard` | `/trellis-onboard` | `$onboard` | `/onboard.md` | skill | 会话 | 新成员入门 |
-| `/trellis:before-dev` | `/trellis-before-dev` | `$before-dev` | `/before-dev.md` | skill | 准备 | 开发前准备 |
-| `/trellis:check` | `/trellis-check` | `$check` | `/check.md` | skill | 质量 | 代码检查 |
-| `/trellis:check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` | `/check-cross-layer.md` | skill | 质量 | 跨层一致性检查 |
-| `/trellis:finish-work` | `/trellis-finish-work` | `$finish-work` | `/finish-work.md` | skill | 质量 | 完工检查清单 |
-| `/trellis:brainstorm` | `/trellis-brainstorm` | `$brainstorm` | `/brainstorm.md` | skill | 知识 | 头脑风暴 |
-| `/trellis:break-loop` | `/trellis-break-loop` | `$break-loop` | `/break-loop.md` | skill | 知识 | 深度 Bug 分析 |
-| `/trellis:update-spec` | `/trellis-update-spec` | `$update-spec` | `/update-spec.md` | skill | 知识 | 更新代码规范 |
-| `/trellis:create-command` | `/trellis-create-command` | `$create-command` | `/create-command.md` | skill | 扩展 | 创建自定义命令 |
-| `/trellis:integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` | `/integrate-skill.md` | skill | 扩展 | 集成外部 Skill |
+下面列出的每个命令在 0.4.0 GA **全部 12 个平台**上都可用。调用语法按平台不同（见下一节），语义完全一致。
 
-<Info>
-**Kilo** 的命令通过 `.kilocode/workflows/` 目录下的 Markdown 文件实现，在聊天中输入 `/start.md` 等调用。
+| 命令                   | 类别     | 说明                                              |
+|------------------------|----------|---------------------------------------------------|
+| `start`                | 会话     | 启动开发会话                                      |
+| `parallel`             | 会话     | Multi-Agent 并行编排（仅 Claude Code）            |
+| `record-session`       | 会话     | 记录会话历史                                      |
+| `onboard`              | 会话     | 新成员入门                                        |
+| `before-dev`           | 准备     | 开发前准备（加载 spec 层）                        |
+| `check`                | 质量     | 代码检查                                          |
+| `check-cross-layer`    | 质量     | 跨层一致性检查                                    |
+| `finish-work`          | 质量     | 完工检查清单                                      |
+| `brainstorm`           | 知识     | 头脑风暴 / 需求梳理                               |
+| `break-loop`           | 知识     | 深度 Bug 分析                                     |
+| `update-spec`          | 知识     | 更新代码规范                                      |
+| `create-command`       | 扩展     | 创建自定义命令                                    |
+| `integrate-skill`      | 扩展     | 集成外部 Skill                                    |
 
-**Kiro** 的命令通过 `.kiro/skills/*/SKILL.md` 实现，遵循 Agent Skills 开放标准。
-</Info>
+共 13 个命令。Claude Code / OpenCode / iFlow / Factory Droid 有全部 13 个；其他平台有 12 个（没有 `parallel`）。
+
+### 各平台调用方式
+
+| 平台 | `start` 调用示例 | 交付形式 |
+|---|---|---|
+| **Claude Code**    | `/trellis:start`                 | `.claude/commands/trellis/` 下的 slash 命令 |
+| **Cursor**         | `/trellis-start`                 | `.cursor/commands/` 下的扁平命名 slash 命令 |
+| **OpenCode**       | `/trellis:start`                 | `.opencode/commands/trellis/` 下的 slash 命令 |
+| **Codex**          | `$start`                         | Slash prompt；`AGENTS.md` + `.codex/agents/*.toml` 提供基础上下文 |
+| **iFlow**          | `/trellis:start`                 | `.iflow/commands/trellis/` 下的 slash 命令 |
+| **Gemini CLI**     | `/trellis:start`                 | `.gemini/commands/trellis/` 下的 TOML 命令文件 |
+| **Kilo Code**      | `/start.md`                      | `.kilocode/workflows/` 下的 workflow 文件 |
+| **Kiro**           | （skill 选择器）`start`          | `.kiro/skills/start/SKILL.md`——自动匹配或从 skill 列表选 |
+| **Qoder**          | （skill 选择器）`start`          | `.qoder/skills/start/SKILL.md`——Qoder 原生 Custom Commands 留给你自己用 |
+| **GitHub Copilot** | Run Prompt → `trellis-start`     | `.github/prompts/trellis-start.prompt.md`；`.github/copilot-instructions.md` 提供常驻 prelude |
+| **Windsurf**       | workflow 选择器 → `trellis-start`| `.windsurf/workflows/trellis-start.md`；`.windsurf/rules/trellis.md` 提供常驻规则 |
+| **Factory Droid**  | `/trellis:start`                 | `.factory/commands/trellis/` 下的 slash 命令 |
 
 ### task.py 子命令
 
@@ -51,17 +66,17 @@ title: '附录 B：全部命令速查表'
 
 ```bash
 # 上下文管理
-./.trellis/scripts/get-context.py           # 获取完整上下文
-./.trellis/scripts/get-context.py --json    # JSON 格式
-./.trellis/scripts/get-developer.py          # 获取开发者身份
+./.trellis/scripts/get_context.py           # 获取完整上下文
+./.trellis/scripts/get_context.py --json    # JSON 格式
+./.trellis/scripts/get_developer.py         # 获取开发者身份
 
 # 会话记录
-./.trellis/scripts/add-session.py --title "..." --commit "..." --summary "..."
+./.trellis/scripts/add_session.py --title "..." --commit "..." --summary "..."
 
 # 多 Agent
-./.trellis/scripts/multi-agent/plan.py --name "..." --type "..." --requirement "..."
-./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
-./.trellis/scripts/multi-agent/status.py [--log <name>] [--watch <name>]
-./.trellis/scripts/multi-agent/cleanup.py <branch>
-./.trellis/scripts/multi-agent/create-pr.py
+./.trellis/scripts/multi_agent/plan.py --name "..." --type "..." --requirement "..."
+./.trellis/scripts/multi_agent/start.py "$TASK_DIR"
+./.trellis/scripts/multi_agent/status.py [--log <name>] [--watch <name>]
+./.trellis/scripts/multi_agent/cleanup.py <branch>
+./.trellis/scripts/multi_agent/create_pr.py
 ```
