@@ -52,6 +52,12 @@ cd your-project
   <Tab title="Windsurf">
     `trellis init --windsurf -u your-name` —— 写入 `.windsurf/workflows/trellis-{name}.md` + `.windsurf/rules/trellis.md`。
   </Tab>
+  <Tab title="CodeBuddy">
+    `trellis init --codebuddy -u your-name` —— 写入 12 个 slash 命令到 `.codebuddy/commands/trellis/`。
+  </Tab>
+  <Tab title="Antigravity">
+    `trellis init --antigravity -u your-name` —— 写入 Trellis workflow 到 `.agent/workflows/`（通过 Antigravity 的 workflow 选择器调用）。
+  </Tab>
   <Tab title="Factory Droid">
     `trellis init --droid -u your-name` —— 写入 `.factory/commands/trellis/` + `.factory/agents/` + `.factory/hooks/session-start.py`。
   </Tab>
@@ -78,18 +84,20 @@ cd your-project
 | **Qoder**           | `.qoder/skills/`                                                          | skill 自动匹配   |
 | **GitHub Copilot**  | `.github/copilot-instructions.md`、`.github/prompts/`                     | Run Prompt       |
 | **Windsurf**        | `.windsurf/workflows/`、`.windsurf/rules/`                                | workflow 选择器  |
+| **CodeBuddy**       | `.codebuddy/commands/trellis/*.md`                                        | `/trellis:start` |
+| **Antigravity**     | `.agent/workflows/*.md`                                                   | workflow 选择器  |
 | **Factory Droid**   | `.factory/commands/trellis/`、`.factory/agents/`、`.factory/hooks/`       | `/trellis:start` |
 
-#### 平台能力对比
+#### 平台能力对比（0.4.0 GA——14 个平台）
 
-| 能力                 | Claude Code | Cursor | OpenCode | Codex   | iFlow | Gemini | Kilo | Kiro | Qoder | Copilot | Windsurf | Droid |
-| -------------------- | :---------: | :----: | :------: | :-----: | :---: | :----: | :--: | :--: | :---: | :-----: | :------: | :---: |
-| 会话自动注入         | ✅ Hook     | ❌     | ✅ Hook  | ⚡ 可选 | ✅ Hook | ❌   | ⚡   | ⚡   | ⚡    | ⚡      | ⚡       | ✅ Hook |
-| 子 Agent 规范注入    | ✅          | ❌     | ✅       | ⚡      | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ✅    |
-| Ralph Loop 质量门    | ✅          | ❌     | ⚡       | ❌      | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ⚡    |
-| Multi-Agent Pipeline | ✅          | ❌     | ✅       | ❌      | ❌    | ❌     | ✅   | ✅   | ❌    | ❌      | ❌       | ❌    |
+| 能力                 | CC | Cursor | OpenCode | Codex | iFlow | Gemini | Kilo | Kiro | Qoder | Copilot | Windsurf | CodeBuddy | Antigravity | Droid |
+| -------------------- | :-: | :----: | :------: | :---: | :---: | :----: | :--: | :--: | :---: | :-----: | :------: | :-------: | :---------: | :---: |
+| 会话自动注入         | ✅ | ❌     | ✅       | ⚡    | ✅    | ❌     | ⚡   | ⚡   | ⚡    | ⚡      | ⚡       | ❌        | ❌          | ✅    |
+| 子 Agent 规范注入    | ✅ | ❌     | ✅       | ⚡    | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ❌        | ❌          | ✅    |
+| Ralph Loop 质量门    | ✅ | ❌     | ⚡       | ❌    | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ❌        | ❌          | ⚡    |
+| Multi-Agent Pipeline | ✅ | ❌     | ✅       | ❌    | ❌    | ❌     | ✅   | ✅   | ❌    | ❌      | ❌       | ❌        | ❌          | ❌    |
 
-图例：✅ 完整 / ⚡ 部分（通过手动调用或 opt-in 平台 flag）/ ❌ 不支持。
+CC = Claude Code。图例：✅ 完整 / ⚡ 部分（通过手动调用或 opt-in 平台 flag）/ ❌ 不支持。
 
 {/* markdownlint-disable MD024 MD001 */}
 
@@ -190,7 +198,7 @@ cd your-project
 </Tabs>
 
 <Note>
-  上面 Tab 展示的是最常用平台。Gemini CLI、iFlow、Qoder、GitHub Copilot、Windsurf、Factory Droid 安装后工作流跟 Claude Code 一致——详见第 13 章各平台章节。
+  上面 Tab 展示的是最常用平台。另外 8 个平台（Gemini CLI、iFlow、Qoder、GitHub Copilot、Windsurf、CodeBuddy、Antigravity、Factory Droid）安装后工作流跟 Claude Code 一致——详见第 13 章各平台章节。
 </Note>
 
 ### 2.5 远程 Spec 模板
@@ -421,6 +429,12 @@ your-project/
 ├── .windsurf/                         # Windsurf 配置
 │   ├── workflows/                     #   命令 workflow
 │   └── rules/                         #   常驻 prelude
+│
+├── .codebuddy/                        # CodeBuddy 配置
+│   └── commands/trellis/              #   12 个 slash 命令
+│
+├── .agent/                            # Antigravity 配置
+│   └── workflows/                     #   Workflow 文件
 │
 └── .factory/                          # Factory Droid 配置
     ├── commands/trellis/              #   Slash 命令

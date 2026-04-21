@@ -303,7 +303,35 @@ Generates:
 
 No hook system. Workflows are manual-invoke; the rule file ensures context is always available.
 
-### 13.12 Factory Droid Integration
+### 13.12 CodeBuddy Integration
+
+[CodeBuddy](https://copilot.tencent.com/) is Tencent Cloud's AI coding assistant with MCP extensibility.
+
+```bash
+trellis init --codebuddy -u your-name
+```
+
+Generates:
+
+- `.codebuddy/commands/trellis/{name}.md` — 12 slash commands (invoked as `/trellis:start`, `/trellis:check`, etc.)
+
+In 0.4.0 CodeBuddy integration is command-only; no hooks or sub-agents — spec loading requires explicit `/trellis:before-dev` invocation.
+
+### 13.13 Antigravity Integration
+
+[Antigravity](https://labs.google/antigravity) is Google's experimental agent IDE. It uses workflow files under `.agent/workflows/`.
+
+```bash
+trellis init --antigravity -u your-name
+```
+
+Generates:
+
+- `.agent/workflows/{name}.md` — Trellis workflows, invoked via Antigravity's workflow picker. Content is adapted from the shared Codex skill source.
+
+No hook or sub-agent support; manual-invoke workflow model.
+
+### 13.14 Factory Droid Integration
 
 [Factory Droid](https://factory.ai) is Factory.ai's agent-capable CLI. It has hooks and sub-agents, so Trellis gives it the near-full Claude Code experience.
 
@@ -318,7 +346,7 @@ Generates:
 - `.factory/skills/` — auto-trigger skills
 - `.factory/hooks/session-start.py` + `.factory/hooks.json` — SessionStart hook (same Python script family as Claude Code)
 
-### 13.13 Operating System Compatibility
+### 13.15 Operating System Compatibility
 
 | OS | Support Status | Notes |
 |---------|---------|------|
@@ -335,7 +363,7 @@ Generates:
 | Path separators | Trellis internally uses `/`, Python handles path conversion automatically |
 | Git worktree | Multi-Agent Pipeline relies on git worktree, supported on all platforms |
 
-### 13.14 Multi-Developer Collaboration
+### 13.16 Multi-Developer Collaboration
 
 **Non-conflicting parts** (per-developer isolation):
 - `workspace/{name}/` — each developer has their own directory
@@ -351,7 +379,7 @@ Generates:
 - Task assignments are explicit (`--assignee` parameter)
 - Important spec changes are discussed in team meetings
 
-### 13.15 Complete worktree.yaml Configuration
+### 13.17 Complete worktree.yaml Configuration
 
 ```yaml
 # Worktree Configuration for Multi-Agent Pipeline
@@ -398,7 +426,7 @@ verify:
   # - pnpm test
 ```
 
-### 13.16 `trellis update` and Version Management
+### 13.18 `trellis update` and Version Management
 
 ```bash
 # Check current version

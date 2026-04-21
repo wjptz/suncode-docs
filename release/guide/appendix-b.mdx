@@ -6,7 +6,7 @@ title: 'Appendix B: Complete Command Cheat Sheet'
 
 ### Slash Commands
 
-Every command below is available on **all 12 supported platforms** in 0.4.0 GA. The invocation syntax varies per platform (see the next subsection); semantics are identical.
+Every command below is available on **all 14 supported platforms** in 0.4.0 GA. The invocation syntax varies per platform (see the next subsection); semantics are identical.
 
 | Command                   | Category   | Description                           |
 |---------------------------|------------|---------------------------------------|
@@ -24,7 +24,7 @@ Every command below is available on **all 12 supported platforms** in 0.4.0 GA. 
 | `create-command`          | Extension  | Create custom command                 |
 | `integrate-skill`         | Extension  | Integrate external Skill              |
 
-That's 13 commands total. Claude Code / OpenCode / iFlow / Factory Droid ship all 13. Other platforms ship 12 (no `parallel`).
+That's 13 commands total. Claude Code / OpenCode / iFlow / Kilo / Factory Droid ship all 13. Other platforms ship 12 (no `parallel`).
 
 ### Per-platform Invocation
 
@@ -41,6 +41,8 @@ That's 13 commands total. Claude Code / OpenCode / iFlow / Factory Droid ship al
 | **Qoder**          | (skill picker) `start`           | Agent Skill under `.qoder/skills/start/SKILL.md` — Qoder's native Custom Commands are left for your own use |
 | **GitHub Copilot** | Run Prompt → `trellis-start`     | Prompt file under `.github/prompts/trellis-start.prompt.md`; always-on prelude via `.github/copilot-instructions.md` |
 | **Windsurf**       | Workflow picker → `trellis-start`| Workflow file under `.windsurf/workflows/trellis-start.md`; always-on rule via `.windsurf/rules/trellis.md` |
+| **CodeBuddy**      | `/trellis:start`                 | Slash command under `.codebuddy/commands/trellis/` |
+| **Antigravity**    | Workflow picker → `start`        | Workflow file under `.agent/workflows/start.md` |
 | **Factory Droid**  | `/trellis:start`                 | Slash command under `.factory/commands/trellis/` |
 
 ### task.py Subcommands

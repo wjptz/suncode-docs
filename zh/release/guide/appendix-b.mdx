@@ -6,7 +6,7 @@ title: '附录 B：全部命令速查表'
 
 ### Slash 命令
 
-下面列出的每个命令在 0.4.0 GA **全部 12 个平台**上都可用。调用语法按平台不同（见下一节），语义完全一致。
+下面列出的每个命令在 0.4.0 GA **全部 14 个平台**上都可用。调用语法按平台不同（见下一节），语义完全一致。
 
 | 命令                   | 类别     | 说明                                              |
 |------------------------|----------|---------------------------------------------------|
@@ -24,7 +24,7 @@ title: '附录 B：全部命令速查表'
 | `create-command`       | 扩展     | 创建自定义命令                                    |
 | `integrate-skill`      | 扩展     | 集成外部 Skill                                    |
 
-共 13 个命令。Claude Code / OpenCode / iFlow / Factory Droid 有全部 13 个；其他平台有 12 个（没有 `parallel`）。
+共 13 个命令。Claude Code / OpenCode / iFlow / Kilo / Factory Droid 有全部 13 个；其他平台有 12 个（没有 `parallel`）。
 
 ### 各平台调用方式
 
@@ -41,6 +41,8 @@ title: '附录 B：全部命令速查表'
 | **Qoder**          | （skill 选择器）`start`          | `.qoder/skills/start/SKILL.md`——Qoder 原生 Custom Commands 留给你自己用 |
 | **GitHub Copilot** | Run Prompt → `trellis-start`     | `.github/prompts/trellis-start.prompt.md`；`.github/copilot-instructions.md` 提供常驻 prelude |
 | **Windsurf**       | workflow 选择器 → `trellis-start`| `.windsurf/workflows/trellis-start.md`；`.windsurf/rules/trellis.md` 提供常驻规则 |
+| **CodeBuddy**      | `/trellis:start`                 | `.codebuddy/commands/trellis/` 下的 slash 命令 |
+| **Antigravity**    | workflow 选择器 → `start`        | `.agent/workflows/start.md` workflow 文件 |
 | **Factory Droid**  | `/trellis:start`                 | `.factory/commands/trellis/` 下的 slash 命令 |
 
 ### task.py 子命令

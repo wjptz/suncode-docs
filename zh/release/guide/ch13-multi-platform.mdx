@@ -303,7 +303,35 @@ trellis init --windsurf -u your-name
 
 没有 hook。workflow 手动调用，rule 文件保证上下文常在。
 
-### 13.12 Factory Droid 集成
+### 13.12 CodeBuddy 集成
+
+[CodeBuddy](https://copilot.tencent.com/) 是腾讯云的 AI 编程助手，支持 MCP 扩展能力。
+
+```bash
+trellis init --codebuddy -u your-name
+```
+
+生成：
+
+- `.codebuddy/commands/trellis/{name}.md` —— 12 个 slash 命令（调用方式 `/trellis:start`、`/trellis:check` 等）
+
+0.4.0 里 CodeBuddy 是纯 command 平台，没有 hook 或 sub-agent——规范加载需要显式跑 `/trellis:before-dev`。
+
+### 13.13 Antigravity 集成
+
+[Antigravity](https://labs.google/antigravity) 是 Google 的实验性 agent IDE，使用 `.agent/workflows/` 下的 workflow 文件。
+
+```bash
+trellis init --antigravity -u your-name
+```
+
+生成：
+
+- `.agent/workflows/{name}.md` —— Trellis workflow，通过 Antigravity 的 workflow 选择器调用。内容从共享的 Codex skill 源适配而来。
+
+没有 hook 或 sub-agent 支持；纯手动调用的 workflow 模型。
+
+### 13.14 Factory Droid 集成
 
 [Factory Droid](https://factory.ai) 是 Factory.ai 的 agent-capable CLI，有 hook、有 sub-agent，Trellis 对它走接近 Claude Code 的完整流程。
 
@@ -318,7 +346,7 @@ trellis init --droid -u your-name
 - `.factory/skills/` — auto-trigger skills
 - `.factory/hooks/session-start.py` + `.factory/hooks.json` — SessionStart hook（与 Claude Code 同一套 Python 脚本）
 
-### 13.13 操作系统兼容性
+### 13.15 操作系统兼容性
 
 | 操作系统 | 支持状态 | 说明 |
 |---------|---------|------|
@@ -335,7 +363,7 @@ trellis init --droid -u your-name
 | 路径分隔符 | Trellis 内部使用 `/`，Python 自动处理路径转换 |
 | Git worktree | Multi-Agent Pipeline 依赖 git worktree，各平台均支持 |
 
-### 13.14 多开发者协作
+### 13.16 多开发者协作
 
 **不冲突的部分**（各人独立）：
 - `workspace/{name}/` — 每人独立目录
@@ -351,7 +379,7 @@ trellis init --droid -u your-name
 - 任务指派明确（`--assignee` 参数）
 - 重要的 spec 变更在团队会议上讨论
 
-### 13.15 worktree.yaml 完整配置
+### 13.17 worktree.yaml 完整配置
 
 ```yaml
 # Worktree Configuration for Multi-Agent Pipeline
@@ -398,7 +426,7 @@ verify:
   # - pnpm test
 ```
 
-### 13.16 `trellis update` 与版本管理
+### 13.18 `trellis update` 与版本管理
 
 ```bash
 # 查看当前版本

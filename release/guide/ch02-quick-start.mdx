@@ -55,6 +55,12 @@ Choose the init command based on your platform:
   <Tab title="Windsurf">
     `trellis init --windsurf -u your-name` — writes `.windsurf/workflows/trellis-{name}.md` + `.windsurf/rules/trellis.md`.
   </Tab>
+  <Tab title="CodeBuddy">
+    `trellis init --codebuddy -u your-name` — writes 12 slash commands under `.codebuddy/commands/trellis/`.
+  </Tab>
+  <Tab title="Antigravity">
+    `trellis init --antigravity -u your-name` — writes Trellis workflows under `.agent/workflows/` (invoked via Antigravity's workflow picker).
+  </Tab>
   <Tab title="Factory Droid">
     `trellis init --droid -u your-name` — writes `.factory/commands/trellis/` + `.factory/agents/` + `.factory/hooks/session-start.py`.
   </Tab>
@@ -81,18 +87,20 @@ You can pass multiple platform flags in one command: `trellis init --codex --gem
 | **Qoder**           | `.qoder/skills/`                                                          | skill auto-match |
 | **GitHub Copilot**  | `.github/copilot-instructions.md`, `.github/prompts/`                     | Run Prompt       |
 | **Windsurf**        | `.windsurf/workflows/`, `.windsurf/rules/`                                | workflow picker  |
+| **CodeBuddy**       | `.codebuddy/commands/trellis/*.md`                                        | `/trellis:start` |
+| **Antigravity**     | `.agent/workflows/*.md`                                                   | workflow picker  |
 | **Factory Droid**   | `.factory/commands/trellis/`, `.factory/agents/`, `.factory/hooks/`       | `/trellis:start` |
 
-#### Platform Capability Comparison
+#### Platform Capability Comparison (0.4.0 GA — 14 platforms)
 
-| Capability               | Claude Code | Cursor | OpenCode | Codex  | iFlow | Gemini | Kilo | Kiro | Qoder | Copilot | Windsurf | Droid |
-| ------------------------ | :---------: | :----: | :------: | :----: | :---: | :----: | :--: | :--: | :---: | :-----: | :------: | :---: |
-| Session auto-injection   | ✅ Hook     | ❌     | ✅ Hook  | ⚡ opt-in | ✅ Hook | ❌    | ⚡   | ⚡   | ⚡    | ⚡      | ⚡       | ✅ Hook |
-| Sub-Agent spec injection | ✅          | ❌     | ✅       | ⚡     | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ✅    |
-| Ralph Loop quality gate  | ✅          | ❌     | ⚡       | ❌     | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ⚡    |
-| Multi-Agent Pipeline     | ✅          | ❌     | ✅       | ❌     | ❌    | ❌     | ✅   | ✅   | ❌    | ❌      | ❌       | ❌    |
+| Capability               | CC | Cursor | OpenCode | Codex | iFlow | Gemini | Kilo | Kiro | Qoder | Copilot | Windsurf | CodeBuddy | Antigravity | Droid |
+| ------------------------ | :-: | :----: | :------: | :---: | :---: | :----: | :--: | :--: | :---: | :-----: | :------: | :-------: | :---------: | :---: |
+| Session auto-injection   | ✅ | ❌     | ✅       | ⚡    | ✅    | ❌     | ⚡   | ⚡   | ⚡    | ⚡      | ⚡       | ❌        | ❌          | ✅    |
+| Sub-Agent spec injection | ✅ | ❌     | ✅       | ⚡    | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ❌        | ❌          | ✅    |
+| Ralph Loop quality gate  | ✅ | ❌     | ⚡       | ❌    | ✅    | ❌     | ❌   | ⚡   | ❌    | ❌      | ❌       | ❌        | ❌          | ⚡    |
+| Multi-Agent Pipeline     | ✅ | ❌     | ✅       | ❌    | ❌    | ❌     | ✅   | ✅   | ❌    | ❌      | ❌       | ❌        | ❌          | ❌    |
 
-Legend: ✅ full / ⚡ partial / ❌ not supported. "Partial" means the capability exists via a manual invocation or an opt-in platform flag rather than built-in automation.
+CC = Claude Code. Legend: ✅ full / ⚡ partial / ❌ not supported. "Partial" means the capability exists via a manual invocation or an opt-in platform flag rather than built-in automation.
 
 {/* markdownlint-disable MD024 MD001 */}
 
@@ -193,7 +201,7 @@ Legend: ✅ full / ⚡ partial / ❌ not supported. "Partial" means the capabili
 </Tabs>
 
 <Note>
-  Tabs above show the most-used platforms. Gemini CLI, iFlow, Qoder, GitHub Copilot, Windsurf, and Factory Droid follow the same Claude-Code-style workflow once installed — see chapter 13 for per-platform details.
+  Tabs above show the most-used platforms. The other 8 platforms (Gemini CLI, iFlow, Qoder, GitHub Copilot, Windsurf, CodeBuddy, Antigravity, Factory Droid) follow the same Claude-Code-style workflow once installed — see chapter 13 for per-platform details.
 </Note>
 
 ### 2.5 Remote Spec Templates
@@ -424,6 +432,12 @@ your-project/
 ├── .windsurf/                         # Windsurf configuration
 │   ├── workflows/                     #   Command workflows
 │   └── rules/                         #   Always-on prelude
+│
+├── .codebuddy/                        # CodeBuddy configuration
+│   └── commands/trellis/              #   12 slash commands
+│
+├── .agent/                            # Antigravity configuration
+│   └── workflows/                     #   Workflow files
 │
 └── .factory/                          # Factory Droid configuration
     ├── commands/trellis/              #   Slash commands
