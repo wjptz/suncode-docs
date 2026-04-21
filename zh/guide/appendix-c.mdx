@@ -11,8 +11,8 @@ title: '附录 C：task.json Schema 参考'
   "id": "string",           // 任务 ID（= slug，如 02-27-user-login）
   "name": "string",         // Slug 名（单仓库下和 id 相同；monorepo 可能不同）
   "title": "string",        // 任务标题
-  "description": "string",  // 描述
-  "status": "string",       // planning | in_progress | completed | rejected；扩展通过 workflow.md
+  "description": "string",  // 描述（不传 --description 时为 ""）
+  "status": "string",       // planning（默认）| in_progress | completed；task.py list --status 还接受 review
   "dev_type": "string",     // backend | frontend | fullstack | test | docs（init-context 前为 null）
   "scope": "string",        // Commit scope，如 "auth"（set-scope 前为 null）
   "package": "string",      // Monorepo 包名（单仓库为 null）
@@ -23,19 +23,21 @@ title: '附录 C：task.json Schema 参考'
   "completedAt": "string",  // YYYY-MM-DD 完成日期（未完成为 null）
   "branch": "string",       // Feature 分支名（set-branch 前为 null）
   "base_branch": "string",  // PR 目标分支（创建时按当前分支记录）
-  "worktree_path": "string",// Worktree 路径——创建时为 null；多 agent 工具使用时填入
+  "worktree_path": "string",// Multi-Agent Pipeline 时代遗留字段——写入为 null；0.5 已不使用
   "commit": "string",       // Commit hash（归档时写入）
   "pr_url": "string",       // PR URL（开 PR 前为 null）
-  "parent": "string",       // 父任务目录名（顶层任务为 null）
+  "subtasks": [],           // 任务内部的 todo checklist（{name, status} 对），与 children 无关
   "children": [],           // 子任务目录名数组（父→子链接）
-  "subtasks": [],           // 任务内部的 todo checklist（name + status 对），与 children 无关
+  "parent": "string",       // 父任务目录名（顶层任务为 null）
   "relatedFiles": [],       // 相关文件列表
-  "notes": "string",        // 备注
+  "notes": "string",        // 备注（默认 ""）
   "meta": {}                // 项目级元数据（如 Linear issue id）
 }
 ```
 
-早期版本创建的老任务可能少某些新字段（如 `package` 支持前的任务没有 `"package"` 键）。`task.py` 把缺失字段按 null 处理，不会出错。Multi-Agent Pipeline 时代的 `current_phase` / `next_action` 字段老任务上还会被读，但 `task.py create` 不再主动写。
+字段顺序与 `.trellis/scripts/common/task_store.py` 里 `task_data` 一致——`task.py` 就按这个顺序写入。
+
+早期版本创建的老任务可能少某些新字段（如 `package` 支持前的任务没有 `"package"` 键），`task.py` 把缺失字段按 null 处理，不会出错。Multi-Agent Pipeline 时代的 `current_phase` / `next_action` 字段在老任务上仍由 `phase.py` 读取作为兼容支持，但 `task.py create` 不再主动写入。
 
 ### 父子关系 vs `subtasks`——别混
 

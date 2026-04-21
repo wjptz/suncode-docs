@@ -147,9 +147,9 @@ TASK_DIR=$(./.trellis/scripts/task.py create "新增用户登录" \
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
-  "parent": null,
-  "children": [],
   "subtasks": [],
+  "children": [],
+  "parent": null,
   "relatedFiles": [],
   "notes": "",
   "meta": {}
@@ -160,7 +160,7 @@ TASK_DIR=$(./.trellis/scripts/task.py create "新增用户登录" \
 
 - `dev_type` / `scope` / `package` → `task.py set-*` 或 `init-context` 设置
 - `branch` → `task.py set-branch` 设置
-- `status` → `planning → in_progress → completed`（brainstorm 拒绝时还会出现 `rejected`）
+- `status` → `planning → in_progress → completed`
 - `completedAt` / `commit` → 任务归档时填上
 - `pr_url` → 对任务分支开 PR 时填上
 - `parent` / `children` → `task.py create --parent` 或 `add-subtask` 设置

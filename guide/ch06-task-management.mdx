@@ -147,9 +147,9 @@ The exact shape `task.py create` writes today (see `.trellis/scripts/common/task
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
-  "parent": null,
-  "children": [],
   "subtasks": [],
+  "children": [],
+  "parent": null,
   "relatedFiles": [],
   "notes": "",
   "meta": {}
@@ -160,7 +160,7 @@ Fields get populated over time:
 
 - `dev_type` / `scope` / `package` → set via `task.py set-*` or `init-context`
 - `branch` → set via `task.py set-branch`
-- `status` → transitions `planning → in_progress → completed` (also `rejected` from the brainstorm skill)
+- `status` → transitions `planning → in_progress → completed`
 - `completedAt` / `commit` → set when the task is archived
 - `pr_url` → set when a PR is opened against the task's branch
 - `parent` / `children` → set via `task.py create --parent` / `add-subtask`
