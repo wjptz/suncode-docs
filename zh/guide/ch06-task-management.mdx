@@ -125,22 +125,26 @@ TASK_DIR=$(./.trellis/scripts/task.py create "新增用户登录" \
 
 ### 6.3 `task.json` Schema
 
+`task.py create` 当前实际写出的结构（详见 `.trellis/scripts/common/task_store.py`）：
+
 ```json
 {
   "id": "02-27-user-login",
   "name": "user-login",
   "title": "新增用户登录",
   "description": "实现 JWT 登录流程",
-  "status": "in_progress",
-  "dev_type": "backend",
-  "scope": "auth",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
   "priority": "P1",
   "creator": "alice",
   "assignee": "alice",
-  "createdAt": "2026-02-27T10:00:00Z",
+  "createdAt": "2026-02-27",
   "completedAt": null,
-  "branch": "feature/user-login",
+  "branch": null,
   "base_branch": "main",
+  "worktree_path": null,
   "commit": null,
   "pr_url": null,
   "parent": null,
@@ -151,6 +155,17 @@ TASK_DIR=$(./.trellis/scripts/task.py create "新增用户登录" \
   "meta": {}
 }
 ```
+
+字段会随任务进展被填上：
+
+- `dev_type` / `scope` / `package` → `task.py set-*` 或 `init-context` 设置
+- `branch` → `task.py set-branch` 设置
+- `status` → `planning → in_progress → completed`（brainstorm 拒绝时还会出现 `rejected`）
+- `completedAt` / `commit` → 任务归档时填上
+- `pr_url` → 对任务分支开 PR 时填上
+- `parent` / `children` → `task.py create --parent` 或 `add-subtask` 设置
+
+早期版本创建的任务可能少某些字段（如 `package` 支持前的任务没有 `"package"`），`task.py` 把缺失字段按 null 处理，不会出错。Multi-Agent Pipeline 时代的 `current_phase` / `next_action` 字段老任务上还在读，但 `task.py create` 不再主动写。
 
 **状态流转**：
 
