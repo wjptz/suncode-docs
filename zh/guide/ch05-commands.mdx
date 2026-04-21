@@ -1,219 +1,122 @@
 ---
-title: '命令全解'
+title: '命令与 Skill 参考'
 ---
 
-## 命令全解
+## 命令与 Skill 参考
 
-Trellis 提供 13 个 Slash 命令（Claude Code），分为 6 个类别。Cursor 版本有 12 个（不含 `/parallel`）。
+从 0.5.0 起，Trellis 采用 **skill-first** 架构：核心能力以 auto-trigger skill 的形式自动挂载，显式 slash 命令保留最小集，只覆盖会话边界。
 
-#### 跨平台命令对照表
+### 5.1 总览
 
-| 功能 | Claude Code / OpenCode | Cursor | Codex |
-|------|----------------------|--------|-------|
-| 启动会话 | `/start`（可选，Hook 自动注入） | `/start`（必须） | `$start` |
-| 后端准备 | `/before-backend-dev`（可选） | `/trellis-before-backend-dev`（推荐） | `$before-backend-dev` |
-| 前端准备 | `/before-frontend-dev`（可选） | `/trellis-before-frontend-dev`（推荐） | `$before-frontend-dev` |
-| 检查后端 | `/check-backend`（Ralph Loop 自动触发） | `/trellis-check-backend`（手动） | `$check-backend` |
-| 检查前端 | `/check-frontend`（Ralph Loop 自动触发） | `/trellis-check-frontend`（手动） | `$check-frontend` |
-| 跨层检查 | `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` |
-| 完工清单 | `/finish-work` | `/trellis-finish-work` | `$finish-work` |
-| 并行编排 | `/parallel` | ❌ 不支持 | ❌ 不支持 |
-| 记录会话 | `/record-session` | `/trellis-record-session` | `$record-session` |
-| 头脑风暴 | `/brainstorm` | `/trellis-brainstorm` | `$brainstorm` |
-| Bug 分析 | `/break-loop` | `/trellis-break-loop` | `$break-loop` |
-| 新成员入门 | `/onboard` | `/trellis-onboard` | `$onboard` |
-| 创建命令 | `/create-command` | `/trellis-create-command` | `$create-command` |
-| 集成 Skill | `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` |
+| 类型           | 名称                       | 触发                                                   | 用途                                     |
+| -------------- | -------------------------- | ------------------------------------------------------ | ---------------------------------------- |
+| **Command**    | `/trellis:start`           | 手动（支持 hook 的平台会自动注入）                     | 开启会话、加载上下文、任务分类           |
+| **Command**    | `/trellis:finish-work`     | 手动，在人工测试 + commit 之后                         | 收尾检查 + 写入 journal                  |
+| **Command**    | `/trellis:continue`        | 手动                                                   | 推 AI 进入下一步工作流、防止跳步骤       |
+| **Skill**      | `trellis-brainstorm`       | 用户描述需求 / bug / 模糊诉求时自动触发                | 把请求转成 task + `prd.md`               |
+| **Skill**      | `trellis-before-dev`       | task 中动手改代码前自动触发                            | 先读相关 spec 再写代码                   |
+| **Skill**      | `trellis-check`            | 实现完成后自动触发；也被 sub-agent 调用                | 验证 + 自修复循环                        |
+| **Skill**      | `trellis-update-spec`      | 有值得沉淀的知识时自动触发                             | 把经验固化进 `.trellis/spec/`            |
+| **Skill**      | `trellis-break-loop`       | 修完棘手 bug 后自动触发                                | 根因分析 + 预防机制                      |
+| **Sub-agent**  | `trellis-research`         | 主会话在需要调研时 spawn                               | 只读代码搜索                             |
+| **Sub-agent**  | `trellis-implement`        | 主会话在编码阶段 spawn                                 | 写代码，不 commit                        |
+| **Sub-agent**  | `trellis-check`            | 主会话在验证阶段 spawn                                 | 自带验证 + 自修复循环                    |
 
-### 5.1 会话管理
+只有 3 个 slash 命令：`start`、`finish-work`、`continue`。以前的 `/before-backend-dev`、`/check-backend`、`/record-session`、`/onboard` 等等都已经被折叠进 skill/sub-agent 或直接移除。
 
-#### `/start` — 启动开发会话
+### 5.2 命令
 
-**何时使用**：每次打开 AI 编码助手开始工作时。Claude Code 用户因 Hook 自动注入上下文，`/start` 为可选（但推荐首次使用时运行以了解完整流程）。Cursor 用户**必须**运行 `/start`。
+#### `/trellis:start`：开启会话
 
-**执行流程**：
+如果平台不自动注入上下文就手动跑一下。Hook 可用的平台（Claude Code、Cursor、OpenCode、Gemini、Qoder、CodeBuddy、Copilot、Droid，以及开了 `codex_hooks = true` 的 Codex）有 SessionStart hook，打开终端就自动执行；你也可以第一次手动跑一下看完整流程。
 
-1. 读取 `workflow.md` 了解工作流
-2. 运行 `get-context.py` 获取上下文（身份、Git 状态、活跃任务）
-3. 读取 spec 索引了解项目规范
-4. 报告上下文并询问："What would you like to work on?"
+行为：
 
-**任务分类决策**：
+1. 读 `.trellis/workflow.md`，让 AI 清楚工作流契约。
+2. 跑 `get_context.py` 拿到开发者身份、git 状态、活跃任务。
+3. 读 spec 索引（monorepo 场景下按 package 读）。
+4. 汇报上下文并询问你想做什么。
 
-| 类型 | 判断标准 | 工作流 |
-|------|---------|--------|
-| 问答 | 用户问代码、架构相关问题 | 直接回答 |
-| 简单修复 | 改错字、单行修改，< 5 分钟 | 直接编辑 |
-| 开发任务 | 修改逻辑、添加功能、修 bug、涉及多文件 | **走 Task Workflow** |
+AI 做的任务分类：
 
-> **疑问就走 Task Workflow**。Task Workflow 确保 Agent 接收到规范注入，代码质量更高。
+| 类型      | 判断依据                                   | 流程                              |
+| --------- | ------------------------------------------ | --------------------------------- |
+| 问答      | 问代码 / 架构相关问题                      | 直接回答                          |
+| 小修      | typo / 单行修改 / 约 5 分钟以内            | 直接改                            |
+| 开发任务  | 逻辑变更、新功能、多文件修改               | 任务工作流（brainstorm skill）    |
 
-#### `/parallel` — 多 Agent 并行编排
+拿不准就走任务工作流，它能保证 sub-agent 拿到正确的 spec 注入。
 
-<Warning>仅 Claude Code 支持。Cursor、Codex 等平台不支持 Multi-Agent Pipeline。</Warning>
+#### `/trellis:finish-work`：优雅收尾
 
-**何时使用**：
-- 任务复杂度高，需要 > 30 分钟
-- 可以拆分为多个独立子任务
-- 需要在独立 worktree 中隔离开发
+前提：**人工**已经测试并 commit。AI 不会跑 `git commit`。
 
-**两阶段流程**：
+步骤：
 
-**阶段一：Plan（规划）**
+1. `get_context.py --mode record` 确认有变更和活跃任务。
+2. 对每个工作已真正完成（代码已合入、验收条件满足）的 task，用 `task.py archive <name>` 归档。
+3. 用 `add_session.py --title … --commit …` 追加一条 journal。
+4. 本次会话有重要经验沉淀的，走 `trellis-update-spec`。
 
-```bash
-./.trellis/scripts/multi-agent/plan.py \
-  --name "feature-name" \
-  --type "backend|frontend|fullstack" \
-  --requirement "用户需求描述"
-```
+#### `/trellis:continue`：推进下一步工作流
 
-Plan Agent 会：
-1. 评估需求是否清晰（可能拒绝，见第 6 章）
-2. 调用 Research Agent 分析代码库
-3. 创建任务目录并配置 JSONL 上下文
-4. 生成 prd.md 需求文档
+读 `.trellis/.current-task` 和该任务的 `status`，对照 `workflow.md` 判断当前处于哪个 phase/step，决定下一步该做什么（比如接下来该跑 before-dev、check 还是 update-spec），然后继续。用来让 AI 老老实实按 workflow 走，防止它跳过 `check` 或 `update-spec` 这类收尾步骤。
 
-**阶段二：Execute（执行）**
+### 5.3 Auto-trigger Skills
 
-```bash
-./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
-```
+Skill 不需要显式命令，平台根据用户意图自动匹配。匹配不中时手动触发就行（`/skill trellis-brainstorm` 之类）。
 
-自动创建 Git worktree，Dispatch Agent 按顺序执行 implement → check → finish → create-pr。
+#### `trellis-brainstorm`
 
-**监控命令**：
+把模糊的用户请求转成具体任务：
 
-```bash
-./.trellis/scripts/multi-agent/status.py                  # 概览
-./.trellis/scripts/multi-agent/status.py --log <name>     # 查看日志
-./.trellis/scripts/multi-agent/status.py --watch <name>   # 实时监控
-./.trellis/scripts/multi-agent/cleanup.py <branch>        # 清理 worktree
-```
+- 产出任务名和 slug。
+- 按 assumption / requirement / acceptance 模板起草 `prd.md`。
+- 请求依赖调研时（现有代码、外部 API、库文档），并行 spawn `trellis-research` sub-agent。
+- 通过 `task.py create` 建任务。
 
-#### `/record-session` — 记录会话
+#### `trellis-before-dev`
 
-**何时使用**：用户测试并 commit 代码之后。
+编码前触发。读受影响 package 的 spec 索引，再读 Pre-Development Checklist 里引用的具体 guideline 文件。确保 AI 在**动手前**就知道约定，而不是之后。
 
-**前提**：AI 不执行 git commit，只读取 git 历史。
+#### `trellis-check`
 
-**执行流程**：
+实现完之后触发：
 
-```bash
-./.trellis/scripts/add-session.py \
-  --title "Session Title" \
-  --commit "hash1,hash2" \
-  --summary "本次完成了什么"
-```
+1. `git diff --name-only HEAD` 找变更。
+2. 确认哪些 spec 层适用。
+3. 对照每层 index 的 quality checklist 比对代码。
+4. 为受影响 package 跑 `pnpm lint` / `pnpm typecheck` / `pnpm test`（或等价命令）。
+5. 在有限循环内自修复违规，然后汇报修了什么、还剩什么。
 
-自动完成：
-- 追加会话记录到 `journal-N.md`
-- 检测行数，超过 2000 行自动创建新文件
-- 更新 `index.md`（会话总数 +1、最后活跃时间、历史表）
+`trellis-check` **sub-agent** 包了这个 skill，主会话可以委托给它专注别的事情。sub-agent 自带重试循环，不再有外部 `Ralph Loop` 概念。
 
-#### `/onboard` — 新成员入门
+#### `trellis-update-spec`
 
-**何时使用**：新团队成员加入时。
+把经验沉淀为 `.trellis/spec/` 里的可执行契约。调试完、踩坑后、做了非显而易见的设计决策时用。会挑对应的 spec 文件，做一次聚焦更新（decision / convention / pattern / anti-pattern / gotcha），必要时更新索引。
 
-包含三部分：
-1. 核心概念讲解（spec / workspace / task / hook）
-2. 5 个实战练习（bug 修复、规划会话、Code Review 修复、大型重构、调试会话）
-3. 规范定制指导
+#### `trellis-break-loop`
 
-### 5.2 开发准备
+修完难 bug 后触发。产出 5 维分析：
 
-#### `/before-backend-dev` — 后端开发准备
+1. 根因分类（缺 spec / 契约违反 / 变更传播失败 / 测试缺口 / 隐式假设）。
+2. 之前修复尝试失败的原因。
+3. 预防机制（更新 spec、类型约束、lint 规则、测试、CR 清单、文档）。
+4. 系统化扩散：其他具备同样模式的地方。
+5. 知识固化：结果走 `trellis-update-spec`。
 
-读取后端 spec 索引及相关规范文档（数据库、错误处理、日志、类型安全、质量指南），确保 AI 了解后端编码标准后再写代码。
+> 调试的价值不是修掉 **这个** bug，而是确保**这一类** bug 不再发生。
 
-#### `/before-frontend-dev` — 前端开发准备
+### 5.4 Sub-agents
 
-读取前端 spec 索引及相关规范文档（组件、Hook、状态管理、类型安全、质量指南）。
+Sub-agent 是独立的 AI 子进程，各自有 prompt 和（视平台而定）各自的 tool / hook 挂接。上下文通过 task 目录下的 JSONL 文件注入。
 
-### 5.3 质量检查
+| Sub-agent            | 约束                | 主会话何时 spawn                                 |
+| -------------------- | ------------------- | ------------------------------------------------ |
+| `trellis-research`   | 只读                | 代码搜索 / 模式发现 / 文档查阅                   |
+| `trellis-implement`  | 写代码，不 commit   | 需求 + 计划就绪后的编码阶段                      |
+| `trellis-check`      | 可写（修复）        | 验证阶段；内部自带自修复循环                     |
 
-#### `/check-backend` — 后端代码检查
+在 Claude Code、Cursor、OpenCode、CodeBuddy、Droid 上，这些 sub-agent 走 hook，启动前自动注入对应 JSONL（`implement.jsonl`、`check.jsonl`、`research.jsonl`）。其他平台由主会话自行读 JSONL 并把相关内容传给 sub-agent。
 
-执行流程：
-1. `git status` 查看变更
-2. 重新读取后端 spec
-3. 逐条对比代码与规范
-4. 自动修复违规项（Ralph Loop 驱动，最多 3 轮）
-
-检查项：目录结构、数据库操作、错误处理、日志规范、类型定义、禁止 `console.log`、禁止 `any` 类型、禁止非空断言。
-
-#### `/check-frontend` — 前端代码检查
-
-检查项：组件命名（PascalCase）、Props 接口、Hook 使用、状态管理、样式一致性、TypeScript 错误、ESLint 错误、未使用 import。
-
-同样使用 Ralph Loop 自修复循环。
-
-#### `/check-cross-layer` — 跨层一致性检查
-
-读取跨层思维指南，分析 6 个维度：
-
-1. **数据流一致性** — 前端 → API → 数据库 → API → 前端
-2. **类型定义同步** — 前后端 interface 一致
-3. **错误处理连续性** — 各层错误正确传递
-4. **常量同步** — 前后端共享常量
-5. **代码复用** — 避免重复实现
-6. **Import 路径正确** — 无断裂引用
-
-### 5.4 并行开发
-
-#### `/parallel`
-
-详见 5.1 节。
-
-### 5.5 知识积累
-
-#### `/break-loop` — 深度 Bug 分析
-
-**何时使用**：解决了一个棘手的 bug 之后，做深度分析防止类似问题再发。
-
-**5 维分析框架**：
-
-1. **Root Cause 根因分类**：
-   - A — Missing Spec（缺少规范）
-   - B — Cross-layer Contract Violation（跨层契约违反）
-   - C — Change Propagation Failure（变更传播失败）
-   - D — Test Coverage Gap（测试覆盖缺口）
-   - E — Implicit Assumption（隐式假设）
-
-2. **Why Fixes Failed** — 分析为什么之前的修复尝试失败了
-
-3. **Prevention Mechanisms**（6 种预防机制）：
-   - Spec 更新
-   - 类型约束
-   - Lint 规则
-   - 测试用例
-   - 代码审查检查项
-   - 文档更新
-
-4. **Systematic Expansion** — 搜索相同模式的其他潜在问题
-
-5. **Knowledge Capture** — 将分析结果固化到 spec
-
-**核心理念**：
-
-> 调试的价值不是修复这个 bug，而是确保这类 bug 再也不会发生。
-
-### 5.6 辅助命令
-
-#### `/finish-work` — 完工检查清单
-
-提交前的 6 维度检查：
-1. 代码质量（lint、type-check、test）
-2. 文档同步
-3. API 变更
-4. 数据库变更
-5. 跨层验证
-6. 手动测试
-
-#### `/create-command` — 创建自定义命令
-
-在 `.claude/commands/trellis/` 和 `.cursor/commands/` 下生成双 IDE 命令文件。详见第 9 章。
-
-#### `/integrate-skill` — 集成外部 Skill
-
-将社区 Skill 集成到项目中，创建统一的 `/use-[skill-name]` 命令。详见第 12 章。
+---

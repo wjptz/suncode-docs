@@ -9,7 +9,7 @@ description: '关于 Trellis 的常见问题'
 
 <Accordion title="看着很好用但听起来很复杂，怎么快速上手使用？">
 
-`npm install -g @mindfoldhq/trellis@latest`，在你的项目下面用 `trellis init` 进行初始化，然后就可以直接开始使用了。
+`npm install -g @mindfoldhq/trellis@beta`，在你的项目下面用 `trellis init` 进行初始化，然后就可以直接开始使用了。
 
 1. **Claude Code / iFlow 用户** — 打开一个新会话就可以直接开始使用。session start hook 会自动注入 AI 所需的所有信息（Trellis 工作流程、最近的 git 提交、最近的 journal 记录、项目上下文）。说需求，AI 会自动创建 task、生成 PRD、加载相关 spec 规范，然后委派给专门的 agent（implement、check 等）去干活。验收通过后用 `/trellis:record-session` 记录日志。也可以手动执行 `/trellis:start` 了解完整流程。
 
@@ -28,7 +28,7 @@ description: '关于 Trellis 的常见问题'
 **安装（推荐全局安装）：**
 
 ```bash
-npm install -g @mindfoldhq/trellis@latest
+npm install -g @mindfoldhq/trellis@beta
 ```
 
 **验证安装：**
@@ -54,7 +54,7 @@ trellis update                    # 对比版本差异并更新
 trellis update --migrate          # 应用文件重命名/删除等迁移
 ```
 
-**回退到正式版：** `npm install -g @mindfoldhq/trellis@latest`
+**回退到正式版：** `npm install -g @mindfoldhq/trellis@beta`
 
 `trellis update` 永远不会覆盖 `.trellis/workspace/`、`.trellis/tasks/`、`.trellis/.developer`、`.trellis/spec/frontend/`、`.trellis/spec/backend/` — 这些路径受保护。并且每次 update 时，`.trellis/`、`.cursor/`、`.claude/` 等目录下的所有内容都会自动生成一个备份保存在 `.trellis/.backup-*` 目录下，无需担心更新会破坏原有结构。
 
@@ -218,7 +218,7 @@ Trellis 能提升一致性，但不是银弹。AI 仍然会犯错。
 先更新 CLI：
 
 ```bash
-npm install -g @mindfoldhq/trellis@latest
+npm install -g @mindfoldhq/trellis@beta
 ```
 
 然后更新项目：

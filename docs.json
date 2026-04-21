@@ -52,8 +52,7 @@
                   "guide/ch04-architecture",
                   "guide/ch05-commands",
                   "guide/ch06-task-management",
-                  "guide/ch07-writing-specs",
-                  "guide/ch08-real-world"
+                  "guide/ch07-writing-specs"
                 ]
               },
               {
@@ -365,8 +364,7 @@
                   "zh/guide/ch04-architecture",
                   "zh/guide/ch05-commands",
                   "zh/guide/ch06-task-management",
-                  "zh/guide/ch07-writing-specs",
-                  "zh/guide/ch08-real-world"
+                  "zh/guide/ch07-writing-specs"
                 ]
               },
               {
@@ -521,53 +519,53 @@
               {
                 "group": "开始使用",
                 "pages": [
-                  "release/zh/index"
+                  "zh/release/index"
                 ]
               },
               {
                 "group": "入门篇",
                 "pages": [
-                  "release/zh/guide/ch01-what-is-trellis",
-                  "release/zh/guide/ch02-quick-start",
-                  "release/zh/guide/ch03-first-task"
+                  "zh/release/guide/ch01-what-is-trellis",
+                  "zh/release/guide/ch02-quick-start",
+                  "zh/release/guide/ch03-first-task"
                 ]
               },
               {
                 "group": "精通篇",
                 "pages": [
-                  "release/zh/guide/ch04-architecture",
-                  "release/zh/guide/ch05-commands",
-                  "release/zh/guide/ch06-task-management",
-                  "release/zh/guide/ch07-writing-specs",
-                  "release/zh/guide/ch08-real-world"
+                  "zh/release/guide/ch04-architecture",
+                  "zh/release/guide/ch05-commands",
+                  "zh/release/guide/ch06-task-management",
+                  "zh/release/guide/ch07-writing-specs",
+                  "zh/release/guide/ch08-real-world"
                 ]
               },
               {
                 "group": "魔改篇",
                 "pages": [
-                  "release/zh/guide/ch09-custom-commands",
-                  "release/zh/guide/ch10-custom-agents",
-                  "release/zh/guide/ch11-custom-hooks",
-                  "release/zh/guide/ch12-custom-skills",
-                  "release/zh/guide/ch13-multi-platform"
+                  "zh/release/guide/ch09-custom-commands",
+                  "zh/release/guide/ch10-custom-agents",
+                  "zh/release/guide/ch11-custom-hooks",
+                  "zh/release/guide/ch12-custom-skills",
+                  "zh/release/guide/ch13-multi-platform"
                 ]
               },
               {
                 "group": "附录",
                 "pages": [
-                  "release/zh/guide/appendix-a",
-                  "release/zh/guide/appendix-b",
-                  "release/zh/guide/appendix-c",
-                  "release/zh/guide/appendix-d",
-                  "release/zh/guide/appendix-e",
-                  "release/zh/guide/appendix-f",
-                  "release/zh/guide/resources"
+                  "zh/release/guide/appendix-a",
+                  "zh/release/guide/appendix-b",
+                  "zh/release/guide/appendix-c",
+                  "zh/release/guide/appendix-d",
+                  "zh/release/guide/appendix-e",
+                  "zh/release/guide/appendix-f",
+                  "zh/release/guide/resources"
                 ]
               },
               {
                 "group": "Use Cases",
                 "pages": [
-                  "release/zh/use-cases/open-typeless"
+                  "zh/release/use-cases/open-typeless"
                 ]
               },
               {
@@ -577,20 +575,20 @@
                     "group": "Skills",
                     "expanded": false,
                     "pages": [
-                      "release/zh/skills-market/index",
-                      "release/zh/skills-market/trellis-meta",
-                      "release/zh/skills-market/cc-codex-spec-bootstrap",
-                      "release/zh/skills-market/frontend-fullchain-optimization"
+                      "zh/release/skills-market/index",
+                      "zh/release/skills-market/trellis-meta",
+                      "zh/release/skills-market/cc-codex-spec-bootstrap",
+                      "zh/release/skills-market/frontend-fullchain-optimization"
                     ]
                   },
                   {
                     "group": "Spec Templates",
                     "expanded": false,
                     "pages": [
-                      "release/zh/templates/specs-index",
-                      "release/zh/templates/specs-electron",
-                      "release/zh/templates/specs-nextjs",
-                      "release/zh/templates/specs-cf-workers"
+                      "zh/release/templates/specs-index",
+                      "zh/release/templates/specs-electron",
+                      "zh/release/templates/specs-nextjs",
+                      "zh/release/templates/specs-cf-workers"
                     ]
                   }
                 ]
@@ -602,46 +600,46 @@
                     "group": "项目展示",
                     "expanded": false,
                     "pages": [
-                      "release/zh/showcase/index",
-                      "release/zh/showcase/terminal-demo",
-                      "release/zh/showcase/open-typeless",
-                      "release/zh/showcase/trellis-cursor"
+                      "zh/release/showcase/index",
+                      "zh/release/showcase/terminal-demo",
+                      "zh/release/showcase/open-typeless",
+                      "zh/release/showcase/trellis-cursor"
                     ]
                   },
                   {
                     "group": "贡献指南",
                     "expanded": false,
                     "pages": [
-                      "release/zh/contribute/docs",
-                      "release/zh/contribute/trellis"
+                      "zh/release/contribute/docs",
+                      "zh/release/contribute/trellis"
                     ]
                   },
                   {
                     "group": "Tech Blog",
                     "expanded": false,
                     "pages": [
-                      "release/zh/blog/index",
-                      "release/zh/blog/use-k8s-to-know-trellis",
-                      "release/zh/blog/ai-collaborative-dev-system"
+                      "zh/release/blog/index",
+                      "zh/release/blog/use-k8s-to-know-trellis",
+                      "zh/release/blog/ai-collaborative-dev-system"
                     ]
                   },
                   {
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
-                      "release/zh/changelog/v0.4.0",
-                      "release/zh/changelog/v0.3.10",
-                      "release/zh/changelog/v0.3.9",
-                      "release/zh/changelog/v0.3.8",
-                      "release/zh/changelog/v0.3.7",
-                      "release/zh/changelog/v0.3.6",
-                      "release/zh/changelog/v0.3.5",
-                      "release/zh/changelog/v0.3.4",
-                      "release/zh/changelog/v0.3.3",
-                      "release/zh/changelog/v0.3.2",
-                      "release/zh/changelog/v0.3.1",
-                      "release/zh/changelog/v0.2.0",
-                      "release/zh/changelog/v0.1.9"
+                      "zh/release/changelog/v0.4.0",
+                      "zh/release/changelog/v0.3.10",
+                      "zh/release/changelog/v0.3.9",
+                      "zh/release/changelog/v0.3.8",
+                      "zh/release/changelog/v0.3.7",
+                      "zh/release/changelog/v0.3.6",
+                      "zh/release/changelog/v0.3.5",
+                      "zh/release/changelog/v0.3.4",
+                      "zh/release/changelog/v0.3.3",
+                      "zh/release/changelog/v0.3.2",
+                      "zh/release/changelog/v0.3.1",
+                      "zh/release/changelog/v0.2.0",
+                      "zh/release/changelog/v0.1.9"
                     ]
                   }
                 ]

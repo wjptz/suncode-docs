@@ -4,19 +4,21 @@ title: 'Appendix D: JSONL Configuration Format Reference'
 
 ## Appendix D: JSONL Configuration Format Reference
 
-### File Entry
+### File entry
 
 ```jsonl
 {"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
 ```
 
-### Directory Entry
+### Directory entry
 
 ```jsonl
 {"file": "src/services/", "type": "directory", "reason": "Existing service patterns"}
 ```
 
-### Complete Example (fullstack implement.jsonl)
+For directory entries, the hook reads all `.md` files in the directory, up to 20.
+
+### Complete example (fullstack `implement.jsonl`)
 
 ```jsonl
 {"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
@@ -28,15 +30,18 @@ title: 'Appendix D: JSONL Configuration Format Reference'
 {"file": ".trellis/spec/frontend/components.md", "reason": "Component conventions"}
 ```
 
-### Completion Marker Generation Rules
+### JSONL files used by each sub-agent
 
-`reason` field → UPPERCASE + spaces replaced with underscores + `_FINISH` suffix:
+| File              | Sub-agent           | Typical content                                   |
+| ----------------- | ------------------- | ------------------------------------------------- |
+| `implement.jsonl` | `trellis-implement` | workflow + specs + code pattern examples          |
+| `check.jsonl`     | `trellis-check`     | quality checklist specs + lint / typecheck rules  |
+| `research.jsonl`  | `trellis-research`  | project structure overview + investigation targets|
 
-| reason | Generated Marker |
-|--------|--------------|
-| "TypeCheck" | `TYPECHECK_FINISH` |
-| "Lint" | `LINT_FINISH` |
-| "Code quality requirements" | `CODE_QUALITY_REQUIREMENTS_FINISH` |
-| "Finish work checklist" | `FINISH_WORK_CHECKLIST_FINISH` |
+### Removed in 0.5.0-beta.0
+
+Earlier versions also referenced `debug.jsonl` for a separate `debug` sub-agent. Both the file and the sub-agent were removed; bug fixing now happens in the main session or through `trellis-break-loop`.
+
+The old **completion marker** scheme (generating strings like `TYPECHECK_FINISH` from `reason` fields so the Ralph Loop could detect when the check agent was "done") is also gone. The `trellis-check` sub-agent's own retry loop no longer relies on markers.
 
 ---

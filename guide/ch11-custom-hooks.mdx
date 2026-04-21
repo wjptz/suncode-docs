@@ -4,18 +4,29 @@ title: 'Custom Hooks'
 
 ## Custom Hooks
 
-### 11.1 Hook Types
+<Note>
+  Hook support varies by platform and by event:
 
-| Hook Type | Trigger Timing | Purpose |
-|-----------|---------|------|
-| `SessionStart` | New session starts | Load context, initialize environment |
-| `PreToolUse` | Before tool invocation | Intercept and modify parameters, inject context |
-| `PostToolUse` | After tool invocation | Log activity, trigger follow-up actions |
-| `SubagentStop` | When sub-Agent stops | Verify output quality, control loops |
+  - **`SessionStart` hook** ships on Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid (and Codex with `codex_hooks = true` in `~/.codex/config.toml`). Kiro's Agent Hooks are user-configured — Trellis does not install any out of the box.
+  - **`PreToolUse` (sub-agent context injection)** ships on Claude Code, Cursor, OpenCode, CodeBuddy, Droid. The other hook-capable platforms rely on a pull-based prelude inside each sub-agent instead.
+  - **`UserPromptSubmit` (workflow-state nudge)** ships on the same platforms as `SessionStart`.
+  - **Kilo, Antigravity, Windsurf** have no hook primitive at all; behavior is delivered via workflow files + skills.
+</Note>
 
-### 11.2 settings.json Configuration Format
+### 11.1 Hook types
 
-Configure Hooks in `.claude/settings.json`:
+| Hook              | Trigger                       | Purpose                                        |
+| ----------------- | ----------------------------- | ---------------------------------------------- |
+| `SessionStart`    | A new session starts          | Load context, initialize environment           |
+| `UserPromptSubmit`| User submits a prompt         | Nudge the AI toward the current task state     |
+| `PreToolUse`      | Before a tool invocation      | Intercept, modify parameters, inject context   |
+| `PostToolUse`     | After a tool invocation       | Log activity, trigger follow-up actions        |
+
+Claude Code, Cursor, CodeBuddy, and Droid share a Python-hook layout compatible with CC's event model (`settings.json` or `hooks.json` referencing Python scripts). OpenCode uses JS plugins (factory functions in `.opencode/plugins/`) with the same event semantics. The rest of the hook-capable platforms (Codex, Gemini, Qoder, Copilot) run a `session-start.py` only — no `PreToolUse` — and configure it via a platform-native config file.
+
+### 11.2 `settings.json` configuration (Claude Code)
+
+Configure hooks in `.claude/settings.json`:
 
 ```json
 {
@@ -32,6 +43,18 @@ Configure Hooks in `.claude/settings.json`:
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-workflow-state.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Task",
@@ -43,76 +66,60 @@ Configure Hooks in `.claude/settings.json`:
           }
         ]
       }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "check",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/ralph-loop.py\"",
-            "timeout": 10
-          }
-        ]
-      }
     ]
   }
 }
 ```
 
-**Configuration notes**:
+Notes:
 
-- Each event type is an array containing `{ matcher, hooks }` objects
-- `matcher`: Matching rule (`"startup"` matches session start, `"Task"` matches Task tool calls, `"check"` matches check Agent stop)
-- `hooks`: Array of Hooks to execute when matched, executed in order
-- `$CLAUDE_PROJECT_DIR`: Automatically expanded by Claude Code to the project root
-- `timeout`: Timeout in seconds; Hook is skipped if exceeded
+- Each event type is an array of `{ matcher, hooks }` blocks.
+- `matcher`: pattern to match (`"startup"` matches session start, `"Task"` matches Task tool calls, `"*"` matches everything).
+- `hooks`: array of commands that run when matched, in order.
+- `$CLAUDE_PROJECT_DIR`: expanded by Claude Code to the project root.
+- `timeout`: seconds; if exceeded, the hook is skipped.
 
-### 11.3 Existing Hook Source Code Walkthrough
+### 11.3 Shipped hooks
 
-#### session-start.py — Context Loading
+#### `session-start.py`: context loading
 
-**Trigger**: `SessionStart`
+**Trigger**: `SessionStart`.
 
-**Functionality**:
-- Reads `.trellis/.developer` to get developer identity
-- Reads `workflow.md` to get workflow guide
-- Reads `workspace/{name}/index.md` to get session history
-- Reads `git log` to get recent commits
-- Reads the active task list
+**What it does**:
 
-**Output**: Injects all context as a system message at the beginning of the session.
+- Reads `.trellis/.developer` for developer identity.
+- Reads `.trellis/workflow.md` for the workflow contract.
+- Reads `.trellis/workspace/{name}/index.md` for session history.
+- Reads `git log` for recent commits.
+- Reads active tasks.
 
-#### inject-subagent-context.py — Spec Injection Engine
+**Output**: emits all the context as a system message at the start of the session.
 
-**Trigger**: `PreToolUse`, matching `Task` tool calls
+#### `inject-workflow-state.py`: workflow-state nudge
 
-**Functionality** (see section 4.3 for details):
-- Intercepts Task tool calls
-- Reads the corresponding JSONL file based on subagent_type
-- Reads all files referenced in the JSONL
-- Builds the complete Agent prompt (specs + requirements + original instructions)
-- Replaces the original prompt
-- Updates current_phase in task.json
+**Trigger**: `UserPromptSubmit`.
 
-**Key design decisions**:
-- Dispatch Agent does not read specs, keeping it simple
-- Each Agent receives full context, no resume needed
-- `[finish]` marker triggers lightweight context injection
+**What it does**: when a task is active, appends a short breadcrumb to the user message so the AI is reminded of the current task's phase (planning / in_progress / finishing). Parsed from `.trellis/workflow.md`.
 
-#### ralph-loop.py — Quality Loop
+#### `inject-subagent-context.py`: spec injection engine
 
-**Trigger**: `SubagentStop`, matching `check` Agent
+**Trigger**: `PreToolUse`, matching `Task` tool calls.
 
-**Functionality** (see section 4.4 for details):
-- Checks verify commands or completion markers
-- Pass allows stop, failure blocks stop
-- Maximum 5 iterations
-- State tracked in `.ralph-state.json`
+**What it does** (see §4.3 for details):
 
-### 11.4 Writing Custom Hooks
+- Intercepts Task tool calls.
+- Reads the JSONL matching the `subagent_type` (`implement.jsonl`, `check.jsonl`, `research.jsonl`).
+- Reads all files referenced in the JSONL.
+- Assembles the sub-agent prompt (specs + requirements + original instructions).
 
-Hooks receive JSON input via stdin and output JSON results via stdout.
+Design decisions:
+
+- Each sub-agent receives its full context at launch; there is no resume.
+- Only `trellis-*` sub-agents are hooked; custom sub-agents must opt in by editing this file or using their own injection.
+
+### 11.4 Writing a custom hook
+
+Hooks receive JSON input on stdin and emit JSON results on stdout.
 
 **Input format** (PreToolUse example):
 
@@ -143,16 +150,15 @@ Hooks receive JSON input via stdin and output JSON results via stdout.
 }
 ```
 
-### 11.5 Example: Adding an Auto-Test Hook
+### 11.5 Example: an auto-test hook
 
 `.claude/hooks/auto-test.py`:
 
 ```python
 #!/usr/bin/env python3
-"""Run tests automatically after Edit tool completes."""
+"""Run tests automatically after an Edit tool call."""
 
 import json
-import os
 import subprocess
 import sys
 
@@ -162,22 +168,18 @@ def main():
     hook_event = input_data.get("hook_event_name", "")
     tool_name = input_data.get("tool_name", "")
 
-    # Only trigger after Edit tool
     if hook_event != "PostToolUse" or tool_name != "Edit":
         sys.exit(0)
 
-    # Get the edited file
     file_path = input_data.get("tool_input", {}).get("file_path", "")
 
-    # Only for .ts/.tsx files
     if not file_path.endswith((".ts", ".tsx")):
         sys.exit(0)
 
-    # Run typecheck
     result = subprocess.run(
         ["pnpm", "typecheck"],
         capture_output=True,
-        timeout=30
+        timeout=30,
     )
 
     if result.returncode != 0:
@@ -189,6 +191,7 @@ def main():
         print(json.dumps(output))
 
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
@@ -202,8 +205,12 @@ Register it in `settings.json`:
     "PostToolUse": [
       {
         "matcher": "Edit",
-        "type": "command",
-        "command": "python3 .claude/hooks/auto-test.py"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/auto-test.py"
+          }
+        ]
       }
     ]
   }

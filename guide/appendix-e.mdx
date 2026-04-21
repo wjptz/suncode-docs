@@ -1,35 +1,18 @@
 ---
-title: 'Appendix E: worktree.yaml Configuration Reference'
+title: 'Appendix E: worktree.yaml (removed)'
 ---
 
-## Appendix E: worktree.yaml Configuration Reference
+## Appendix E: `worktree.yaml` (removed)
 
-```yaml
-# ─── Paths ───────────────────────────────────
-worktree_dir: ../trellis-worktrees  # Worktree storage directory (relative path)
+This appendix previously documented `.trellis/worktree.yaml`, the configuration file for the Multi-Agent Pipeline. Both the pipeline and this file were removed in **0.5.0-beta.0** along with the `/parallel` command, the `dispatch` agent, and Ralph Loop.
 
-# ─── Files to Copy ──────────────────────────
-copy:                               # Files needing independent copies per worktree
-  - .env
-  - .env.local
-  - .trellis/.developer
+If you're looking for the old content because you maintain a pre-0.5 project, the previous Appendix E is preserved in the Release-track documentation (which still targets 0.4.0).
 
-# ─── Post-Create Hooks ──────────────────────
-post_create:                        # Commands to run after creation (sequential)
-  - pnpm install --frozen-lockfile
+If you were using the old `verify:` field to enforce lint / typecheck / test on AI output, the replacement is:
 
-# ─── Ralph Loop Verification ────────────────
-verify:                             # Quality verification commands (all must pass)
-  - pnpm lint
-  - pnpm typecheck
-  - pnpm test
-```
+- Put the same commands in your package spec (e.g. `.trellis/spec/backend/quality.md`).
+- The `trellis-check` sub-agent reads that spec and runs the same checks on every diff, with its own self-fix loop.
 
-| Field | Type | Required | Description |
-|------|------|------|------|
-| `worktree_dir` | string | No | Worktree storage directory, defaults to `../trellis-worktrees` |
-| `copy` | string[] | No | List of files to copy to each worktree |
-| `post_create` | string[] | No | Commands to run after worktree creation; aborts on failure |
-| `verify` | string[] | No | Ralph Loop verification commands; all must return 0 to pass |
+No Trellis config file is involved.
 
 ---

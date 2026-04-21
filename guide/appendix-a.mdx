@@ -4,105 +4,91 @@ title: 'Appendix A: Key File Paths Quick Reference'
 
 ## Appendix A: Key File Paths Quick Reference
 
-### Core Documents
+### Core files
 
-| File | Description | When Read |
-|------|------|---------|
-| `.trellis/workflow.md` | Development workflow guide | Every session start |
-| `.trellis/worktree.yaml` | Multi-Agent worktree config | During parallel development |
-| `.trellis/.version` | Current Trellis version | During updates |
+| File                          | Description                           | Read on                  |
+| ----------------------------- | ------------------------------------- | ------------------------ |
+| `.trellis/workflow.md`        | Development workflow contract         | Every session start      |
+| `.trellis/config.yaml`        | Packages, update.skip, task hooks     | Init and updates         |
+| `.trellis/.version`           | Current Trellis version               | Updates                  |
+| `.trellis/.template-hashes.json` | Template file hashes              | Updates                  |
+| `.trellis/.developer`         | Developer identity                    | Every session            |
+| `.trellis/.current-task`      | Pointer to the active task            | Sub-agent launch         |
 
-### Command Definitions
+### Shipped commands (Claude Code)
 
-| File | Command |
-|------|------|
-| `.claude/commands/trellis/start.md` | `/trellis:start` |
-| `.claude/commands/trellis/parallel.md` | `/trellis:parallel` |
-| `.claude/commands/trellis/before-dev.md` | `/trellis:before-dev` |
-| `.claude/commands/trellis/brainstorm.md` | `/trellis:brainstorm` |
-| `.claude/commands/trellis/check.md` | `/trellis:check` |
-| `.claude/commands/trellis/check-cross-layer.md` | `/trellis:check-cross-layer` |
-| `.claude/commands/trellis/finish-work.md` | `/trellis:finish-work` |
-| `.claude/commands/trellis/break-loop.md` | `/trellis:break-loop` |
-| `.claude/commands/trellis/create-command.md` | `/trellis:create-command` |
-| `.claude/commands/trellis/integrate-skill.md` | `/trellis:integrate-skill` |
-| `.claude/commands/trellis/onboard.md` | `/trellis:onboard` |
-| `.claude/commands/trellis/record-session.md` | `/trellis:record-session` |
-| `.claude/commands/trellis/update-spec.md` | `/trellis:update-spec` |
+| File                                                | Invoked as                |
+| --------------------------------------------------- | ------------------------- |
+| `.claude/commands/trellis/start.md`                 | `/trellis:start`          |
+| `.claude/commands/trellis/finish-work.md`           | `/trellis:finish-work`    |
+| `.claude/commands/trellis/continue.md`              | `/trellis:continue`       |
 
-### Agent Definitions
+### Shipped sub-agents (Claude Code)
 
-| File | Agent | Role |
-|------|-------|------|
-| `.claude/agents/dispatch.md` | Dispatch | Pure orchestrator |
-| `.claude/agents/plan.md` | Plan | Requirements assessment |
-| `.claude/agents/implement.md` | Implement | Code implementation |
-| `.claude/agents/check.md` | Check | Quality checking |
-| `.claude/agents/debug.md` | Debug | Bug fixing |
-| `.claude/agents/research.md` | Research | Information search (read-only) |
+| File                                  | Sub-agent           | Role                          |
+| ------------------------------------- | ------------------- | ----------------------------- |
+| `.claude/agents/trellis-implement.md` | `trellis-implement` | Writes code, no `git commit`  |
+| `.claude/agents/trellis-check.md`     | `trellis-check`     | Verify + self-fix             |
+| `.claude/agents/trellis-research.md`  | `trellis-research`  | Read-only codebase search     |
 
-### Hook Scripts
+### Shipped skills (Claude Code)
 
-| File | Trigger Timing | Function |
-|------|---------|------|
-| `.claude/hooks/session-start.py` | SessionStart | Auto-inject context |
-| `.claude/hooks/inject-subagent-context.py` | PreToolUse (Task) | Spec injection engine |
-| `.claude/hooks/ralph-loop.py` | SubagentStop (check) | Quality control loop |
+| File                                                 | Skill                   | Triggers when…                              |
+| ---------------------------------------------------- | ----------------------- | ------------------------------------------- |
+| `.claude/skills/trellis-brainstorm/SKILL.md`         | `trellis-brainstorm`    | User describes a feature / bug / request    |
+| `.claude/skills/trellis-before-dev/SKILL.md`         | `trellis-before-dev`    | About to write code in an active task       |
+| `.claude/skills/trellis-check/SKILL.md`              | `trellis-check`         | Implementation finished                     |
+| `.claude/skills/trellis-update-spec/SKILL.md`        | `trellis-update-spec`   | Worth capturing a learning                  |
+| `.claude/skills/trellis-break-loop/SKILL.md`         | `trellis-break-loop`    | A tricky bug was just resolved              |
 
-### Cursor Command Definitions
+### Hook scripts (Claude Code)
 
-| File | Command |
-|------|------|
-| `.cursor/commands/trellis-start.md` | `/trellis-start` |
-| `.cursor/commands/trellis-before-dev.md` | `/trellis-before-dev` |
-| `.cursor/commands/trellis-brainstorm.md` | `/trellis-brainstorm` |
-| `.cursor/commands/trellis-check.md` | `/trellis-check` |
-| `.cursor/commands/trellis-check-cross-layer.md` | `/trellis-check-cross-layer` |
-| `.cursor/commands/trellis-finish-work.md` | `/trellis-finish-work` |
-| `.cursor/commands/trellis-break-loop.md` | `/trellis-break-loop` |
-| `.cursor/commands/trellis-create-command.md` | `/trellis-create-command` |
-| `.cursor/commands/trellis-integrate-skill.md` | `/trellis-integrate-skill` |
-| `.cursor/commands/trellis-onboard.md` | `/trellis-onboard` |
-| `.cursor/commands/trellis-record-session.md` | `/trellis-record-session` |
-| `.cursor/commands/trellis-update-spec.md` | `/trellis-update-spec` |
+| File                                       | Trigger            | Function                                       |
+| ------------------------------------------ | ------------------ | ---------------------------------------------- |
+| `.claude/hooks/session-start.py`           | SessionStart       | Auto-inject context                            |
+| `.claude/hooks/inject-workflow-state.py`   | UserPromptSubmit   | Workflow-state breadcrumb                      |
+| `.claude/hooks/inject-subagent-context.py` | PreToolUse (Task)  | Spec injection engine                          |
 
-### Codex / OpenCode Configuration
+### Other platforms
 
-| File | Description |
-|------|------|
-| `AGENTS.md` | Entry file, provides base project context (generated for all platforms) |
-| `.agents/skills/*/SKILL.md` | Shared Agent Skills (13 skills) |
-| `.codex/config.toml` | Project-scoped Codex configuration |
-| `.codex/agents/*.toml` | Custom Codex agents (`implement.toml`, `research.toml`, `check.toml`) |
-| `.codex/skills/parallel/SKILL.md` | Codex-specific skill for multi-agent pipelines |
-| `.codex/hooks/session-start.py` | SessionStart hook (auto-injects context) |
-| `.codex/hooks.json` | Hooks configuration |
+Each platform writes into its own directory (see §13 for the full layout):
 
-### Kilo Code Configuration
+- `.cursor/commands/`, `.cursor/rules/trellis.mdc`
+- `.opencode/commands/trellis/`, `.opencode/agents/`, `.opencode/skills/`, `.opencode/plugins/`
+- `.codex/prompts/`, `.codex/skills/`, `.codex/agents/` (TOML), `.codex/hooks/`, `AGENTS.md`
+- `.kiro/steering/`, `.kiro/prompts/`, `.kiro/skills/`
+- `.gemini/commands/trellis/` (TOML)
+- `.qoder/rules/`, `.qoder/skills/`
+- `.codebuddy/commands/trellis/`
+- `.factory/commands/trellis/`, `.factory/agents/`, `.factory/skills/`, `.factory/hooks/`
+- `.github/copilot-instructions.md`, `.github/prompts/`
 
-| File | Description |
-|------|------|
-| `.kilocode/workflows/*.md` | Workflow commands (equivalent to slash commands) — 13 workflows generated by Trellis |
+### Scripts
 
-### Kiro Configuration
+| Script                                 | Function                           |
+| -------------------------------------- | ---------------------------------- |
+| `.trellis/scripts/task.py`             | Task management                    |
+| `.trellis/scripts/get_context.py`      | Session context                    |
+| `.trellis/scripts/add_session.py`      | Record session                     |
+| `.trellis/scripts/create_bootstrap.py` | First-time spec bootstrap          |
+| `.trellis/scripts/get_developer.py`    | Developer identity utility         |
+| `.trellis/scripts/init_developer.py`   | Developer initialization           |
 
-| File | Description |
-|------|------|
-| `.kiro/skills/*/SKILL.md` | Agent Skills (YAML frontmatter + instructions) — 12 skills generated by Trellis |
+### What was removed in 0.5.0-beta.0
 
-### Script Tools
-
-| Script | Function |
-|------|------|
-| `.trellis/scripts/task.py` | Task management (14 subcommands) |
-| `.trellis/scripts/get-context.py` | Get session context |
-| `.trellis/scripts/get-developer.py` | Get developer identity |
-| `.trellis/scripts/init-developer.py` | Initialize developer |
-| `.trellis/scripts/add-session.py` | Record session |
-| `.trellis/scripts/multi-agent/plan.py` | Plan phase script |
-| `.trellis/scripts/multi-agent/start.py` | Start worktree Agent |
-| `.trellis/scripts/multi-agent/status.py` | View status |
-| `.trellis/scripts/multi-agent/create-pr.py` | Create PR |
-| `.trellis/scripts/multi-agent/cleanup.py` | Clean up worktree |
+| Path                                               | Why                                                |
+| -------------------------------------------------- | -------------------------------------------------- |
+| `.trellis/worktree.yaml`                           | Multi-Agent Pipeline removed                       |
+| `.trellis/scripts/multi-agent/`                    | Multi-Agent Pipeline removed                       |
+| `.trellis/.ralph-state.json`                       | Ralph Loop removed                                 |
+| `.claude/agents/dispatch.md`                       | Main session orchestrates directly                 |
+| `.claude/agents/plan.md`                           | Replaced by `trellis-brainstorm` skill             |
+| `.claude/agents/debug.md`                          | Folded into main session + `trellis-break-loop`    |
+| `.claude/hooks/ralph-loop.py`                      | `trellis-check` sub-agent owns its own loop        |
+| `.claude/commands/trellis/parallel.md`             | Multi-Agent Pipeline removed                       |
+| `.claude/commands/trellis/record-session.md`       | Folded into `/trellis:finish-work`                 |
+| `.claude/commands/trellis/before-{backend,frontend}-dev.md` | `trellis-before-dev` skill              |
+| `.claude/commands/trellis/check-{backend,frontend,cross-layer}.md` | `trellis-check` skill + sub-agent |
+| `.claude/commands/trellis/{onboard,create-command,integrate-skill}.md` | Removed from shipped surface |
 
 ---

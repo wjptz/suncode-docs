@@ -11,54 +11,59 @@ create → init-context → add-context → start → implement/check → finish
   │           │              │           │          │               │         │
   │           │              │           │          │               │         │
   ▼           ▼              ▼           ▼          ▼               ▼         ▼
-创建目录    初始化JSONL   添加上下文    设为当前     开发/检查      清除当前   归档到
-task.json   配置文件      条目         任务指针     循环           任务      archive/
+创建        初始化 JSONL    追加上下文    设为当前   开发 /          清除      归档到
+目录        配置文件        条目          任务指针   检查循环        当前      archive/
+task.json                                                           任务
 ```
 
-### 6.2 task.py 14 个子命令详解
+### 6.2 `task.py` 子命令
 
-#### 任务创建
+#### 创建任务
 
 ```bash
 # 创建任务
-TASK_DIR=$(./.trellis/scripts/task.py create "添加用户登录" \
-  --slug user-login \          # 目录名后缀 (可选，否则自动 slugify)
-  --assignee alice \           # 指派人 (可选)
-  --priority P1 \              # 优先级: P0/P1/P2/P3 (可选，默认 P2)
-  --description "实现JWT登录")  # 描述 (可选)
+TASK_DIR=$(./.trellis/scripts/task.py create "新增用户登录" \
+  --slug user-login \          # 目录名后缀（可选，不写自动生成）
+  --assignee alice \           # 负责人（可选）
+  --priority P1 \              # 优先级：P0/P1/P2/P3（可选，默认 P2）
+  --description "实现 JWT 登录")  # 描述（可选）
 
-# 创建的目录: .trellis/tasks/02-27-user-login/
-# 创建的文件: task.json
+# 创建的目录：.trellis/tasks/02-27-user-login/
+# 创建的文件：task.json
 ```
 
 #### 上下文配置
 
 ```bash
-# 初始化 JSONL 配置
+# 初始化 JSONL 配置（生成 implement.jsonl + check.jsonl）
 ./.trellis/scripts/task.py init-context "$TASK_DIR" backend
-# dev_type: backend | frontend | fullstack | test | docs
-# 可选: --platform cursor (默认 claude)
+# dev_type：backend | frontend | fullstack | test | docs
+# 可选：--package PACKAGE   （monorepo 必填，选 spec/<pkg>/ 根）
 
-# 添加额外上下文条目
+# 追加额外的上下文条目
 ./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
-  "src/services/auth.ts" "Existing auth patterns"
-# 目标: implement | check | debug (简写，自动加 .jsonl)
-# 会自动检测是文件还是目录
+  "src/services/auth.ts" "现有 auth 模式"
+# file 参数：implement | check（简写，自动补 .jsonl）
+# path 参数：文件 or 目录路径，add-context 自动识别目录并设 type="directory"
 
-# 验证所有 JSONL 引用的文件是否存在
+# 校验 implement.jsonl + check.jsonl 里引用的文件都存在
 ./.trellis/scripts/task.py validate "$TASK_DIR"
 
 # 查看所有 JSONL 条目
 ./.trellis/scripts/task.py list-context "$TASK_DIR"
 ```
 
+<Note>
+  `research.jsonl` 不由 `task.py add-context` 管（由 `trellis-research` sub-agent 读）。`add-context` 只写 `implement.jsonl` / `check.jsonl`，要自定义 research 上下文手动编辑 `research.jsonl` 即可。
+</Note>
+
 #### 任务控制
 
 ```bash
-# 设为当前任务（Hook 会读取此指针进行注入）
+# 设为当前任务（sub-agent hook 读 .current-task 做 JSONL 注入）
 ./.trellis/scripts/task.py start "$TASK_DIR"
 
-# 清除当前任务（无需参数，自动读取 .current-task）
+# 清除当前任务（无参数，自动读 .current-task）
 ./.trellis/scripts/task.py finish
 
 # 设置 Git 分支名
@@ -67,7 +72,7 @@ TASK_DIR=$(./.trellis/scripts/task.py create "添加用户登录" \
 # 设置 PR 目标分支
 ./.trellis/scripts/task.py set-base-branch "$TASK_DIR" "main"
 
-# 设置 scope（用于 commit message: feat(scope): ...）
+# 设置 scope（用在 commit message：feat(scope): ...）
 ./.trellis/scripts/task.py set-scope "$TASK_DIR" "auth"
 ```
 
@@ -76,8 +81,8 @@ TASK_DIR=$(./.trellis/scripts/task.py create "添加用户登录" \
 ```bash
 # 列出活跃任务
 ./.trellis/scripts/task.py list
-./.trellis/scripts/task.py list --mine        # 只看自己的
-./.trellis/scripts/task.py list --status review  # 按状态过滤
+./.trellis/scripts/task.py list --mine            # 只看自己的
+./.trellis/scripts/task.py list --status review   # 按状态过滤
 
 # 归档完成的任务
 ./.trellis/scripts/task.py archive user-login
@@ -86,18 +91,15 @@ TASK_DIR=$(./.trellis/scripts/task.py create "添加用户登录" \
 # 列出归档任务
 ./.trellis/scripts/task.py list-archive
 ./.trellis/scripts/task.py list-archive 2026-02  # 按月过滤
-
-# 创建 PR（委托给 multi-agent/create-pr.py）
-./.trellis/scripts/task.py create-pr
 ```
 
-### 6.3 task.json Schema
+### 6.3 `task.json` Schema
 
 ```json
 {
   "id": "02-27-user-login",
   "name": "user-login",
-  "title": "添加用户登录",
+  "title": "新增用户登录",
   "description": "实现 JWT 登录流程",
   "status": "in_progress",
   "dev_type": "backend",
@@ -109,122 +111,72 @@ TASK_DIR=$(./.trellis/scripts/task.py create "添加用户登录" \
   "completedAt": null,
   "branch": "feature/user-login",
   "base_branch": "main",
-  "worktree_path": null,
-  "current_phase": 1,
-  "next_action": [
-    { "phase": 1, "action": "implement" },
-    { "phase": 2, "action": "check" },
-    { "phase": 3, "action": "finish" },
-    { "phase": 4, "action": "create-pr" }
-  ],
   "commit": null,
   "pr_url": null,
   "subtasks": [],
   "relatedFiles": [],
-  "notes": ""
+  "notes": "",
+  "meta": {}
 }
 ```
 
 **状态流转**：
 
 ```
-planning → in_progress → review → completed
-       ↘ rejected
+task.py create     →  planning
+task.py start      →  in_progress
+task.py archive    →  completed（同时移到 archive/）
 ```
+
+`planning` / `in_progress` / `completed` 是默认三状态，和 `workflow.md` 里的三个 Phase 对齐。`task.py --status` 也接受 `review` 作为过滤条件，供自定义流程使用；要加新状态直接在 `workflow.md` 里写 `[workflow-state:<name>]` 对应 block 就行。
 
 ### 6.4 JSONL 上下文配置实战
 
 #### 自动生成的默认配置
 
-`task.py init-context` 会根据 dev_type 生成默认的 JSONL 文件：
+`task.py init-context` 按 `dev_type` 生成**最小化**的 JSONL。默认故意写得很薄：只指向 workflow 契约和相关 spec index，具体指南文件由 skill（`trellis-before-dev` / `trellis-check`）按 index 里的引用按需读取。
 
-**backend 类型默认 implement.jsonl**：
-
-```jsonl
-{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
-{"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
-{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
-{"file": ".trellis/spec/backend/api-module.md", "reason": "API module conventions"}
-{"file": ".trellis/spec/backend/quality.md", "reason": "Code quality requirements"}
-```
-
-**backend 类型默认 check.jsonl**（Claude Code 平台）：
+**单仓库，`dev_type=backend`**：
 
 ```jsonl
-{"file": ".claude/commands/trellis/finish-work.md", "reason": "Finish work checklist"}
-{"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
-{"file": ".claude/commands/trellis/check-backend.md", "reason": "Backend check spec"}
+# implement.jsonl
+{"file": ".trellis/workflow.md", "reason": "项目工作流和约定"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端开发指南"}
 ```
 
-**fullstack 类型**会同时包含前端和后端的 spec 文件。
+```jsonl
+# check.jsonl（路径按当前平台解析到对应 command / skill 位置）
+{"file": ".claude/commands/trellis/finish-work.md", "reason": "收尾清单"}
+{"file": ".claude/commands/trellis/check.md", "reason": "质量检查规范"}
+```
+
+Monorepo 项目 implement 侧会换成 `.trellis/spec/<package>/...`。`dev_type=frontend` 指 `spec/frontend/index.md`；`dev_type=fullstack` 同时含两侧；`dev_type=test` 复用 backend index；`dev_type=docs` 只含 `workflow.md`。
+
+任务特有的代码模式、跨层指南等通过 `task.py add-context` 追加；默认保持精简是刻意的。
 
 #### 添加自定义上下文
 
 ```bash
-# 添加现有代码作为参考（文件）
+# 把现有代码作为参考（文件）
 ./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
-  "src/services/user.ts" "Existing user service patterns"
+  "src/services/user.ts" "现有 user service 模式"
 
-# 添加整个目录（自动读取所有 .md 文件）
+# 整个目录（自动读所有 .md）
 ./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
-  "src/services/" "Existing service patterns"
+  "src/services/" "现有 service 模式"
 
-# 添加自定义 check 上下文
+# 自定义 check 上下文
 ./.trellis/scripts/task.py add-context "$TASK_DIR" check \
-  ".trellis/spec/guides/cross-layer-thinking-guide.md" "Cross-layer verification"
+  ".trellis/spec/guides/cross-layer-thinking-guide.md" "跨层验证"
 ```
 
-### 6.5 Plan Agent 与需求评估
+### 6.5 任务生命周期 Hook
 
-Plan Agent 在接受需求前会进行严格评估，可能会拒绝。
+你可以配置 shell 命令，在任务生命周期事件上自动跑。用于对接 Linear、发 Slack、触发 CI 等。
 
-**5 类拒绝原因**：
+#### 配置
 
-| 拒绝类型                   | 触发条件         | 示例                             |
-| -------------------------- | ---------------- | -------------------------------- |
-| **Unclear or Vague**       | 没有具体结果定义 | "Make it better"、"Fix the bugs" |
-| **Incomplete Information** | 缺少关键实现细节 | 引用了未知系统                   |
-| **Out of Scope**           | 不属于本项目     | 需要修改外部系统                 |
-| **Potentially Harmful**    | 安全风险         | 故意开后门                       |
-| **Too Large**              | 应该拆分         | 一次要做 6 个功能                |
-
-**拒绝时**：
-
-- `task.json` 状态设为 `"rejected"`
-- 生成 `REJECTED.md` 包含原因和改进建议
-- 任务目录保留供用户查看
-
-**拒绝示例**：
-
-```
-Input: "Add user authentication, authorization, password reset,
-        2FA, OAuth integration, and audit logging"
-
-=== PLAN REJECTED ===
-
-Reason: Too Large / Should Be Split
-
-Details:
-This requirement bundles 6 distinct features:
-1. User authentication (login/logout)
-2. Authorization (roles/permissions)
-3. Password reset flow
-4. Two-factor authentication
-5. OAuth integration
-6. Audit logging
-
-Suggestions:
-- Start with basic authentication first
-- Create separate features for each capability
-```
-
-### 6.6 任务生命周期 Hooks
-
-你可以配置在任务生命周期事件发生时自动执行的 shell 命令。适用于同步任务到 Linear、发送 Slack 通知、触发 CI 流水线等场景。
-
-#### 配置方式
-
-在 `.trellis/config.yaml` 中添加 `hooks` 块：
+在 `.trellis/config.yaml` 加 `hooks` 块：
 
 ```yaml
 hooks:
@@ -238,63 +190,65 @@ hooks:
     - 'python3 .trellis/scripts/hooks/linear_sync.py archive'
 ```
 
-<Note>默认的 `config.yaml` 中 hooks 部分是**注释掉的**。需要手动取消注释并编辑才能激活。</Note>
+<Note>
+  默认 `config.yaml` 里 hooks 段是**注释掉**的。取消注释并编辑即可激活。
+</Note>
 
 #### 支持的事件
 
-| 事件            | 触发时机                        | 典型用途                        |
-| --------------- | ------------------------------- | ------------------------------- |
-| `after_create`  | `task.py create` 完成后         | 在项目管理工具中创建关联 issue  |
-| `after_start`   | `task.py start` 设置当前任务后  | 更新 issue 状态为 "In Progress" |
-| `after_finish`  | `task.py finish` 清除当前任务后 | 通知团队、触发评审              |
-| `after_archive` | `task.py archive` 归档任务后    | 标记 issue 为 "Done"            |
+| 事件            | 触发时机                             | 用途                              |
+| --------------- | ------------------------------------ | --------------------------------- |
+| `after_create`  | `task.py create` 完成                | 在项目追踪工具里建 issue          |
+| `after_start`   | `task.py start` 设置当前任务         | 更新 issue 状态到 "In Progress"   |
+| `after_finish`  | `task.py finish` 清除当前任务        | 通知团队、触发 review             |
+| `after_archive` | `task.py archive` 移动任务           | 标记 issue 为 "Done"              |
 
 #### 环境变量
 
-每个 Hook 都会收到：
+每个 hook 收到：
 
-| 变量             | 值                          |
-| ---------------- | --------------------------- |
-| `TASK_JSON_PATH` | 任务 `task.json` 的绝对路径 |
+| 变量             | 值                                    |
+| ---------------- | ------------------------------------- |
+| `TASK_JSON_PATH` | 任务 `task.json` 的绝对路径           |
 
-父进程的所有其他环境变量也会被继承。
+其他环境变量从父进程继承。
 
 #### 执行行为
 
-- **工作目录**：仓库根目录
-- **Shell**：命令通过系统 shell 执行（`shell=True`）
-- **失败不阻塞**：Hook 失败会在 stderr 输出 `[WARN]`，但不会阻止任务操作完成
-- **顺序执行**：同一事件的多个 Hook 按列表顺序执行；某个失败不会跳过后续 Hook
-- **stdout 被捕获**：Hook 的 stdout 不会显示给用户 — 诊断信息请输出到 stderr
+- **工作目录**：仓库根
+- **Shell**：命令通过系统 shell 运行（`shell=True`）
+- **失败不阻断**：失败的 hook 在 stderr 打印 `[WARN]`，但不阻止任务操作完成
+- **顺序**：同一事件有多个 hook 按列表顺序执行；一个失败不跳过其他
+- **stdout 不显示**：诊断输出用 stderr
 
 <Warning>
-  `after_archive` Hook 收到的 `TASK_JSON_PATH` 指向的是**归档后**的位置（如
-  `.trellis/tasks/archive/2026-03/task-name/task.json`），不是原始路径。
+  `after_archive` hook 收到的 `TASK_JSON_PATH` 指向**归档后**位置（如
+  `.trellis/tasks/archive/2026-03/task-name/task.json`），不是原路径。
 </Warning>
 
-#### 示例：Linear 同步 Hook
+#### 示例：Linear Sync Hook
 
-Trellis 内置了一个示例 Hook 脚本 `.trellis/scripts/hooks/linear_sync.py`，可将任务生命周期事件同步到 [Linear](https://linear.app)。
+Trellis 出厂 `.trellis/scripts/hooks/linear_sync.py` 示例 hook，把任务生命周期事件同步到 [Linear](https://linear.app)。
 
-**功能说明**：
+**行为**：
 
-| 动作      | 触发事件        | 效果                                                           |
-| --------- | --------------- | -------------------------------------------------------------- |
-| `create`  | `after_create`  | 从 task.json 创建 Linear issue（标题、优先级、指派人、父任务） |
-| `start`   | `after_start`   | 更新关联 issue 状态为 "In Progress"                            |
-| `archive` | `after_archive` | 更新关联 issue 状态为 "Done"                                   |
-| `sync`    | 手动调用        | 将 `prd.md` 内容推送到 Linear issue 描述                       |
+| 操作      | 触发            | 效果                                                                    |
+| --------- | --------------- | ----------------------------------------------------------------------- |
+| `create`  | `after_create`  | 从 task.json 建 Linear issue（title、priority、assignee、parent）       |
+| `start`   | `after_start`   | 把关联 issue 更新到 "In Progress"                                       |
+| `archive` | `after_archive` | 把关联 issue 更新到 "Done"                                              |
+| `sync`    | 手动            | 把 `prd.md` 内容推到 Linear issue 描述                                  |
 
-**前置条件**：
+**前置**：
 
-1. 安装 [`linearis`](https://www.npmjs.com/package/linearis) CLI 并设置 `LINEAR_API_KEY`
-2. 创建 `.trellis/hooks.local.json`（已被 gitignore）并填入团队配置：
+1. 装 [`linearis`](https://www.npmjs.com/package/linearis) CLI 并设置 `LINEAR_API_KEY`
+2. 创建 `.trellis/hooks.local.json`（gitignored）放团队配置：
 
 ```json
 {
   "linear": {
     "team": "ENG",
-    "project": "My Project",
+    "project": "我的项目",
     "assignees": {
       "alice": "linear-user-id-for-alice"
     }
@@ -302,4 +256,6 @@ Trellis 内置了一个示例 Hook 脚本 `.trellis/scripts/hooks/linear_sync.py
 }
 ```
 
-Hook 会将 Linear issue 标识符写回 `task.json` 的 `meta.linear_issue` 字段（如 `"ENG-123"`），确保后续事件幂等。
+Hook 把 Linear issue id 写回 `task.json` 的 `meta.linear_issue`（如 `"ENG-123"`），保证后续事件幂等。
+
+---

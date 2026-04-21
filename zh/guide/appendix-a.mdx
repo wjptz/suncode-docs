@@ -4,103 +4,91 @@ title: '附录 A：关键文件路径速查'
 
 ## 附录 A：关键文件路径速查
 
-### 核心文档
+### 核心文件
 
-| 文件 | 说明 | 何时读取 |
-|------|------|---------|
-| `.trellis/workflow.md` | 开发工作流指南 | 每次会话启动 |
-| `.trellis/worktree.yaml` | Multi-Agent worktree 配置 | 并行开发时 |
-| `.trellis/.version` | 当前 Trellis 版本 | 更新时 |
+| 文件                              | 说明                                | 读取时机                 |
+| --------------------------------- | ----------------------------------- | ------------------------ |
+| `.trellis/workflow.md`            | 开发工作流契约                      | 每次会话开始             |
+| `.trellis/config.yaml`            | packages、update.skip、任务 hook    | init 和 update           |
+| `.trellis/.version`               | 当前 Trellis 版本                   | update                   |
+| `.trellis/.template-hashes.json`  | 模板文件 hash                       | update                   |
+| `.trellis/.developer`             | 开发者身份                          | 每次会话                 |
+| `.trellis/.current-task`          | 指向当前任务                        | Sub-agent 启动           |
 
-### 命令定义
+### 出厂命令（Claude Code）
 
-| 文件 | 命令 |
-|------|------|
-| `.claude/commands/trellis/start.md` | `/trellis:start` |
-| `.claude/commands/trellis/parallel.md` | `/trellis:parallel` |
-| `.claude/commands/trellis/before-dev.md` | `/trellis:before-dev` |
-| `.claude/commands/trellis/brainstorm.md` | `/trellis:brainstorm` |
-| `.claude/commands/trellis/check.md` | `/trellis:check` |
-| `.claude/commands/trellis/check-cross-layer.md` | `/trellis:check-cross-layer` |
-| `.claude/commands/trellis/finish-work.md` | `/trellis:finish-work` |
-| `.claude/commands/trellis/break-loop.md` | `/trellis:break-loop` |
-| `.claude/commands/trellis/create-command.md` | `/trellis:create-command` |
-| `.claude/commands/trellis/integrate-skill.md` | `/trellis:integrate-skill` |
-| `.claude/commands/trellis/onboard.md` | `/trellis:onboard` |
-| `.claude/commands/trellis/record-session.md` | `/trellis:record-session` |
-| `.claude/commands/trellis/update-spec.md` | `/trellis:update-spec` |
+| 文件                                                | 调用方式                  |
+| --------------------------------------------------- | ------------------------- |
+| `.claude/commands/trellis/start.md`                 | `/trellis:start`          |
+| `.claude/commands/trellis/finish-work.md`           | `/trellis:finish-work`    |
+| `.claude/commands/trellis/continue.md`              | `/trellis:continue`       |
 
-### Agent 定义
+### 出厂 sub-agent（Claude Code）
 
-| 文件 | Agent | 角色 |
-|------|-------|------|
-| `.claude/agents/dispatch.md` | Dispatch | 纯调度器 |
-| `.claude/agents/plan.md` | Plan | 需求评估 |
-| `.claude/agents/implement.md` | Implement | 代码实现 |
-| `.claude/agents/check.md` | Check | 质量检查 |
-| `.claude/agents/debug.md` | Debug | Bug 修复 |
-| `.claude/agents/research.md` | Research | 信息搜索（只读） |
+| 文件                                  | Sub-agent           | 角色                          |
+| ------------------------------------- | ------------------- | ----------------------------- |
+| `.claude/agents/trellis-implement.md` | `trellis-implement` | 写代码，不 `git commit`       |
+| `.claude/agents/trellis-check.md`     | `trellis-check`     | 验证 + 自修复                 |
+| `.claude/agents/trellis-research.md`  | `trellis-research`  | 只读代码搜索                  |
 
-### Hook 脚本
+### 出厂 skill（Claude Code）
 
-| 文件 | 触发时机 | 功能 |
-|------|---------|------|
-| `.claude/hooks/session-start.py` | SessionStart | 自动注入上下文 |
-| `.claude/hooks/inject-subagent-context.py` | PreToolUse (Task) | 规范注入引擎 |
-| `.claude/hooks/ralph-loop.py` | SubagentStop (check) | 质量控制循环 |
+| 文件                                                 | Skill                   | 触发时机                                    |
+| ---------------------------------------------------- | ----------------------- | ------------------------------------------- |
+| `.claude/skills/trellis-brainstorm/SKILL.md`         | `trellis-brainstorm`    | 用户描述功能 / bug / 请求                   |
+| `.claude/skills/trellis-before-dev/SKILL.md`         | `trellis-before-dev`    | 活跃任务中即将写代码                        |
+| `.claude/skills/trellis-check/SKILL.md`              | `trellis-check`         | 实现完成                                    |
+| `.claude/skills/trellis-update-spec/SKILL.md`        | `trellis-update-spec`   | 有值得沉淀的知识                            |
+| `.claude/skills/trellis-break-loop/SKILL.md`         | `trellis-break-loop`    | 刚修完棘手 bug                              |
 
-### Cursor 命令定义
+### Hook 脚本（Claude Code）
 
-| 文件 | 命令 |
-|------|------|
-| `.cursor/commands/trellis-start.md` | `/trellis-start` |
-| `.cursor/commands/trellis-before-dev.md` | `/trellis-before-dev` |
-| `.cursor/commands/trellis-brainstorm.md` | `/trellis-brainstorm` |
-| `.cursor/commands/trellis-check.md` | `/trellis-check` |
-| `.cursor/commands/trellis-check-cross-layer.md` | `/trellis-check-cross-layer` |
-| `.cursor/commands/trellis-finish-work.md` | `/trellis-finish-work` |
-| `.cursor/commands/trellis-break-loop.md` | `/trellis-break-loop` |
-| `.cursor/commands/trellis-create-command.md` | `/trellis-create-command` |
-| `.cursor/commands/trellis-integrate-skill.md` | `/trellis-integrate-skill` |
-| `.cursor/commands/trellis-onboard.md` | `/trellis-onboard` |
-| `.cursor/commands/trellis-record-session.md` | `/trellis-record-session` |
-| `.cursor/commands/trellis-update-spec.md` | `/trellis-update-spec` |
+| 文件                                       | 触发                | 作用                                         |
+| ------------------------------------------ | ------------------- | -------------------------------------------- |
+| `.claude/hooks/session-start.py`           | SessionStart        | 自动注入上下文                               |
+| `.claude/hooks/inject-workflow-state.py`   | UserPromptSubmit    | 工作流状态面包屑                             |
+| `.claude/hooks/inject-subagent-context.py` | PreToolUse（Task）  | 规范注入引擎                                 |
 
-### Codex / OpenCode 配置
+### 其他平台
 
-| 文件 | 说明 |
-|------|------|
-| `AGENTS.md` | 入口文件，提供项目基础上下文（所有平台均生成） |
-| `.agents/skills/*/SKILL.md` | 共享 Agent Skills（13 个 skill） |
-| `.codex/config.toml` | 项目级 Codex 配置 |
-| `.codex/agents/*.toml` | 自定义 Codex agents（`implement.toml`、`research.toml`、`check.toml`） |
-| `.codex/skills/parallel/SKILL.md` | Codex 专属 skill（多 agent pipeline） |
-| `.codex/hooks/session-start.py` | SessionStart hook（自动注入上下文） |
-| `.codex/hooks.json` | Hooks 配置 |
+各平台写到自己的目录下（完整布局见 §13）：
 
-### Kilo Code 配置
+- `.cursor/commands/`、`.cursor/rules/trellis.mdc`
+- `.opencode/commands/trellis/`、`.opencode/agents/`、`.opencode/skills/`、`.opencode/plugins/`
+- `.codex/prompts/`、`.codex/skills/`、`.codex/agents/`（TOML）、`.codex/hooks/`、`AGENTS.md`
+- `.kiro/steering/`、`.kiro/prompts/`、`.kiro/skills/`
+- `.gemini/commands/trellis/`（TOML）
+- `.qoder/rules/`、`.qoder/skills/`
+- `.codebuddy/commands/trellis/`
+- `.factory/commands/trellis/`、`.factory/agents/`、`.factory/skills/`、`.factory/hooks/`
+- `.github/copilot-instructions.md`、`.github/prompts/`
 
-| 文件 | 说明 |
-|------|------|
-| `.kilocode/workflows/*.md` | Workflow 命令（等同于 slash commands）— Trellis 生成 13 个工作流 |
+### 脚本
 
-### Kiro 配置
+| 脚本                                   | 作用                              |
+| -------------------------------------- | --------------------------------- |
+| `.trellis/scripts/task.py`             | 任务管理                          |
+| `.trellis/scripts/get_context.py`      | 会话上下文                        |
+| `.trellis/scripts/add_session.py`      | 记录会话                          |
+| `.trellis/scripts/create_bootstrap.py` | 首次 spec bootstrap               |
+| `.trellis/scripts/get_developer.py`    | 开发者身份工具                    |
+| `.trellis/scripts/init_developer.py`   | 开发者初始化                      |
 
-| 文件 | 说明 |
-|------|------|
-| `.kiro/skills/*/SKILL.md` | Agent Skills（YAML frontmatter + 指令）— Trellis 生成 12 个 skill |
+### 0.5.0-beta.0 移除的内容
 
-### 脚本工具
+| 路径                                               | 原因                                                |
+| -------------------------------------------------- | --------------------------------------------------- |
+| `.trellis/worktree.yaml`                           | Multi-Agent Pipeline 移除                           |
+| `.trellis/scripts/multi-agent/`                    | Multi-Agent Pipeline 移除                           |
+| `.trellis/.ralph-state.json`                       | Ralph Loop 移除                                     |
+| `.claude/agents/dispatch.md`                       | 主会话直接编排                                      |
+| `.claude/agents/plan.md`                           | 由 `trellis-brainstorm` skill 替代                  |
+| `.claude/agents/debug.md`                          | 折入主会话 + `trellis-break-loop`                   |
+| `.claude/hooks/ralph-loop.py`                      | `trellis-check` sub-agent 自带循环                  |
+| `.claude/commands/trellis/parallel.md`             | Multi-Agent Pipeline 移除                           |
+| `.claude/commands/trellis/record-session.md`       | 折入 `/trellis:finish-work`                         |
+| `.claude/commands/trellis/before-{backend,frontend}-dev.md` | `trellis-before-dev` skill               |
+| `.claude/commands/trellis/check-{backend,frontend,cross-layer}.md` | `trellis-check` skill + sub-agent |
+| `.claude/commands/trellis/{onboard,create-command,integrate-skill}.md` | 从出厂面板移除           |
 
-| 脚本 | 功能 |
-|------|------|
-| `.trellis/scripts/task.py` | 任务管理（14 个子命令） |
-| `.trellis/scripts/get-context.py` | 获取会话上下文 |
-| `.trellis/scripts/get-developer.py` | 获取开发者身份 |
-| `.trellis/scripts/init-developer.py` | 初始化开发者 |
-| `.trellis/scripts/add-session.py` | 记录会话 |
-| `.trellis/scripts/multi-agent/plan.py` | Plan 阶段脚本 |
-| `.trellis/scripts/multi-agent/start.py` | 启动 worktree Agent |
-| `.trellis/scripts/multi-agent/status.py` | 查看状态 |
-| `.trellis/scripts/multi-agent/create-pr.py` | 创建 PR |
-| `.trellis/scripts/multi-agent/cleanup.py` | 清理 worktree |
+---

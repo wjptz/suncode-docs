@@ -6,319 +6,261 @@ title: '架构全景'
 
 ### 4.1 整体架构
 
-<pre className="cjk-diagram" dangerouslySetInnerHTML={{__html: `┌──────────────────────────────────────────────────────────────┐
-│                             <b>用</b><b>户</b>                             │
+```
+┌──────────────────────────────────────────────────────────────┐
+│                             User                             │
 └─────────────────────────────┬────────────────────────────────┘
                               │
                               ▼
 ┌──────────────────────────────────────────────────────────────┐
-│    Claude Code / Cursor / Codex / OpenCode / Kilo / Kiro     │
-│                     <b>（</b>AI <b>编</b><b>码</b><b>助</b><b>手</b><b>界</b><b>面</b><b>）</b>                      │
+│  Claude Code / Cursor / OpenCode / Codex / Kiro / Gemini /   │
+│  Qoder / CodeBuddy / Copilot / Droid / Kilo / Antigravity /  │
+│  Windsurf  +  .agents/skills/ ecosystem (Amp, Cline, ...)    │
+│                 (AI Coding Assistant Layer)                  │
 └─────────────────────────────┬────────────────────────────────┘
                               │
-                 ┌────────────┼────────────┐
-                 │                         │
-                 ▼                         ▼
-      ┌────────────────────┐      ┌───────────────────────────┐
-      │  Slash <b>命</b><b>令</b>        │      │  Hook <b>系</b><b>统</b>                │
-      │  /*                │      │  <b>（</b><b>自</b><b>动</b><b>注</b><b>入</b><b>）</b>             │
-      │                    │      │  [Claude Code <b>专</b><b>属</b>]       │
-      │  <b>用</b><b>户</b><b>主</b><b>动</b><b>调</b><b>用</b>      │      │                           │
-      │  <b>触</b><b>发</b><b>特</b><b>定</b><b>工</b><b>作</b><b>流</b>    │      │  session-start.py         │
-      │                    │      │  inject-context.py        │
-      │  [<b>全</b><b>平</b><b>台</b><b>通</b><b>用</b>]      │      │  ralph-loop.py            │
-      └─────────┬──────────┘      └─────────────┬─────────────┘
-                │                              │
-                └──────────────┬───────────────┘
-                               │
-                               ▼
+          ┌───────────────────┼──────────────────┐
+          │                   │                  │
+          ▼                   ▼                  ▼
+  ┌───────────────┐  ┌──────────────────┐  ┌─────────────────┐
+  │  Commands     │  │  Skills          │  │  Hooks          │
+  │  /trellis:*   │  │  (auto-trigger)  │  │  (hook-capable) │
+  │               │  │                  │  │                 │
+  │  start        │  │  brainstorm      │  │  SessionStart   │
+  │  finish-work  │  │  before-dev      │  │  PreToolUse     │
+  │  continue     │  │  check           │  │  UserPrompt     │
+  │               │  │  update-spec     │  │                 │
+  │  [all]        │  │  break-loop      │  │  [see §2.2]     │
+  └───────┬───────┘  └────────┬─────────┘  └────────┬────────┘
+          │                   │                      │
+          └───────────────────┼──────────────────────┘
+                              │
+                              ▼
       ┌──────────────────────────────────────────────────────┐
-      │                    .trellis/ <b>目</b><b>录</b>                    │
+      │                .trellis/ directory                   │
       │                                                      │
       │  spec/        workspace/      tasks/      scripts/   │
-      │  (<b>规</b><b>范</b>)       (<b>工</b><b>作</b><b>记</b><b>录</b>)      (<b>任</b><b>务</b>)      (<b>自</b><b>动</b><b>化</b>)   │
+      │  (specs)      (journals)      (tasks)     (Python)   │
       └─────────────────────────┬────────────────────────────┘
                                 │
                                 ▼
       ┌──────────────────────────────────────────────────────┐
-      │                      Agent <b>系</b><b>统</b>                      │
+      │                  Sub-agent system                    │
       │                                                      │
-      │  Plan → Research → Implement → Check → Debug         │
+      │  trellis-research -> trellis-implement -> trellis-check │
       │                                                      │
-      │  <b>每</b><b>个</b> Agent <b>通</b><b>过</b> Hook <b>接</b><b>收</b><b>精</b><b>准</b><b>的</b><b>上</b><b>下</b><b>文</b>               │
+      │   Each sub-agent receives precise context via JSONL  │
       └─────────────────────────┬────────────────────────────┘
                                 │
                                 ▼
       ┌──────────────────────────────────────────────────────┐
-      │                     <b>你</b><b>的</b><b>项</b><b>目</b><b>代</b><b>码</b>                     │
-      │              <b>（</b>AI <b>按</b><b>规</b><b>范</b><b>生</b><b>成</b>/<b>修</b><b>改</b><b>代</b><b>码</b><b>）</b>              │
-      └──────────────────────────────────────────────────────┘`}} />
+      │                  Your project code                   │
+      │      (AI generates / modifies code per specs)        │
+      └──────────────────────────────────────────────────────┘
+```
+
+#### `workflow.md`：Single Source of Truth
+
+`.trellis/workflow.md` 是定义 Plan / Execute / Finish 契约的唯一一份文件：Phase 1（1.0 `task.py create` → 1.4 `task.py start`）、Phase 2（2.1 `trellis-implement` → 2.2 `trellis-check`）、Phase 3（3.1 最终验证 → 3.4 `/trellis:finish-work`）。系统其余部件都从它读：
+
+- **SessionStart hook** 自动注入它的 TOC + 步骤级详情，你开口前 AI 已经拿到契约。
+- **`/trellis:continue`** 读 `.current-task` + 任务 `status`，再对照 `workflow.md` 判断当前在哪一步、下一步该做什么。
+- **Skill 和 sub-agent** 通过 JSONL 拿到它（`workflow.md` 是 `implement.jsonl` 默认第一条）。
+- **任务状态** 默认三个：`planning` / `in_progress` / `completed`（由 `task.py create` / `start` / `archive` 自动设置），与 `workflow.md` 里的三个 Phase 一一对应。`workflow.md` 里按状态分块写提醒；要加自定义状态直接在 `workflow.md` 里加对应 block。
+
+改 `workflow.md` 就能改整个项目的工作流，下次 session 所有平台、skill、sub-agent、命令全都按新版读。别处没有工作流硬编码。
 
 ### 4.2 会话启动流程
 
 <Tabs>
-  <Tab title="Claude Code / OpenCode">
-    这两个平台的 Hook 系统在会话开始时**自动触发** `session-start.py`，无需手动输入 `/start`。
-    用户打开终端即可直接描述任务。可选运行 `/start` 获取更详细的上下文报告。
+  <Tab title="Hook 可用（CC / Cursor / OC / Gemini / Qoder / CodeBuddy / Copilot / Droid）">
+    SessionStart hook 在 session 启动时自动触发，平台对应的 `session-start.py` / `session-start.js` 不需要手动调用即完成 Trellis 上下文注入。打开终端就直接描述任务；想显式看上下文报告可以跑 `/trellis:start`。
   </Tab>
-  <Tab title="Cursor / Codex">
-    Cursor 的 Hook 支持尚在开发中，Codex 通过 `AGENTS.md` 提供基础上下文。 用户**必须手动调用**
-    `/start`（Codex 为 `$start`）获取完整的项目上下文。 命令内部执行与 Claude Code Hook
-    相同的步骤：读取身份、工作流、历史、任务等上下文。
-  </Tab>
-  <Tab title="Kilo">
-    Kilo 通过 `.kilocode/rules/` 和 `AGENTS.md` **自动加载**项目规则到每次交互。 可选运行
-    `/start.md` workflow 获取完整的 Trellis 上下文（身份、Git 状态、活跃任务等）。
+  <Tab title="Codex">
+    Codex 每个 session 自动读仓库根的 `AGENTS.md`。在 `~/.codex/config.toml` 里打开 `codex_hooks = true` 后 SessionStart hook 也会跑，行为和上面的 hook 可用 Tab 一致；不开启则只有 prelude 兜底。
   </Tab>
   <Tab title="Kiro">
-    Kiro 通过 `.kiro/steering/` **自动加载**项目上下文（product.md、tech.md、structure.md
-    等）到每次交互。 可选运行自定义 prompt 获取 Trellis 完整上下文。Kiro 还支持通过 Spec
-    模式自动生成需求→设计→任务文档。
+    Kiro 通过 `.kiro/` 下的 skill 文件交付 Trellis 内容。Kiro 的 Agent Hook 是用户自己配的（文件保存、构建成功等触发），Trellis 不出厂任何。想看完整上下文报告跑 `@trellis:start`。
+  </Tab>
+  <Tab title="Kilo / Antigravity / Windsurf">
+    这三个平台只有 workflow + skill，没有 hook。手动跑入口 workflow（`/start.md` / `.agent/workflows/start.md` / `/trellis-start`），AI 内联读 `workflow.md` + `get_context.py` + spec 索引后询问你要做什么。
   </Tab>
 </Tabs>
 
-当你输入 `/start` 时（或 Claude Code Hook 自动触发时），背后发生了什么：
+`/trellis:start` 运行时（或 SessionStart hook 自动触发时）的行为：
 
-<pre className="cjk-diagram" dangerouslySetInnerHTML={{__html: `/start
+```
+/trellis:start
      │
      ▼
 ┌────────────────────────────────────────┐
-│  Hook: session-start.py <b>（</b><b>自</b><b>动</b><b>触</b><b>发</b><b>）</b>   │
+│  Hook / command body:                  │
 │                                        │
-│  <b>读</b><b>取</b> .trellis/.developer     → <b>身</b><b>份</b>   │
-│  <b>读</b><b>取</b> .trellis/workflow.md    → <b>工</b><b>作</b><b>流</b> │
-│  <b>读</b><b>取</b> workspace/{name}/index.md → <b>历</b><b>史</b> │
-│  <b>读</b><b>取</b> git log                  → <b>提</b><b>交</b>  │
-│  <b>读</b><b>取</b> .trellis/tasks/          → <b>任</b><b>务</b>  │
+│  read .trellis/.developer    -> id     │
+│  read .trellis/workflow.md   -> flow   │
+│  read workspace/{name}/index -> history│
+│  read git log                -> commits│
+│  read .trellis/tasks/        -> tasks  │
 └───────────────────┬────────────────────┘
                     │
                     ▼
          ┌──────────────────────────┐
-         │  <b>上</b><b>下</b><b>文</b><b>注</b><b>入</b><b>到</b> AI         │
+         │   Context injected to AI │
          └────────────┬─────────────┘
                       │
                       ▼
       ┌──────────────────────────────────┐
-      │  start.md <b>命</b><b>令</b><b>执</b><b>行</b><b>：</b>             │
+      │  start.md command continues:     │
       │                                  │
-      │  Step 1: <b>读</b><b>取</b> workflow.md        │
-      │  Step 2: <b>运</b><b>行</b> get-context.py     │
-      │  Step 3: <b>读</b><b>取</b> spec indexes       │
-      │  Step 4: <b>报</b><b>告</b><b>并</b><b>询</b><b>问</b><b>用</b><b>户</b>          │
-      └──────────────────────────────────┘`}} />
-
-`session-start.py` 是一个 `SessionStart` Hook，在每次新会话开始时自动触发，确保 AI 总是带着完整上下文开始工作。
+      │  Step 1: read workflow.md        │
+      │  Step 2: run get_context.py      │
+      │  Step 3: read spec indexes       │
+      │  Step 4: report & ask user       │
+      └──────────────────────────────────┘
+```
 
 ### 4.3 规范注入机制
 
 <Info>
-  规范自动注入是 Claude Code 的专属功能，依赖 Hook 系统（`PreToolUse` 拦截 `Task` 工具调用）。
-  Cursor、Codex、OpenCode 等平台需要通过命令手动加载规范（如 `/before-backend-dev`）。
+  Sub-agent 自动规范注入依赖平台的 PreToolUse hook（或等价机制）。当前支持：Claude Code、Cursor、OpenCode、CodeBuddy、Droid。其他平台由主会话自行读 JSONL 并把相关内容传给 sub-agent。
 </Info>
 
-`inject-subagent-context.py` 是 Trellis 的核心引擎。当主 Agent 调用子 Agent（如 Implement）时，这个 Hook 自动拦截并注入上下文。
+`inject-subagent-context`（Claude Code 的 Python，OpenCode 的 JS）是规范注入引擎。主会话 spawn `trellis-*` sub-agent 时，这个 hook 拦截调用并按 JSONL 注入精准上下文。
 
 **工作流程**：
 
-<pre className="cjk-diagram" dangerouslySetInnerHTML={{__html: `<b>主</b> Agent <b>调</b><b>用</b>: Task(subagent_type="trellis-implement", prompt="<b>实</b><b>现</b><b>功</b><b>能</b>")
+```
+Main session spawns: Task(subagent_type="trellis-implement", prompt="...")
      │
      ▼
 ┌──────────────────────────────────────────────────────────────┐
-│  Hook: inject-subagent-context.py <b>（</b>PreToolUse <b>拦</b><b>截</b><b>）</b>        │
+│  Hook: inject-subagent-context  (runs BEFORE sub-agent)      │
 │                                                              │
-│  1. <b>读</b><b>取</b> .trellis/.current-task                              │
-│     → <b>获</b><b>取</b><b>当</b><b>前</b><b>任</b><b>务</b><b>目</b><b>录</b><b>路</b><b>径</b>                                   │
+│  Reads happen in the HOOK, not in the sub-agent:             │
 │                                                              │
-│  2. <b>读</b><b>取</b> {task_dir}/implement.jsonl                          │
-│     → <b>获</b><b>取</b><b>该</b> Agent <b>需</b><b>要</b><b>读</b><b>取</b><b>的</b> spec <b>文</b><b>件</b><b>列</b><b>表</b>                  │
+│  1. Hook reads .trellis/.current-task                        │
+│     -> current task directory path                           │
 │                                                              │
-│  3. <b>逐</b><b>一</b><b>读</b><b>取</b> JSONL <b>中</b><b>引</b><b>用</b><b>的</b><b>文</b><b>件</b><b>内</b><b>容</b>                          │
-│     → .trellis/spec/backend/index.md                         │
-│     → .trellis/spec/backend/database-guidelines.md           │
-│     → ...                                                    │
+│  2. Hook reads {task_dir}/implement.jsonl                    │
+│     -> list of spec files this sub-agent needs               │
 │                                                              │
-│  4. <b>读</b><b>取</b> prd.md<b>（</b><b>需</b><b>求</b><b>文</b><b>档</b><b>）</b><b>和</b> info.md<b>（</b><b>技</b><b>术</b><b>设</b><b>计</b><b>）</b>            │
+│  3. Hook reads each file referenced in the JSONL             │
+│     -> .trellis/spec/backend/index.md                        │
+│     -> .trellis/spec/backend/database-guidelines.md          │
+│     -> ...                                                   │
 │                                                              │
-│  5. <b>将</b><b>所</b><b>有</b><b>内</b><b>容</b><b>组</b><b>装</b><b>成</b><b>新</b><b>的</b> prompt<b>，</b><b>替</b><b>换</b><b>原</b><b>始</b> prompt             │
+│  4. Hook reads prd.md (requirements) and info.md (design)    │
 │                                                              │
-│  6. <b>更</b><b>新</b> task.json <b>中</b><b>的</b> current_phase                        │
+│  5. Hook concatenates it all and prepends as                 │
+│     "additionalContext" to the sub-agent's prompt            │
 └───────────────────────┬──────────────────────────────────────┘
                         │
                         ▼
-Implement Agent <b>收</b><b>到</b><b>的</b><b>实</b><b>际</b> prompt<b>：</b>
+Sub-agent 启动时 prompt 里已经带着这些内容了（它本身不读任何文件）：
 
-  # Implement Agent Task
-  ## Your Context
+  # trellis-implement 任务
+  ## 你的上下文
   === .trellis/spec/backend/index.md ===
-  <b>（</b><b>完</b><b>整</b><b>的</b><b>后</b><b>端</b><b>规</b><b>范</b><b>内</b><b>容</b><b>）</b>
+  （完整后端 spec 内容）
   === .trellis/spec/backend/database-guidelines.md ===
-  <b>（</b><b>完</b><b>整</b><b>的</b><b>数</b><b>据</b><b>库</b><b>规</b><b>范</b><b>内</b><b>容</b><b>）</b>
-  === {task_dir}/prd.md (Requirements) ===
-  <b>（</b><b>完</b><b>整</b><b>的</b><b>需</b><b>求</b><b>文</b><b>档</b><b>）</b>
-  ## Your Task
-  <b>实</b><b>现</b><b>功</b><b>能</b>`}} />
+  （完整数据库 spec 内容）
+  === {task_dir}/prd.md（需求） ===
+  （完整需求文档）
+  ## 你的任务
+  实现该功能
+```
 
-#### JSONL 配置格式详解
+#### JSONL 配置格式
 
-JSONL（JSON Lines）文件定义了每个 Agent 需要读取哪些文件。每行是一个 JSON 对象：
+JSONL（JSON Lines）定义 hook 要替 sub-agent 注入哪些文件。每行一个 JSON 对象：
 
 ```jsonl
-{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
-{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
-{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "Database patterns"}
-{"file": "src/services/", "type": "directory", "reason": "Existing service patterns"}
+{"file": ".trellis/workflow.md", "reason": "项目工作流和约定"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端开发指南"}
+{"file": "src/services/auth.ts", "reason": "现有 auth 实现，要对齐模式"}
+{"file": ".trellis/tasks/02-27-user-login/research/", "type": "directory", "reason": "调研产物"}
 ```
 
 **字段说明**：
 
-| 字段     | 必填 | 说明                                                                        |
-| -------- | ---- | --------------------------------------------------------------------------- |
-| `file`   | 是   | 文件或目录的相对路径（相对于项目根目录）                                    |
-| `reason` | 是   | 为什么需要这个文件（同时用于生成 completion markers）                       |
-| `type`   | 否   | 默认 `"file"`。设为 `"directory"` 则读取目录下所有 `.md` 文件（最多 20 个） |
+| 字段     | 必填 | 说明                                                                              |
+| -------- | ---- | --------------------------------------------------------------------------------- |
+| `file`   | 是   | 文件或目录的相对路径（相对项目根）                                                |
+| `reason` | 是   | 为什么要读这个文件                                                                |
+| `type`   | 否   | 默认 `"file"`。单文件模式下 hook 按原样读引用的文件，不管扩展名（源码、JSON 等都能读）。`"directory"` 模式只按文件名排序注入目录里的 `.md`（最多 20 个），非 `.md` 跳过。 |
+
+JSONL 里该放什么，取决于 sub-agent 执行这个任务需要什么：
+
+- **Spec 和 workflow**：`.trellis/workflow.md`、`.trellis/spec/**/index.md`、具体指南文件——塑形 sub-agent*怎么*写代码。
+- **现有代码作为参照**：指向单个源码文件（`src/services/auth.ts`）能让 sub-agent 对齐现有实现模式。优先单文件；目录模式不会读 `.ts` / `.py` 等。
+- **调研产物**：目录模式指向 `{task_dir}/research/`，会把 `trellis-research` 产出的每个 `.md` 全拉进来。
 
 **三种 JSONL 文件**：
 
-| 文件              | 用于            | 典型内容                                |
-| ----------------- | --------------- | --------------------------------------- |
-| `implement.jsonl` | Implement Agent | workflow.md + 相关 spec + 代码模式示例  |
-| `check.jsonl`     | Check Agent     | finish-work.md + check 命令 + 相关 spec |
-| `debug.jsonl`     | Debug Agent     | 相关 spec + check 命令                  |
+| 文件              | 使用者              | 典型内容                                          |
+| ----------------- | ------------------- | ------------------------------------------------- |
+| `implement.jsonl` | `trellis-implement` | workflow.md + 相关 spec + 代码模式范例            |
+| `check.jsonl`     | `trellis-check`     | 质量 checklist spec + 测试 / lint 规则            |
+| `research.jsonl`  | `trellis-research`  | 项目结构概览 + 调研目标                           |
 
-**实际示例**（后端任务的 implement.jsonl）：
-
-```jsonl
-{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
-{"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
-{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
-{"file": ".trellis/spec/backend/api-module.md", "reason": "API module conventions"}
-{"file": ".trellis/spec/backend/quality.md", "reason": "Code quality requirements"}
-```
-
-**注入时机和控制**：
-
-- **implement** Agent：注入 implement.jsonl + prd.md + info.md
-- **check** Agent：注入 check.jsonl + prd.md（用于理解意图）
-- **check** Agent（`[finish]` 标记）：轻量注入 finish-work.md + prd.md
-- **debug** Agent：注入 debug.jsonl + codex-review-output.txt（如果有）
-- **research** Agent：注入项目结构概览 + research.jsonl（可选）
-
-### 4.4 质量控制循环（Ralph Loop）
-
-<Info>
-  Ralph Loop 是 Claude Code 专属的质量控制机制，依赖 `SubagentStop` Hook。 Cursor 等平台需要手动运行
-  `/check-backend`（`/trellis-check-backend`）或 `/check-frontend` 进行代码检查。
-</Info>
-
-Ralph Loop 基于 [Ralph Wiggum 技术](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)，在 Check Agent 完成工作时进行自动验证。
-
-<pre className="cjk-diagram" dangerouslySetInnerHTML={{__html: `Check Agent <b>认</b><b>为</b><b>自</b><b>己</b><b>完</b><b>成</b><b>了</b>
-         │
-         ▼
-┌────────────────────────────────────────────────────────┐
-│  Hook: ralph-loop.py <b>（</b>SubagentStop <b>拦</b><b>截</b><b>）</b>             │
-│                                                        │
-│  1. <b>读</b><b>取</b> worktree.yaml <b>的</b> verify <b>配</b><b>置</b>                  │
-│                                                        │
-│  ┌─── <b>有</b> verify <b>命</b><b>令</b><b>？</b>──┐                              │
-│  │                      │                              │
-│  ▼ <b>是</b>                   ▼ <b>否</b>                           │
-│  <b>运</b><b>行</b> verify <b>命</b><b>令</b>       <b>检</b><b>查</b> completion                │
-│  (pnpm lint <b>等</b>)         markers                        │
-│  │                      │                              │
-│  ├── <b>全</b><b>部</b><b>通</b><b>过</b> ──────┤── <b>标</b><b>记</b><b>全</b><b>齐</b> ──→ <b>允</b><b>许</b><b>停</b><b>止</b>          │
-│  │                      │                              │
-│  └── <b>有</b><b>失</b><b>败</b> ────────┘── <b>标</b><b>记</b><b>缺</b><b>失</b> ──→ <b>阻</b><b>止</b><b>停</b><b>止</b>          │
-│                              │                         │
-│                 <b>返</b><b>回</b> Check Agent                       │
-│                 <b>继</b><b>续</b><b>修</b><b>复</b>                               │
-│                                                        │
-│  <b>安</b><b>全</b><b>限</b><b>制</b>: <b>最</b><b>多</b> 5 <b>次</b><b>循</b><b>环</b>                               │
-└────────────────────────────────────────────────────────┘`}} />
-
-**两种验证模式**：
-
-**模式 A — 程序化验证**（推荐，在 `worktree.yaml` 中配置）：
-
-```yaml
-verify:
-  - pnpm lint
-  - pnpm typecheck
-  - pnpm test
-```
-
-Ralph Loop 会依次运行每个命令，全部返回 0 才放行。
-
-**模式 B — Completion Markers**（无 verify 配置时的回退方案）：
-
-从 `check.jsonl` 的 `reason` 字段生成标记。例如：
+**实战示例**（后端任务、brainstorm 追加上下文后的 implement.jsonl）：
 
 ```jsonl
-{"file": "...", "reason": "TypeCheck"}
-{"file": "...", "reason": "Lint"}
+{"file": ".trellis/workflow.md", "reason": "项目工作流和约定"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端开发指南"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "本任务涉及的 DB 模式"}
+{"file": ".trellis/tasks/02-27-user-login/research/", "type": "directory", "reason": "trellis-research 的调研产物"}
 ```
 
-生成的标记：`TYPECHECK_FINISH`、`LINT_FINISH`。Check Agent 必须在输出中包含所有标记才能停止。
+前两条是默认写入的，后面是任务相关的，一般通过 `task.py add-context` 追加。
 
-**状态跟踪**：
+**各 sub-agent 的注入行为**：
 
-Ralph Loop 通过 `.trellis/.ralph-state.json` 跟踪循环次数：
+- **`trellis-implement`**：注入 implement.jsonl + prd.md + info.md
+- **`trellis-check`**：注入 check.jsonl + prd.md（用于理解意图）
+- **`trellis-research`**：注入项目结构概览 + research.jsonl（可选）
 
-```json
-{
-  "task": ".trellis/tasks/02-27-user-login",
-  "iteration": 2,
-  "started_at": "2026-02-27T10:30:00"
-}
+### 4.4 Sub-agent 系统
+
+Trellis 出厂 3 个 sub-agent，每个角色明确、约束清晰、有独立的 JSONL spec 注入通道：
+
+| Sub-agent            | 角色                 | 约束                  | 主要上下文              |
+| -------------------- | -------------------- | --------------------- | ----------------------- |
+| `trellis-research`   | 代码 / 文档搜索      | 只读                  | `research.jsonl`        |
+| `trellis-implement`  | 写代码               | 禁止 `git commit`     | `implement.jsonl` + `prd.md` |
+| `trellis-check`      | 验证 + 自修复        | 只为了修复才写代码    | `check.jsonl` + `prd.md` |
+
+**主会话中的典型任务流**：
+
 ```
-
-- 任务切换时自动重置
-- 30 分钟超时自动重置
-- 达到 5 次上限强制放行（防止无限循环）
-
-### 4.5 Agent 系统全解
-
-Trellis 内置 6 个 Agent，各有不同的角色、工具和职责：
-
-| Agent         | 角色     | 工具                                                              | Model | 关键特点                              |
-| ------------- | -------- | ----------------------------------------------------------------- | ----- | ------------------------------------- |
-| **dispatch**  | 纯调度器 | Read, Bash, Exa Search, Exa Code Context                          | opus  | 只负责按顺序调用其他 Agent，不读 spec |
-| **plan**      | 需求评估 | Read, Bash, Glob, Grep, Task                                      | opus  | 可以拒绝不清晰的需求                  |
-| **implement** | 代码实现 | Read, Write, Edit, Bash, Glob, Grep, Exa Search, Exa Code Context | opus  | 禁止 git commit                       |
-| **check**     | 质量检查 | Read, Write, Edit, Bash, Glob, Grep, Exa Search, Exa Code Context | opus  | 必须自修复，受 Ralph Loop 控制        |
-| **debug**     | Bug 修复 | Read, Write, Edit, Bash, Glob, Grep, Exa Search, Exa Code Context | opus  | 精确修复，不做额外重构                |
-| **research**  | 信息搜索 | Read, Glob, Grep, Exa Search, Exa Code Context                    | opus  | 纯搜索，不修改文件                    |
-
-**Agent 协作流程（Multi-Agent Pipeline）**：
-
-<pre className="cjk-diagram" dangerouslySetInnerHTML={{__html: `Plan Agent
+trellis-brainstorm skill
   │
-  │  <b>评</b><b>估</b><b>需</b><b>求</b> → <b>接</b><b>受</b>/<b>拒</b><b>绝</b>
-  │  <b>调</b><b>用</b> Research Agent <b>分</b><b>析</b><b>代</b><b>码</b><b>库</b>
-  │  <b>创</b><b>建</b><b>任</b><b>务</b><b>目</b><b>录</b> + JSONL <b>配</b><b>置</b>
+  │  澄清范围、起草 prd.md、创建任务目录 + JSONL 配置
+  │  需要调研时并行 spawn trellis-research sub-agent
   │
   ▼
-Dispatch Agent
+trellis-before-dev skill
   │
-  ├──→ Implement Agent <b>（</b>phase 1<b>）</b>
-  │      Hook <b>注</b><b>入</b> implement.jsonl <b>上</b><b>下</b><b>文</b>
-  │      <b>实</b><b>现</b><b>功</b><b>能</b> → <b>报</b><b>告</b><b>完</b><b>成</b>
+  │  编码前先读相关 spec
   │
-  ├──→ Check Agent <b>（</b>phase 2<b>）</b>
-  │      Hook <b>注</b><b>入</b> check.jsonl <b>上</b><b>下</b><b>文</b>
-  │      <b>检</b><b>查</b><b>代</b><b>码</b> → <b>自</b><b>动</b><b>修</b><b>复</b> → Ralph Loop <b>验</b><b>证</b>
+  ▼
+Spawn trellis-implement sub-agent
   │
-  ├──→ Check Agent [finish] <b>（</b>phase 3<b>）</b>
-  │      <b>轻</b><b>量</b><b>注</b><b>入</b> finish-work.md
-  │      <b>最</b><b>终</b><b>验</b><b>证</b> → <b>确</b><b>认</b><b>需</b><b>求</b><b>满</b><b>足</b>
+  │  Hook 注入 implement.jsonl 上下文
+  │  Sub-agent 写代码，不 git commit
   │
-  └──→ create-pr.py <b>（</b>phase 4<b>）</b>
-         <b>提</b><b>交</b><b>代</b><b>码</b> → <b>推</b><b>送</b> → <b>创</b><b>建</b> Draft PR`}} />
+  ▼
+Spawn trellis-check sub-agent
+  │
+  │  Hook 注入 check.jsonl 上下文
+  │  跑 lint / typecheck / test，对照质量 checklist 比对 diff
+  │  在内部重试循环里自修复
+  │
+  ▼
+/trellis:finish-work
+  │
+  │  人工测试 + commit 后，finish-work 归档任务
+  │  并把 session 条目追加到 workspace journal
+```
 
-**Dispatch Agent 的 Timeout 配置**：
-
-| Phase     | 最大时间 | 轮询次数 |
-| --------- | -------- | -------- |
-| implement | 30 分钟  | 6 次     |
-| check     | 15 分钟  | 3 次     |
-| debug     | 20 分钟  | 4 次     |
+---

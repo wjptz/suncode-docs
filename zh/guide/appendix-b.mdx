@@ -1,67 +1,92 @@
 ---
-title: '附录 B：全部命令速查表'
+title: '附录 B：命令与 Skill 速查'
 ---
 
-## 附录 B：全部命令速查表
+## 附录 B：命令与 Skill 速查
 
-### Slash 命令（跨平台对照）
+Trellis 每个平台只出厂 **3 个** slash 命令，其他都是 auto-trigger skill 或 sub-agent。这是有意的设计：命令负责会话边界，其他工作流自己跑。
 
-| Claude Code / OpenCode | Cursor | Codex | Kilo | Kiro | 类别 | 说明 |
-|----------------------|--------|-------|------|------|------|------|
-| `/trellis:start` | `/trellis-start` | `$start` | `/start.md` | skill | 会话 | 启动开发会话 |
-| `/trellis:parallel` | ❌ | ❌ | `/parallel.md` | ❌ | 会话 | 多 Agent 并行编排 |
-| `/trellis:record-session` | `/trellis-record-session` | `$record-session` | `/record-session.md` | skill | 会话 | 记录会话历史 |
-| `/trellis:onboard` | `/trellis-onboard` | `$onboard` | `/onboard.md` | skill | 会话 | 新成员入门 |
-| `/trellis:before-dev` | `/trellis-before-dev` | `$before-dev` | `/before-dev.md` | skill | 准备 | 开发前准备 |
-| `/trellis:check` | `/trellis-check` | `$check` | `/check.md` | skill | 质量 | 代码检查 |
-| `/trellis:check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` | `/check-cross-layer.md` | skill | 质量 | 跨层一致性检查 |
-| `/trellis:finish-work` | `/trellis-finish-work` | `$finish-work` | `/finish-work.md` | skill | 质量 | 完工检查清单 |
-| `/trellis:brainstorm` | `/trellis-brainstorm` | `$brainstorm` | `/brainstorm.md` | skill | 知识 | 头脑风暴 |
-| `/trellis:break-loop` | `/trellis-break-loop` | `$break-loop` | `/break-loop.md` | skill | 知识 | 深度 Bug 分析 |
-| `/trellis:update-spec` | `/trellis-update-spec` | `$update-spec` | `/update-spec.md` | skill | 知识 | 更新代码规范 |
-| `/trellis:create-command` | `/trellis-create-command` | `$create-command` | `/create-command.md` | skill | 扩展 | 创建自定义命令 |
-| `/trellis:integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` | `/integrate-skill.md` | skill | 扩展 | 集成外部 Skill |
+### Slash 命令（按平台）
 
-<Info>
-**Kilo** 的命令通过 `.kilocode/workflows/` 目录下的 Markdown 文件实现，在聊天中输入 `/start.md` 等调用。
+| 用途           | Claude Code / OpenCode / Droid / Cursor / CodeBuddy | Codex                  | Gemini CLI               | Kiro                    |
+| -------------- | --------------------------------------------------- | ---------------------- | ------------------------ | ----------------------- |
+| 开启会话       | `/trellis:start`                                    | `/trellis:start`       | `/trellis:start`         | `@trellis:start`        |
+| 结束工作       | `/trellis:finish-work`                              | `/trellis:finish-work` | `/trellis:finish-work`   | `@trellis:finish-work`  |
+| 继续当前任务   | `/trellis:continue`                                 | `/trellis:continue`    | `/trellis:continue`      | `@trellis:continue`     |
 
-**Kiro** 的命令通过 `.kiro/skills/*/SKILL.md` 实现，遵循 Agent Skills 开放标准。
-</Info>
+Qoder 和 Copilot 没有 slash 命令原语，行为通过 rules 文件（Qoder）或 `copilot-instructions.md`（Copilot）交付。
 
-### task.py 子命令
+### Auto-trigger Skill
 
-| 子命令 | 说明 | 用法 |
-|--------|------|------|
-| `create` | 创建任务 | `task.py create "标题" [--slug name] [-a 指派人] [-p 优先级]` |
-| `init-context` | 初始化 JSONL | `task.py init-context "$DIR" <dev_type> [--platform]` |
-| `add-context` | 添加上下文条目 | `task.py add-context "$DIR" <target> "<path>" "<reason>"` |
-| `validate` | 验证 JSONL | `task.py validate "$DIR"` |
-| `list-context` | 查看所有条目 | `task.py list-context "$DIR"` |
-| `start` | 设为当前任务 | `task.py start "$DIR"` |
-| `finish` | 清除当前任务 | `task.py finish` |
-| `set-branch` | 设置分支名 | `task.py set-branch "$DIR" "feature/xxx"` |
-| `set-base-branch` | 设置 PR 目标分支 | `task.py set-base-branch "$DIR" "main"` |
-| `set-scope` | 设置 scope | `task.py set-scope "$DIR" "auth"` |
-| `create-pr` | 创建 PR | `task.py create-pr` |
-| `archive` | 归档任务 | `task.py archive <name>` |
-| `list` | 列出活跃任务 | `task.py list [--mine] [--status <s>]` |
-| `list-archive` | 列出归档任务 | `task.py list-archive [YYYY-MM]` |
+由平台根据用户意图自动匹配，不需要显式调用。需要时用各平台的 skill 调用语法手动触发。
+
+| Skill                  | 触发时机                                              | 干什么                                               |
+| ---------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
+| `trellis-brainstorm`   | 用户描述功能 / bug / 模糊需求                         | 产出 task + `prd.md`，必要时 spawn research          |
+| `trellis-before-dev`   | task 进入 in_progress、AI 即将动手改代码              | 读该 package 相关的 spec                             |
+| `trellis-check`        | 实现阶段结束                                          | diff 审查 + lint / typecheck / test + 自修复循环     |
+| `trellis-update-spec`  | 学到 / 决策 / 踩到值得沉淀的东西                      | 在对应 spec 文件添加条目                             |
+| `trellis-break-loop`   | 刚修完棘手 bug                                        | 5 维根因 + 预防机制分析                              |
+
+### Sub-agent
+
+主会话通过平台的 sub-agent / Task 原语 spawn。
+
+| Sub-agent            | 角色                 | 约束                    |
+| -------------------- | -------------------- | ----------------------- |
+| `trellis-research`   | 代码/文档搜索        | 只读                    |
+| `trellis-implement`  | 编码                 | 不 `git commit`         |
+| `trellis-check`      | 验证 + 自修复        | 自带重试循环            |
+
+真 sub-agent：Claude Code、OpenCode、Codex、Droid 可用。其他平台在主会话内联运行。
+
+### `task.py` 子命令
+
+| 子命令            | 用途               | 用法                                                                          |
+| ----------------- | ------------------ | ----------------------------------------------------------------------------- |
+| `create`          | 创建任务           | `task.py create "title" [--slug name] [-a assignee] [-p priority]`            |
+| `init-context`    | 初始化 JSONL       | `task.py init-context "$DIR" <dev_type> [--platform]`                         |
+| `add-context`     | 追加上下文条目     | `task.py add-context "$DIR" <target> "<path>" "<reason>"`                     |
+| `validate`        | 校验 JSONL         | `task.py validate "$DIR"`                                                     |
+| `list-context`    | 查看所有条目       | `task.py list-context "$DIR"`                                                 |
+| `start`           | 置为当前任务       | `task.py start "$DIR"`                                                        |
+| `finish`          | 清除当前任务       | `task.py finish`                                                              |
+| `set-branch`      | 设置分支名         | `task.py set-branch "$DIR" "feature/xxx"`                                     |
+| `set-base-branch` | 设置 PR 目标分支   | `task.py set-base-branch "$DIR" "main"`                                       |
+| `set-scope`       | 设置范围           | `task.py set-scope "$DIR" "auth"`                                             |
+| `create-pr`       | 创建 PR            | `task.py create-pr`                                                           |
+| `archive`         | 归档任务           | `task.py archive <name>`                                                      |
+| `list`            | 列出活跃任务       | `task.py list [--mine] [--status <s>]`                                        |
+| `list-archive`    | 列出归档任务       | `task.py list-archive [YYYY-MM]`                                              |
 
 ### Python 脚本
 
 ```bash
-# 上下文管理
-./.trellis/scripts/get-context.py           # 获取完整上下文
-./.trellis/scripts/get-context.py --json    # JSON 格式
-./.trellis/scripts/get-developer.py          # 获取开发者身份
+# 上下文
+./.trellis/scripts/get_context.py                 # 完整上下文
+./.trellis/scripts/get_context.py --json          # JSON
+./.trellis/scripts/get_context.py --mode packages # 按 package 的 spec 层（monorepo）
+./.trellis/scripts/get_context.py --mode record   # 给 /trellis:finish-work 用
 
-# 会话记录
-./.trellis/scripts/add-session.py --title "..." --commit "..." --summary "..."
+# 会话
+./.trellis/scripts/add_session.py --title "..." --commit "..." --summary "..."
 
-# 多 Agent
-./.trellis/scripts/multi-agent/plan.py --name "..." --type "..." --requirement "..."
-./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
-./.trellis/scripts/multi-agent/status.py [--log <name>] [--watch <name>]
-./.trellis/scripts/multi-agent/cleanup.py <branch>
-./.trellis/scripts/multi-agent/create-pr.py
+# Spec bootstrap（首次）
+./.trellis/scripts/create_bootstrap.py
 ```
+
+### 0.5.0-beta.0 移除了什么
+
+| 已移除                                      | 替代                                                                |
+| ------------------------------------------- | ------------------------------------------------------------------- |
+| `/parallel` + Multi-Agent Pipeline          | （已删除，无替代）                                                  |
+| `/record-session`                           | `/trellis:finish-work` 第 3 步                                      |
+| `/before-backend-dev`、`/before-frontend-dev` | `trellis-before-dev` skill                                        |
+| `/check-backend`、`/check-frontend`、`/check-cross-layer` | `trellis-check` skill + sub-agent                     |
+| `/brainstorm`、`/break-loop`、`/update-spec` | `trellis-brainstorm` / `trellis-break-loop` / `trellis-update-spec` skill |
+| `/onboard`、`/create-command`、`/integrate-skill` | （已从出厂面板移除）                                          |
+| `worktree.yaml`                             | （随 Multi-Agent Pipeline 一起移除）                                |
+| task.json 里的 `current_phase` / `next_action` | task schema 简化；流程由 sub-agent 驱动                          |
+| Ralph Loop（`ralph-loop.py` hook）          | `trellis-check` sub-agent 自带内部循环                              |
+
+---

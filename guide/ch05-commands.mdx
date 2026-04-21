@@ -1,221 +1,122 @@
 ---
-title: 'Complete Command Reference'
+title: 'Commands & Skills Reference'
 ---
 
-## Complete Command Reference
+## Commands & Skills Reference
 
-Trellis provides 13 Slash commands (Claude Code), organized into 6 categories. The Cursor version has 12 (excluding `/parallel`).
+Starting with 0.5.0, Trellis is **skill-first**. The heavy lifting lives in auto-trigger skills; explicit slash commands are kept small and focused on session boundaries.
 
-#### Cross-Platform Command Reference
+### 5.1 Surface at a Glance
 
-| Function | Claude Code / OpenCode | Cursor | Codex |
-|------|----------------------|--------|-------|
-| Start session | `/start` (optional, Hook auto-injects) | `/start` (required) | `$start` |
-| Backend prep | `/before-backend-dev` (optional) | `/trellis-before-backend-dev` (recommended) | `$before-backend-dev` |
-| Frontend prep | `/before-frontend-dev` (optional) | `/trellis-before-frontend-dev` (recommended) | `$before-frontend-dev` |
-| Check backend | `/check-backend` (Ralph Loop auto-triggers) | `/trellis-check-backend` (manual) | `$check-backend` |
-| Check frontend | `/check-frontend` (Ralph Loop auto-triggers) | `/trellis-check-frontend` (manual) | `$check-frontend` |
-| Cross-layer check | `/check-cross-layer` | `/trellis-check-cross-layer` | `$check-cross-layer` |
-| Finish checklist | `/finish-work` | `/trellis-finish-work` | `$finish-work` |
-| Parallel orchestration | `/parallel` | ❌ Not supported | ❌ Not supported |
-| Record session | `/record-session` | `/trellis-record-session` | `$record-session` |
-| Brainstorm | `/brainstorm` | `/trellis-brainstorm` | `$brainstorm` |
-| Bug analysis | `/break-loop` | `/trellis-break-loop` | `$break-loop` |
-| New member onboarding | `/onboard` | `/trellis-onboard` | `$onboard` |
-| Create command | `/create-command` | `/trellis-create-command` | `$create-command` |
-| Integrate Skill | `/integrate-skill` | `/trellis-integrate-skill` | `$integrate-skill` |
+| Kind          | Name                      | Trigger                                                   | Purpose                                     |
+| ------------- | ------------------------- | --------------------------------------------------------- | ------------------------------------------- |
+| **Command**   | `/trellis:start`          | Manual (or hook on hook-capable platforms)                | Open a session, load context, classify work |
+| **Command**   | `/trellis:finish-work`    | Manual, after human testing + commit                      | Checklist + record session in journal       |
+| **Command**   | `/trellis:continue`       | Manual                                                    | Push AI to the next workflow step; prevent step-skipping |
+| **Skill**     | `trellis-brainstorm`      | Auto when user describes a feature / bug / ambiguous need | Turn request into task + `prd.md`           |
+| **Skill**     | `trellis-before-dev`      | Auto before touching code in a task                       | Read relevant spec before writing           |
+| **Skill**     | `trellis-check`           | Auto after implementation; also via sub-agent             | Verify + self-fix loop                      |
+| **Skill**     | `trellis-update-spec`     | Auto when a learning is worth capturing                   | Promote knowledge into `.trellis/spec/`     |
+| **Skill**     | `trellis-break-loop`      | Auto after a tricky bug                                   | Root-cause + prevention analysis            |
+| **Sub-agent** | `trellis-research`        | Spawned by main session for investigation                 | Read-only codebase search                   |
+| **Sub-agent** | `trellis-implement`       | Spawned by main session for coding                        | Writes code, no git commit                  |
+| **Sub-agent** | `trellis-check`           | Spawned by main session for verification                  | Runs verify + self-fix, has its own loop    |
 
-### 5.1 Session Management
+Only three slash commands are shipped: `start`, `finish-work`, `continue`. Everything that used to be a command (`/before-backend-dev`, `/check-backend`, `/record-session`, `/onboard`, …) has either been folded into a skill/sub-agent or removed.
 
-#### `/start` — Start a Development Session
+### 5.2 Commands
 
-**When to use**: Every time you open your AI coding assistant to start work. Claude Code users have context auto-injected via Hooks, so `/start` is optional (but recommended for first-time use to see the full flow). Cursor users **must** run `/start`.
+#### `/trellis:start`: Start a session
 
-**Execution flow**:
+Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable platforms (Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, plus Codex with `codex_hooks = true`), the SessionStart hook does this automatically; you may still run `/trellis:start` the first time to watch the flow.
 
-1. Read `workflow.md` to understand the workflow
-2. Run `get-context.py` to get context (identity, Git status, active tasks)
-3. Read spec indexes to understand project specs
-4. Report context and ask: "What would you like to work on?"
+What it does:
 
-**Task classification decisions**:
+1. Read `.trellis/workflow.md` so the AI knows the workflow contract.
+2. Run `get_context.py` to surface developer identity, git status, active tasks.
+3. Read spec indexes (per relevant package in a monorepo).
+4. Report context and ask what you want to work on.
 
-| Type | Criteria | Workflow |
-|------|---------|--------|
-| Q&A | User asks about code or architecture | Answer directly |
-| Quick fix | Typo fix, single-line change, < 5 minutes | Edit directly |
-| Development task | Logic changes, new features, bug fixes, multi-file changes | **Use Task Workflow** |
+Task classification the AI will apply:
 
-> **When in doubt, use Task Workflow**. Task Workflow ensures Agents receive spec injection, resulting in higher code quality.
+| Type             | Criteria                                             | Flow                              |
+| ---------------- | ---------------------------------------------------- | --------------------------------- |
+| Q&A              | Question about code / architecture                   | Answer directly                   |
+| Quick fix        | Typo / one-liner, under ~5 minutes                   | Edit directly                     |
+| Development task | Logic changes, new features, multi-file modification | Task workflow (brainstorm skill)  |
 
-#### `/parallel` — Multi-Agent Parallel Orchestration
+When in doubt, use the task workflow; it's what ensures sub-agents get spec injection.
 
-<Warning>Claude Code only. Cursor, Codex, and other platforms do not support Multi-Agent Pipeline.</Warning>
+#### `/trellis:finish-work`: End a session cleanly
 
-**When to use**:
-- High task complexity, requiring > 30 minutes
-- Can be split into multiple independent subtasks
-- Needs isolation in independent worktrees
+Prerequisite: the **human** has tested and committed. The AI never runs `git commit`.
 
-**Two-phase flow**:
+Steps:
 
-**Phase 1: Plan**
+1. Run `get_context.py --mode record` to confirm there are changes and active tasks.
+2. For each task whose work is actually done (code merged, acceptance criteria met), archive it with `task.py archive <name>`.
+3. Add a session entry to the journal with `add_session.py --title … --commit …`.
+4. If a significant learning came out of this session, route it to `trellis-update-spec`.
 
-```bash
-./.trellis/scripts/multi-agent/plan.py \
-  --name "feature-name" \
-  --type "backend|frontend|fullstack" \
-  --requirement "User requirement description"
-```
+#### `/trellis:continue`: Advance the current workflow step
 
-The Plan Agent will:
-1. Assess whether requirements are clear (may reject, see Chapter 6)
-2. Invoke Research Agent to analyze the codebase
-3. Create task directory and configure JSONL context
-4. Generate the prd.md requirements document
+Reads `.trellis/.current-task` plus the task's `status`, then consults `workflow.md` to decide which phase/step is current and what the next action should be (e.g. whether to run before-dev, check, or update-spec). Keeps AI on the workflow rails and prevents it from silently skipping steps like `check` or `update-spec`.
 
-**Phase 2: Execute**
+### 5.3 Auto-trigger Skills
 
-```bash
-./.trellis/scripts/multi-agent/start.py "$TASK_DIR"
-```
+Skills run without an explicit command; the platform matches on the user's intent. You can always trigger them manually (`/skill trellis-brainstorm`, etc.) if the auto-match misses.
 
-Automatically creates a Git worktree. The Dispatch Agent executes implement, check, finish, and create-pr in sequence.
+#### `trellis-brainstorm`
 
-**Monitoring commands**:
+Turns a fuzzy user request into a concrete task:
 
-```bash
-./.trellis/scripts/multi-agent/status.py                  # Overview
-./.trellis/scripts/multi-agent/status.py --log <name>     # View logs
-./.trellis/scripts/multi-agent/status.py --watch <name>   # Live monitoring
-./.trellis/scripts/multi-agent/cleanup.py <branch>        # Clean up worktree
-```
+- Proposes task name and slug.
+- Drafts `prd.md` using the assumption / requirement / acceptance template.
+- Runs the `trellis-research` sub-agent in parallel when the request depends on investigation (existing code, external APIs, library docs).
+- Creates the task via `task.py create`.
 
-#### `/record-session` — Record a Session
+#### `trellis-before-dev`
 
-**When to use**: After the user has tested and committed code.
+Runs before coding starts on a task. Reads the spec index for the affected package(s), then the specific guideline files referenced in the pre-development checklist. Ensures the AI knows the conventions *before* writing code, not after.
 
-**Prerequisite**: The AI does not execute git commit; it only reads git history.
+#### `trellis-check`
 
-**Execution flow**:
+Runs after implementation:
 
-```bash
-./.trellis/scripts/add-session.py \
-  --title "Session Title" \
-  --commit "hash1,hash2" \
-  --summary "What was accomplished in this session"
-```
+1. `git diff --name-only HEAD` to find what changed.
+2. Discover which spec layers apply.
+3. Compare the diff against the quality checklist in each layer's index.
+4. Run `pnpm lint` / `pnpm typecheck` / `pnpm test` (or equivalent) for affected packages.
+5. Self-fix violations in a bounded loop, then report what was fixed and what's left.
 
-Automatically completes:
-- Appends session record to `journal-N.md`
-- Detects line count and auto-creates a new file when exceeding 2,000 lines
-- Updates `index.md` (session count +1, last active time, history table)
+The `trellis-check` **sub-agent** wraps the skill so the main session can delegate and stay focused. The sub-agent owns its own retry loop; there is no external `Ralph Loop` anymore.
 
-#### `/onboard` — New Member Onboarding
+#### `trellis-update-spec`
 
-**When to use**: When a new team member joins.
+Captures a learning as an executable contract in `.trellis/spec/`. Used after debugging sessions, after hitting a gotcha, or after making a non-obvious design decision. Picks the right spec file, adds a focused update (decision / convention / pattern / anti-pattern / gotcha), updates the index if needed.
 
-Includes three parts:
-1. Core concept walkthrough (spec / workspace / task / hook)
-2. 5 hands-on exercises (bug fix, planning session, Code Review fix, large refactor, debugging session)
-3. Spec customization guidance
+#### `trellis-break-loop`
 
-### 5.2 Development Preparation
+Invoked after resolving a hard bug. Produces a 5-dimension analysis:
 
-#### `/before-backend-dev` — Backend Development Prep
+1. Root-cause classification (missing spec / contract violation / change propagation / test gap / implicit assumption).
+2. Why earlier fix attempts failed.
+3. Prevention mechanisms (spec update, type constraints, lint rule, test, review checklist, doc).
+4. Systematic expansion: other places with the same pattern.
+5. Knowledge capture: route findings into `trellis-update-spec`.
 
-Reads the backend spec index and related spec documents (database, error handling, logging, type safety, quality guidelines), ensuring the AI understands backend coding standards before writing code.
+> The value of debugging is not fixing *this* bug; it's making sure this class of bugs never happens again.
 
-#### `/before-frontend-dev` — Frontend Development Prep
+### 5.4 Sub-agents
 
-Reads the frontend spec index and related spec documents (components, Hooks, state management, type safety, quality guidelines).
+Sub-agents are isolated AI sub-processes with their own prompt and (platform-specific) their own tool / hook wiring. They receive spec context via JSONL files per task.
 
-### 5.3 Quality Checks
+| Sub-agent            | Restriction          | When main session spawns it                           |
+| -------------------- | -------------------- | ----------------------------------------------------- |
+| `trellis-research`   | Read-only            | Codebase search / pattern discovery / doc lookup      |
+| `trellis-implement`  | Writes code, no commit| Once requirements + plan exist, for the coding phase |
+| `trellis-check`      | Writes code (fixes)  | Verification phase; runs self-fix loop internally     |
 
-#### `/check-backend` — Backend Code Check
-
-Execution flow:
-1. `git status` to view changes
-2. Re-read backend specs
-3. Compare code against specs line by line
-4. Auto-fix violations (Ralph Loop driven, up to 3 rounds)
-
-Check items: directory structure, database operations, error handling, logging conventions, type definitions, no `console.log`, no `any` types, no non-null assertions.
-
-#### `/check-frontend` — Frontend Code Check
-
-Check items: component naming (PascalCase), Props interfaces, Hook usage, state management, style consistency, TypeScript errors, ESLint errors, unused imports.
-
-Also uses the Ralph Loop self-fix cycle.
-
-#### `/check-cross-layer` — Cross-Layer Consistency Check
-
-Reads the cross-layer thinking guide and analyzes 6 dimensions:
-
-1. **Data flow consistency** — Frontend, API, Database, API, Frontend
-2. **Type definition sync** — Frontend and backend interfaces match
-3. **Error handling continuity** — Errors properly propagated across layers
-4. **Constant synchronization** — Shared constants between frontend and backend
-5. **Code reuse** — No duplicate implementations
-6. **Import path correctness** — No broken references
-
-### 5.4 Parallel Development
-
-#### `/parallel`
-
-See section 5.1.
-
-### 5.5 Knowledge Accumulation
-
-#### `/break-loop` — Deep Bug Analysis
-
-**When to use**: After resolving a tricky bug, to perform deep analysis and prevent similar issues.
-
-**5-Dimension Analysis Framework**:
-
-1. **Root Cause Classification**:
-   - A — Missing Spec
-   - B — Cross-layer Contract Violation
-   - C — Change Propagation Failure
-   - D — Test Coverage Gap
-   - E — Implicit Assumption
-
-2. **Why Fixes Failed** — Analyze why previous fix attempts failed
-
-3. **Prevention Mechanisms** (6 types):
-   - Spec update
-   - Type constraints
-   - Lint rules
-   - Test cases
-   - Code review checklist items
-   - Documentation updates
-
-4. **Systematic Expansion** — Search for other potential issues with the same pattern
-
-5. **Knowledge Capture** — Solidify analysis results into specs
-
-**Core philosophy**:
-
-> The value of debugging is not fixing this bug, but ensuring this class of bugs never happens again.
-
-### 5.6 Utility Commands
-
-#### `/finish-work` — Pre-Commit Checklist
-
-6-dimension check before committing:
-1. Code quality (lint, type-check, test)
-2. Documentation sync
-3. API changes
-4. Database changes
-5. Cross-layer verification
-6. Manual testing
-
-#### `/create-command` — Create Custom Commands
-
-Generates dual-IDE command files under `.claude/commands/trellis/` and `.cursor/commands/`. See Chapter 9 for details.
-
-#### `/integrate-skill` — Integrate External Skills
-
-Integrates community Skills into your project, creating a unified `/use-[skill-name]` command. See Chapter 12 for details.
+On Claude Code, Cursor, OpenCode, CodeBuddy, and Droid, these sub-agents are hooked so the right JSONL context (`implement.jsonl`, `check.jsonl`, `research.jsonl`) is injected automatically before they start. On the rest, the main session reads the JSONL files itself and passes the relevant content into sub-agent prompts.
 
 ---

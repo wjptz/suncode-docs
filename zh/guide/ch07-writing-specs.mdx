@@ -6,9 +6,13 @@ title: '规范编写指南'
 
 ### 7.1 Spec 目录结构和分层
 
+#### `trellis init` 默认结构
+
+`trellis init` 会写一个骨架：`frontend/` + `backend/` + `guides/`，里面全是**空占位模板**（标注 "(To be filled by the team)"）。这些模板原样注入 sub-agent 是没用的。
+
 ```
 .trellis/spec/
-├── frontend/                    # 前端规范
+├── frontend/                    # 前端规范（占位）
 │   ├── index.md                 #   索引：列出所有规范及状态
 │   ├── component-guidelines.md  #   组件规范
 │   ├── hook-guidelines.md       #   Hook 规范
@@ -17,7 +21,7 @@ title: '规范编写指南'
 │   ├── quality-guidelines.md    #   质量指南
 │   └── directory-structure.md   #   目录结构
 │
-├── backend/                     # 后端规范
+├── backend/                     # 后端规范（占位）
 │   ├── index.md
 │   ├── database-guidelines.md
 │   ├── error-handling.md
@@ -31,11 +35,34 @@ title: '规范编写指南'
     └── code-reuse-thinking-guide.md
 ```
 
-**分层原则**：
-- `index.md` 是入口，列出所有规范文件及其状态
-- 每个文件专注一个主题，200-500 行
-- 每个章节 20-50 行
-- 语言用英文（技术术语天然英文），中文项目可用中文
+`trellis init` 同时创建一个 **bootstrap 任务**（`00-bootstrap-guidelines`）。第一次跑 `/trellis:start` 时 AI 会认出它、调 `trellis-research` 读你的实际代码，然后把占位模板按真实项目（技术栈、约定、目录结构）填起来。跳过这个任务就是把空壳喂给每个 sub-agent——别跳。
+
+#### 这套结构只是约定
+
+`frontend/` 和 `backend/` 没有任何魔法。Trellis 扫描 `.trellis/spec/` 下的一级目录，只要目录里有 `index.md` 就把它当作一个 spec 层注册。你按项目实际怎么切就怎么命名——按运行时、按 package、按职责都行，每层有自己的 `index.md` 就够。
+
+Trellis 本身用的是另一种结构（monorepo、按 package）：
+
+```
+.trellis/spec/                                # Trellis 自己的 spec 树
+├── cli/                                      # Package: CLI
+│   ├── backend/
+│   │   └── index.md                          #   ← 通过 index.md 注册为一层
+│   └── unit-test/
+│       └── index.md                          #   ← 又一层
+│
+├── docs-site/                                # Package: 文档站
+│   └── docs/
+│       └── index.md                          #   ← 单层 package
+│
+└── guides/                                   # 跨 package 的思维指南
+    ├── index.md
+    ├── cross-layer-thinking-guide.md
+    ├── cross-platform-thinking-guide.md
+    └── code-reuse-thinking-guide.md
+```
+
+顶层没有 `frontend/` 或 `backend/`，因为仓库是按 package 切的。Trellis 唯一硬性约定就是"一层 = 带 `index.md` 的目录"，其他随你。
 
 ### 7.2 从空模板到完整规范
 
@@ -78,7 +105,7 @@ ls src/services/       # 服务结构
 
 **Step 3**：添加代码示例
 
-```markdown
+````markdown
 ### Good Example
 
 ```tsx
@@ -100,7 +127,7 @@ export default function UserProfile(props: any) {
   // ...
 }
 ```
-```
+````
 
 **Step 4**：更新 index.md 状态
 
@@ -111,27 +138,77 @@ export default function UserProfile(props: any) {
 | Hook Guidelines | hook-guidelines.md | To fill |
 ```
 
-### 7.3 好的规范 vs 差的规范
+### 7.3 Spec 应该长什么样
 
-**好的规范**（具体、有代码、有原因）：
+`trellis-update-spec` skill 把 spec 视为**可执行契约**，不是原则性文字。sub-agent 在 `trellis-implement` / `trellis-check` 时读到的每一条都应当告诉 AI *怎样安全地实现*——具体签名、契约、用例、测试；如果只是"做这件事时要想到什么"，应当放在 `guides/`。
 
-```markdown
-### Database Query Pattern
+#### Code-Spec vs Guide
 
-**Always use parameterized queries** to prevent SQL injection.
+| 类型 | 位置 | 用途 | 内容形态 |
+| ---- | ---- | ---- | -------- |
+| **Code-Spec** | `<layer>/*.md`（如 `backend/`、`cli/backend/`） | "如何安全地实现" | 签名、契约、验证矩阵、Good / Base / Bad 用例、必需测试 |
+| **Guide**     | `guides/*.md` | "动手前该想到什么" | 思考清单、问题、指向具体 spec 的链接 |
 
-```sql
--- Good
-SELECT * FROM users WHERE id = $1
+如果你写的是"别忘了检查 X"——放 guide。如果你写的是"X 接受 `{field: type, …}`，返回 `{…}`，错误矩阵如下，必须覆盖这些测试"——放 code-spec。
 
--- Bad
-SELECT * FROM users WHERE id = '${userId}'
+#### 选对更新形态
+
+`trellis-update-spec` 出厂有几套模板，按你学到的是什么挑一个：
+
+| 你学到了…… | 模板 | 关键字段 |
+| ---------- | ---- | -------- |
+| 为什么选方案 X 而不是 Y | **Design Decision** | Context、Options Considered、Decision、Example、Extensibility |
+| 本项目约定 X 这么做 | **Convention** | What、Why、Example、Related |
+| 一种能复用的解法 | **Pattern** | Problem、Solution、Example（Good + Bad）、Why |
+| 一种会出问题的做法 | **Forbidden Pattern**（`Don't`） | 错误片段、为什么糟、改成什么 |
+| 容易犯的错 | **Common Mistake** | Symptom、Cause、Fix、Prevention |
+| 非直觉的行为 | **Gotcha** | `> Warning:` 引用块，说明何时触发、怎么处理 |
+
+#### 基础设施 / 跨层改动的强制 7 段式
+
+改动涉及 **命令 / API 签名**、**跨层 request-response 契约**、**DB schema**、或 **基础设施接线**（存储、队列、缓存、密钥、env）时，skill 强制 7 段：
+
+1. **Scope / Trigger** — 为什么要上 code-spec 深度
+2. **Signatures** — command / API / DB 签名
+3. **Contracts** — request 字段、response 字段、env key（名字、类型、约束）
+4. **Validation & Error Matrix** — `<条件> → <错误>` 表
+5. **Good / Base / Bad Cases** — 例输入 + 预期结果
+6. **Tests Required** — unit / integration / e2e，带断言点
+7. **Wrong vs Correct** — 至少一组反正例
+
+少一段 skill 会提示补；这就是"可执行契约"的底线。
+
+#### 对比示例
+
+一条合格的 **Convention**（放在 `backend/database-guidelines.md`）：
+
+````markdown
+### Convention：用 ORM batch 方法，别在循环里一条一条写 DB
+
+**What**：对 N 条数据，调一次 ORM 的 batch 方法（`createMany` / `updateMany` / `deleteMany`）。不要把单行 `create` / `update` / `delete` 套进 `for` 或 `Promise.all`。
+
+**Why**：每次 DB 调用都是一次 round-trip。线上接口里一个 200 条的循环就能把 p99 从 50ms 悄悄拖到 8s——这种坑已经在 code review 里抓到过两次（PR #312、#417）。Batch 方法把 N 次 round-trip 压成一次 SQL，DB 可以自己规划写入。
+
+**Example**：
+```ts
+// ✅ 正确——一次 round-trip
+await prisma.user.createMany({ data: users });
+
+// ❌ 错误——N 次 round-trip
+for (const user of users) {
+  await prisma.user.create({ data: user });
+}
+
+// ❌ 还是错——并发的 N 次 round-trip
+await Promise.all(users.map(user => prisma.user.create({ data: user })));
 ```
 
-**Why**: Parameterized queries are automatically escaped by the database driver.
-```
+**Batch 不可用时**：把循环包进单事务（`prisma.$transaction`），至少是一个逻辑单元；加注释说明为什么 batch 用不了。
 
-**差的规范**（太模糊、没代码、没原因）：
+**Related**：`quality-guidelines.md#performance`、`error-handling.md#transactions`。
+````
+
+一条**差的 spec**——没签名、没示例、没 why、没测试点：
 
 ```markdown
 ### Database
@@ -140,7 +217,7 @@ SELECT * FROM users WHERE id = '${userId}'
 - Follow best practices
 ```
 
-**过度规范**（太细碎、限制创造力）：
+一条**过度规范**——机械规则、没有原因、扼杀判断：
 
 ```markdown
 ### Variable Naming
@@ -150,27 +227,11 @@ SELECT * FROM users WHERE id = '${userId}'
 - All files must be less than 200 lines
 ```
 
+底线：具体、可操作、带代码示例、说清 *why*；对 code-spec 而言，还要有足够的签名 / 契约细节让 sub-agent 不用追问就能照做。
+
 ### 7.4 Bootstrap 引导首次填充
 
 `trellis init` 时会自动创建 bootstrap 引导任务（`00-bootstrap-guidelines`），AI 在首次 `/start` 时会自动检测并引导你填充空白的 spec 文件。
 
 AI 在这个引导任务中会分析代码库，提取现有模式，自动填充 spec 模板。
 
-### 7.5 规范的持续演进
-
-规范不是一次写好就不动的，而是随开发不断演进：
-
-| 触发时机 | 更新频率 | 示例 |
-|---------|---------|------|
-| 修了一个不明显的 bug | 立即 | 加到 "Common Mistakes" |
-| 发现了更好的实践 | 当天 | 加到 "Patterns" |
-| 团队约定新规范 | 当天 | 加到 "Conventions" |
-| 日常改进 | 每周 | 优化措辞、补充示例 |
-
-**演进飞轮**：
-
-```
-开发 → 发现模式/问题 → 手动更新 Spec 文件 → git push
-                                                   ↓
-  全员受益 ← Hook 自动注入 ← 下次会话自动加载 ← git pull
-```

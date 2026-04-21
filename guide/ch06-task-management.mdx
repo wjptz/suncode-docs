@@ -16,7 +16,7 @@ directory   config files   entries      current    check cycle    current   arch
 task.json                               task ptr                  task
 ```
 
-### 6.2 task.py 14 Subcommands Explained
+### 6.2 `task.py` Subcommands
 
 #### Task Creation
 
@@ -35,28 +35,32 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 #### Context Configuration
 
 ```bash
-# Initialize JSONL config
+# Initialize JSONL config (generates implement.jsonl + check.jsonl)
 ./.trellis/scripts/task.py init-context "$TASK_DIR" backend
 # dev_type: backend | frontend | fullstack | test | docs
-# Optional: --platform cursor (default claude)
+# Optional: --package PACKAGE   (required for monorepo, picks the spec/<pkg>/ root)
 
 # Add extra context entries
 ./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
   "src/services/auth.ts" "Existing auth patterns"
-# Target: implement | check | debug (shorthand, auto-appends .jsonl)
-# Automatically detects whether it's a file or directory
+# file arg: implement | check (shorthand, auto-appends .jsonl)
+# path arg: a file OR directory path — add-context auto-detects and sets type="directory" for dirs
 
-# Validate all JSONL-referenced files exist
+# Validate implement.jsonl + check.jsonl (all referenced files exist)
 ./.trellis/scripts/task.py validate "$TASK_DIR"
 
 # View all JSONL entries
 ./.trellis/scripts/task.py list-context "$TASK_DIR"
 ```
 
+<Note>
+  `research.jsonl` is managed separately (read by the `trellis-research` sub-agent). `task.py add-context` only writes to `implement.jsonl` / `check.jsonl` — create / edit `research.jsonl` by hand if you need custom research context.
+</Note>
+
 #### Task Control
 
 ```bash
-# Set as current task (Hook reads this pointer for injection)
+# Set as current task (sub-agent hooks read .current-task for JSONL injection)
 ./.trellis/scripts/task.py start "$TASK_DIR"
 
 # Clear current task (no arguments needed, auto-reads .current-task)
@@ -77,8 +81,8 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 ```bash
 # List active tasks
 ./.trellis/scripts/task.py list
-./.trellis/scripts/task.py list --mine        # Only show your own
-./.trellis/scripts/task.py list --status review  # Filter by status
+./.trellis/scripts/task.py list --mine            # Only your own
+./.trellis/scripts/task.py list --status review   # Filter by status
 
 # Archive completed tasks
 ./.trellis/scripts/task.py archive user-login
@@ -87,12 +91,9 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 # List archived tasks
 ./.trellis/scripts/task.py list-archive
 ./.trellis/scripts/task.py list-archive 2026-02  # Filter by month
-
-# Create PR (delegates to multi-agent/create-pr.py)
-./.trellis/scripts/task.py create-pr
 ```
 
-### 6.3 task.json Schema
+### 6.3 `task.json` Schema
 
 ```json
 {
@@ -110,54 +111,48 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
   "completedAt": null,
   "branch": "feature/user-login",
   "base_branch": "main",
-  "worktree_path": null,
-  "current_phase": 1,
-  "next_action": [
-    { "phase": 1, "action": "implement" },
-    { "phase": 2, "action": "check" },
-    { "phase": 3, "action": "finish" },
-    { "phase": 4, "action": "create-pr" }
-  ],
   "commit": null,
   "pr_url": null,
   "subtasks": [],
   "relatedFiles": [],
-  "notes": ""
+  "notes": "",
+  "meta": {}
 }
 ```
 
 **Status transitions**:
 
 ```
-planning → in_progress → review → completed
-       ↘ rejected
+task.py create     →  planning
+task.py start      →  in_progress
+task.py archive    →  completed (then moved to archive/)
 ```
+
+`planning` / `in_progress` / `completed` are the default set — they line up with the three phases in `workflow.md`. `task.py --status` also accepts `review` as a filter for custom workflows that introduce it; add any additional statuses you need by writing a matching `[workflow-state:<name>]` block in `workflow.md`.
 
 ### 6.4 JSONL Context Configuration in Practice
 
 #### Auto-Generated Default Configuration
 
-`task.py init-context` generates default JSONL files based on dev_type:
+`task.py init-context` generates minimal JSONL files based on `dev_type`. The default is deliberately thin; it points sub-agents at the workflow contract and the relevant spec index, and relies on the skill (`trellis-before-dev`, `trellis-check`) to pull in the specific guideline files referenced from those indexes.
 
-**backend type default implement.jsonl**:
+**Single-repo, `dev_type=backend`**:
 
 ```jsonl
+# implement.jsonl
 {"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
-{"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
 {"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
-{"file": ".trellis/spec/backend/api-module.md", "reason": "API module conventions"}
-{"file": ".trellis/spec/backend/quality.md", "reason": "Code quality requirements"}
 ```
-
-**backend type default check.jsonl** (Claude Code platform):
 
 ```jsonl
+# check.jsonl (paths resolve to the active platform's command/skill location)
 {"file": ".claude/commands/trellis/finish-work.md", "reason": "Finish work checklist"}
-{"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
-{"file": ".claude/commands/trellis/check-backend.md", "reason": "Backend check spec"}
+{"file": ".claude/commands/trellis/check.md", "reason": "Code quality check spec"}
 ```
 
-**fullstack type** includes both frontend and backend spec files.
+Monorepo projects substitute `.trellis/spec/<package>/...` in the implement side. `dev_type=frontend` points at `spec/frontend/index.md`; `dev_type=fullstack` includes both; `dev_type=test` uses the backend index; `dev_type=docs` only includes `workflow.md`.
+
+Add extra context (task-specific code patterns, cross-layer guides, etc.) via `task.py add-context`; the defaults stay lean on purpose.
 
 #### Adding Custom Context
 
@@ -175,51 +170,7 @@ planning → in_progress → review → completed
   ".trellis/spec/guides/cross-layer-thinking-guide.md" "Cross-layer verification"
 ```
 
-### 6.5 Plan Agent and Requirements Assessment
-
-The Plan Agent performs strict assessment before accepting requirements, and may reject them.
-
-**5 rejection categories**:
-
-| Rejection Type             | Trigger Condition                       | Example                             |
-| -------------------------- | --------------------------------------- | ----------------------------------- |
-| **Unclear or Vague**       | No specific outcome defined             | "Make it better", "Fix the bugs"    |
-| **Incomplete Information** | Missing critical implementation details | References unknown systems          |
-| **Out of Scope**           | Does not belong to this project         | Requires modifying external systems |
-| **Potentially Harmful**    | Security risk                           | Intentionally creating backdoors    |
-| **Too Large**              | Should be split                         | Requesting 6 features at once       |
-
-**On rejection**:
-
-- `task.json` status set to `"rejected"`
-- `REJECTED.md` generated with reasons and improvement suggestions
-- Task directory preserved for user review
-
-**Rejection example**:
-
-```
-Input: "Add user authentication, authorization, password reset,
-        2FA, OAuth integration, and audit logging"
-
-=== PLAN REJECTED ===
-
-Reason: Too Large / Should Be Split
-
-Details:
-This requirement bundles 6 distinct features:
-1. User authentication (login/logout)
-2. Authorization (roles/permissions)
-3. Password reset flow
-4. Two-factor authentication
-5. OAuth integration
-6. Audit logging
-
-Suggestions:
-- Start with basic authentication first
-- Create separate features for each capability
-```
-
-### 6.6 Task Lifecycle Hooks
+### 6.5 Task Lifecycle Hooks
 
 You can configure shell commands that run automatically when task lifecycle events occur. This enables integrations like syncing tasks to Linear, posting to Slack, or triggering CI pipelines.
 
@@ -269,7 +220,7 @@ All other environment variables from the parent process are inherited.
 - **Shell**: Commands run through the system shell (`shell=True`)
 - **Failures don't block**: A failing hook prints a `[WARN]` message to stderr but does not prevent the task operation from completing
 - **Sequential**: Multiple hooks per event execute in list order; a failure in one does not skip the rest
-- **stdout captured**: Hook stdout is not displayed to the user — use stderr for diagnostic output
+- **stdout captured**: Hook stdout is not displayed to the user; use stderr for diagnostic output
 
 <Warning>
   The `after_archive` hook receives `TASK_JSON_PATH` pointing to the **archived** location (e.g.,

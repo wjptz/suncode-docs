@@ -4,384 +4,222 @@ title: 'Multi-Platform and Team Configuration'
 
 ## Multi-Platform and Team Configuration
 
-### 13.1 Claude Code Full Experience
+Trellis ships on 13 platforms (Claude Code, Cursor, OpenCode, Codex, Kiro, Kilo, Gemini CLI, Antigravity, Windsurf, Qoder, CodeBuddy, GitHub Copilot, Droid) and additionally supports any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more). The `.trellis/` core is identical everywhere; what differs is **how hooks, skills, sub-agents, and commands are delivered** on each platform.
 
-Claude Code is Trellis's primary platform, with the most complete automation capabilities. Three core Hooks form the automation loop:
+### 13.1 Capability Matrix
 
-| Hook | Trigger Timing | Capability |
-|------|---------|------|
-| `session-start.py` | SessionStart | Auto-injects context (identity, history, tasks) |
-| `inject-subagent-context.py` | PreToolUse (Task) | Auto-injects precise Spec context for Agents |
-| `ralph-loop.py` | SubagentStop (check) | Auto-verifies code quality (Ralph Loop) |
+| Capability                          | Claude Code | Cursor | OpenCode | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid |
+| ----------------------------------- | :---------: | :----: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: |
+| SessionStart hook (auto-inject)     |     ✅      |   ✅   |    ✅    |  ⚡   |  ⚡  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |
+| Sub-agent PreToolUse hook           |     ✅      |   ✅   |    ✅    |  ❌   |  ❌  |   ❌   |  ❌   |    ✅     |   ❌    |  ✅   |
+| Sub-agents (`trellis-*`)            |     ✅      |   ✅   |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |
+| Auto-trigger skills                 |     ✅      |   ✅   |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |
+| Explicit `/trellis:*` commands      |     ✅      |   ✅   |    ✅    |   —   |  —   |   ✅   |  —    |    ✅     |   ✅    |  ✅   |
 
-**Claude Code exclusive features**:
-- Hook auto-injection — start working immediately upon opening terminal, no manual `/start` needed
-- Multi-Agent Pipeline — `/parallel` orchestrates multiple worktree Agents in parallel
-- Ralph Loop — automatic quality gate, Check Agent auto-retries on failure
-- Agent system — 6 specialized Agents (dispatch, plan, implement, check, debug, research)
+Legend: ✅ Trellis wires the config and the platform executes it · ⚡ Partial (Codex requires `codex_hooks = true` opt-in; Kiro's Agent Hooks are user-configured, not auto-executed) · ❌ the platform does not expose this event · — the platform has no command primitive; start / finish-work / continue are delivered as skills instead
 
-### 13.2 Cursor Integration
+`.kilocode/`, `.agent/` (Antigravity), and `.windsurf/` are workflow-and-skill only: no sub-agents and no hooks. `.agents/skills/` is written by every platform as a cross-platform shared layer.
 
-`trellis init` automatically generates Trellis command files under `.cursor/commands/`:
+### 13.2 Claude Code
 
-| Claude Code Command | Cursor Equivalent |
-|-----------------|------------|
-| `/trellis:start` | `/trellis-start` |
-| `/trellis:before-dev` | `/trellis-before-dev` |
-| `/trellis:brainstorm` | `/trellis-brainstorm` |
-| `/trellis:check` | `/trellis-check` |
-| `/trellis:check-cross-layer` | `/trellis-check-cross-layer` |
-| `/trellis:finish-work` | `/trellis-finish-work` |
-| `/trellis:break-loop` | `/trellis-break-loop` |
-| `/trellis:create-command` | `/trellis-create-command` |
-| `/trellis:integrate-skill` | `/trellis-integrate-skill` |
-| `/trellis:onboard` | `/trellis-onboard` |
-| `/trellis:record-session` | `/trellis-record-session` |
-| `/trellis:update-spec` | `/trellis-update-spec` |
+Most complete automation. Hook layout:
 
-**Differences from Claude Code**:
-- Files located at `.cursor/commands/trellis-{name}.md`
-- Cursor has 12 commands (no `/parallel`, as Cursor doesn't support Multi-Agent Pipeline)
-- No Hook support — spec injection requires manual command invocation
-- No Agent system — all work happens in the main conversation
-- No Ralph Loop — check commands must be run manually
+| Hook                               | Trigger             | Effect                                         |
+| ---------------------------------- | ------------------- | ---------------------------------------------- |
+| `session-start.py`                 | SessionStart        | Injects identity, git status, active tasks     |
+| `inject-workflow-state.py`         | UserPromptSubmit    | Nudges the AI toward the current task's state  |
+| `inject-subagent-context.py`       | PreToolUse (Task)   | Loads `implement.jsonl` / `check.jsonl` / etc. |
 
-**Recommended workflow for Cursor users**:
+Sub-agents: `trellis-implement`, `trellis-check`, `trellis-research` under `.claude/agents/`.
+Skills: `trellis-brainstorm`, `trellis-before-dev`, `trellis-check`, `trellis-update-spec`, `trellis-break-loop` under `.claude/skills/`.
+Commands: `start`, `finish-work`, `continue` under `.claude/commands/trellis/`.
+
+### 13.3 Cursor
 
 ```bash
-# 1. Start session (required, replaces Hook auto-injection)
-/trellis-start
-
-# 2. Load relevant specs (recommended, replaces PreToolUse Hook)
-/trellis-before-dev
-
-# 3. Describe task, AI develops...
-
-# 4. Manually check code quality (replaces Ralph Loop)
-/trellis-check
-/trellis-check-cross-layer     # Cross-layer check
-
-# 5. Finish checklist
-/trellis-finish-work
+trellis init -u your-name --cursor
 ```
 
-### 13.3 Codex Integration
+Cursor is a full class-1 platform since Trellis 0.5: real hooks, real sub-agents, real skills.
+
+Layout:
+- `.cursor/commands/trellis-{name}.md`: `start`, `finish-work`, `continue` (flat file naming with `trellis-` prefix, invoked as `/trellis-start` etc.)
+- `.cursor/skills/trellis-{name}/SKILL.md`: the 5 trellis skills
+- `.cursor/agents/`: `trellis-implement.md`, `trellis-check.md`, `trellis-research.md`
+- `.cursor/hooks/`: shared Python hook scripts (Claude-Code-compatible)
+- `.cursor/hooks.json`: hook configuration (Cursor uses a separate file, not `settings.json`)
+
+### 13.4 OpenCode
 
 ```bash
-trellis init --codex -u your-name
+trellis init -u your-name --opencode
 ```
 
-Generates the following configuration:
+OpenCode 1.2.x is a class-1 platform (real hooks + real sub-agents):
 
-- **`AGENTS.md`** (root directory) — Codex entry file, provides base project context (similar to `CLAUDE.md`)
-- **`.agents/skills/`** — Shared Agent Skills directory ([agentskills.io](https://agentskills.io) open standard, used by Codex, Kimi CLI, Amp, Cline, and others)
-- **`.codex/config.toml`** — Project-scoped Codex configuration
-- **`.codex/agents/`** — Custom Codex agents (`implement.toml`, `research.toml`, `check.toml`)
-- **`.codex/skills/`** — Codex-specific skills (e.g. `parallel` for multi-agent pipelines)
-- **`.codex/hooks/session-start.py`** + **`.codex/hooks.json`** — SessionStart hook that injects Trellis workflow, guidelines, and task context into Codex sessions
+- `.opencode/commands/trellis/`: start / finish-work / continue
+- `.opencode/agents/`: `trellis-implement.md`, `trellis-check.md`, `trellis-research.md`
+- `.opencode/skills/`: the 5 trellis skills
+- `.opencode/plugins/`: JS plugins: `session-start.js`, `inject-subagent-context.js`, `inject-workflow-state.js`
+
+Plugins are factory functions (OpenCode 1.2+). Trellis generates them so behavior parity with Claude Code is the goal.
+
+### 13.5 Codex
+
+```bash
+trellis init -u your-name --codex
+```
+
+Layout:
+- `AGENTS.md` (repo root): entry file; Codex auto-reads it every session (acts as the prelude)
+- `.codex/prompts/`: `trellis-start.md`, `trellis-finish-work.md`, `trellis-continue.md`
+- `.codex/skills/`: the 5 trellis skills
+- `.codex/agents/`: TOML sub-agents: `trellis-implement.toml`, `trellis-check.toml`, `trellis-research.toml`
+- `.codex/hooks/session-start.py` + `.codex/hooks.json`: SessionStart hook (experimental)
 
 <Note>
-As of Codex CLI v0.116.0 (2026-03-24), hooks are an experimental feature that requires manual opt-in. Add this to `~/.codex/config.toml`:
+Codex hooks are experimental. Enable by adding to `~/.codex/config.toml`:
 
 ```toml
 [features]
-multi_agent = true
 codex_hooks = true
 ```
 
-This requirement may be removed in a future Codex release when hooks become stable.
+Without this, Codex falls back to prelude-only (reads `AGENTS.md` every session): same content, just no event-driven injection.
 </Note>
 
-### 13.4 Kilo Code Integration
-
-[Kilo Code](https://kilo.ai) is an open-source (Apache 2.0) AI coding Agent platform, available as a VS Code extension, JetBrains plugin, and CLI, with 750K+ users.
+### 13.6 Kiro
 
 ```bash
-trellis init --kilo -u your-name
+trellis init -u your-name --kiro
 ```
 
-Generates configuration under the `.kilocode/` directory:
+Layout:
+- `.kiro/steering/trellis.md`: Trellis prelude, loaded every session
+- `.kiro/prompts/trellis-*.md`: prompt-style commands
+- `.kiro/skills/*/SKILL.md`: auto-trigger skills (Kiro matches by description/YAML)
 
-**What Trellis generates for Kilo**:
+Kiro's Agent Hooks can auto-run Trellis skills on file save or build success, but that's user-configured; Trellis doesn't install any Kiro Agent Hook out of the box.
 
-`trellis init --kilo` generates workflow files under `.kilocode/workflows/`. These are Kilo's equivalent of slash commands — invoked in chat as `/start.md`, `/check.md`, etc.
-
-| Trellis / Claude Code | Kilo Code (generated by Trellis) | Description |
-|----------------------|-----------|------|
-| `.claude/commands/*.md` | `.kilocode/workflows/*.md` | Workflow commands invoked as `/start.md`, etc. |
-
-**Generated directory structure**:
-
-```
-project/
-├── .kilocode/
-│   └── workflows/                      # Commands (equivalent to slash commands)
-│       ├── start.md                    # /start.md — session init
-│       ├── brainstorm.md               # /brainstorm.md
-│       ├── before-dev.md               # /before-dev.md
-│       ├── check.md                    # /check.md
-│       ├── check-cross-layer.md        # /check-cross-layer.md
-│       ├── finish-work.md              # /finish-work.md
-│       ├── break-loop.md               # /break-loop.md
-│       ├── create-command.md           # /create-command.md
-│       ├── integrate-skill.md          # /integrate-skill.md
-│       ├── onboard.md                  # /onboard.md
-│       ├── parallel.md                 # /parallel.md
-│       ├── record-session.md           # /record-session.md
-│       └── update-spec.md              # /update-spec.md
-```
-
-<Note>
-Kilo also supports `rules/`, `rules-code/`, `rules-architect/`, `skills/`, `launchConfig.json`, and `mcp.json` — but these are **not generated by Trellis**. You can create them manually if needed. See [Kilo Code documentation](https://kilo.ai) for details.
-</Note>
-
-**Recommended workflow for Kilo users**:
+### 13.7 Gemini CLI
 
 ```bash
-# 1. Run the start workflow for full context
-/start.md
-
-# 2. Switch to Orchestrator mode for complex tasks
-# Kilo auto-decomposes tasks and assigns to Code/Architect modes
-
-# 3. Describe task, AI develops...
-
-# 4. Run check workflow
-/check.md
-
-# 5. Finish
-/finish-work.md
+trellis init -u your-name --gemini
 ```
 
-<Info>
-Kilo's Orchestrator Mode shares a similar philosophy with Trellis's Multi-Agent Pipeline, but the implementation differs:
-Trellis uses git worktree physical isolation + Hook orchestration, while Kilo uses built-in mode switching + independent conversation context.
-The two are complementary — Trellis's Spec management and Task system provide structured project context for Kilo.
-</Info>
+Layout:
+- `.gemini/commands/trellis/{name}.toml`: TOML command files — `start.toml`, `finish-work.toml`, `continue.toml`
+- `.gemini/skills/trellis-{name}/SKILL.md`: the 5 trellis skills
+- `.gemini/agents/{name}.md`: sub-agent definitions with pull-based prelude (sub-agents `Read` their own JSONL because Gemini has no sub-agent `PreToolUse` hook)
+- `.gemini/hooks/session-start.py`: SessionStart hook
+- `.gemini/settings.json`: hook configuration (SessionStart only)
 
-### 13.5 Kiro Integration
-
-[Kiro](https://kiro.dev) is an AI IDE by Amazon, built on Code OSS (VS Code open-source core), focused on **Spec-Driven Development**. It supports IDE, CLI, and Autonomous Agent modes.
+### 13.8 Qoder
 
 ```bash
-trellis init --kiro -u your-name
+trellis init -u your-name --qoder
 ```
 
-**What Trellis generates for Kiro**:
+Qoder is skill-first (no user-invokable slash command). Trellis ships start / finish-work / continue as skills:
 
-`trellis init --kiro` generates skill files under `.kiro/skills/`. Each skill is a `SKILL.md` file with YAML frontmatter, following the [Agent Skills open standard](https://agentskills.io).
+Layout:
+- `.qoder/skills/trellis-{name}/SKILL.md`: **all** templates (start, finish-work, continue, brainstorm, before-dev, check, update-spec, break-loop) delivered as skills; skill matching drives everything
+- `.qoder/agents/{name}.md`: sub-agent definitions with pull-based prelude
+- `.qoder/hooks/session-start.py`: SessionStart hook
+- `.qoder/settings.json`: hook configuration (SessionStart only — Qoder has no sub-agent `PreToolUse` hook)
 
-| Trellis / Claude Code | Kiro (generated by Trellis) | Description |
-|----------------------|------|------|
-| `.claude/commands/*.md` | `.kiro/skills/*/SKILL.md` | 12 skills with YAML frontmatter |
-
-**Generated directory structure**:
-
-```
-project/
-├── .kiro/
-│   └── skills/                         # Agent Skills (YAML frontmatter + instructions)
-│       ├── start/SKILL.md
-│       ├── brainstorm/SKILL.md
-│       ├── before-dev/SKILL.md
-│       ├── check/SKILL.md
-│       ├── check-cross-layer/SKILL.md
-│       ├── finish-work/SKILL.md
-│       ├── break-loop/SKILL.md
-│       ├── create-command/SKILL.md
-│       ├── integrate-skill/SKILL.md
-│       ├── onboard/SKILL.md
-│       ├── record-session/SKILL.md
-│       └── update-spec/SKILL.md
-```
-
-<Note>
-Kiro also supports `steering/`, `hooks/`, `specs/`, `prompts/`, `agents/`, and `settings/` directories — but these are **not generated by Trellis**. You can create them manually if needed. See [Kiro documentation](https://kiro.dev) for details.
-</Note>
-
-**Recommended workflow for Kiro users**:
+### 13.9 CodeBuddy
 
 ```bash
-# 1. Use the start skill to initialize session context
-# 2. Describe task, AI develops...
-# 3. Use the check skill to verify code quality
-# 4. Use the finish-work skill for pre-commit checklist
-# 5. Commit code when done
+trellis init -u your-name --codebuddy
 ```
 
-### 13.5b CodeBuddy Integration
+CodeBuddy is a full class-1 platform (real hooks + real sub-agents).
 
-[CodeBuddy](https://copilot.tencent.com/) is Tencent Cloud's AI coding assistant, supporting IDE and CLI forms with MCP extensibility.
+Layout:
+- `.codebuddy/commands/trellis/{name}.md`: `start`, `finish-work`, `continue`
+- `.codebuddy/skills/trellis-{name}/SKILL.md`: the 5 trellis skills
+- `.codebuddy/agents/{name}.md`: sub-agent definitions
+- `.codebuddy/hooks/*.py`: shared Python hook scripts
+- `.codebuddy/settings.json`: hook configuration (SessionStart + `PreToolUse` sub-agent injection)
+
+### 13.10 GitHub Copilot
 
 ```bash
-trellis init --codebuddy -u your-name
+trellis init -u your-name --copilot
 ```
 
-**What Trellis generates for CodeBuddy**:
+Layout:
+- `.github/copilot-instructions.md`: the Trellis prelude, loaded automatically every session
+- `.github/prompts/trellis-{name}.prompt.md`: prompt files for `start` / `finish-work` / `continue`
+- `.github/skills/trellis-{name}/SKILL.md`: the 5 trellis skills
+- `.github/agents/{name}.agent.md`: sub-agent definitions with pull-based prelude (Copilot's sub-agent hook does not fire reliably, so sub-agents `Read` their own JSONL)
+- `.github/copilot/hooks/*.py`: Copilot-specific + shared Python hook scripts
+- `.github/copilot/hooks.json`: hook configuration (SessionStart only — sub-agent `PreToolUse` is absent)
 
-`trellis init --codebuddy` generates command files under `.codebuddy/commands/trellis/`. These are invoked in chat as `/trellis:start`, `/trellis:check`, etc.
-
-| Trellis / Claude Code | CodeBuddy (generated by Trellis) | Description |
-|----------------------|-----------|------|
-| `.claude/commands/*.md` | `.codebuddy/commands/trellis/*.md` | 12 slash commands in Trellis namespace |
-
-**Generated directory structure**:
-
-```
-project/
-├── .codebuddy/
-│   └── commands/                      # Slash commands
-│       └── trellis/                   #   Trellis namespace
-│           ├── start.md               #   /trellis:start
-│           ├── brainstorm.md          #   /trellis:brainstorm
-│           ├── before-dev.md          #   /trellis:before-dev
-│           ├── check.md               #   /trellis:check
-│           ├── check-cross-layer.md   #   /trellis:check-cross-layer
-│           ├── finish-work.md         #   /trellis:finish-work
-│           ├── break-loop.md          #   /trellis:break-loop
-│           ├── create-command.md      #   /trellis:create-command
-│           ├── integrate-skill.md     #   /trellis:integrate-skill
-│           ├── onboard.md             #   /trellis:onboard
-│           ├── record-session.md      #   /trellis:record-session
-│           └── update-spec.md         #   /trellis:update-spec
-```
-
-<Note>
-CodeBuddy also supports `.rules/`, `agents/`, `settings.json`, and hooks — but these are **not generated by Trellis**. You can create them manually if needed. See [CodeBuddy documentation](https://copilot.tencent.com/) for details.
-</Note>
-
-**Differences from Claude Code**:
-- Files located at `.codebuddy/commands/trellis/{name}.md`
-- CodeBuddy has 12 commands (no `/parallel`, as CodeBuddy doesn't support Multi-Agent Pipeline)
-- No Hook support at Trellis level — spec injection requires manual command invocation
-- No Agent system integration — all work happens in the main conversation
-
-**Recommended workflow for CodeBuddy users**:
+### 13.11 Droid
 
 ```bash
-# 1. Start session (required)
-/trellis:start
-
-# 2. Load relevant specs
-/trellis:before-dev
-
-# 3. Describe task, AI develops...
-
-# 4. Check code quality
-/trellis:check
-/trellis:check-cross-layer
-
-# 5. Finish checklist
-/trellis:finish-work
+trellis init -u your-name --droid
 ```
 
-### 13.6 Operating System Compatibility
+Droid (factory.ai) is a class-1 platform with hooks + sub-agents:
+- `.factory/commands/trellis/`: start / finish-work / continue
+- `.factory/agents/`: the three `trellis-*` sub-agents
+- `.factory/skills/`: the five trellis skills
+- `.factory/hooks/`: SessionStart + sub-agent injection
 
-| OS | Support Status | Notes |
-|---------|---------|------|
-| **macOS** | ✅ Full support | Primary development platform, all features verified |
-| **Linux** | ✅ Full support | All features verified |
-| **Windows** | ✅ Full support | All scripts migrated to Python, natively supports Windows |
+### 13.12 Other supported platforms
 
-**Cross-platform notes**:
+Trellis also ships configurators for platforms not covered by the capability matrix:
 
-| Consideration | Details |
-|---------|------|
-| Python scripts | Scripts under `.trellis/scripts/` are Python, requiring Python 3.8+, cross-platform compatible |
-| Python Hooks | Hook scripts under `.claude/hooks/` require Python 3.8+, cross-platform compatible |
-| Path separators | Trellis internally uses `/`, Python handles path conversion automatically |
-| Git worktree | Multi-Agent Pipeline relies on git worktree, supported on all platforms |
+- **Kilo** (`--kilo`): writes `.kilocode/workflows/` (commands: `start`, `finish-work`) and `.kilocode/skills/trellis-{name}/SKILL.md` (the 5 trellis skills). No hook integration.
+- **Antigravity** (`--antigravity`): writes Antigravity-native workflow files for the three commands.
+- **Windsurf** (`--windsurf`): writes Windsurf-native command and rule files.
 
-### 13.7 Multi-Developer Collaboration
+Beyond the 13 configured platforms, Trellis can be consumed by any AI coding agent that follows the `.agents/skills/` convention (the [agentskills.io](https://agentskills.io) standard). Codex writes its skills there, and the files are directly usable by other agents in that ecosystem (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more). On those platforms you manage Trellis through the `.trellis/` core plus whatever prelude file the agent reads.
 
-**Non-conflicting parts** (per-developer isolation):
-- `workspace/{name}/` — each developer has their own directory
-- `.developer` — gitignored, per-developer
-- Parallel task worktrees — physically isolated
+### 13.13 Operating Systems
 
-**Potentially conflicting parts** (require coordination):
-- `spec/` — multiple people may modify the same spec simultaneously
-- `tasks/` — multiple people may operate on the same task
+| OS         | Status   | Notes                                                        |
+| ---------- | -------- | ------------------------------------------------------------ |
+| **macOS**  | ✅ Full  | Primary platform                                             |
+| **Linux**  | ✅ Full  | Verified                                                     |
+| **Windows**| ✅ Full  | Scripts are Python; Claude Code sets `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` so hooks cwd resolves correctly |
 
-**Best practices**:
-- Spec changes go through PR review
-- Task assignments are explicit (`--assignee` parameter)
-- Important spec changes are discussed in team meetings
+Python 3.10+ is required for `.trellis/scripts/` and any Python hooks. OpenCode plugins use Node.js 18+.
 
-### 13.8 Complete worktree.yaml Configuration
+### 13.14 Multi-Developer Collaboration
 
-```yaml
-# Worktree Configuration for Multi-Agent Pipeline
+Per-developer isolation (no conflicts):
+- `.trellis/workspace/{name}/`: each developer's own journals and index
+- `.trellis/.developer`: gitignored
+- `.trellis/.current-task`: gitignored
 
-#───────────────────────────────────────────────────
-# Paths
-#───────────────────────────────────────────────────
+Shared state (coordinate via PR):
+- `.trellis/spec/`: team conventions, PR-reviewed like any code
+- `.trellis/tasks/`: task JSONs; explicit `--assignee` avoids collisions
 
-# Worktree storage directory (relative to project root)
-worktree_dir: ../trellis-worktrees
+Important spec changes should be discussed in reviews; treat the spec library as team code.
 
-#───────────────────────────────────────────────────
-# Files to Copy
-#───────────────────────────────────────────────────
-
-# Files that need independent copies in each worktree
-# These files contain sensitive info or need independent config
-copy:
-  - .env                     # Environment variables
-  - .env.local               # Local environment variables
-  - .trellis/.developer      # Developer identity
-
-#───────────────────────────────────────────────────
-# Post-Create Hooks
-#───────────────────────────────────────────────────
-
-# Commands to run after creating a worktree
-# Executed sequentially in the worktree directory; aborts on failure
-post_create:
-  - pnpm install --frozen-lockfile
-  # - npm install
-  # - yarn install --frozen-lockfile
-
-#───────────────────────────────────────────────────
-# Check Agent Verification (Ralph Loop)
-#───────────────────────────────────────────────────
-
-# Commands to verify code quality
-# When configured, Ralph Loop runs these — all must pass
-# Without configuration, falls back to completion markers mode
-verify:
-  - pnpm lint
-  - pnpm typecheck
-  # - pnpm test
-```
-
-### 13.9 `trellis update` and Version Management
+### 13.15 `trellis update` and Version Management
 
 ```bash
-# Check current version
-cat .trellis/.version
-
-# Update to latest version
-trellis update
-
-# Preview updates (dry run)
-trellis update --dry-run
-
-# Force overwrite all files
-trellis update -f
-
-# Skip all changed files
-trellis update -s
+cat .trellis/.version          # current version
+trellis update                  # update to latest
+trellis update --dry-run        # preview
+trellis update --migrate        # apply breaking-change migrations (required for major)
+trellis update -f               # force overwrite locally-modified files
+trellis update -s               # skip locally-modified files
 ```
 
-**Template hash mechanism**:
+Template hash mechanism (`.trellis/.template-hashes.json`):
 
-`.trellis/.template-hashes.json` stores the SHA-256 hash of each template file. During `trellis update`:
+1. Compute local file hash.
+2. Compare against recorded template hash.
+3. Match ⇒ file unchanged by user ⇒ safe to update.
+4. Differ ⇒ prompt (overwrite / skip), or silently respect policy with `-f` / `-s`.
 
-1. Compute local file hashes
-2. Compare with recorded template hashes
-3. If they match — file not modified by user — safe to update
-4. If they differ — file was modified by user — prompt for conflict resolution
-5. User chooses: overwrite / skip / merge
+Breaking changes (e.g. 0.5.0-beta.0's Multi-Agent Pipeline removal) ship as migration manifests: running `trellis update` without `--migrate` on a breaking-manifest exits with instructions instead of silently renaming files. `trellis update --migrate` applies the rename / delete entries, asking once per conflict.
 
 ---

@@ -7,34 +7,41 @@ title: '附录 D：JSONL 配置格式参考'
 ### 文件条目
 
 ```jsonl
-{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端开发指南"}
 ```
 
 ### 目录条目
 
 ```jsonl
-{"file": "src/services/", "type": "directory", "reason": "Existing service patterns"}
+{"file": "src/services/", "type": "directory", "reason": "现有 service 模式"}
 ```
 
-### 完整示例（fullstack implement.jsonl）
+目录条目下 hook 会读目录里所有 `.md`，最多 20 个。
+
+### 完整示例（fullstack `implement.jsonl`）
 
 ```jsonl
-{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
-{"file": ".trellis/spec/shared/index.md", "reason": "Shared coding standards"}
-{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
-{"file": ".trellis/spec/backend/api-module.md", "reason": "API module conventions"}
-{"file": ".trellis/spec/backend/quality.md", "reason": "Code quality requirements"}
-{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development guide"}
-{"file": ".trellis/spec/frontend/components.md", "reason": "Component conventions"}
+{"file": ".trellis/workflow.md", "reason": "项目工作流和约定"}
+{"file": ".trellis/spec/shared/index.md", "reason": "共享编码标准"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端开发指南"}
+{"file": ".trellis/spec/backend/api-module.md", "reason": "API 模块约定"}
+{"file": ".trellis/spec/backend/quality.md", "reason": "代码质量要求"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "前端开发指南"}
+{"file": ".trellis/spec/frontend/components.md", "reason": "组件约定"}
 ```
 
-### Completion Markers 生成规则
+### 各 sub-agent 使用的 JSONL
 
-`reason` 字段 → 大写 + 空格替换为下划线 + `_FINISH` 后缀：
+| 文件              | Sub-agent           | 典型内容                                          |
+| ----------------- | ------------------- | ------------------------------------------------- |
+| `implement.jsonl` | `trellis-implement` | workflow + spec + 代码模式范例                    |
+| `check.jsonl`     | `trellis-check`     | 质量 checklist spec + lint / typecheck 规则       |
+| `research.jsonl`  | `trellis-research`  | 项目结构概览 + 调研目标                           |
 
-| reason | 生成的 marker |
-|--------|--------------|
-| "TypeCheck" | `TYPECHECK_FINISH` |
-| "Lint" | `LINT_FINISH` |
-| "Code quality requirements" | `CODE_QUALITY_REQUIREMENTS_FINISH` |
-| "Finish work checklist" | `FINISH_WORK_CHECKLIST_FINISH` |
+### 0.5.0-beta.0 移除的内容
+
+旧版本还引用过 `debug.jsonl` 和独立的 `debug` sub-agent。文件和 agent 都已移除，bug 修复在主会话或通过 `trellis-break-loop` 完成。
+
+旧的 **completion marker** 机制（把 `reason` 字段转成 `TYPECHECK_FINISH` 这类字符串，供 Ralph Loop 判断 check agent 是否"完成"）也移除了。`trellis-check` sub-agent 自带的重试循环不再依赖这种 marker。
+
+---

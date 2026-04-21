@@ -4,161 +4,113 @@ title: '附录 F：FAQ'
 
 ## 附录 F：FAQ
 
-### Q1: 什么时候用 `/start` vs `/parallel`？
+### Q1: 每次开会话要先跑点什么吗？
 
-| 维度 | `/start` | `/parallel` |
-|------|---------|------------|
-| 任务复杂度 | 简单到中等 | 复杂，可拆分 |
-| 预计时间 | < 30 分钟 | > 30 分钟 |
-| 独立性 | 单一任务 | 多个独立子任务 |
-| 隔离 | 不需要 | 需要（worktree） |
+Claude Code、OpenCode、Droid 上 SessionStart hook 自动注入上下文，直接描述任务就行。其他平台跑 `/trellis:start`（Kiro 是 `@trellis:start`）加载完整上下文报告。
 
-### Q2: 什么时候需要 `/check-cross-layer`？
+### Q2: 我以前靠 `/parallel`，现在用什么？
 
-**必须用**：修改涉及前端 + 后端 + 数据库的功能
-**建议用**：修改 API 接口或数据库 schema
-**不需要**：纯前端 UI 调整或纯后端内部逻辑
+没有替代。Multi-Agent Pipeline 在 0.5.0-beta.0 移除。今天要并行开发，自己手动在不同分支上开多个会话。
 
-### Q3: `/break-loop` 分析完之后怎么办？
+### Q3: 怎么让 AI 在我 commit 前验证质量？
 
-`/break-loop` 做深度分析后，你应该手动将分析结果更新到 `.trellis/spec/` 中的规范文件，然后 git push。下次会话 Hook 会自动注入更新后的规范。
+这是 `trellis-check` sub-agent 的工作。实现阶段之后，主会话 spawn 它（没有 sub-agent 的平台则 skill 内联跑）。它读相关 spec，跑 `lint` / `typecheck` / `test`，对照质量 checklist 比对 diff，自修复违规。不涉及外部重试循环。
 
-```
-修复 Bug → /break-loop 深度分析 → 手动更新 spec → git push → 下次自动防止
-```
+### Q4: `trellis-break-loop` 分析完 bug 后要做什么？
 
-### Q4: 如何监控多 Agent 并行任务？
+skill 分析根因并提出预防机制。把结论走 `trellis-update-spec` skill，它会写进 `.trellis/spec/`。下次任何人在这个领域工作，更新后的 spec 会自动注入。
 
-```bash
-./.trellis/scripts/multi-agent/status.py                  # 概览
-./.trellis/scripts/multi-agent/status.py --log <name>     # 查看日志
-./.trellis/scripts/multi-agent/status.py --watch <name>   # 实时监控
-```
-
-日志位置：worktree 目录下的 `.dispatch-log` 和 `.plan-log`。
-
-### Q5: 会话历史存在哪里？
+### Q5: 会话历史存在哪？
 
 ```
 .trellis/workspace/
-├── index.md              # 总索引（所有开发者）
+├── index.md              # 所有开发者的主索引
 └── {your-name}/
-    ├── index.md          # 个人索引（会话总数、最后活跃、历史表）
-    └── journal-N.md      # 会话日志（每个文件最多 2000 行）
+    ├── index.md          # 个人索引
+    └── journal-N.md      # 会话日志（约每 2000 行新起一个文件）
 ```
 
-### Q6: Spec 应该写多详细？
+### Q6: spec 写多细？
 
-**200-500 行 / 文件，20-50 行 / 章节**
+每文件 200-500 行、每小节 20-50 行。具体代码例子比抽象规则有用。发现过时立即更新。
 
-原则：
-- 具体到有代码示例
-- 解释为什么，不只是什么
-- 简洁——一个概念一个章节
-- 可操作——AI 能直接照做
-- 时效性——发现过时立即更新
+### Q7: 多人用 Trellis 会冲突吗？
 
-### Q7: 多人使用 Trellis 会冲突吗？
+按开发者隔离（`workspace/{name}/`、`.developer`、`.current-task`）。共享状态是 `.trellis/spec/` 和 `.trellis/tasks/`，走 PR review。建任务时用 `--assignee` 避免撞车。
 
-**不冲突**：workspace（各人独立）、.developer（gitignored）、并行 worktree
-**可能冲突**：spec 文件（通过 PR 审查解决）、任务管理（用 --assignee 明确指派）
+### Q8: 怎么把已有项目迁到 Trellis？
 
-### Q8: 如何从现有项目迁移到 Trellis？
+1. `npm install -g @mindfoldhq/trellis@beta`
+2. 项目根下 `trellis init -u your-name`（自动建 bootstrap 任务）。
+3. 跑 `/trellis:start`，brainstorm skill 帮你填初始 spec。
+4. 按团队约定手动补充核心 spec。
+5. 把 `.trellis/` 和你用的 `.{platform}/` 目录 add 并 commit。
+6. 队友 pull 后各自 `trellis init -u their-name`。
 
-1. `npm install -g @mindfoldhq/trellis@latest`
-2. `trellis init -u your-name`（自动创建 bootstrap 引导任务）
-3. 运行 `/start`，AI 自动检测 bootstrap 任务并帮你填充 spec
-4. 手动补充核心规范
-5. 将 `.trellis/` 和 `.claude/` 加入 Git
-6. 提交并推送，团队成员 pull 后执行 `trellis init -u their-name`
-
-### Q9: Ralph Loop 验证失败怎么办？
-
-1. Check Agent 会自动尝试修复（最多 5 次循环）
-2. 如果 5 次后仍然失败，Ralph Loop 强制放行并打印警告
-3. 你可以手动检查并修复，然后重新运行 check
-4. 如果 verify 命令本身有问题，调整 `worktree.yaml` 的 `verify` 配置
-
-### Q10: 如何更新 Trellis 而不丢失自定义配置？
+### Q9: 更新 Trellis 时怎么不丢自定义内容？
 
 ```bash
-# 先预览更新内容
-trellis update --dry-run
-
-# 执行更新
-trellis update
-# Trellis 会自动检测你修改过的文件
-# 未修改的文件直接更新
-# 修改过的文件提示你选择：覆盖/跳过/合并
+trellis update --dry-run   # 预演
+trellis update             # 应用
 ```
 
-### Q11: 我用 Cursor，能享受和 Claude Code 一样的自动化吗？
+Trellis 在安装时对每个模板文件算 hash。update 时发现你改过的文件：未改的自动覆盖，改过的会询问（覆盖 / 跳过）。用 `-f` 全部强制覆盖、`-s` 全部跳过。
 
-不完全一样。Cursor 不支持 Hook 系统，因此：
-- **没有自动注入** — 需要手动运行 `/start` 加载上下文
-- **没有 Ralph Loop** — 需要手动运行 `/trellis-check-backend` 等检查命令
-- **没有 Multi-Agent Pipeline** — 不支持 `/parallel` 并行编排
-- **核心功能保留** — Spec 管理、Task 管理、跨会话记忆（通过 `/start`）、所有检查命令均可用
+大版本时加 `--migrate` 应用 migration manifest 里的 rename / delete。不加 `--migrate` 碰到破坏性 manifest 会打印说明并退出，不静默重命名。
 
-Cursor 用户通过手动调用命令可以达到 Claude Code 约 80% 的效果。详见 [13.2 Cursor 集成](#132-cursor-集成)。
+### Q10: Cursor 用户能拿到和 Claude Code 一样的自动化吗？
 
-### Q12: Windows 用户如何安装 Trellis？
+大部分能。Cursor 没有 SessionStart hook，但 `.cursor/rules/trellis.mdc` 是 `alwaysApply` 规则，把 Trellis prelude 带进每次对话。Cursor 没有 sub-agent，原本在 `trellis-implement` / `trellis-check` 里跑的工作会在主会话里内联。Skill 以 rules 内容形式交付，由 Cursor 的规则系统匹配。
 
-Trellis 脚本已全部迁移为 Python，原生支持 Windows：
+### Q11: Windows 用户怎么装 Trellis？
+
+所有脚本都是 Python，跨平台：
 
 ```bash
-# 1. 确保已安装 Node.js 和 Python 3.8+
-
-# 2. 安装 Trellis
-npm install -g @mindfoldhq/trellis@latest
-
-# 3. 正常初始化
+# 1. 装 Node.js 18+ 和 Python 3.10+
+# 2. 装 Trellis
+npm install -g @mindfoldhq/trellis@beta
+# 3. 初始化
 cd your-project
 trellis init -u your-name
 ```
 
-### Q13: 从 Cursor 切换到 Claude Code 需要重新配置吗？
+Windows 上的 Claude Code 需要在 `.claude/settings.json` 里写 `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1`，让 hook 脚本正确解析路径。`trellis init` 自动写好这项。
 
-不需要。`trellis init` 在初始化时同时生成 `.claude/` 和 `.cursor/` 配置。
-如果项目中已有 `.cursor/commands/` 但没有 `.claude/`，只需重新运行：
+### Q12: 切换 AI 编码工具时要重配吗？
+
+不用。`trellis init` 带多个平台 flag 能一次写多份。已经用了 Cursor 后来想加 Claude Code：
 
 ```bash
-trellis init -u your-name
+trellis init -u your-name --claude
 ```
 
-Trellis 会自动检测环境并补全缺失的配置。你的 `.trellis/` 目录（Spec、Workspace、Tasks）完全共享，无需重新创建。
+`.trellis/` 跨工具共享，只是多写一个 `.{platform}/` 目录。
 
-### Q14: Kilo Code 和 Claude Code 的多 Agent 有什么区别？
+### Q13: command / skill / sub-agent 有什么区别？
 
-两者都支持多 Agent 并行，但机制不同：
+| 原语       | 触发者                | 典型用途                                           |
+| ---------- | --------------------- | -------------------------------------------------- |
+| Command    | 用户（`/trellis:*`）  | 会话边界（start、finish-work、continue）           |
+| Skill      | 平台自动匹配          | 阶段工作流（brainstorm、before-dev、check、update-spec、break-loop） |
+| Sub-agent  | 主会话 spawn          | 隔离角色（implement、check、research）             |
 
-| 维度 | Claude Code（Trellis） | Kilo Code |
-|------|----------------------|-----------|
-| **隔离方式** | git worktree 物理隔离 | 独立对话上下文（Orchestrator Mode） |
-| **编排方式** | Hook 驱动（dispatch → implement → check） | 模式切换（Code / Architect / Debug 等） |
-| **并行数量** | 取决于 worktree 数量 | 取决于模式和上下文 |
-| **代码合并** | 各 worktree 独立 PR → 合并 | 同一工作区内 |
-| **配置** | `worktree.yaml` + Hook 脚本 | 内置，无需额外配置 |
+选型指南见第 12 章。
 
-### Q15: Kiro 的 Spec 模式和 Trellis 的任务管理怎么配合？
+### Q14: `.agents/skills/` 共享目录还有吗？
 
-Kiro 的 Spec-Driven Development 和 Trellis 的任务系统可以互补：
+0.5 已经没有。早期版本把部分 skill 写到 `.agents/skills/`，供 Codex / Kimi CLI / Amp / Cline 共享读取。0.5.0-beta.0 起，skill 按平台写在各自的 `.{platform}/skills/`。需要跨平台可移植 skill 时，把 `SKILL.md` 拷到每个平台的目录。
 
-1. **用 Trellis 创建任务**：`task.py create "新功能"` 生成 `prd.md`
-2. **用 Kiro Spec 细化**：在 Kiro 中选择 Spec 模式，基于 `prd.md` 自动生成 `requirements.md` → `design.md` → `tasks.md`
-3. **Kiro 按 tasks.md 实现**：Agent Hooks 在文件修改时自动触发检查
-4. **用 Trellis 记录**：`/record-session` 记录会话，`task.py finish` 归档任务
+### Q15: 0.4 → 0.5 改了什么？
 
-Kiro 的 `.kiro/specs/` 和 Trellis 的 `.trellis/tasks/` 各管各的，互不冲突。
+主要变化：
 
-### Q16: Kilo Code 的 Skills 和 Trellis 的 Skills 是同一个东西吗？
+- Skill-first：`brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` 从 slash 命令改为 auto-trigger skill。
+- 3 个 sub-agent 取代 6 个：`trellis-research` / `trellis-implement` / `trellis-check`；`dispatch` / `plan` / `debug` 移除。
+- Ralph Loop（那个强制 check agent 重试的外部 SubagentStop hook）移除，check sub-agent 自带循环。
+- Multi-Agent Pipeline、`/parallel`、`worktree.yaml` 移除。
+- 支持平台扩到 10+（新增 Gemini CLI、Qoder、CodeBuddy、Droid、Copilot、Antigravity、Windsurf）。
 
-是的，它们遵循相同的 **Agent Skills 开放标准**。一个 SKILL.md 文件可以同时在 Kilo Code、Cursor、Claude Code 等支持该标准的平台上使用。
-
-Kilo 的 Skills 存放在 `.kilocode/skills/*/SKILL.md`，Claude Code 的在 `.claude/skills/` 或 `.agents/skills/`。格式兼容，可以互相复制使用。
-
-### Q17: OpenCode 和 Codex 的 Trellis 配置兼容吗？
-
-部分兼容。两者共用 `.agents/skills/` 目录。Codex 依赖 `AGENTS.md` 作为入口文件；OpenCode 则支持 session hook 自动注入上下文，命令使用 `/` 前缀（如 `/start`），体验更接近 Claude Code。
+完整清单见 `v0.5.0-beta.0` changelog 的迁移说明。
 
 ---
