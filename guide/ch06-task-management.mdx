@@ -72,6 +72,36 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 ./.trellis/scripts/task.py set-scope "$TASK_DIR" "auth"
 ```
 
+#### Parent-child (subtasks)
+
+A task can have children. Children are independent task directories on disk — they have their own `prd.md`, JSONL files, and status. The parent just references them for grouping.
+
+```bash
+# Option A: create a child directly under a parent
+./.trellis/scripts/task.py create "JWT middleware" \
+  --slug jwt-middleware \
+  --parent 02-27-user-login
+
+# Option B: link two existing tasks
+./.trellis/scripts/task.py add-subtask \
+  02-27-user-login \                # parent directory
+  02-28-jwt-middleware              # child directory
+
+# Unlink (does not delete either task)
+./.trellis/scripts/task.py remove-subtask \
+  02-27-user-login 02-28-jwt-middleware
+```
+
+Effects on `task.json`:
+
+- Parent's `children: [<child-dir-name>, ...]` gets the child appended.
+- Child's `parent: "<parent-dir-name>"` gets set.
+- `task.py list` renders children indented under their parent and shows `[done/total done]` so you can see progress at a glance.
+
+<Note>
+  Parent-child links use the `parent` and `children` fields. The `subtasks` field that also appears in `task.json` is unrelated — it's a **checklist of to-do items within a single task** (name + status pairs), populated mainly by the bootstrap task. Don't confuse the two.
+</Note>
+
 #### Task Management
 
 ```bash
@@ -94,37 +124,47 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 
 ### 6.3 task.json Schema
 
+The exact shape `task.py create` writes today (see `.trellis/scripts/common/task_store.py`):
+
 ```json
 {
   "id": "02-27-user-login",
   "name": "user-login",
   "title": "Add user login",
   "description": "Implement JWT login flow",
-  "status": "in_progress",
-  "dev_type": "backend",
-  "scope": "auth",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
   "priority": "P1",
   "creator": "alice",
   "assignee": "alice",
-  "createdAt": "2026-02-27T10:00:00Z",
+  "createdAt": "2026-02-27",
   "completedAt": null,
-  "branch": "feature/user-login",
+  "branch": null,
   "base_branch": "main",
   "worktree_path": null,
-  "current_phase": 1,
-  "next_action": [
-    { "phase": 1, "action": "implement" },
-    { "phase": 2, "action": "check" },
-    { "phase": 3, "action": "finish" },
-    { "phase": 4, "action": "create-pr" }
-  ],
   "commit": null,
   "pr_url": null,
+  "parent": null,
+  "children": [],
   "subtasks": [],
   "relatedFiles": [],
-  "notes": ""
+  "notes": "",
+  "meta": {}
 }
 ```
+
+Fields get populated over time:
+
+- `dev_type` / `scope` / `package` → set via `task.py set-*` or `init-context`
+- `branch` → set via `task.py set-branch`
+- `status` → transitions `planning → in_progress → completed` (also `rejected` from the brainstorm skill)
+- `completedAt` / `commit` → set when the task is archived
+- `pr_url` → set when a PR is opened against the task's branch
+- `parent` / `children` → set via `task.py create --parent` / `add-subtask`
+
+Older tasks created before a field existed may be missing some keys (e.g. tasks created pre-`package` support won't have `"package"`); `task.py` treats missing fields as null, so nothing breaks. Fields like `current_phase` and `next_action` from earlier Multi-Agent Pipeline versions are still read if present, but `task.py create` no longer writes them.
 
 **Status transitions**:
 
