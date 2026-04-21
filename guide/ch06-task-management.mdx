@@ -161,9 +161,12 @@ Fields get populated over time:
 - `dev_type` / `scope` / `package` → set via `task.py set-*` or `init-context`
 - `branch` → set via `task.py set-branch`
 - `status` → transitions `planning → in_progress → completed`
-- `completedAt` / `commit` → set when the task is archived
-- `pr_url` → set when a PR is opened against the task's branch
+- `completedAt` → set by `task.py archive` (archive does NOT write the commit hash back)
 - `parent` / `children` → set via `task.py create --parent` / `add-subtask`
+
+<Note>
+  `worktree_path` / `commit` / `pr_url` are schema placeholders only; no 0.5 script populates them. Store commit hashes or PR URLs under `meta: {}`, or write them back from an `after_archive` hook.
+</Note>
 
 Older tasks created before a field existed may be missing some keys (e.g. tasks created pre-`package` support won't have `"package"`); `task.py` treats missing fields as null, so nothing breaks. Legacy `current_phase` / `next_action` from earlier Multi-Agent Pipeline versions are still read if present on old tasks, but `task.py create` no longer writes them.
 

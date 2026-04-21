@@ -161,9 +161,12 @@ TASK_DIR=$(./.trellis/scripts/task.py create "新增用户登录" \
 - `dev_type` / `scope` / `package` → `task.py set-*` 或 `init-context` 设置
 - `branch` → `task.py set-branch` 设置
 - `status` → `planning → in_progress → completed`
-- `completedAt` / `commit` → 任务归档时填上
-- `pr_url` → 对任务分支开 PR 时填上
+- `completedAt` → `task.py archive` 填上（archive 不回写 commit hash）
 - `parent` / `children` → `task.py create --parent` 或 `add-subtask` 设置
+
+<Note>
+  `worktree_path` / `commit` / `pr_url` 是 schema 占位字段，0.5 没有脚本主动写入。想记 commit 或 PR URL，建议用 `meta: {}` 自定义键或写 `after_archive` hook 自己回写。
+</Note>
 
 早期版本创建的任务可能少某些字段（如 `package` 支持前的任务没有 `"package"`），`task.py` 把缺失字段按 null 处理，不会出错。Multi-Agent Pipeline 时代的 `current_phase` / `next_action` 字段老任务上还在读，但 `task.py create` 不再主动写。
 
