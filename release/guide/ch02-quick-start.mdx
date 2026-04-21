@@ -47,7 +47,7 @@ Choose the init command based on your platform:
     `trellis init --kiro -u your-name` — writes skill-based commands under `.kiro/skills/`.
   </Tab>
   <Tab title="Qoder">
-    `trellis init --qoder -u your-name` — writes `.qoder/skills/trellis-{name}/SKILL.md` (auto-trigger skills) + `.qoder/rules/trellis.md`.
+    `trellis init --qoder -u your-name` — writes `.qoder/skills/{name}/SKILL.md` (all 12 Trellis commands as auto-trigger skills; no `.qoder/commands/` so Qoder's Custom Commands space stays free for your own use).
   </Tab>
   <Tab title="GitHub Copilot">
     `trellis init --copilot -u your-name` — writes `.github/copilot-instructions.md` + `.github/prompts/trellis-{name}.prompt.md`.
@@ -78,7 +78,7 @@ You can pass multiple platform flags in one command: `trellis init --codex --gem
 | **Gemini CLI**      | `.gemini/commands/trellis/*.toml`                                         | `/trellis:start` |
 | **Kilo**            | `.kilocode/workflows/`                                                    | `/start.md`      |
 | **Kiro**            | `.kiro/skills/*/SKILL.md`                                                 | `@start`         |
-| **Qoder**           | `.qoder/skills/`, `.qoder/rules/`                                         | skill auto-match |
+| **Qoder**           | `.qoder/skills/`                                                          | skill auto-match |
 | **GitHub Copilot**  | `.github/copilot-instructions.md`, `.github/prompts/`                     | Run Prompt       |
 | **Windsurf**        | `.windsurf/workflows/`, `.windsurf/rules/`                                | workflow picker  |
 | **Factory Droid**   | `.factory/commands/trellis/`, `.factory/agents/`, `.factory/hooks/`       | `/trellis:start` |
@@ -415,8 +415,7 @@ your-project/
 │   └── commands/trellis/              #   TOML commands
 │
 ├── .qoder/                            # Qoder configuration
-│   ├── skills/                        #   Auto-trigger skills
-│   └── rules/                         #   Always-on prelude
+│   └── skills/                        #   12 auto-trigger skills
 │
 ├── .github/                           # GitHub Copilot configuration
 │   ├── copilot-instructions.md        #   Always-loaded prelude

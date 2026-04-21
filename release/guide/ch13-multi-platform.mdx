@@ -261,7 +261,7 @@ Gemini CLI does not expose SessionStart hooks, so the prelude is loaded by expli
 
 ### 13.9 Qoder Integration
 
-[Qoder](https://qoder.com) does support Custom Commands (typed with `/` in the agent input, stored under `~/.qoder/commands/` or `<project>/.qoder/commands/`), but Trellis's design choice is to deliver its workflow as **auto-trigger skills** so users don't have to memorize command names on this platform. Trellis doesn't write to `.qoder/commands/` — that space stays free for your own custom commands.
+[Qoder](https://qoder.com) does support Custom Commands (typed with `/` in the agent input, stored under `~/.qoder/commands/` or `<project>/.qoder/commands/`), but Trellis's design choice on Qoder is to deliver its workflow as **auto-trigger skills** only. Trellis doesn't write to `.qoder/commands/` — that space stays free for your own custom commands.
 
 ```bash
 trellis init --qoder -u your-name
@@ -269,10 +269,9 @@ trellis init --qoder -u your-name
 
 Generates:
 
-- `.qoder/skills/trellis-{name}/SKILL.md` — every Trellis workflow rendered as a skill with YAML frontmatter (the platform auto-matches based on user intent)
-- `.qoder/rules/trellis.md` — always-on rule carrying the Trellis prelude into every conversation
+- `.qoder/skills/{name}/SKILL.md` — the full 0.4 command set rendered as skills (`start`, `brainstorm`, `before-dev`, `check`, `check-cross-layer`, `finish-work`, `break-loop`, `create-command`, `integrate-skill`, `onboard`, `record-session`, `update-spec`). The platform auto-matches based on user intent.
 
-Qoder has no hook system at Trellis level, so `.qoder/rules/` does the work of `SessionStart`.
+In 0.4.0 Qoder has no `SessionStart` hook path at Trellis level, so prelude context is loaded on demand when the user triggers the `start` skill (Qoder's skill picker is the only user-facing entry point).
 
 ### 13.10 GitHub Copilot Integration
 

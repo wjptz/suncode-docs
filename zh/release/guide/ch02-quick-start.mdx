@@ -44,7 +44,7 @@ cd your-project
     `trellis init --kiro -u your-name` —— 写入 skill 形态的命令到 `.kiro/skills/`。
   </Tab>
   <Tab title="Qoder">
-    `trellis init --qoder -u your-name` —— 写入 `.qoder/skills/trellis-{name}/SKILL.md`（auto-trigger skill）+ `.qoder/rules/trellis.md`。
+    `trellis init --qoder -u your-name` —— 写入 `.qoder/skills/{name}/SKILL.md`（12 个 Trellis 命令全部以 auto-trigger skill 交付；不写 `.qoder/commands/`，把 Qoder 原生 Custom Commands 空间留给你自己用）。
   </Tab>
   <Tab title="GitHub Copilot">
     `trellis init --copilot -u your-name` —— 写入 `.github/copilot-instructions.md` + `.github/prompts/trellis-{name}.prompt.md`。
@@ -75,7 +75,7 @@ cd your-project
 | **Gemini CLI**      | `.gemini/commands/trellis/*.toml`                                         | `/trellis:start` |
 | **Kilo**            | `.kilocode/workflows/`                                                    | `/start.md`      |
 | **Kiro**            | `.kiro/skills/*/SKILL.md`                                                 | `@start`         |
-| **Qoder**           | `.qoder/skills/`、`.qoder/rules/`                                         | skill 自动匹配   |
+| **Qoder**           | `.qoder/skills/`                                                          | skill 自动匹配   |
 | **GitHub Copilot**  | `.github/copilot-instructions.md`、`.github/prompts/`                     | Run Prompt       |
 | **Windsurf**        | `.windsurf/workflows/`、`.windsurf/rules/`                                | workflow 选择器  |
 | **Factory Droid**   | `.factory/commands/trellis/`、`.factory/agents/`、`.factory/hooks/`       | `/trellis:start` |
@@ -412,8 +412,7 @@ your-project/
 │   └── commands/trellis/              #   TOML 命令
 │
 ├── .qoder/                            # Qoder 配置
-│   ├── skills/                        #   Auto-trigger skill
-│   └── rules/                         #   常驻 prelude
+│   └── skills/                        #   12 个 auto-trigger skill
 │
 ├── .github/                           # GitHub Copilot 配置
 │   ├── copilot-instructions.md        #   自动加载的 prelude

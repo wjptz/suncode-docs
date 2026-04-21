@@ -261,7 +261,7 @@ Gemini CLI 不提供 SessionStart hook，因此 prelude 需要显式跑 `/trelli
 
 ### 13.9 Qoder 集成
 
-[Qoder](https://qoder.com) 本身支持 Custom Commands（在 Agent 输入框里输入 `/` 调用，存放在 `~/.qoder/commands/` 或 `<项目>/.qoder/commands/`）。但 Trellis 在 Qoder 上的设计选择是**把工作流以 auto-trigger skill 的形式交付**，让用户不用记命令名。Trellis 不往 `.qoder/commands/` 写东西——那个空间留给你自己的 Custom Commands。
+[Qoder](https://qoder.com) 本身支持 Custom Commands（在 Agent 输入框里输入 `/` 调用，存放在 `~/.qoder/commands/` 或 `<项目>/.qoder/commands/`）。但 Trellis 在 Qoder 上的设计选择是**只以 auto-trigger skill 的形式交付工作流**。Trellis 不往 `.qoder/commands/` 写东西——那个空间留给你自己的 Custom Commands。
 
 ```bash
 trellis init --qoder -u your-name
@@ -269,10 +269,9 @@ trellis init --qoder -u your-name
 
 生成：
 
-- `.qoder/skills/trellis-{name}/SKILL.md` — 每个 Trellis 工作流渲染成带 YAML frontmatter 的 skill（平台根据用户意图自动匹配）
-- `.qoder/rules/trellis.md` — 常驻规则，把 Trellis prelude 带进每一次对话
+- `.qoder/skills/{name}/SKILL.md` — 0.4 全套命令都渲染成 skill（`start`、`brainstorm`、`before-dev`、`check`、`check-cross-layer`、`finish-work`、`break-loop`、`create-command`、`integrate-skill`、`onboard`、`record-session`、`update-spec`）。平台根据用户意图自动匹配。
 
-Qoder 没有 Trellis 层的 hook 系统，`.qoder/rules/` 承担了 `SessionStart` 的职能。
+0.4.0 里 Qoder 在 Trellis 层面没有 `SessionStart` hook 通道，prelude 上下文靠用户触发 `start` skill 按需加载（Qoder 的 skill 选择器是唯一的用户入口）。
 
 ### 13.10 GitHub Copilot 集成
 
