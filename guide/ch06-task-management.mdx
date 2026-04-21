@@ -76,6 +76,36 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 ./.trellis/scripts/task.py set-scope "$TASK_DIR" "auth"
 ```
 
+#### Parent-child (subtasks)
+
+A task can have children. Children are independent task directories on disk — they have their own `prd.md`, JSONL files, and status. The parent just references them for grouping.
+
+```bash
+# Option A: create a child directly under a parent
+./.trellis/scripts/task.py create "JWT middleware" \
+  --slug jwt-middleware \
+  --parent 02-27-user-login
+
+# Option B: link two existing tasks
+./.trellis/scripts/task.py add-subtask \
+  02-27-user-login \                # parent directory
+  02-28-jwt-middleware              # child directory
+
+# Unlink (does not delete either task)
+./.trellis/scripts/task.py remove-subtask \
+  02-27-user-login 02-28-jwt-middleware
+```
+
+Effects on `task.json`:
+
+- Parent's `children: [<child-dir-name>, ...]` gets the child appended.
+- Child's `parent: "<parent-dir-name>"` gets set.
+- `task.py list` renders children indented under their parent and shows `[done/total done]` so you can see progress at a glance.
+
+<Note>
+  Parent-child links use the `parent` and `children` fields. The `subtasks` field that also appears in `task.json` is unrelated — it's a **checklist of to-do items within a single task** (name + status pairs), populated mainly by the bootstrap task. Don't confuse the two.
+</Note>
+
 #### Task Management
 
 ```bash
@@ -113,6 +143,8 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
   "base_branch": "main",
   "commit": null,
   "pr_url": null,
+  "parent": null,
+  "children": [],
   "subtasks": [],
   "relatedFiles": [],
   "notes": "",

@@ -76,6 +76,36 @@ TASK_DIR=$(./.trellis/scripts/task.py create "新增用户登录" \
 ./.trellis/scripts/task.py set-scope "$TASK_DIR" "auth"
 ```
 
+#### 父子任务（subtasks）
+
+一个任务可以有子任务。子任务是磁盘上独立的任务目录——有自己的 `prd.md`、JSONL 文件、status；父任务只是引用它们做分组。
+
+```bash
+# 方式 A：在父任务下直接建子任务
+./.trellis/scripts/task.py create "JWT middleware" \
+  --slug jwt-middleware \
+  --parent 02-27-user-login
+
+# 方式 B：把两个已有任务链起来
+./.trellis/scripts/task.py add-subtask \
+  02-27-user-login \                # 父任务目录
+  02-28-jwt-middleware              # 子任务目录
+
+# 解除关联（不会删除任何任务）
+./.trellis/scripts/task.py remove-subtask \
+  02-27-user-login 02-28-jwt-middleware
+```
+
+对 `task.json` 的影响：
+
+- 父任务的 `children: [<子任务目录名>, ...]` 追加子任务名。
+- 子任务的 `parent: "<父任务目录名>"` 被设置。
+- `task.py list` 把子任务缩进显示在父任务下面，同时打 `[已完成/总数]`，方便一眼看进度。
+
+<Note>
+  父子关系走 `parent` 和 `children` 字段。`task.json` 里还有一个 `subtasks` 字段，和它们完全无关——`subtasks` 是**单个任务内部的 todo checklist**（name + status 对），主要由 bootstrap 任务使用。别混。
+</Note>
+
 #### 任务管理
 
 ```bash
@@ -113,6 +143,8 @@ TASK_DIR=$(./.trellis/scripts/task.py create "新增用户登录" \
   "base_branch": "main",
   "commit": null,
   "pr_url": null,
+  "parent": null,
+  "children": [],
   "subtasks": [],
   "relatedFiles": [],
   "notes": "",

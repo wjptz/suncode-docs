@@ -10,7 +10,7 @@ title: 'Appendix C: task.json Schema Reference'
   "name": "string",         // Slug name
   "title": "string",        // Task title
   "description": "string",  // Description
-  "status": "string",       // planning | in_progress | review | completed | rejected
+  "status": "string",       // planning | in_progress | completed (default set) | rejected; extend via workflow.md
   "dev_type": "string",     // backend | frontend | fullstack | test | docs
   "scope": "string",        // Commit scope, e.g. "auth"
   "priority": "string",     // P0 | P1 | P2 | P3 (default P2)
@@ -22,21 +22,21 @@ title: 'Appendix C: task.json Schema Reference'
   "base_branch": "string",  // PR target branch
   "commit": "string",       // Commit hash
   "pr_url": "string",       // PR URL
-  "subtasks": [],           // Subtask list
+  "parent": "string",       // Parent task directory name (null if top-level)
+  "children": [],           // Child task directory names (subtask links)
+  "subtasks": [],           // Intra-task todo checklist (name + status pairs) — unrelated to children
   "relatedFiles": [],       // Related files list
   "notes": "string",        // Notes
   "meta": {}                // Arbitrary per-project metadata (e.g. Linear issue id)
 }
 ```
 
-### Removed fields (0.5.0-beta.0)
+### Parent-child vs `subtasks` — know the difference
 
-| Field             | Reason                                                                |
-| ----------------- | --------------------------------------------------------------------- |
-| `worktree_path`   | Multi-Agent Pipeline removed                                          |
-| `current_phase`   | Phase flow driven by sub-agents + skills, no external counter needed  |
-| `next_action`     | Same as above                                                         |
-
-Existing tasks that still contain these fields are left intact by `task.py`; they are simply ignored.
+| Field       | Purpose                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------- |
+| `parent`    | Directory name of the parent task, or `null` if top-level. Set by `task.py create --parent` or `add-subtask`. |
+| `children`  | Array of child task directory names. Maintained bidirectionally with the child's `parent`.              |
+| `subtasks`  | A **within-task** todo checklist of `{name, status}` items. Used by bootstrap; unrelated to child tasks.|
 
 ---
