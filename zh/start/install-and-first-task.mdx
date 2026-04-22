@@ -58,6 +58,24 @@ trellis init -u your-name --codex --gemini
 
 `.agents/skills/` 是一份跨平台共享层（[agentskills.io](https://agentskills.io) 规范），`trellis init` 会把所有 skill 都写一份到这里，供 Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等遵循 `.agents/skills/` 规范的 agent 直接读取。
 
+### init 场景对照
+
+`trellis init` 根据 `.trellis/` 与 `.trellis/.developer` 的存在状态自动分派。按你的情境挑对应的命令：
+
+| 场景 | 命令 | 产物 |
+|---|---|---|
+| **首次 init 项目** | `trellis init -u your-name --claude` | 创建 `.trellis/` 骨架 + bootstrap task `00-bootstrap-guidelines`，引导填项目 spec |
+| **往已有项目加新平台** | `trellis init --cursor`（或不带参数走交互式，会列出未配置平台） | 在现有 `.trellis/` 上铺新平台配置目录；不产生 task |
+| **新开发者加入已有项目** | `trellis init -u their-name` | 生成 joiner 引导 task `00-join-<slug>`，自动设为 current-task，引导读 workflow + spec |
+| **同一开发者换机器** | 同上 | 同样生成一份 joiner task（因为 `.developer` 不进 git），嫌多可直接 `task.py archive` |
+| **同一人同机器 re-init** | `trellis init -u your-name` | no-op —— `.trellis/` 与 `.developer` 都在，啥都不做 |
+
+`--force` / `--skip-existing` 只影响 **有冲突的文件**怎么处理（强制覆盖 / 跳过），不改变 init 的分派逻辑本身。
+
+<Note>
+  **判据信号**：`.trellis/.developer` 是 gitignored 的 per-checkout 身份文件（天然不进 git），所以新克隆的 checkout 永远没有它 —— 这是判断"新开发者"的干净信号。`.trellis/workspace/<name>/` 进 git，不能作为判据。
+</Note>
+
 ### 基本流程
 
 描述你要做什么即可，AI 会按 `workflow.md` 走 Plan → Execute → Finish。如果你觉得当前流程走完了，就运行 `/trellis:continue`。

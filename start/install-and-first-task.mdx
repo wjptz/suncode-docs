@@ -58,6 +58,24 @@ Beyond these 13 configured platforms, any AI coding agent that reads the `.agent
 
 `.agents/skills/` is a shared cross-platform layer ([agentskills.io](https://agentskills.io) standard). `trellis init` writes all skills into it too, so any agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, etc.) can consume them.
 
+### init Scenarios
+
+`trellis init` dispatches on the presence of `.trellis/` and `.trellis/.developer`. Match your situation to the command:
+
+| Scenario | Command | Result |
+|---|---|---|
+| **First-time project init** | `trellis init -u your-name --claude` | Creates `.trellis/` + bootstrap task `00-bootstrap-guidelines` that walks you through filling project spec |
+| **Add a new platform to an existing project** | `trellis init --cursor` (or no-arg interactive — it lists unconfigured platforms) | Writes the new platform's config dir on top of the existing `.trellis/`; no task generated |
+| **New developer joining an existing project** | `trellis init -u their-name` | Generates the joiner onboarding task `00-join-<slug>`, auto-sets it as current-task, guides reading workflow + spec |
+| **Same developer on a new machine** | Same as above | Also generates a joiner task (because `.developer` isn't committed). Archive it if you don't need the refresher. |
+| **Same dev, same machine, re-run init** | `trellis init -u your-name` | No-op — both `.trellis/` and `.developer` already exist |
+
+`--force` / `--skip-existing` only affect **how file conflicts are resolved** (overwrite vs skip); they don't change the dispatch logic itself.
+
+<Note>
+  **Dispatch signal**: `.trellis/.developer` is a gitignored per-checkout identity file (by design, never committed), so a fresh clone never has one — this is the clean signal for "new developer on this checkout". `.trellis/workspace/<name>/` is committed and cannot serve this role.
+</Note>
+
 ### Basic Flow
 
 Describe what you want to do; AI follows `workflow.md` through Plan → Execute → Finish. If the current flow looks done, run `/trellis:continue`.
