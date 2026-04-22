@@ -18,7 +18,7 @@ cd your-project
   **Requirements**: Mac, Linux, and Windows are fully supported. Requires Node.js 18+ and Python 3.10+.
 </Note>
 
-`trellis init` auto-detects installed platforms. You can also specify them explicitly via flags. Pick any combination:
+`trellis init` auto-detects installed platforms. You can also specify them explicitly via flags. Each platform needs to be init'd at least once. Pick any combination:
 
 ```bash
 # Interactive: detects installed platforms and asks which to configure
@@ -58,117 +58,23 @@ Beyond these 13 configured platforms, any AI coding agent that reads the `.agent
 
 `.agents/skills/` is a shared cross-platform layer ([agentskills.io](https://agentskills.io) standard). `trellis init` writes all skills into it too, so any agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, etc.) can consume them.
 
-### Getting Started
+### Basic Flow
 
-Minimal happy path — the AI handles the rest:
+Describe what you want to do; AI follows `workflow.md` through Plan → Execute → Finish. If the current flow looks done, run `/trellis:continue`.
 
 ```text
 # 1. Describe what you want
 "Add user login feature"
 
 # 2. AI runs Plan → Execute → Finish per workflow.md
-#    (see Chapter 3 for the full walkthrough)
 
 # 3. You test + commit, then
 /trellis:finish-work
 ```
 
-Two escape hatches:
-
-- `/trellis:start` — run it when your platform has no SessionStart hook (Kilo / Antigravity / Windsurf), or when you want AI to re-read `workflow.md` and report a fresh context.
-- `/trellis:continue` — run it any time AI stalls or looks like it's skipping a step. AI reads `.current-task` + status, consults `workflow.md`, and picks up the next action.
-
-Chapter 3 walks through the full Plan / Execute / Finish phases with every sub-step.
-
-### Remote Spec Templates
-
-Instead of writing specs from scratch, pull pre-built spec templates during init.
-
-#### Official Marketplace
-
-```bash
-# Interactive: browse and pick from available templates
-trellis init -u your-name
-
-# Non-interactive: specify a template by ID
-trellis init -u your-name --template electron-fullstack
-```
-
-The interactive picker shows all templates from the [official marketplace](https://github.com/mindfold-ai/Trellis/tree/main/marketplace). Choose one or start with blank specs.
-
-#### Custom Registry (`--registry`)
-
-Pull specs from your own GitHub, GitLab, or Bitbucket repository:
-
-```bash
-# Direct download: repo directory becomes .trellis/spec/
-trellis init --registry gh:myorg/myrepo/my-team-spec
-
-# Marketplace mode: repo has index.json with multiple templates
-trellis init --registry gh:myorg/myrepo/marketplace
-
-# Pick a specific template from a custom marketplace
-trellis init --registry gh:myorg/myrepo/marketplace --template my-template
-
-# Specify a branch
-trellis init --registry gh:myorg/myrepo/specs#develop
-
-# GitLab or Bitbucket
-trellis init --registry gitlab:myorg/myrepo/specs
-trellis init --registry bitbucket:myorg/myrepo/specs
-```
-
-**Source format**: `provider:user/repo[/subdir][#ref]`
-
-| Provider  | Prefix             |
-| --------- | ------------------ |
-| GitHub    | `gh:` or `github:` |
-| GitLab    | `gitlab:`          |
-| Bitbucket | `bitbucket:`       |
-
-The ref (branch/tag) defaults to `main` if omitted.
-
-#### Handling Existing Specs
-
-When `.trellis/spec/` already exists, use a strategy flag:
-
-| Flag          | Behavior                                      |
-| ------------- | --------------------------------------------- |
-| `--overwrite` | Delete existing spec directory, then download |
-| `--append`    | Only copy files that don't already exist      |
-| _(neither)_   | Interactive prompt asks what to do            |
-
-#### Building a Custom Marketplace
-
-Create an `index.json` in your repository:
-
-```json
-{
-  "version": 1,
-  "templates": [
-    {
-      "id": "my-backend-spec",
-      "type": "spec",
-      "name": "My Backend Spec",
-      "description": "Backend conventions for our team",
-      "path": "marketplace/specs/my-backend-spec",
-      "tags": ["backend", "node"]
-    }
-  ]
-}
-```
-
-The `path` field is relative to the repository root. Only `type: "spec"` is supported currently.
-
-#### Private Repositories
-
-For private repos, set the `GIGET_AUTH` environment variable with a personal access token:
-
-```bash
-GIGET_AUTH=ghp_xxxxx trellis init --registry gh:myorg/private-repo/specs
-```
-
-For GitHub fine-grained tokens, you need **Contents** and **Metadata** read permissions.
+<Note>
+If your platform has no SessionStart hook (e.g., Kilo, Antigravity, Windsurf), or you want AI to re-read `workflow.md`, run `/trellis:start` once.
+</Note>
 
 ### Directory Structure
 
@@ -252,7 +158,7 @@ your-project/
 ### Starting a Session
 
 <Tabs>
-  <Tab title="Claude Code / Cursor / OpenCode / Gemini / Qoder / CodeBuddy / Copilot / Droid">
+  <Tab title="General">
   Open the terminal. The SessionStart hook fires automatically, so Trellis context is already in the AI's context:
 
   - `workflow.md` TOC + Phase 1/2/3 step-level details
@@ -335,3 +241,95 @@ AI: "Hi Alice — last session you finished the user login feature (commit abc12
 ```
 
 Journals live under `.trellis/workspace/{name}/journal-N.md`; every `/trellis:finish-work` appends one. `.trellis/.current-task` points to the unfinished task, if any.
+
+---
+
+## Remote Spec Templates
+
+Instead of writing specs from scratch, pull pre-built spec templates during init.
+
+### Official Marketplace
+
+```bash
+# Interactive: browse and pick from available templates
+trellis init -u your-name
+
+# Non-interactive: specify a template by ID
+trellis init -u your-name --template electron-fullstack
+```
+
+The interactive picker shows all templates from the [official marketplace](https://github.com/mindfold-ai/Trellis/tree/main/marketplace). Choose one or start with blank specs.
+
+### Custom Registry (`--registry`)
+
+Pull specs from your own GitHub, GitLab, or Bitbucket repository:
+
+```bash
+# Direct download: repo directory becomes .trellis/spec/
+trellis init --registry gh:myorg/myrepo/my-team-spec
+
+# Marketplace mode: repo has index.json with multiple templates
+trellis init --registry gh:myorg/myrepo/marketplace
+
+# Pick a specific template from a custom marketplace
+trellis init --registry gh:myorg/myrepo/marketplace --template my-template
+
+# Specify a branch
+trellis init --registry gh:myorg/myrepo/specs#develop
+
+# GitLab or Bitbucket
+trellis init --registry gitlab:myorg/myrepo/specs
+trellis init --registry bitbucket:myorg/myrepo/specs
+```
+
+**Source format**: `provider:user/repo[/subdir][#ref]`
+
+| Provider  | Prefix             |
+| --------- | ------------------ |
+| GitHub    | `gh:` or `github:` |
+| GitLab    | `gitlab:`          |
+| Bitbucket | `bitbucket:`       |
+
+The ref (branch/tag) defaults to `main` if omitted.
+
+### Handling Existing Specs
+
+When `.trellis/spec/` already exists, use a strategy flag:
+
+| Flag          | Behavior                                      |
+| ------------- | --------------------------------------------- |
+| `--overwrite` | Delete existing spec directory, then download |
+| `--append`    | Only copy files that don't already exist      |
+| _(neither)_   | Interactive prompt asks what to do            |
+
+### Building a Custom Marketplace
+
+Create an `index.json` in your repository:
+
+```json
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "my-backend-spec",
+      "type": "spec",
+      "name": "My Backend Spec",
+      "description": "Backend conventions for our team",
+      "path": "marketplace/specs/my-backend-spec",
+      "tags": ["backend", "node"]
+    }
+  ]
+}
+```
+
+The `path` field is relative to the repository root. Only `type: "spec"` is supported currently.
+
+### Private Repositories
+
+For private repos, set the `GIGET_AUTH` environment variable with a personal access token:
+
+```bash
+GIGET_AUTH=ghp_xxxxx trellis init --registry gh:myorg/private-repo/specs
+```
+
+For GitHub fine-grained tokens, you need **Contents** and **Metadata** read permissions.

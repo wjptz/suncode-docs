@@ -91,7 +91,7 @@ trellis init -u your-name --claude
 | Skill      | 平台自动匹配          | 阶段工作流（brainstorm、before-dev、check、update-spec、break-loop） |
 | Sub-agent  | 主会话 spawn          | 隔离角色（implement、check、research）             |
 
-选型指南见第 9–12 章。
+选型指南见 Advanced 下的定制章节（自定义命令 / Agent / Hook / Skill）。
 
 ### Q13: `.agents/skills/` 共享目录还有吗？
 
@@ -102,7 +102,7 @@ trellis init -u your-name --claude
 主要变化：
 
 - **Skill-first**：`brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` 从 slash 命令改为 auto-trigger skill，由平台根据用户意图自动匹配。
-- **`workflow.md` 是单一事实源**：Phase 定义、skill 路由、每轮 workflow-state 提醒都在 `.trellis/workflow.md` 里。Fork 工作流 = 改一个 markdown 文件，不用动 Python、不用改 hook（见第 8 章）。
+- **`workflow.md` 是单一事实源**：Phase 定义、skill 路由、每轮 workflow-state 提醒都在 `.trellis/workflow.md` 里。Fork 工作流 = 改一个 markdown 文件，不用动 Python、不用改 hook（见[自定义工作流](./custom-workflow)）。
 - **每轮 workflow-state 面包屑**：新增 `inject-workflow-state.py` hook，每条用户消息触发一次，按当前任务 status 注入 `<workflow-state>` 块，帮 AI 稳定走完 Plan → Execute → Finish 三阶段。
 - **3 个 sub-agent 取代 6 个**：`trellis-research` / `trellis-implement` / `trellis-check`；`dispatch` / `plan` / `debug` 移除；Ralph Loop 和它的 SubagentStop hook 也移除（check sub-agent 自带重试循环）。
 - **7 个平台升级为 agent-capable**：Cursor / OpenCode / Gemini CLI / Qoder / CodeBuddy / Copilot / Droid 都拿到了 sub-agent + hook；`.trellis/` 核心跨 13 个平台保持一致。

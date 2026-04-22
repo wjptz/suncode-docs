@@ -87,7 +87,7 @@ Configure Hooks in `.claude/settings.json`:
 
 **Trigger**: `PreToolUse`, matching `Task` tool calls
 
-**Functionality** (see section 4.3 for details):
+**Functionality**:
 - Intercepts Task tool calls
 - Reads the corresponding JSONL file based on subagent_type
 - Reads all files referenced in the JSONL
@@ -104,7 +104,7 @@ Configure Hooks in `.claude/settings.json`:
 
 **Trigger**: `SubagentStop`, matching `check` Agent
 
-**Functionality** (see section 4.4 for details):
+**Functionality**:
 - Checks verify commands or completion markers
 - Pass allows stop, failure blocks stop
 - Maximum 5 iterations

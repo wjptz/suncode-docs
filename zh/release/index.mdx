@@ -9,7 +9,7 @@ AI 的能力像藤蔓一样生长——充满活力但四处蔓延。Trellis 是
 
 ### 一句话定位
 
-**Trellis 是 AI 编码助手的脚手架** — 通过自动化机制注入项目规范，让 AI 每次都按你的标准写代码，而不是随机发挥。
+**Trellis 是 AI 编码助手的辅助轮** — 通过自动化机制注入项目规范，让 AI 每次都按你的标准写代码，而不是随机发挥。
 
 > AI's capabilities grow like vines — full of vitality but spreading everywhere.
 > Trellis is scaffolding for AI, guiding it along the path of your conventions.
@@ -37,11 +37,6 @@ AI 的能力像藤蔓一样生长——充满活力但四处蔓延。Trellis 是
 | **Agent（代理）** | 专门角色的 AI 子进程，如 Implement、Check、Debug 等 `[Claude Code 专属]` | `.claude/agents/` |
 | **Skill（技能）** | 可复用的 AI 能力模块，可跨项目共享 | `.claude/skills/` |
 | **Journal（日志）** | 会话记录文件，记录每次开发做了什么 | `.trellis/workspace/{name}/journal-N.md` |
-
-<Info>
-Hook 和 Agent 系统是 Claude Code 专属功能。Cursor、Codex 等平台通过 Slash 命令手动加载规范，
-实现相同的效果。Spec、Workspace、Task、Journal 等核心概念在所有平台上通用。
-</Info>
 
 ## 为什么用 Trellis？
 

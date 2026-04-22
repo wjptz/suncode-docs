@@ -126,6 +126,6 @@ pnpm test
 2. 在有 sub-agent `PreToolUse` hook 的平台（Claude Code、Cursor、OpenCode、CodeBuddy、Droid）上，编辑 `inject-subagent-context`，让它处理这个新 sub-agent 类型。
 3. 在没有该 hook 的平台（Codex、Kiro、Gemini、Qoder、Copilot）上，参照原生 sub-agent 的"pull-based prelude"模式：在 agent 文件头部加一段要求 sub-agent 动手前先 `Read` 自己的 JSONL。
 
-详细走查见第 11 章的 hook 部分。
+详细走查见[定制 Hooks](./custom-hooks)。
 
 ---

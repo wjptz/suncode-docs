@@ -4,7 +4,7 @@ title: '定制 Slash 命令'
 
 ## 定制 Slash 命令
 
-Trellis 0.5 只原生带三个 slash 命令（`/trellis:start`、`/trellis:finish-work`、`/trellis:continue`）；过去的其他命令已经迁成 auto-trigger skill（见第 12 章）。当你需要一个用户显式调用的入口时，才新增 slash 命令。
+Trellis 0.5 只原生带三个 slash 命令（`/trellis:start`、`/trellis:finish-work`、`/trellis:continue`）；过去的其他命令已经迁成 auto-trigger skill（见[定制 Skill](./custom-skills)）。当你需要一个用户显式调用的入口时，才新增 slash 命令。
 
 ### 命令文件格式和位置
 
@@ -112,6 +112,6 @@ cat .env.production
 输出部署就绪报告。
 ````
 
-要在其他平台发布同一命令，就在 §9.1 对应的位置放一份平行文件。如果想让 Trellis 把这个命令作为 update 流程的一部分分发，就把规范版本放在 `packages/cli/src/templates/common/commands/` 下，并在 `packages/cli/src/configurators/` 添加各平台适配。
+要在其他平台发布同一命令，就在上面对应的位置放一份平行文件。如果想让 Trellis 把这个命令作为 update 流程的一部分分发，就把规范版本放在 `packages/cli/src/templates/common/commands/` 下，并在 `packages/cli/src/configurators/` 添加各平台适配。
 
 ---

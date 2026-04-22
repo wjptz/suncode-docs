@@ -66,7 +66,7 @@ Choose the init command based on your platform:
   </Tab>
 </Tabs>
 
-You can pass multiple platform flags in one command: `trellis init --codex --gemini --copilot -u your-name`.
+You can pass multiple platform flags in one command: `trellis init --codex --gemini --copilot -u your-name`. Each platform needs to be init'd at least once.
 
 `your-name` becomes your developer identity and creates your personal workspace at `.trellis/workspace/your-name/`.
 
@@ -203,96 +203,6 @@ CC = Claude Code. Legend: ✅ full / ⚡ partial / ❌ not supported. "Partial" 
 <Note>
   Tabs above show the most-used platforms. The other 8 platforms (Gemini CLI, iFlow, Qoder, GitHub Copilot, Windsurf, CodeBuddy, Antigravity, Factory Droid) follow the same Claude-Code-style workflow once installed — see chapter 13 for per-platform details.
 </Note>
-
-### Remote Spec Templates
-
-Instead of writing specs from scratch, you can pull pre-built spec templates during init.
-
-#### Official Marketplace
-
-```bash
-# Interactive: browse and pick from available templates
-trellis init -u your-name
-
-# Non-interactive: specify a template by ID
-trellis init -u your-name --template electron-fullstack
-```
-
-The interactive picker shows all templates from the [official marketplace](https://github.com/mindfold-ai/Trellis/tree/main/marketplace). Choose one or start with blank specs.
-
-#### Custom Registry (`--registry`)
-
-Pull specs from your own GitHub, GitLab, or Bitbucket repository:
-
-```bash
-# Direct download: repo directory becomes .trellis/spec/
-trellis init --registry gh:myorg/myrepo/my-team-spec
-
-# Marketplace mode: repo has index.json with multiple templates
-trellis init --registry gh:myorg/myrepo/marketplace
-
-# Pick a specific template from a custom marketplace
-trellis init --registry gh:myorg/myrepo/marketplace --template my-template
-
-# Specify a branch
-trellis init --registry gh:myorg/myrepo/specs#develop
-
-# GitLab or Bitbucket
-trellis init --registry gitlab:myorg/myrepo/specs
-trellis init --registry bitbucket:myorg/myrepo/specs
-```
-
-**Source format**: `provider:user/repo[/subdir][#ref]`
-
-| Provider  | Prefix             |
-| --------- | ------------------ |
-| GitHub    | `gh:` or `github:` |
-| GitLab    | `gitlab:`          |
-| Bitbucket | `bitbucket:`       |
-
-The ref (branch/tag) defaults to `main` if omitted.
-
-#### Handling Existing Specs
-
-When `.trellis/spec/` already exists, use a strategy flag:
-
-| Flag          | Behavior                                      |
-| ------------- | --------------------------------------------- |
-| `--overwrite` | Delete existing spec directory, then download |
-| `--append`    | Only copy files that don't already exist      |
-| _(neither)_   | Interactive prompt asks what to do            |
-
-#### Building a Custom Marketplace
-
-Create an `index.json` in your repository:
-
-```json
-{
-  "version": 1,
-  "templates": [
-    {
-      "id": "my-backend-spec",
-      "type": "spec",
-      "name": "My Backend Spec",
-      "description": "Backend conventions for our team",
-      "path": "marketplace/specs/my-backend-spec",
-      "tags": ["backend", "node"]
-    }
-  ]
-}
-```
-
-The `path` field is relative to the repository root. Only `type: "spec"` is supported currently.
-
-#### Private Repositories
-
-For private repos, set the `GIGET_AUTH` environment variable with a personal access token:
-
-```bash
-GIGET_AUTH=ghp_xxxxx trellis init --registry gh:myorg/private-repo/specs
-```
-
-For GitHub fine-grained tokens, you need **Contents** and **Metadata** read permissions.
 
 ### Full Directory Structure
 
@@ -541,3 +451,95 @@ The AI reads your workspace journal through the `session-start.py` Hook, remembe
 **Platform differences**: Claude Code and OpenCode automatically read journals via Hooks for cross-session memory.
 Cursor and Codex users need to manually trigger context loading via `/start` (or `$start`) to get cross-session memory.
 </Info>
+
+---
+
+## Remote Spec Templates
+
+Instead of writing specs from scratch, you can pull pre-built spec templates during init.
+
+### Official Marketplace
+
+```bash
+# Interactive: browse and pick from available templates
+trellis init -u your-name
+
+# Non-interactive: specify a template by ID
+trellis init -u your-name --template electron-fullstack
+```
+
+The interactive picker shows all templates from the [official marketplace](https://github.com/mindfold-ai/Trellis/tree/main/marketplace). Choose one or start with blank specs.
+
+### Custom Registry (`--registry`)
+
+Pull specs from your own GitHub, GitLab, or Bitbucket repository:
+
+```bash
+# Direct download: repo directory becomes .trellis/spec/
+trellis init --registry gh:myorg/myrepo/my-team-spec
+
+# Marketplace mode: repo has index.json with multiple templates
+trellis init --registry gh:myorg/myrepo/marketplace
+
+# Pick a specific template from a custom marketplace
+trellis init --registry gh:myorg/myrepo/marketplace --template my-template
+
+# Specify a branch
+trellis init --registry gh:myorg/myrepo/specs#develop
+
+# GitLab or Bitbucket
+trellis init --registry gitlab:myorg/myrepo/specs
+trellis init --registry bitbucket:myorg/myrepo/specs
+```
+
+**Source format**: `provider:user/repo[/subdir][#ref]`
+
+| Provider  | Prefix             |
+| --------- | ------------------ |
+| GitHub    | `gh:` or `github:` |
+| GitLab    | `gitlab:`          |
+| Bitbucket | `bitbucket:`       |
+
+The ref (branch/tag) defaults to `main` if omitted.
+
+### Handling Existing Specs
+
+When `.trellis/spec/` already exists, use a strategy flag:
+
+| Flag          | Behavior                                      |
+| ------------- | --------------------------------------------- |
+| `--overwrite` | Delete existing spec directory, then download |
+| `--append`    | Only copy files that don't already exist      |
+| _(neither)_   | Interactive prompt asks what to do            |
+
+### Building a Custom Marketplace
+
+Create an `index.json` in your repository:
+
+```json
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "my-backend-spec",
+      "type": "spec",
+      "name": "My Backend Spec",
+      "description": "Backend conventions for our team",
+      "path": "marketplace/specs/my-backend-spec",
+      "tags": ["backend", "node"]
+    }
+  ]
+}
+```
+
+The `path` field is relative to the repository root. Only `type: "spec"` is supported currently.
+
+### Private Repositories
+
+For private repos, set the `GIGET_AUTH` environment variable with a personal access token:
+
+```bash
+GIGET_AUTH=ghp_xxxxx trellis init --registry gh:myorg/private-repo/specs
+```
+
+For GitHub fine-grained tokens, you need **Contents** and **Metadata** read permissions.
