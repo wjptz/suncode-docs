@@ -30,7 +30,6 @@
           {
             "version": "Beta",
             "default": true,
-            "tag": "Latest",
             "groups": [
               {
                 "group": "Start Here",
@@ -184,7 +183,6 @@
           },
           {
             "version": "Release",
-            "tag": "Stable",
             "groups": [
               {
                 "group": "Start Here",
@@ -304,7 +302,6 @@
           {
             "version": "Beta",
             "default": true,
-            "tag": "Latest",
             "groups": [
               {
                 "group": "开始使用",
@@ -458,7 +455,6 @@
           },
           {
             "version": "Release",
-            "tag": "Stable",
             "groups": [
               {
                 "group": "开始使用",
