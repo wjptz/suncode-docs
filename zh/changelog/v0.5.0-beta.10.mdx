@@ -1,0 +1,90 @@
+---
+title: 'v0.5.0-beta.10'
+description: '2026-04-22'
+---
+
+修 `trellis update --migrate` 和 `init-context` 里三个相互独立的 bug，都是 beta.9 发布当天浮出来的。非 breaking，不用加 `--migrate`。
+
+## Bug 修复
+
+### 1. `init-context` 在 codex / kiro 下的 jsonl 路径
+
+`cli_adapter.py` 里 `get_trellis_command_path` 返回 `.agents/skills/<name>/SKILL.md` 和 `.kiro/skills/<name>/SKILL.md` —— 都漏了 0.5.0-beta.0 引入的 `trellis-` 前缀（当时有 60+ 条 skill 目录 rename 条目）。结果 codex / kiro 项目跑 `task.py init-context` 写出的 `check.jsonl` 指向不存在的文件。
+
+两处分支都加上前缀：
+
+```python
+elif self.platform == "codex":
+    return f".agents/skills/trellis-{name}/SKILL.md"
+elif self.platform == "kiro":
+    return f".kiro/skills/trellis-{name}/SKILL.md"
+```
+
+### 2. 平台 auto-detect 误落到 claude
+
+`.agents/skills/` 是**跨平台共享层**（Codex 写入 / Amp / Cline / Kimi Code / Warp 通过 agentskills.io 规范消费）。它之前被列进 `_ALL_PLATFORM_CONFIG_DIRS`，所以只要它存在就会挡掉 Kiro / Antigravity / Windsurf 的探测 —— 这些平台的 detection 分支只把自己的 dir 加进 exclude 集合。探测最终 fallback 到默认的 `claude`，`init-context` 就写出 Claude 形状的 jsonl 路径。
+
+两步修：
+
+- 从 `cli_adapter.py` 的 `_ALL_PLATFORM_CONFIG_DIRS` 里移除 `".agents"`，docstring 扩写解释为什么它不是平台专属。
+- `detect_platform` 末尾加 codex fallback：若 `.agents/skills/trellis-*` 存在 **且没有其他任何 platform dir**，返回 `"codex"`。处理 fresh clone 场景（`.codex/` gitignored 但共享 skills 目录进了 git）。
+
+### 3. `init-context` 拿不到调用它的 skill 的平台信号
+
+skill 和 command 本来就是按平台 render 出来的，**render 时平台已知**。但管道里没把这个信息往下传，逼着 `init-context` 运行时从文件系统重新探测。多平台安装下经常探错。
+
+三处协同：
+
+- `configurators/shared.ts` 的 `resolvePlaceholders` 加 `{{CLI_FLAG}}` 占位符，configure 时替换为平台的 `cliFlag` 值（`claude` / `codex` / `kiro` 等）。
+- `TemplateContext` 接口加 `cliFlag: CliFlag` 字段，加 registry invariant 测试断言它和外层 `AIToolConfig.cliFlag` 对每个平台都一致。
+- `task.py init-context` subparser 加 `--platform`，透过 `cmd_init_context` → `get_check_context(repo_root, platform=...)` → `get_cli_adapter(platform)`。
+
+已出厂的 `codex/skills/start/SKILL.md` 和 `copilot/prompts/start.prompt.md` 现在都这么调：
+
+```bash
+python3 ./.trellis/scripts/task.py init-context "$TASK_DIR" <type> --platform {{CLI_FLAG}}
+```
+
+Auto-detect 作为兜底保留给 CLI-direct 用户和 `TRELLIS_PLATFORM` 环境变量。
+
+### 4. Migration task PRD 填的全是老 guide
+
+`update.ts` 生成 migrate-to-`<version>` task 时，会把 `fromVersion` 到 `toVersion` 之间**所有**带 `migrationGuide` 字段的 manifest 拼起来。历史上的两个 breaking release —— `0.5.0-beta.0`（真正的大 breaking，206 条 migration 覆盖整个 0.4→0.5 迁移）和 `0.5.0-beta.5`（10 个平台的 sub-agent 改名）—— 发版时**都漏写了 `migrationGuide`**。结果从 0.4.x 升级的用户拿到的 task PRD 里全是 0.3/0.4 时代的老内容，真正的 0.5 breaking 一字未提。
+
+三步修：
+
+**回填两个漏写的 guide：**
+
+| Manifest | 回填内容 |
+|---|---|
+| `0.5.0-beta.0.json` | 0.4→0.5 narrative：skill 改名、退役命令、Multi-Agent Pipeline 移除、iFlow 下架、`task.json` schema 清理 |
+| `0.5.0-beta.5.json` | Sub-agent 改名 narrative：`implement` → `trellis-implement` 等 |
+
+**`packages/cli/scripts/create-manifest.js` 强制校验**未来不再漏：
+- `--stdin` 模式：`breaking && recommendMigrate && !migrationGuide` → exit 1 + 错误消息
+- `-y` 模式：直接拒绝 `--breaking`（CLI flag 放不下多段叙事）
+- 交互模式：写 `TODO:` 占位符 + warn 用户手编
+
+**把规则写进 spec** `.trellis/spec/cli/backend/migrations.md`，以 0.5.0-beta.0 漏写为历史事故动机。
+
+端到端验证 —— 三条典型升级路径现在都能拉到对应 guide：
+
+| 起点 → 目标 | 拿到的 guide |
+|---|---|
+| `0.4.0 → 0.5.0-beta.10` | `0.5.0-beta.0`、`0.5.0-beta.5` |
+| `0.3.9 → 0.5.0-beta.10` | `0.4.0-beta.1`、`0.5.0-beta.0`、`0.5.0-beta.5` |
+| `0.5.0-beta.4 → 0.5.0-beta.10` | `0.5.0-beta.5` |
+
+## 升级
+
+```bash
+trellis update
+```
+
+非 breaking。
+
+- **已经跑过 beta.9 `trellis update --migrate` 的用户**：任何当时创建的 task 里 `check.jsonl` 还是错的。需要在每个受影响的 task 上重跑 `task.py init-context <task-dir> <type> --platform <你的平台>` 重生成，或者删掉 task 重建。
+- **还在 0.4.x 没升到 0.5 的用户**：`trellis update --migrate` 现在生成的 migration task PRD 是真正的 0.4→0.5 内容，不再是 0.3 时代的噪声。
+- **`.codex/` gitignored 的 fresh clone 的 codex 用户**：探测现在能正确识别成 codex，新 task 拿到的 skill 路径就对。
+
+安装：`npm install -g @mindfoldhq/trellis@beta`

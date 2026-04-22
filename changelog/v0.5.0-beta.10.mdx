@@ -1,0 +1,90 @@
+---
+title: 'v0.5.0-beta.10'
+description: '2026-04-22'
+---
+
+Hotfix for three orthogonal bugs in `trellis update --migrate` and `init-context`, all surfaced the same day beta.9 shipped. Not breaking; no `--migrate` required.
+
+## Bug Fixes
+
+### 1. `init-context` jsonl paths on codex / kiro
+
+`get_trellis_command_path` in `cli_adapter.py` returned `.agents/skills/<name>/SKILL.md` and `.kiro/skills/<name>/SKILL.md` — both missing the `trellis-` prefix that 0.5.0-beta.0 introduced via 60+ skill-dir rename entries. `task.py init-context` on codex / kiro projects therefore wrote `check.jsonl` pointing at non-existent files.
+
+Fixed both branches to emit the prefixed path:
+
+```python
+elif self.platform == "codex":
+    return f".agents/skills/trellis-{name}/SKILL.md"
+elif self.platform == "kiro":
+    return f".kiro/skills/trellis-{name}/SKILL.md"
+```
+
+### 2. Platform auto-detect falling through to claude
+
+`.agents/skills/` is a **shared cross-platform layer** (Codex writes there; Amp, Cline, Kimi Code, Warp consume via the agentskills.io standard). It was listed in `_ALL_PLATFORM_CONFIG_DIRS`, so its presence blocked detection of Kiro, Antigravity, and Windsurf — any platform whose detection branch excluded only its own dir. Detection fell through to the default `claude`, and then `init-context` wrote Claude-shaped jsonl paths.
+
+Two-part fix:
+
+- Removed `".agents"` from `_ALL_PLATFORM_CONFIG_DIRS` in `cli_adapter.py` with an expanded docstring explaining why it's not platform-specific.
+- Added a guarded codex fallback at the end of `detect_platform`: if `.agents/skills/trellis-*` exists AND no other platform dir is present, return `"codex"`. Handles fresh-clone checkouts where `.codex/` is gitignored but the shared skills dir was committed.
+
+### 3. `init-context` had no platform signal from the invoking skill
+
+Skills and commands are rendered per-platform, so the platform is known at template-render time. But the plumbing dropped that context, leaving `init-context` to re-detect from the filesystem at runtime. On a multi-platform install, detection often guessed wrong.
+
+Three coordinated changes:
+
+- `{{CLI_FLAG}}` template placeholder added to `resolvePlaceholders` in `configurators/shared.ts`. Resolves to the platform's `cliFlag` value (`claude`, `codex`, `kiro`, etc.) at configure time.
+- `TemplateContext` interface gained a `cliFlag: CliFlag` field with a registry invariant test asserting it matches the outer `AIToolConfig.cliFlag` for every platform.
+- `task.py init-context` subparser gained `--platform`. Threaded through `cmd_init_context` → `get_check_context(repo_root, platform=...)` → `get_cli_adapter(platform)`.
+
+Shipped `codex/skills/start/SKILL.md` and `copilot/prompts/start.prompt.md` now invoke:
+
+```bash
+python3 ./.trellis/scripts/task.py init-context "$TASK_DIR" <type> --platform {{CLI_FLAG}}
+```
+
+Auto-detect remains as fallback for CLI-direct users and `TRELLIS_PLATFORM` env var.
+
+### 4. Migration task PRD filled with stale guides
+
+`update.ts` creates the migrate-to-`<version>` task by concatenating every `migrationGuide` field from manifests between `fromVersion` and `toVersion`. Historical breaking releases `0.5.0-beta.0` (206 migrations — the whole 0.4→0.5 transition) and `0.5.0-beta.5` (sub-agent rename across 10 platforms) shipped **without** `migrationGuide`, so users upgrading from 0.4.x landed on a task PRD echoing only the 0.3/0.4 historical guides, with nothing describing the actual 0.5 breaking changes.
+
+Three-part fix:
+
+**Back-fill the two missing guides:**
+
+| Manifest | Back-filled content |
+|---|---|
+| `0.5.0-beta.0.json` | 0.4→0.5 narrative: skill renames, retired commands, Multi-Agent Pipeline removal, iFlow drop, `task.json` schema cleanup |
+| `0.5.0-beta.5.json` | Sub-agent rename narrative: `implement` → `trellis-implement` etc. |
+
+**Enforce on future breaking releases** in `packages/cli/scripts/create-manifest.js`:
+- `--stdin` mode: `breaking && recommendMigrate && !migrationGuide` → exit 1 with explanation
+- `-y` mode: refuses `--breaking` entirely (can't capture a narrative via CLI flags)
+- Interactive mode: writes `TODO:` placeholders + warns the user to hand-edit
+
+**Document the rule** in `.trellis/spec/cli/backend/migrations.md` with the 0.5.0-beta.0 historical miss as motivation.
+
+End-to-end verification — three representative upgrade paths now pull correct guides:
+
+| From → To | Guides included |
+|---|---|
+| `0.4.0 → 0.5.0-beta.10` | `0.5.0-beta.0`, `0.5.0-beta.5` |
+| `0.3.9 → 0.5.0-beta.10` | `0.4.0-beta.1`, `0.5.0-beta.0`, `0.5.0-beta.5` |
+| `0.5.0-beta.4 → 0.5.0-beta.10` | `0.5.0-beta.5` |
+
+## Upgrade
+
+```bash
+trellis update
+```
+
+Not breaking.
+
+- **Users who already ran beta.9 `trellis update --migrate`**: the broken `check.jsonl` in any task you created is still wrong. Re-run `task.py init-context <task-dir> <type> --platform <your-platform>` on each affected task to regenerate, or delete and re-create the task.
+- **Users on 0.4.x who never migrated to 0.5 yet**: `trellis update --migrate` now generates a migration task PRD with real 0.4→0.5 content instead of historical 0.3 noise.
+- **Codex users with fresh clones where `.codex/` is gitignored**: detection now correctly identifies codex, so new tasks get the right skill paths.
+
+Install: `npm install -g @mindfoldhq/trellis@beta`
