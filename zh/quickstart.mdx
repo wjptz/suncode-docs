@@ -3,6 +3,16 @@ title: '快速开始'
 description: '在你的项目中配置 Trellis'
 ---
 
+## 前置要求
+
+| 要求 | 最低版本 | 用途 |
+|---|---|---|
+| **Node.js** | 18 | `trellis` CLI 运行时 |
+| **Python** | 3.9 | Hook 和自动化脚本（对齐 macOS 系统 `python3`；Ubuntu 22.04 LTS 及更高没问题） |
+| **git** | 任意较新版本 | 任务分支、worktree、提交元信息 |
+
+`trellis init` 如果检测到 `python3 --version` 低于 3.9 只会打印 warning，不会 block。看到 warning 的话先升级 Python 再继续。
+
 ## 安装 Trellis
 
 先全局安装 CLI：
