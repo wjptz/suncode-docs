@@ -8,10 +8,12 @@ description: 'Set up Trellis in your project'
 | Requirement | Minimum | Why |
 |---|---|---|
 | **Node.js** | 18 | `trellis` CLI runtime |
-| **Python** | 3.9 | Hooks and automation scripts (matches macOS system `python3`; Ubuntu 22.04 LTS and newer are fine) |
+| **Python** | 3.9 | Hooks and automation scripts (`python` on Windows, `python3` on macOS/Linux) |
 | **git** | any recent | Task branching, worktrees, and commit metadata |
 
-`trellis init` soft-warns if `python3 --version` is older than 3.9 but won't block — if you see the warning, upgrade Python before continuing.
+`trellis init` checks the same Python command it will render into generated
+files: `python --version` on Windows, `python3 --version` on macOS/Linux. If
+that command is older than 3.9, init warns but does not block.
 
 ## Install Trellis
 

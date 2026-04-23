@@ -48,6 +48,32 @@ from __future__ import annotations                   # added
 
 No CI matrix change yet; the empirical test harness lives in `/tmp/trellis-py-compat/` during development (not committed). Python 3.8 is not supported — EOL 2024-10, and declaring support would incur backport obligations whenever an unmaintained-Python CVE surfaces.
 
+### Init now follows the same OS-aware Python command policy as templates
+
+The template layer already rendered `{{PYTHON_CMD}}` as `python` on Windows and
+`python3` on macOS/Linux, but `packages/cli/src/commands/init.ts` still probed
+`python3` first everywhere and only fell back to `python`. That meant the
+Windows status message, generated hook commands, and init's own
+`init_developer.py` bootstrap path were talking about different interpreters.
+
+`trellis init` now uses the same platform rule in both places:
+
+| Platform | Generated command | Init probe / bootstrap command |
+|---|---|---|
+| Windows | `python` | `python --version`, `python .trellis/scripts/init_developer.py ...` |
+| macOS / Linux | `python3` | `python3 --version`, `python3 .trellis/scripts/init_developer.py ...` |
+
+If the selected platform command resolves to Python < 3.9, init prints a
+warning but still completes. Missing Python still does not block file
+generation; the follow-up failure mode remains the same manual bootstrap hint.
+
+| File | Change |
+|---|---|
+| `packages/cli/src/configurators/shared.ts` | Export shared OS → Python command helper used by template rendering |
+| `packages/cli/src/commands/init.ts` | Reuse shared helper for version probe, Windows notice, and `init_developer.py` invocation |
+| `packages/cli/test/commands/init.integration.test.ts` | Regression coverage for init bootstrap command + soft warning path |
+| `packages/cli/test/commands/init-internals.test.ts` | Unit coverage for Python version floor warning behavior |
+
 ## Upgrade
 
 Existing projects:

@@ -48,6 +48,31 @@ from __future__ import annotations                   # 新增
 
 CI 矩阵暂未加——实测 harness 跑在 `/tmp/trellis-py-compat/` 下、没提交到仓库。不支持 Python 3.8：2024-10 已 EOL，声明支持会背上 CVE backport 的维护责任。
 
+### init 现在和模板层共用同一套按 OS 选 Python 命令的规则
+
+模板层早就把 `{{PYTHON_CMD}}` 渲染成 Windows 用 `python`、macOS / Linux
+用 `python3`，但 `packages/cli/src/commands/init.ts` 之前还是所有平台都先探测
+`python3`，失败后才回退到 `python`。结果就是 Windows 提示文案、生成出来的
+hook 命令、以及 init 自己执行 `init_developer.py` 时实际用的解释器并不一致。
+
+现在 `trellis init` 两边统一成同一条平台规则：
+
+| 平台 | 生成到文件里的命令 | init 探测 / bootstrap 使用的命令 |
+|---|---|---|
+| Windows | `python` | `python --version`、`python .trellis/scripts/init_developer.py ...` |
+| macOS / Linux | `python3` | `python3 --version`、`python3 .trellis/scripts/init_developer.py ...` |
+
+如果当前平台对应的命令解析到 Python < 3.9，init 会打印 warning，但仍然完成。
+如果本机根本没有 Python，文件生成也还是不会被阻断；后续行为仍然是保留现有的
+手动 bootstrap 提示。
+
+| 文件 | 变更 |
+|---|---|
+| `packages/cli/src/configurators/shared.ts` | 导出共享的 OS → Python 命令 helper，模板渲染直接复用 |
+| `packages/cli/src/commands/init.ts` | 复用同一个 helper 做版本探测、Windows 提示和 `init_developer.py` 调用 |
+| `packages/cli/test/commands/init.integration.test.ts` | 给 init bootstrap 命令和 soft warning 路径补回归测试 |
+| `packages/cli/test/commands/init-internals.test.ts` | 给 Python 版本 warning 行为补单测 |
+
 ## 升级
 
 老项目：
