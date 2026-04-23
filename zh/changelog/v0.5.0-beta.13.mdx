@@ -1,0 +1,58 @@
+---
+title: 'v0.5.0-beta.13'
+description: '2026-04-23'
+---
+
+beta.12 的补丁跟进。`task.py start` 现在会把 `task.json` 的 status 从 `planning` 真正切到 `in_progress` —— 之前只改了 `.current-task` 指针，status 字段原地不动，导致面板、`list --status` 过滤和 session-start 面包屑都在骗人。打包的 Codex agent 模板补上了 "Required: Load Trellis Context First" 前言 —— beta.11/12 写进了 dogfood 根目录，但从未回传到 `packages/cli/src/templates/codex/agents/`。`.codex/config.toml` 文档化了 user-level 的 `features.codex_hooks` 开关。无 `src/` 变更，`trellis update` 是纯内容刷新。
+
+## Bug Fixes
+
+### `task.py start` 会把 `task.json` 状态切到 `in_progress`
+
+之前 `cmd_start` 只写 `.current-task` + 跑 `after_start` hook 就结束了。`task.json` 的 `status` 字段只在 `create` 时写入 `planning`、`archive` 时写入 `completed`，中间没有任何代码路径把它推进到 `in_progress`。结果就是：task 实际在开发一周了，`list --status in_progress` 什么都没显示，session-start 面包屑还写着 `Status: PLANNING`。
+
+现在 `cmd_start` 在设置指针之后会读 `task.json`，满足 `planning` 才翻 `in_progress`，其他状态保持：
+
+| 当前 status | `task.py start` 之后 |
+|---|---|
+| `planning` | `in_progress` |
+| `in_progress` | `in_progress`（幂等） |
+| `review` | `review`（保留 —— review 返工再 start 不能清回退） |
+| `completed` | `completed`（保留） |
+
+参见 `packages/cli/src/templates/trellis/scripts/task.py:cmd_start`。
+
+### Codex agent 模板回填 Phase 1.3 fallback 前言
+
+"Required: Load Trellis Context First" 段 —— 教 Codex sub-agent (1) 跳过 `{"_example": ...}` seed 行、(2) 当 `implement.jsonl` / `check.jsonl` 没有 curated 条目时回退到 prd-only 上下文 + 通过 `get_context.py --mode packages` 自己挑 spec —— 在 beta.11 init-context-removal 期间写进了 dogfood 根目录，但一直没回到 `packages/cli/src/templates/codex/agents/`。所以到 beta.12 为止，Codex 用户走 `trellis init` / `trellis update` 拿到的 agent prompt 是缺这段 fallback 的，遇到 seed-only jsonl 就会卡住，而不是改走 prd.md + spec 判断。
+
+回填进两个文件：
+
+- `packages/cli/src/templates/codex/agents/trellis-check.toml`
+- `packages/cli/src/templates/codex/agents/trellis-implement.toml`
+
+fallback 指令与 `configurators/shared.ts:buildPullBasedPrelude` 为其他 pull-based 平台（Copilot / Gemini / Qoder）生成的版本完全一致，Codex 行为现在与其余 Class-2 集合对齐。
+
+## Docs
+
+### `.codex/config.toml` 文档化 `features.codex_hooks` 开关
+
+Trellis 的 Codex 集成依赖 `.codex/hooks.json` 声明的 SessionStart + UserPromptSubmit hook。Codex 只有在 **user-level** 的 `~/.codex/config.toml` 里设了 `[features] codex_hooks = true` 才会识别它们 —— 项目级的 `.codex/config.toml` 没有权限开 `features.*`。不开这个 flag，`hooks.json` 就被静默忽略，Trellis 的上下文注入永远不会运行，用户看起来像 bug。
+
+项目级的桩文件现在替掉了老的 `shell_environment_policy` 片段（和 Trellis 无关的死配置），换成注释，指向正确位置和需要加的 TOML 片段。
+
+## Upgrade
+
+已有项目：
+
+```bash
+trellis update
+```
+
+纯内容刷新。已有 task、jsonl 文件、`.current-task` 都不受影响。升级后第一次对一个仍是 `planning` 状态的老 task 跑 `task.py start`，status 字段会自动翻到 `in_progress`，你什么都不用做。手动改过 `.codex/agents/trellis-*.toml` 的 Codex 用户会在 update 时看到 Required-Context 前言的 hash drift 提示；`trellis update` 会挨个文件问你怎么处理。
+
+全新安装：
+
+```bash
+npm i -g @mindfoldhq/trellis@0.5.0-beta.13
+```
