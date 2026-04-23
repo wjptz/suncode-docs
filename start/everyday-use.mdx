@@ -126,14 +126,18 @@ On Claude Code, Cursor, OpenCode, CodeBuddy, and Droid, these sub-agents are hoo
 ### Task Lifecycle
 
 ```
-create → init-context → add-context → start → implement/check → finish → archive
-  │           │              │           │          │               │         │
-  │           │              │           │          │               │         │
-  ▼           ▼              ▼           ▼          ▼               ▼         ▼
-Create      Init JSONL     Add context  Set as     Development/   Clear     Archive to
-directory   config files   entries      current    check cycle    current   archive/
-task.json                               task ptr                  task
+create → curate jsonl → start → implement/check → finish → archive
+  │           │             │          │               │         │
+  │           │             │          │               │         │
+  ▼           ▼             ▼          ▼               ▼         ▼
+Create      AI fills     Set as     Development /    Clear     Archive to
+directory   seeded       current    check cycle      current   archive/
+task.json   jsonl (or    task ptr                    task
++ seeded    add-context)
+jsonl
 ```
+
+`task.py create` auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / etc.); agent-less platforms (Kilo / Antigravity / Windsurf) skip this and load specs via the `trellis-before-dev` skill in Phase 2.
 
 ### `task.py` Subcommands
 
@@ -154,16 +158,24 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 #### Context Configuration
 
 ```bash
-# Initialize JSONL config (generates implement.jsonl + check.jsonl)
-./.trellis/scripts/task.py init-context "$TASK_DIR" backend
-# dev_type: backend | frontend | fullstack | test | docs
-# Optional: --package PACKAGE   (required for monorepo, picks the spec/<pkg>/ root)
+# implement.jsonl + check.jsonl are already seeded by `task.py create`
+# on sub-agent-capable platforms. Each file starts with one self-describing
+# `{"_example": "..."}` line you can leave in place or delete.
 
-# Add extra context entries
+# Curate entries — either edit the jsonl in your editor, or use add-context:
 ./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
-  "src/services/auth.ts" "Existing auth patterns"
-# file arg: implement | check (shorthand, auto-appends .jsonl)
+  ".trellis/spec/backend/index.md" "Backend development guide"
+./.trellis/scripts/task.py add-context "$TASK_DIR" check \
+  ".trellis/spec/cli/unit-test/conventions.md" "Unit test conventions"
+# target arg: implement | check (shorthand, auto-appends .jsonl)
 # path arg: a file OR directory path — add-context auto-detects and sets type="directory" for dirs
+#
+# What to put in the jsonl: spec files (.trellis/spec/**/*.md) and research files
+# ($TASK_DIR/research/*.md) relevant to this task. Do NOT add code paths — code
+# is read during Phase 2 implementation, not pre-registered here.
+
+# Discover what specs exist
+./.trellis/scripts/get_context.py --mode packages
 
 # Validate implement.jsonl + check.jsonl (all referenced files exist)
 ./.trellis/scripts/task.py validate "$TASK_DIR"
@@ -277,7 +289,7 @@ The exact shape `task.py create` writes today (see `.trellis/scripts/common/task
 
 Fields get populated over time:
 
-- `dev_type` / `scope` / `package` → set via `task.py set-*` or `init-context`
+- `dev_type` / `scope` / `package` → set via `task.py set-scope` or by editing `task.json` directly; no automatic setter exists
 - `branch` → set via `task.py set-branch`
 - `status` → transitions `planning → in_progress → completed`
 - `completedAt` → set by `task.py archive` (archive does NOT write the commit hash back)
@@ -302,27 +314,37 @@ task.py archive       →  status: "completed" + move to archive/
 
 ### JSONL Context Configuration in Practice
 
-#### Auto-Generated Default Configuration
+#### Seeded on Create, AI Curates in Phase 1.3
 
-`task.py init-context` generates minimal JSONL files based on `dev_type`. The default is deliberately thin; it points sub-agents at the workflow contract and the relevant spec index, and relies on the skill (`trellis-before-dev`, `trellis-check`) to pull in the specific guideline files referenced from those indexes.
-
-**Single-repo, `dev_type=backend`**:
+On sub-agent-capable platforms, `task.py create` writes a **single seed line** into each jsonl:
 
 ```jsonl
-# implement.jsonl
-{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
-{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
+# implement.jsonl (right after task.py create)
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line when done."}
 ```
+
+This is self-describing — the seed line is ignored by all consumers (hook, prelude, validate, list-context) because it has no `file` field. The AI reads it, then fills in real entries during Phase 1.3.
+
+**Example curated `implement.jsonl` after AI review** (`dev_type=backend` monorepo):
 
 ```jsonl
-# check.jsonl (paths resolve to the active platform's command/skill location)
-{"file": ".claude/commands/trellis/finish-work.md", "reason": "Finish work checklist"}
-{"file": ".claude/commands/trellis/check.md", "reason": "Code quality check spec"}
+{"file": ".trellis/spec/guides/index.md", "reason": "Shared cross-package thinking guides"}
+{"file": ".trellis/spec/cli/backend/index.md", "reason": "Backend dev guide — task touches Python scripts"}
+{"file": ".trellis/spec/cli/backend/script-conventions.md", "reason": "Script conventions for the affected files"}
+{"file": ".trellis/tasks/.../research/auth-library-comparison.md", "reason": "Library choice rationale"}
 ```
 
-Monorepo projects substitute `.trellis/spec/<package>/...` in the implement side. `dev_type=frontend` points at `spec/frontend/index.md`; `dev_type=fullstack` includes both; `dev_type=test` uses the backend index; `dev_type=docs` only includes `workflow.md`.
+**What belongs in the jsonl**:
 
-Add extra context (task-specific code patterns, cross-layer guides, etc.) via `task.py add-context`; the defaults stay lean on purpose.
+- **Spec files** (`.trellis/spec/<pkg>/<layer>/index.md` + specific guideline files) that apply to this task's domain
+- **Research files** (`{TASK_DIR}/research/*.md`) the sub-agent needs to consult
+
+**What does NOT belong**:
+
+- Code files (`src/**`, `packages/**/*.ts`, etc.) — those are read by the sub-agent during implementation, not pre-registered here
+- Files you're about to modify — same reason
+
+On agent-less platforms (Kilo / Antigravity / Windsurf), `task.py create` skips seeding. Those platforms load specs via the `trellis-before-dev` skill in Phase 2.1 instead.
 
 #### Adding Custom Context
 

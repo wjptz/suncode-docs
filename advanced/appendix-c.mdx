@@ -13,7 +13,7 @@ Matches `task.py create` in `.trellis/scripts/common/task_store.py`:
   "title": "string",        // Task title
   "description": "string",  // Description ("" if --description omitted)
   "status": "string",       // planning (default) | in_progress | completed; task.py list --status also accepts review
-  "dev_type": "string",     // backend | frontend | fullstack | test | docs (null until init-context)
+  "dev_type": "string",     // backend | frontend | fullstack | test | docs (null until set manually or by a custom hook; see note below)
   "scope": "string",        // Commit scope, e.g. "auth" (null until set-scope)
   "package": "string",      // Monorepo package name (null in single-repo)
   "priority": "string",     // P0 | P1 | P2 | P3 (default P2)

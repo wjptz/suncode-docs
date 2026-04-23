@@ -221,7 +221,9 @@ Phase 1 — Plan (interactive)
      one question at a time, iterating prd.md
  1.2 When research is needed, AI spawns the trellis-research sub-agent; findings
      land in research/
- 1.3 task.py init-context generates implement.jsonl / check.jsonl
+ 1.3 AI curates implement.jsonl / check.jsonl (seeded on create) with the
+     spec + research files Phase 2 sub-agents will need — spec/research
+     paths only, not code paths
  1.4 task.py start makes it .current-task
 
 Phase 2 — Execute

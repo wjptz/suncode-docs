@@ -47,9 +47,8 @@ Trellis 每个平台原生带 **3 个**用户调用的命令（`start`、`finish
 
 | 子命令            | 用途               | 用法                                                                          |
 | ----------------- | ------------------ | ----------------------------------------------------------------------------- |
-| `create`          | 创建任务           | `task.py create "title" [--slug name] [-a assignee] [-p priority]`            |
-| `init-context`    | 初始化 JSONL       | `task.py init-context "$DIR" <dev_type> [--platform]`                         |
-| `add-context`     | 追加上下文条目     | `task.py add-context "$DIR" <target> "<path>" "<reason>"`                     |
+| `create`          | 创建任务（检测到 sub-agent 平台时顺手 seed `implement.jsonl` / `check.jsonl`）| `task.py create "title" [--slug name] [-a assignee] [-p priority]` |
+| `add-context`     | 追加上下文条目（create 之后填 jsonl 的主要入口） | `task.py add-context "$DIR" <target> "<path>" "<reason>"`                     |
 | `validate`        | 校验 JSONL         | `task.py validate "$DIR"`                                                     |
 | `list-context`    | 查看所有条目       | `task.py list-context "$DIR"`                                                 |
 | `start`           | 置为当前任务       | `task.py start "$DIR"`                                                        |

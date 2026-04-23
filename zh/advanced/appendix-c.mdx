@@ -13,7 +13,7 @@ title: '附录 C：task.json Schema 参考'
   "title": "string",        // 任务标题
   "description": "string",  // 描述（不传 --description 时为 ""）
   "status": "string",       // planning（默认）| in_progress | completed；task.py list --status 还接受 review
-  "dev_type": "string",     // backend | frontend | fullstack | test | docs（init-context 前为 null）
+  "dev_type": "string",     // backend | frontend | fullstack | test | docs（默认 null，由手工编辑或自定义 hook 填入）
   "scope": "string",        // Commit scope，如 "auth"（set-scope 前为 null）
   "package": "string",      // Monorepo 包名（单仓库为 null）
   "priority": "string",     // P0 | P1 | P2 | P3（默认 P2）

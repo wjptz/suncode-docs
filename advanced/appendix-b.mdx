@@ -47,9 +47,8 @@ Available as real sub-agents on Claude Code, OpenCode, Codex, Droid. On other pl
 
 | Subcommand        | Purpose                | Usage                                                                         |
 | ----------------- | ---------------------- | ----------------------------------------------------------------------------- |
-| `create`          | Create task            | `task.py create "title" [--slug name] [-a assignee] [-p priority]`            |
-| `init-context`    | Initialize JSONL       | `task.py init-context "$DIR" <dev_type> [--platform]`                         |
-| `add-context`     | Add context entry      | `task.py add-context "$DIR" <target> "<path>" "<reason>"`                     |
+| `create`          | Create task (also seeds `implement.jsonl` / `check.jsonl` when a sub-agent platform is installed) | `task.py create "title" [--slug name] [-a assignee] [-p priority]` |
+| `add-context`     | Add context entry (primary way to populate jsonl after `create`) | `task.py add-context "$DIR" <target> "<path>" "<reason>"`         |
 | `validate`        | Validate JSONL         | `task.py validate "$DIR"`                                                     |
 | `list-context`    | View all entries       | `task.py list-context "$DIR"`                                                 |
 | `start`           | Set as current task    | `task.py start "$DIR"`                                                        |
