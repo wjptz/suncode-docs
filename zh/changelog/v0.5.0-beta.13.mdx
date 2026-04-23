@@ -3,7 +3,7 @@ title: 'v0.5.0-beta.13'
 description: '2026-04-23'
 ---
 
-beta.12 的补丁跟进。`task.py start` 现在会把 `task.json` 的 status 从 `planning` 真正切到 `in_progress` —— 之前只改了 `.current-task` 指针，status 字段原地不动，导致面板、`list --status` 过滤和 session-start 面包屑都在骗人。打包的 Codex agent 模板补上了 "Required: Load Trellis Context First" 前言 —— beta.11/12 写进了 dogfood 根目录，但从未回传到 `packages/cli/src/templates/codex/agents/`。`.codex/config.toml` 文档化了 user-level 的 `features.codex_hooks` 开关。无 `src/` 变更，`trellis update` 是纯内容刷新。
+beta.12 的补丁跟进。`task.py start` 现在会把 `task.json` 的 status 从 `planning` 真正切到 `in_progress`，之前只改了 `.current-task` 指针，status 字段未修复，导致 cc 的 status line 会一直显示 `planning`。
 
 ## Bug Fixes
 

@@ -3,7 +3,7 @@ title: 'v0.5.0-beta.13'
 description: '2026-04-23'
 ---
 
-Patch follow-up to beta.12. `task.py start` now actually transitions `task.json` status from `planning` to `in_progress` — previously the pointer got set but the status field stayed at `planning`, so dashboards and `list --status` filters lied about what was under active development. Packaged Codex agent templates pick up the "Required: Load Trellis Context First" preamble that beta.11/12 shipped into the dogfood root but never backported into `packages/cli/src/templates/codex/agents/`. `.codex/config.toml` documents the user-level `features.codex_hooks` opt-in. No `src/` changes; `trellis update` is a content refresh.
+Patch follow-up to beta.12. `task.py start` now actually transitions `task.json` status from `planning` to `in_progress`. Previously only the `.current-task` pointer was updated and the status field stayed untouched, so Claude Code's statusline kept showing `planning`.
 
 ## Bug Fixes
 
