@@ -3,43 +3,45 @@ title: 'v0.5.0-beta.13'
 description: '2026-04-23'
 ---
 
-Patch follow-up to beta.12. `task.py start` now actually transitions `task.json` status from `planning` to `in_progress`. Previously only the `.current-task` pointer was updated and the status field stayed untouched, so Claude Code's statusline kept showing `planning`.
+Patch follow-up to beta.12. `task.py start` now actually transitions `task.json` status from `planning` to `in_progress`. Previously only the `.current-task` pointer got updated and the status field stayed untouched, so Claude Code's statusline kept showing `planning`.
 
 ## Bug Fixes
 
 ### `task.py start` transitions `task.json` status to `in_progress`
 
-`cmd_start` used to write `.current-task` and run the `after_start` hook and stop there. The `status` field in `task.json` was only set to `planning` on `create` and `completed` on `archive` — there was no code path that advanced it to `in_progress`. Result: a task could be under active development for a week while `list --status in_progress` returned nothing and session-start breadcrumbs still showed `Status: PLANNING`.
+`cmd_start` used to write `.current-task`, run the `after_start` hook, and return. The `status` field was only touched by `create` (writes `planning`) and `archive` (writes `completed`). Nothing in between ever moved it forward. So a task could be in active development for a week while `list --status in_progress` came back empty and session-start breadcrumbs still said `Status: PLANNING`.
 
-Now `cmd_start` reads `task.json` after setting the pointer and flips `planning → in_progress`. Other statuses are preserved:
+Now `cmd_start` reads `task.json` after setting the pointer and flips `planning → in_progress`. Other statuses stay put:
 
 | Current status | After `task.py start` |
 |---|---|
 | `planning` | `in_progress` |
 | `in_progress` | `in_progress` (no-op) |
-| `review` | `review` (preserved — re-starting to fix review feedback must not reset) |
+| `review` | `review` (preserved; re-starting to fix review feedback must not reset) |
 | `completed` | `completed` (preserved) |
 
-See `packages/cli/src/templates/trellis/scripts/task.py:cmd_start`.
+Location: `packages/cli/src/templates/trellis/scripts/task.py:cmd_start`.
 
-### Codex agent templates backport the Phase 1.3 fallback preamble
+### Codex agent templates backport the Phase 1.3 fallback section
 
-The "Required: Load Trellis Context First" block — which teaches Codex sub-agents to skip `{"_example": ...}` seed rows and fall back to prd-only context + self-discovered specs when `implement.jsonl` / `check.jsonl` has no curated entries — was edited into the dogfood root during beta.11's init-context-removal work but never landed in `packages/cli/src/templates/codex/agents/`. So up through beta.12, Codex users running `trellis init` or `trellis update` got agent prompts without the fallback, and the agent blocked on seed-only jsonl instead of proceeding with prd.md + spec judgment.
+During beta.11's init-context-removal work, the two Codex agent files got a new top block called "Required: Load Trellis Context First". It tells the sub-agent to skip `{"_example": ...}` seed rows and, when the jsonl has no curated entries, fall back to reading `prd.md` and picking specs with `get_context.py --mode packages`.
 
-Backported into:
+That edit only landed in the dogfood copy at the project root. It never made it into `packages/cli/src/templates/codex/agents/`. So up through beta.12, Codex users on fresh `trellis init` or `trellis update` got agent prompts without this block, and the agent blocked on seed-only jsonl instead of falling back to `prd.md`.
+
+Backported in this release:
 
 - `packages/cli/src/templates/codex/agents/trellis-check.toml`
 - `packages/cli/src/templates/codex/agents/trellis-implement.toml`
 
-The fallback instruction is identical to what `configurators/shared.ts:buildPullBasedPrelude` emits for the other pull-based platforms (Copilot / Gemini / Qoder), so Codex behavior now matches the rest of the Class-2 set.
+The wording matches the prelude that `configurators/shared.ts:buildPullBasedPrelude` generates for Copilot / Gemini / Qoder, so Codex now behaves the same as the other pull-based platforms.
 
 ## Docs
 
 ### `.codex/config.toml` documents the `features.codex_hooks` opt-in
 
-Trellis's Codex integration relies on SessionStart + UserPromptSubmit hooks declared in `.codex/hooks.json`. Codex only honors those when `[features] codex_hooks = true` is set in the **user-level** `~/.codex/config.toml` — project-scoped `.codex/config.toml` cannot enable `features.*`. Without the opt-in, `hooks.json` is silently ignored and Trellis context injection never runs, which looks like a bug when reported by users.
+Trellis's Codex integration relies on the SessionStart + UserPromptSubmit hooks in `.codex/hooks.json`. Codex only honors those when `[features] codex_hooks = true` is set in the **user-level** `~/.codex/config.toml`. Project-scoped `.codex/config.toml` can't enable `features.*`. Without the flag, `hooks.json` is ignored, hooks never run, and it looks like Trellis is broken.
 
-The project-scoped stub now replaces the old `shell_environment_policy` block (dead config unrelated to Trellis) with comments pointing to the right location and the exact TOML snippet to add.
+The project-scoped stub now holds comments pointing at the user-level config with the exact TOML snippet to add. The old `shell_environment_policy` block (dead config unrelated to Trellis) is gone.
 
 ## Upgrade
 
@@ -49,7 +51,7 @@ Existing projects:
 trellis update
 ```
 
-Pure content refresh. Existing tasks, jsonl files, and `.current-task` all keep working. The first time you run `task.py start <existing-planning-task>` after update, the status field flips to `in_progress` automatically — no action needed from you. Codex users who manually edited `.codex/agents/trellis-*.toml` will see the Required-Context preamble flagged during update; `trellis update` prompts per file when hashes drift.
+No migration steps. Existing tasks, jsonl files, and `.current-task` are untouched. The first time you run `task.py start` on an old `planning` task after update, the status field flips to `in_progress` automatically. Codex users who hand-edited `.codex/agents/trellis-*.toml` will see the two files flagged during update; `trellis update` asks per-file what to do.
 
 Fresh install:
 
