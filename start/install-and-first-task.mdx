@@ -91,7 +91,7 @@ Describe what you want to do; AI follows `workflow.md` through Plan → Execute 
 ```
 
 <Note>
-If your platform has no SessionStart hook (e.g., Kilo, Antigravity, Windsurf), or you want AI to re-read `workflow.md`, run `/trellis:start` once.
+Agent-capable platforms (Claude Code, OpenCode, Cursor, Gemini, Qoder, CodeBuddy, Copilot, Droid, and Codex with `codex_hooks` enabled) load workflow and context automatically via the SessionStart hook on every new session — they don't ship `/trellis:start` as a slash command, so open a fresh session if you need a reload. Only agent-less platforms (Kilo, Antigravity, Windsurf) ship `/trellis:start` (or `/start.md`) as an explicit entry point.
 </Note>
 
 ### Directory Structure
@@ -185,7 +185,7 @@ your-project/
 
   **Just describe your task.**
 
-  When to run `/trellis:start` explicitly: you want a full context report, you want AI to walk through the flow deliberately, or you suspect auto-injection didn't run. It makes AI re-read `workflow.md`, rerun `get_context.py` for fresh state, and then ask **"What would you like to work on?"**.
+  If you suspect auto-injection didn't run or you want to reload context, just open a new session — the SessionStart hook re-runs `workflow.md` + `get_context.py` and asks **"What would you like to work on?"**. These platforms don't expose `/trellis:start` as a slash command (the hook already owns `start`), so don't go looking for it.
   </Tab>
   <Tab title="Codex">
   Enable in `~/.codex/config.toml`:

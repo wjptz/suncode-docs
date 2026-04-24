@@ -4,7 +4,7 @@ title: 'Custom Slash Commands'
 
 ## Custom Slash Commands
 
-In Trellis 0.5, only three slash commands ship out of the box (`/trellis:start`, `/trellis:finish-work`, `/trellis:continue`); anything else that used to be a command has moved to auto-trigger skills (see chapter 12). Use slash commands when you need an explicit entry point that the user will invoke on demand.
+Trellis 0.5 ships a deliberately small set of slash commands. On agent-capable platforms (Claude Code, OpenCode, Cursor, Codex, etc.), only `finish-work` and `continue` are installed — `start` isn't, because the SessionStart hook already loads the workflow and context at the top of every session. Agent-less platforms (Kilo, Antigravity, Windsurf) have no hook, so `start` is shipped there as a slash command. Everything else that used to be a command has moved to auto-trigger skills (see [Custom Skills](./custom-skills)). Add your own slash command when you have a specific entry point you want the user to invoke on demand.
 
 ### Command File Format and Location
 

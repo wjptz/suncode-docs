@@ -91,7 +91,7 @@ trellis init -u your-name --codex --gemini
 ```
 
 <Note>
-如果平台没有 SessionStart hook（比如 Kilo、Antigravity、Windsurf），或者想让 AI 重读 `workflow.md`，就运行一遍 `/trellis:start`。
+Agent-capable 平台（Claude Code、OpenCode、Cursor、Gemini、Qoder、CodeBuddy、Copilot、Droid，以及开了 `codex_hooks` 的 Codex）每次开会话 SessionStart hook 自动加载 workflow 和上下文，这些平台本身不发 `/trellis:start` 这个 slash 命令；想重新加载就新开一个会话。只有 Kilo / Antigravity / Windsurf 这类 agent-less 平台会发 `/trellis:start`（或 `/start.md`）作为显式入口。
 </Note>
 
 ### 目录结构
@@ -185,7 +185,7 @@ your-project/
 
   **直接描述任务即可**。
 
-  显式跑 `/trellis:start` 的场景：想看完整上下文报告、让 AI 明确走一遍检查流程、或者怀疑自动注入没跑。跑了之后 AI 会重读一遍 `workflow.md`、再跑一次 `get_context.py` 刷新状态，然后问你 **"想干什么？"**。
+  怀疑自动注入没跑、想重新加载上下文，就新开一个会话——SessionStart hook 会再跑一遍 `workflow.md` + `get_context.py`，然后把 **"想干什么？"** 甩给你。这类平台上 `/trellis:start` 不是 slash 命令（`start` 已经被 hook 吃掉，别去找）。
   </Tab>
   <Tab title="Codex">
   在 `~/.codex/config.toml` 开启：
