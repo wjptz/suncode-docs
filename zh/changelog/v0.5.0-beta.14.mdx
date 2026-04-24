@@ -1,0 +1,129 @@
+---
+title: 'v0.5.0-beta.14'
+description: '2026-04-24'
+---
+
+beta.13 的补丁跟进。SessionStart hook 新增一次性 `<first-reply-notice>` 块，会话首条可见回复显式确认 Trellis 上下文已注入。READY 状态的 Next-Action 文案更新成"下一步去 dispatch `trellis-implement`，不要在主会话里动代码"，这样能避免 agent-capable 的平台的主 agent 绕过 sub-agent 自己改代码。Claude Code 的 statusline 在 Windows 上修了 UTF-8 编码初始化崩溃的问题。
+
+## Enhancements
+
+### 首条回复一次性确认 SessionStart 注入
+
+用户无明确感知 Trellis 的 SessionStart hook 是否成功注入，现在 SessionStart hook 会在 `additionalContext` 开头追加：
+
+```text
+<first-reply-notice>
+On the first visible assistant reply in this session, begin with exactly one short Chinese sentence:
+Trellis SessionStart 已注入：workflow、当前任务状态、开发者身份、git 状态、active tasks、spec 索引已加载。
+Then continue directly with the user's request. This notice is one-shot: do not repeat it after the first assistant reply in the same session.
+</first-reply-notice>
+```
+
+应用范围：
+
+- `packages/cli/src/templates/shared-hooks/session-start.py`
+- `packages/cli/src/templates/codex/hooks/session-start.py`
+- `packages/cli/src/templates/opencode/plugins/session-start.js`
+
+`copilot/hooks/session-start.py` 保留 JSON 协议形状但不注入该提示，因为 GitHub Copilot 当前会忽略 `sessionStart` 输出（见下方 Docs）。
+
+### READY 状态的 Next-Action 文案重写
+
+旧文案：
+
+```text
+Status: READY
+Task: <title>
+Next: Continue with implement or check
+```
+
+在 agent-capable 平台上，这个 prompt 可能会导致 agent 主进程自己手动写代码，绕过 sub agent 的工作流程。
+
+新文案：
+
+```text
+Status: READY
+Task: <title>
+Next required action: dispatch `trellis-implement` per Phase 2.1.
+For agent-capable platforms, do NOT edit code in the main session.
+After implementation, dispatch `trellis-check` per Phase 2.2 before reporting completion.
+```
+
+`<ready>` 收尾指令也由 *"若有活动任务，询问是否继续"* 改为 *"若 task 为 READY，直接执行其 Next required action，不要再问是否继续"*。
+
+统一落地：
+
+| 文件 | 作用域 |
+|---|---|
+| `shared-hooks/session-start.py` | Claude Code、Gemini、Qoder、Kiro、iFlow |
+| `shared-hooks/inject-workflow-state.py` | UserPromptSubmit fallback 面包屑 |
+| `opencode/plugins/session-start.js` | OpenCode SessionStart |
+| `opencode/plugins/inject-workflow-state.js` | OpenCode fallback 面包屑 |
+| `codex/hooks/session-start.py` | Codex SessionStart |
+| `copilot/hooks/session-start.py` | Copilot（详见 Docs） |
+| `trellis/workflow.md` | `[workflow-state:in_progress]` 块 |
+
+## Bug Fixes
+
+### Claude Code statusline：Windows UTF-8 编码初始化不再崩溃
+
+Claude Code 的 statusline（`.claude/hooks/statusline.py`，由 `shared-hooks/statusline.py` 下发）在 Windows 上需要把 stdout/stderr 切到 UTF-8，否则中间点 `·` 等字符会被 GBK 编码折损。原先的实现：
+
+```python
+sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding="utf-8")
+sys.stderr = io.TextIOWrapper(sys.stderr.detach(), encoding="utf-8")
+```
+
+在部分 Windows Python 环境下，`sys.stdout` / `sys.stderr` 是不支持 `detach()` 的类型化包装（typed stream），这段编码初始化代码直接抛异常，导致整个 statusline 进程崩溃，Claude Code 顶部信息条空白。新实现改用 Python 3.7+ 标准的 `io.TextIOBase.reconfigure()` API，不可用时静默跳过：
+
+```python
+if sys.platform == "win32":
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="replace")
+```
+
+`errors="replace"` 保证个别异常字符不至于阻断渲染。
+
+### Codex / Copilot SessionStart 复用项目自带的编码初始化
+
+两个 hook 在输出 JSON 之前先跑一遍 `configure_project_encoding(project_dir)`：把 `.trellis/scripts/` 塞进 `sys.path`，项目里有 `common.configure_encoding()` 就调一下，没有就跳过：
+
+```python
+def configure_project_encoding(project_dir: Path) -> None:
+    scripts_dir = project_dir / ".trellis" / "scripts"
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    try:
+        from common import configure_encoding  # type: ignore[import-not-found]
+        configure_encoding()
+    except Exception:
+        pass
+```
+
+用于避免在未预先包装 stdout 的 Windows Codex/Copilot 运行中出现乱码。
+
+## Docs
+
+### Copilot `sessionStart` hook 当前仅作诊断用
+
+`copilot/hooks/session-start.py` 的模块 docstring 和 `systemMessage` 已明确说明：GitHub Copilot 现行 SessionStart 行为会忽略 hook stdout。脚本仍输出完整 Trellis payload（为与其他宿主对齐，也为 Copilot 将来支持留位），但旧的成功消息 `Trellis context injected (<n> chars)` 在该宿主上会误导用户。现在改为 `Trellis SessionStart diagnostics emitted (<n> chars); Copilot currently ignores sessionStart hook output.`。
+
+Copilot 用户应依赖 `UserPromptSubmit` 面包屑（会被 Copilot 采纳）与 hook 日志来确认 Trellis 是否生效，而非 SessionStart 输出。
+
+## Upgrade
+
+已有项目：
+
+```bash
+trellis update
+```
+
+本版无迁移步骤。已有 task、jsonl 文件与 `.current-task` 均保持原样。下次会话启动时会看到一句中文确认 SessionStart 已注入；处于 READY 状态的 task 将直接推动 `trellis-implement`，不再问"是否继续"。Windows 上 Claude Code 的 statusline 不再因 UTF-8 编码初始化失败而崩溃。
+
+全新安装：
+
+```bash
+npm i -g @mindfoldhq/trellis@0.5.0-beta.14
+```
