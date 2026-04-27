@@ -154,10 +154,13 @@ This applies to self-hosted GitLab / GitHub Enterprise sources and SSH registry 
 SHARED_HOOKS_BY_PLATFORM
 ```
 
-The manifest includes 10 hash-verified `safe-file-delete` entries for hooks that were written to projects but never invoked by the target platform.
+Claude Code statusLine is no longer installed by default. New installs do not write `.claude/hooks/statusline.py` or configure `statusLine` in `.claude/settings.json`.
+
+The manifest includes 11 hash-verified `safe-file-delete` entries for hooks that were written to projects but are now orphaned or disabled by default.
 
 | Removed path | Reason |
 |---|---|
+| `.claude/hooks/statusline.py` | Claude Code statusLine is disabled by default |
 | `.cursor/hooks/statusline.py` | Cursor has no `statusLine` event |
 | `.codex/hooks/statusline.py` | Codex has no `statusLine` event |
 | `.gemini/hooks/statusline.py` | Gemini has no `statusLine` event |

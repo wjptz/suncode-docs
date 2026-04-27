@@ -154,10 +154,13 @@ Template registry 下载现在支持私有 Git-backed registry。registry source
 SHARED_HOOKS_BY_PLATFORM
 ```
 
-manifest 包含 10 条 hash-verified `safe-file-delete` entry，用于清理曾写入项目但平台不会调用的 hook。
+Claude Code statusLine 默认不再安装。新项目不会写 `.claude/hooks/statusline.py`，也不会在 `.claude/settings.json` 里配置 `statusLine`。
+
+manifest 包含 11 条 hash-verified `safe-file-delete` entry，用于清理曾写入项目但现在已经孤立或默认禁用的 hook。
 
 | 删除路径 | 原因 |
 |---|---|
+| `.claude/hooks/statusline.py` | Claude Code statusLine 默认禁用 |
 | `.cursor/hooks/statusline.py` | Cursor 没有 `statusLine` event |
 | `.codex/hooks/statusline.py` | Codex 没有 `statusLine` event |
 | `.gemini/hooks/statusline.py` | Gemini 没有 `statusLine` event |
