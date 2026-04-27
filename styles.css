@@ -173,7 +173,7 @@ pre.cjk-diagram b {
 
 /* ── Staggered line delays (~29s total) ──
    user → 0.6s → AI reply;  AI→AI 1.0-1.4s;  before next user 1.5-1.7s */
-.td-d0  { animation-delay: 0.5s; }   /* ❯ /trellis:start */
+.td-d0  { animation-delay: 0.5s; }   /* ❯ New AI session */
 .td-d1  { animation-delay: 1.1s; }   /*   ● Loaded (+0.6) */
 .td-d2  { animation-delay: 1.8s; }   /*   ● What would you like... (+0.7) */
 .td-d3  { animation-delay: 2.8s; }   /* ❯ Add Gemini CLI... (+1.0) */
@@ -188,10 +188,10 @@ pre.cjk-diagram b {
 .td-d12 { animation-delay: 15.3s; }  /*   ● TypeCheck/Lint/Tests (+1.3) */
 .td-d13 { animation-delay: 16.8s; }  /*   ▶ check(...) (+1.5) */
 .td-d14 { animation-delay: 18.8s; }  /*   └ Found 1 issue (+1.2 after load) */
-.td-d15 { animation-delay: 21.5s; }  /* ❯ /trellis:update-spec (+1.7 after fix) */
+.td-d15 { animation-delay: 21.5s; }  /* ❯ Capture spec learning (+1.7 after fix) */
 .td-d16 { animation-delay: 22.1s; }  /*   ● Read(...) (+0.6) */
 .td-d17 { animation-delay: 23.3s; }  /*   ● Update(...) (+1.2) */
-.td-d18 { animation-delay: 24.3s; }  /* ❯ /trellis:record-session (+1.0) */
+.td-d18 { animation-delay: 24.3s; }  /* ❯ /trellis:finish-work (+1.0) */
 .td-d19 { animation-delay: 24.9s; }  /*   ● Bash(archive) (+0.6) */
 .td-d20 { animation-delay: 26.1s; }  /*   ● Bash(add_session) (+1.2) */
 .td-d21 { animation-delay: 27.1s; }  /*   └ Task archived (+1.0) */
@@ -315,4 +315,3 @@ pre.cjk-diagram b {
   display: block !important;
   transform: translateY(0);
 }
-

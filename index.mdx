@@ -7,7 +7,7 @@ description: 'All-in-one AI framework & toolkit for 10+ AI coding platforms'
 
 AI's capabilities grow like vines: full of vitality but spreading everywhere. Trellis is scaffolding for AI, guiding it along the path of your conventions.
 
-Supported platforms: Claude Code, Cursor, OpenCode, Codex, Kiro, Kilo, Gemini CLI, Antigravity, Windsurf, Qoder, CodeBuddy, GitHub Copilot, Droid, plus any agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more).
+Supported platforms: Claude Code, Cursor, OpenCode, Codex, Kiro, Kilo, Gemini CLI, Antigravity, Windsurf, Qoder, CodeBuddy, GitHub Copilot, Droid, Pi Agent, plus any agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more).
 
 ### One-Line Summary
 
@@ -25,7 +25,7 @@ Supported platforms: Claude Code, Cursor, OpenCode, Codex, Kiro, Kilo, Gemini CL
 | Cross-session memory | None | None | None | **Workspace journal persistence** |
 | Workflow enforcement | None | None | None | **Auto-trigger skills + check sub-agent verify loop** |
 | Team sharing | Single user | Single user | Shareable but no standard | **Git-versioned Spec library** |
-| Platform support | Cursor only | Claude Code only | Per platform | **10+ platforms** |
+| Platform support | Cursor only | Claude Code only | Per platform | **14 configured platforms + shared skill ecosystem** |
 
 ### Core Concepts at a Glance
 
@@ -36,7 +36,7 @@ Supported platforms: Claude Code, Cursor, OpenCode, Codex, Kiro, Kilo, Gemini CL
 | **Task** | A work unit containing requirements docs and context configuration | `.trellis/tasks/` |
 | **Skill** | Auto-triggered workflow modules: brainstorm, before-dev, check, update-spec, break-loop | platform-specific skills dir |
 | **Sub-agent** | Specialized AI sub-process: `trellis-research`, `trellis-implement`, `trellis-check` | platform-specific agents dir |
-| **Command** | Explicit entry points: `/trellis:start` and `/trellis:finish-work` | platform-specific commands dir |
+| **Command** | Explicit session entries: `finish-work`, `continue`, and manual `start` where needed | platform-specific commands dir |
 | **Hook** | Auto-triggered scripts that inject context at session start, sub-agent launch, etc. (platforms with hook support) | `.claude/hooks/`, etc. |
 | **Journal** | Session log files recording what was done in each development session | `.trellis/workspace/{name}/journal-N.md` |
 

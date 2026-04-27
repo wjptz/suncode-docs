@@ -92,11 +92,17 @@ After Batch 1 completes, verify and update downstream task contexts:
 
 ## Parallel Development
 
-### Start Parallel Agents
+### Start Parallel Sessions
 
-**Prompt:** `/trellis:parallel`
+For current Trellis, create one Git worktree and one AI session for each Batch 2 task, then start the matching Trellis task inside that session.
 
-AI launches 3 worktree agents for Batch 2, each working in an isolated git worktree:
+```bash
+git worktree add ../asr-audio-recorder -b feature/asr-audio-recorder
+git worktree add ../asr-volcengine-client -b feature/asr-volcengine-client
+git worktree add ../asr-floating-window -b feature/asr-floating-window
+```
+
+Each session uses its own `.trellis/.runtime/sessions/<session-key>.json`, so starting one task does not affect the others.
 
 ![parallel agents](/images/use-cases/open-typeless/step3-1.png)
 
@@ -110,7 +116,7 @@ AI monitors agent status and task progress:
 
 ### Record Session
 
-After parallel agents complete, they create PRs automatically:
+After parallel sessions complete, review and merge each branch through your normal Git process:
 
 ![parallel PRs](/images/use-cases/open-typeless/step3-4.png)
 
@@ -148,7 +154,7 @@ Using Trellis to build open-typeless:
 | ---- | -------------------- | ------------------------------------ |
 | 1    | Initialize project   | `trellis init`, spec organization    |
 | 2    | Plan tasks           | AI task breakdown, batch planning    |
-| 3    | Parallel development | `/trellis:parallel`, worktree agents |
+| 3    | Parallel development | Native Git worktrees + session-scoped Trellis tasks |
 | 4    | Monitor & record     | `/trellis:finish-work`            |
 | 5    | Continue iterating   | Task hooks, implement/trellis-check sub-agents   |
 

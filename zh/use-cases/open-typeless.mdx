@@ -91,11 +91,17 @@ Batch 1 完成后，验证并更新下游任务的 context：
 
 ## 并行开发
 
-### 启动并行 Agent
+### 启动并行会话
 
-**Prompt:** `/trellis:parallel`
+当前 Trellis 推荐为 Batch 2 的每个任务创建一个 Git worktree 和一个 AI 会话，然后在对应会话里 start 对应 Trellis task。
 
-AI 启动 3 个 worktree agent 开发 Batch 2，每个 agent 在隔离的 git worktree 中工作：
+```bash
+git worktree add ../asr-audio-recorder -b feature/asr-audio-recorder
+git worktree add ../asr-volcengine-client -b feature/asr-volcengine-client
+git worktree add ../asr-floating-window -b feature/asr-floating-window
+```
+
+每个会话使用自己的 `.trellis/.runtime/sessions/<session-key>.json`，一个任务的 start 不会影响另一个会话。
 
 ![parallel agents](/images/use-cases/open-typeless/step3-1.png)
 
@@ -109,7 +115,7 @@ AI 监控 agent 状态和任务进度：
 
 ### 记录 Session
 
-并行 agent 完成后会自动创建 PR：
+并行会话完成后，用你平时的 Git 流程 review 和 merge 每个分支：
 
 ![parallel PRs](/images/use-cases/open-typeless/step3-4.png)
 
@@ -147,7 +153,7 @@ AI 帮助完成剩余设置（环境配置、权限）：
 | ---- | ---------- | ------------------------------------ |
 | 1    | 初始化项目 | `trellis init`，spec 组织            |
 | 2    | 规划任务   | AI 任务拆分，批次规划                |
-| 3    | 并行开发   | `/trellis:parallel`，worktree agents |
+| 3    | 并行开发   | 原生 Git worktree + session-scoped Trellis tasks |
 | 4    | 监控和记录 | `/trellis:finish-work`            |
 | 5    | 继续迭代   | Task hooks，implement/trellis-check sub-agents   |
 

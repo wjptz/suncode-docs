@@ -17,15 +17,16 @@ title: 'Appendix A: Key File Paths Quick Reference'
 | `.trellis/.version`           | Current Trellis version               | Updates                  |
 | `.trellis/.template-hashes.json` | Template file hashes              | Updates                  |
 | `.trellis/.developer`         | Developer identity                    | Every session            |
-| `.trellis/.current-task`      | Pointer to the active task            | Sub-agent launch         |
+| `.trellis/.runtime/sessions/<session-key>.json` | Active task for one AI session/window | Continue, hooks, sub-agent launch |
 
 ### Shipped commands (Claude Code)
 
 | File                                                | Invoked as                |
 | --------------------------------------------------- | ------------------------- |
-| `.claude/commands/trellis/start.md`                 | `/trellis:start`          |
 | `.claude/commands/trellis/finish-work.md`           | `/trellis:finish-work`    |
 | `.claude/commands/trellis/continue.md`              | `/trellis:continue`       |
+
+On platforms where SessionStart is automatic, `start` is not installed as a user-facing command. Agent-less platforms still ship a manual start workflow.
 
 ### Shipped sub-agents (Claude Code)
 
@@ -66,6 +67,7 @@ Each platform writes into its own directory (see chapter 13 for the full layout)
 - `.codebuddy/commands/trellis/`, `.codebuddy/skills/`, `.codebuddy/agents/`, `.codebuddy/hooks/`
 - `.factory/commands/trellis/`, `.factory/droids/`, `.factory/skills/`, `.factory/hooks/`
 - `.github/copilot-instructions.md`, `.github/prompts/`, `.github/skills/`, `.github/agents/`, `.github/copilot/hooks/`
+- `.pi/prompts/`, `.pi/skills/`, `.pi/agents/`, `.pi/extensions/trellis/`, `.pi/settings.json`
 - `.kilocode/workflows/`, `.kilocode/skills/`
 - `.agent/workflows/`, `.agent/skills/` (Antigravity)
 - `.windsurf/workflows/`, `.windsurf/rules/`

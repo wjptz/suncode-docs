@@ -14,8 +14,8 @@ title: '架构全景'
                               ▼
 ┌──────────────────────────────────────────────────────────────┐
 │  Claude Code / Cursor / OpenCode / Codex / Kiro / Gemini /   │
-│  Qoder / CodeBuddy / Copilot / Droid / Kilo / Antigravity /  │
-│  Windsurf  +  .agents/skills/ ecosystem (Amp, Cline, ...)    │
+│  Qoder / CodeBuddy / Copilot / Droid / Pi / Kilo /           │
+│  Antigravity / Windsurf + .agents/skills ecosystem           │
 │                 (AI Coding Assistant Layer)                  │
 └─────────────────────────────┬────────────────────────────────┘
                               │
@@ -64,7 +64,7 @@ title: '架构全景'
 `.trellis/workflow.md` 是定义 Plan / Execute / Finish 契约的唯一一份文件：Phase 1（1.0 `task.py create` → 1.4 `task.py start`）、Phase 2（2.1 `trellis-implement` → 2.2 `trellis-check`）、Phase 3（3.1 最终验证 → 3.4 `/trellis:finish-work`）。系统其余部件都从它读：
 
 - **SessionStart hook** 自动注入它的 TOC + 步骤级详情，你开口前 AI 已经拿到契约。
-- **`/trellis:continue`** 读 `.current-task` + 任务 `status`，再对照 `workflow.md` 判断当前在哪一步、下一步该做什么。
+- **`/trellis:continue`** 读当前会话 runtime（`.trellis/.runtime/sessions/<session-key>.json`）+ 任务 `status`，再对照 `workflow.md` 判断当前在哪一步、下一步该做什么。
 - **Skill 和 sub-agent** 通过 JSONL 拿到它（`workflow.md` 是 `implement.jsonl` 默认第一条）。
 - **任务状态** 默认三个：`planning` / `in_progress` / `completed`（由 `task.py create` / `start` / `archive` 自动设置），与 `workflow.md` 里的三个 Phase 一一对应。`workflow.md` 里按状态分块写提醒；要加自定义状态直接在 `workflow.md` 里加对应 block。
 
@@ -73,8 +73,8 @@ title: '架构全景'
 ### 会话启动流程
 
 <Tabs>
-  <Tab title="Hook 可用（CC / Cursor / OC / Gemini / Qoder / CodeBuddy / Copilot / Droid）">
-    SessionStart hook 在 session 启动时自动触发，平台对应的 `session-start.py` / `session-start.js` 不需要手动调用即完成 Trellis 上下文注入。打开终端就直接描述任务；想显式看上下文报告可以跑 `/trellis:start`。
+  <Tab title="Hook / extension 可用（CC / Cursor / OC / Gemini / Qoder / CodeBuddy / Copilot / Droid / Pi）">
+    SessionStart hook 或 extension 在 session 启动时自动触发，平台对应的 `session-start.py` / `session-start.js` / Pi extension 不需要手动调用即完成 Trellis 上下文注入。打开终端就直接描述任务；暴露 `/trellis:start` 的平台可以用它显式查看上下文报告。
   </Tab>
   <Tab title="Codex">
     Codex 每个 session 自动读仓库根的 `AGENTS.md`。在 `~/.codex/config.toml` 里打开 `codex_hooks = true` 后 SessionStart hook 也会跑，行为和上面的 hook 可用 Tab 一致；不开启则只有 prelude 兜底。
@@ -122,10 +122,10 @@ title: '架构全景'
 ### 规范注入机制
 
 <Info>
-  Sub-agent 自动规范注入依赖平台的 PreToolUse hook（或等价机制）。当前支持：Claude Code、Cursor、OpenCode、CodeBuddy、Droid。其他平台由主会话自行读 JSONL 并把相关内容传给 sub-agent。
+  Sub-agent 自动规范注入依赖平台的 PreToolUse hook 或 extension 等价机制。当前支持：Claude Code、Cursor、OpenCode、CodeBuddy、Droid、Pi Agent。其他平台由主会话自行读 JSONL 并把相关内容传给 sub-agent。
 </Info>
 
-`inject-subagent-context`（Claude Code 的 Python，OpenCode 的 JS）是规范注入引擎。主会话 spawn `trellis-*` sub-agent 时，这个 hook 拦截调用并按 JSONL 注入精准上下文。
+`inject-subagent-context`（Claude Code 的 Python、OpenCode 的 JS、Pi 的 extension 代码）是规范注入引擎。主会话 spawn `trellis-*` sub-agent 时，hook 或 extension 拦截调用并按 JSONL 注入精准上下文。
 
 **工作流程**：
 
@@ -134,29 +134,31 @@ Main session spawns: Task(subagent_type="trellis-implement", prompt="...")
      │
      ▼
 ┌──────────────────────────────────────────────────────────────┐
-│  Hook: inject-subagent-context  (runs BEFORE sub-agent)      │
+│  Hook / extension: inject-subagent-context                   │
+│  (runs BEFORE sub-agent)                                     │
 │                                                              │
-│  Reads happen in the HOOK, not in the sub-agent:             │
+│  读取发生在 hook / extension，不在 sub-agent 里：             │
 │                                                              │
-│  1. Hook reads .trellis/.current-task                        │
+│  1. 读取当前会话 runtime                                     │
+│     -> .trellis/.runtime/sessions/<session-key>.json         │
 │     -> current task directory path                           │
 │                                                              │
-│  2. Hook reads {task_dir}/implement.jsonl                    │
+│  2. 读取 {task_dir}/implement.jsonl                          │
 │     -> list of spec files this sub-agent needs               │
 │                                                              │
-│  3. Hook reads each file referenced in the JSONL             │
+│  3. 读取 JSONL 引用的每个文件                                │
 │     -> .trellis/spec/backend/index.md                        │
 │     -> .trellis/spec/backend/database-guidelines.md          │
 │     -> ...                                                   │
 │                                                              │
-│  4. Hook reads prd.md (requirements) and info.md (design)    │
+│  4. 读取 prd.md（需求）和 info.md（设计）                     │
 │                                                              │
-│  5. Hook concatenates it all and prepends as                 │
+│  5. 拼接全部内容，并作为                                     │
 │     "additionalContext" to the sub-agent's prompt            │
 └───────────────────────┬──────────────────────────────────────┘
                         │
                         ▼
-Sub-agent 启动时 prompt 里已经带着这些内容了（它本身不读任何文件）：
+在 hook-push 和 extension-backed 平台上，sub-agent 启动时 prompt 里已经带着这些内容了（它本身不读任何文件）。pull-based 平台则在 sub-agent prelude 里放等价的读取指令：
 
   # trellis-implement 任务
   ## 你的上下文

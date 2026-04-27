@@ -1,143 +1,52 @@
 ---
 title: '并行会话'
-description: '并行运行多个隔离的 AI 会话'
+description: '运行多个 AI 会话且不共享 active task 状态'
 ---
 
-## 两种方式
+## 当前模型
 
-Trellis 支持两种方式运行多个 agent：
+Trellis 0.5 已移除旧的 Multi-Agent Pipeline、`/trellis:parallel`、`worktree.yaml`，以及 plan/dispatch/debug 那套 6-agent 流水线。现在直接使用 AI 工具自己的会话能力和 Git worktree。
 
-| 方式              | 说明                             | 隔离性             |
-| ----------------- | -------------------------------- | ------------------ |
-| **Multi-Agent**   | 多个 agent 在同一目录            | 共享文件，可能冲突 |
-| **Multi-Session** | 每个 agent 在独立的 Git worktree | 完全隔离，无冲突   |
-
-本指南介绍 **Multi-Session** —— 基于 worktree 的方式。
-
-## 为什么用 Multi-Session
-
-有些任务是独立的。加登录页面不影响加设置页面。用独立的 worktree，agent 之间互不干扰。
+关键变化是：active task 变成了**按会话隔离**：
 
 ```
-主仓库
-    │
-    ├── worktree-1/  →  会话 1 (feature-a)
-    ├── worktree-2/  →  会话 2 (feature-b)
-    └── worktree-3/  →  会话 3 (feature-c)
+.trellis/.runtime/sessions/<session-key>.json
 ```
 
-每个 worktree 是独立的 checkout，在独立的分支上。开发过程中不会有合并冲突。
+这意味着窗口 A 可以做 task A，窗口 B 可以做 task B。一个 AI 会话里 start 任务，不会覆盖另一个会话的 active task。
 
-完成后，每个会话创建一个 PR。你审查然后合并。
+## 推荐流程
 
-## 配置
+1. 每个独立工作项创建一个 Trellis task。
+2. 每个 task 打开一个 AI 会话/窗口。
+3. 在每个会话里运行 `task.py start "$TASK_DIR"`。
+4. 每个会话按正常 Plan → Execute → Finish 工作流推进。
+5. 用你平时的 Git 流程 review 和 merge 分支。
 
-启动前，在项目根目录创建 `worktree.yaml`：
-
-```yaml
-# worktree.yaml
-base_branch: main
-worktree_dir: ../.trellis-worktrees # worktree 创建位置
-tasks:
-  - id: feature-a
-    branch: feature/login-page
-    prd: |
-      添加登录页面，包含邮箱/密码认证。
-      包括表单验证和错误处理。
-  - id: feature-b
-    branch: feature/settings-page
-    prd: |
-      添加用户设置页面。
-      允许修改显示名和密码。
-```
-
-每个任务定义：
-
-- `id`：唯一标识符
-- `branch`：Git 分支名
-- `prd`：此任务的需求
-
-## 启动并行会话
-
-在 Claude Code 里用 `/trellis:parallel` 命令。它会引导你：
-
-- 定义任务
-- 创建 worktree
-- 启动会话
-
-这会创建：
-
-- 每个任务一个 worktree
-- 每个任务一个 Claude Code 会话
-- 每个任务一个分支
-
-每个会话独立运行。
-
-## 监控进度
-
-查看状态：
+需要代码隔离时，自己创建 Git worktree：
 
 ```bash
-python3 .trellis/scripts/multi_agent/status.py
+git worktree add ../feature-login -b feature/login
+git worktree add ../feature-settings -b feature/settings
 ```
 
-输出会显示每个任务的当前阶段和分支。
+然后在每个 worktree 里分别打开 AI 会话。
 
-## 会话流水线
-
-每个会话经过这些阶段：
-
-1. **Plan** - 理解需求，找出要改的文件
-2. **Implement** - 写代码
-3. **Check** - 按规范审查，自己修问题
-4. **PR** - 创建 pull request
-
-check 阶段有个 "Ralph Loop"——如果发现问题，它会回去修。这防止提交质量差的 PR。
-
-## 什么时候用
+## 适用场景
 
 适合：
 
-- 独立的功能
+- 独立功能
 - 并行修 bug
-- 生成变体（同一问题的不同方案）
+- 不同 package 或不同文件
+- 每个分支都能独立 review 的实验
 
 不适合：
 
-- 互相依赖的功能
-- 改同一个文件的工作
-- 需要跟 AI 反复迭代时
+- 多个任务会改同一批文件
+- 一个任务依赖另一个任务未合并的改动
+- 需要在一个对话里密集和用户来回确认的工作
 
-## 清理
+## 上下文注入
 
-完成后清理 worktree：
-
-```bash
-python3 .trellis/scripts/multi_agent/cleanup.py
-```
-
-这会删除 worktree 但保留分支。合并后的分支正常删就行。
-
-## 平台支持
-
-| 功能                      | Claude Code | Cursor      | iFlow       | OpenCode    | Codex       |
-| ------------------------- | ----------- | ----------- | ----------- | ----------- | ----------- |
-| Multi-Agent（同目录）     | ✅ 完全支持 | ⚠️ 有限支持 | ✅ 完全支持 | ⚠️ 有限支持 | ⚠️ 有限支持 |
-| Multi-Session（worktree） | ✅ 完全支持 | ❌ 不支持   | ✅ 完全支持 | ❌ 不支持   | ❌ 不支持   |
-
-Multi-Session 需要 hooks 来自动注入上下文（目前 Claude Code 和 iFlow 支持）。
-
-### Agent 流水线
-
-每个 Multi-Session 任务使用 6-agent 流水线：
-
-| Agent         | 职责                     |
-| ------------- | ------------------------ |
-| **plan**      | 分析需求，规划要改的文件 |
-| **dispatch**  | 编排整个流水线           |
-| **implement** | 写代码                   |
-| **check**     | 按规范审查，自己修问题   |
-| **debug**     | 修复特定问题             |
-| **research**  | 搜索代码库，找模式       |
-
-你也需要足够的 API 额度。三个会话意味着三倍的 token 消耗。
+Hook/extension-backed 平台会按当前会话注入 active task 上下文。Pull-based 平台由 sub-agent prelude 自己读取任务 JSONL。两种方式里，决定 active task 的都是 session key，不再有全局 active-task 指针。

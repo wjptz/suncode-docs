@@ -4,8 +4,6 @@ sidebarTitle: '工作流演示'
 description: '看看 Trellis 完整工作流的实际效果: 从需求到交付'
 ---
 
-{/* 终端演示: CSS 在 styles.css（td- 前缀），JS 在 terminal-demo.js */}
-
 <div className="td-wrap">
   <div className="td-inner">
 
@@ -23,7 +21,7 @@ description: '看看 Trellis 完整工作流的实际效果: 从需求到交付'
         {/* ── 阶段 1: 启动会话 ── */}
         <div className="td-line td-line-user td-d0">
           <span className="td-prompt">❯ </span>
-          <span className="td-cmd">/trellis:start</span>
+          <span className="td-cmd">新 AI 会话</span>
         </div>
         <div className="td-line td-line-ai td-d1">
           <span className="td-bullet">● </span>
@@ -107,7 +105,7 @@ description: '看看 Trellis 完整工作流的实际效果: 从需求到交付'
         {/* ── 阶段 7: 更新规范 ── */}
         <div className="td-line td-line-user td-d15">
           <span className="td-prompt">❯ </span>
-          <span className="td-cmd">/trellis:update-spec</span>
+          <span className="td-cmd">把 Gemini CLI 约定沉淀进 spec</span>
         </div>
         <div className="td-line td-line-ai td-d16">
           <span className="td-tool-name">● Read</span>
@@ -203,7 +201,7 @@ description: '看看 Trellis 完整工作流的实际效果: 从需求到交付'
 
 <Steps>
   <Step title="启动会话">
-    `/trellis:start` 加载项目上下文: 工作流规则、活跃任务、Git 状态和最近的工作日志。AI 立即进入状态。
+    SessionStart hook 或 extension 加载项目上下文: 工作流规则、活跃任务、Git 状态和最近的工作日志。AI 立即进入状态。
   </Step>
   <Step title="描述需求">
     用自然语言描述你想要的功能。Trellis 创建一个带结构化 PRD 的跟踪任务。
@@ -218,7 +216,7 @@ description: '看看 Trellis 完整工作流的实际效果: 从需求到交付'
     trellis-check sub-agent 对照代码规范审查每个改动文件。发现 1 个缺失的 `EXCLUDE_PATTERNS` 条目并自动修复。
   </Step>
   <Step title="更新规范">
-    `/trellis:update-spec` 将本次会话中学到的新模式沉淀到规范库: 让未来的会话更准确。
+    `trellis-update-spec` skill 将本次会话中学到的新模式沉淀到规范库: 让未来的会话更准确。
   </Step>
   <Step title="记录与交付">
     `/trellis:finish-work` 将会话归档到工作日志。5 个原子提交已在功能分支上，准备好等待 Review。
@@ -237,5 +235,5 @@ description: '看看 Trellis 完整工作流的实际效果: 从需求到交付'
 | **人工输入** | 3 条消息（需求描述 + update-spec + finish-work） |
 
 <Card title="立即体验" icon="rocket" href="/zh/start/install-and-first-task">
-  安装 Trellis，运行 `/trellis:start` 开始你的第一个任务。
+  安装 Trellis，打开新的 AI 会话，然后描述你的第一个任务。
 </Card>

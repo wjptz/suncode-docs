@@ -41,18 +41,27 @@ To specify manually: `trellis init -u john` (replace `john` with your actual nam
 By default, `trellis init` sets up for Claude Code. To include other platforms:
 
 ```bash
-# Include Cursor commands
+# Include Cursor support
 trellis init --cursor
 
 # Include multiple platforms
-trellis init --cursor --iflow
+trellis init --cursor --pi
 
 # All available platform flags
-trellis init --claude     # Claude Code (default)
-trellis init --cursor     # Cursor IDE
-trellis init --iflow      # iFlow CLI
-trellis init --opencode   # OpenCode
-trellis init --codex      # Codex (OpenAI CLI)
+trellis init --claude       # Claude Code (default)
+trellis init --cursor       # Cursor IDE
+trellis init --opencode     # OpenCode
+trellis init --codex        # Codex
+trellis init --kiro         # Kiro
+trellis init --gemini       # Gemini CLI
+trellis init --qoder        # Qoder
+trellis init --codebuddy    # CodeBuddy
+trellis init --copilot      # GitHub Copilot
+trellis init --droid        # Factory Droid
+trellis init --pi           # Pi Agent
+trellis init --kilo         # Kilo
+trellis init --antigravity  # Antigravity
+trellis init --windsurf     # Windsurf
 ```
 
 ### Other useful flags
@@ -78,7 +87,7 @@ This creates a `.trellis/` directory with the default structure:
 └── tasks/               # Task tracking
 ```
 
-For Claude Code, it also sets up `.claude/` with hooks and commands. For other platforms, it creates the corresponding config directory (`.cursor/`, `.iflow/`, `.agents/`, etc.).
+For Claude Code, it also sets up `.claude/` with hooks, skills, agents, and session-boundary commands. For other platforms, it creates the corresponding config directory (`.cursor/`, `.opencode/`, `.codex/`, `.pi/`, `.agents/`, etc.).
 
 ## Updating Trellis
 
@@ -155,4 +164,3 @@ If it doesn't, your specs probably aren't specific enough. Add more examples.
 </Card>
 
 </CardGroup>
-```

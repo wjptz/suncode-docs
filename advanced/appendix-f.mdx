@@ -6,7 +6,7 @@ title: 'Appendix F: FAQ'
 
 ### Q1: Should I trigger anything at the start of a session?
 
-On platforms with a SessionStart hook (Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid — plus Codex if you set `codex_hooks = true`), context is injected automatically, so the answer is "no, just describe your task". On platforms without a SessionStart hook (Kiro, Kilo, Antigravity, Windsurf), run `/trellis:start` (or `@trellis:start` on Kiro) to load the full context report.
+On platforms with a SessionStart hook or extension (Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent — plus Codex if you set `codex_hooks = true`), context is injected automatically, so the answer is "no, just describe your task". On platforms without automatic session injection (Kilo, Antigravity, Windsurf), run `/trellis:start` or the platform's start workflow to load the full context report.
 
 ### Q2: How do I make the AI verify quality before I commit?
 
@@ -32,13 +32,13 @@ Aim for 200-500 lines per file, 20-50 lines per section. Concrete code examples 
 
 ### Q6: Will multiple developers using Trellis cause conflicts?
 
-Per-developer state is isolated (`workspace/{name}/`, `.developer`, `.current-task`). Shared state is `.trellis/spec/` and `.trellis/tasks/`; they go through PR review like any code. Use `--assignee` when creating a task to avoid collisions.
+Per-developer and per-session state is isolated (`workspace/{name}/`, `.developer`, `.runtime/sessions/<session-key>.json`). Shared state is `.trellis/spec/` and `.trellis/tasks/`; they go through PR review like any code. Use `--assignee` when creating a task to avoid collisions.
 
 ### Q7: How do I migrate an existing project to Trellis?
 
 1. `npm install -g @mindfoldhq/trellis@beta`
 2. `trellis init -u your-name` in the project root (auto-creates a bootstrap task).
-3. Run `/trellis:start`; the brainstorm skill helps fill initial specs.
+3. Open a Trellis-enabled AI session, or run the platform's start workflow if it has no automatic session injection; the brainstorm skill helps fill initial specs.
 4. Manually supplement core specs based on your conventions.
 5. Add `.trellis/` and whichever `.{platform}/` directories you use to git and commit.
 6. Teammates pull, then run `trellis init -u their-name`.
@@ -56,7 +56,7 @@ For major versions, add `--migrate` to apply rename / delete entries from the mi
 
 ### Q9: Can Cursor users get the same automation as Claude Code?
 
-Mostly. Cursor doesn't have a SessionStart hook, but `.cursor/rules/trellis.mdc` is an `alwaysApply` rule that carries the Trellis prelude into every conversation. Sub-agents don't exist in Cursor, so the work that would happen in `trellis-implement` / `trellis-check` runs inline in the main session instead. Skills are delivered as rule content and matched by Cursor's rule system.
+Yes. Cursor now ships Trellis hooks, skills, and sub-agents. SessionStart injects the workflow at conversation start, `UserPromptSubmit` adds workflow-state breadcrumbs, and sub-agent context injection passes the right JSONL content into `trellis-implement` / `trellis-check` before they run.
 
 ### Q10: How do Windows users install Trellis?
 
@@ -75,10 +75,10 @@ trellis init -u your-name
 
 ### Q11: Do I need to reconfigure when I switch between AI coding tools?
 
-No. `trellis init` with multiple platform flags writes all of them. If you started with Cursor only and later add Claude Code, re-run:
+No. `trellis init` with multiple platform flags writes all of them. If you started with Cursor only and later add Claude Code and Pi Agent, re-run:
 
 ```bash
-trellis init -u your-name --claude
+trellis init -u your-name --claude --pi
 ```
 
 The `.trellis/` directory (spec, workspace, tasks) is shared across all tools; only the `.{platform}/` directory is new.
@@ -105,7 +105,7 @@ The headline changes:
 - **`workflow.md` is the single source of truth**: Phase definitions, skill routing, and per-turn workflow-state reminders all live in `.trellis/workflow.md`. Fork the workflow by editing one markdown file — no Python or hook changes needed (see chapter 8).
 - **Per-turn workflow-state breadcrumbs**: a new `inject-workflow-state.py` hook fires on every user message and injects a `<workflow-state>` block driven by the current task's status, keeping the AI aligned with the Plan → Execute → Finish phases.
 - **Three sub-agents replaced six**: `trellis-research` / `trellis-implement` / `trellis-check`. `dispatch` / `plan` / `debug` were removed; Ralph Loop and its SubagentStop hook were removed (the check sub-agent owns its retry loop now).
-- **Seven platforms upgraded to agent-capable**: Cursor / OpenCode / Gemini CLI / Qoder / CodeBuddy / Copilot / Droid all got sub-agents and hooks; `.trellis/` core is unchanged across 13 platforms.
+- **Eight platforms upgraded to agent-capable**: Cursor / OpenCode / Gemini CLI / Qoder / CodeBuddy / Copilot / Droid / Pi Agent all got sub-agents and hooks or extension-backed equivalents; `.trellis/` core is unchanged across 14 platforms.
 - **Multi-Agent Pipeline, `/parallel`, `worktree.yaml` removed**: native worktree support in modern agent CLIs replaces them.
 - **Forced migration gate**: breaking releases require `trellis update --migrate` and exit with instructions instead of silently leaving half-migrated files.
 

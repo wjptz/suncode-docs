@@ -7,51 +7,42 @@ description: 'Common workflows as commands'
 
 Slash commands are shortcuts. Instead of explaining what you want, you type `/command` and the AI knows the workflow.
 
-Trellis ships with commands for common tasks. You can add your own.
+Trellis ships a small command surface for session boundaries. Most workflow actions are now auto-trigger skills or sub-agents. You can add your own commands for project-specific entry points.
 
 ## Built-in commands
 
-### Session management
+### Session boundaries
 
 | Command                   | What it does                                             |
 | ------------------------- | -------------------------------------------------------- |
-| `/trellis:start`          | Start a work session. Loads context, shows current task. |
-| `/trellis:finish-work`    | End a session. Run checks, update journal.               |
-| `/trellis:record-session` | Save what happened to the workspace journal.             |
+| `/trellis:start`          | Manual start workflow for platforms without automatic session injection. Hook / extension platforms load context automatically. |
+| `/trellis:continue`       | Continue the current session task at the next workflow step. |
+| `/trellis:finish-work`    | End a session. Run final checks, update journal, archive completed tasks. |
 
 ### Development workflow
 
-| Command                        | What it does                                     |
-| ------------------------------ | ------------------------------------------------ |
-| `/trellis:before-backend-dev`  | Load backend specs before coding.                |
-| `/trellis:before-frontend-dev` | Load frontend specs before coding.               |
-| `/trellis:brainstorm`          | Discover and clarify requirements interactively. |
-| `/trellis:check-backend`       | Review code against backend specs.               |
-| `/trellis:check-frontend`      | Review code against frontend specs.              |
-| `/trellis:check-cross-layer`   | Verify changes across multiple layers.           |
-| `/trellis:create-command`      | Scaffold a new custom slash command.             |
-| `/trellis:integrate-skill`     | Integrate an external skill into your project.   |
-
-### Multi-agent
-
-| Command             | What it does                               |
-| ------------------- | ------------------------------------------ |
-| `/trellis:parallel` | Start multiple agents working in parallel. |
+| Skill / sub-agent        | What it does                                     |
+| ------------------------ | ------------------------------------------------ |
+| `trellis-brainstorm`     | Discover and clarify requirements interactively. |
+| `trellis-before-dev`     | Load relevant specs before coding.               |
+| `trellis-implement`      | Implement the task in an isolated sub-agent where supported. |
+| `trellis-check`          | Review code against specs and self-fix issues.   |
 
 ### Maintenance
 
-| Command                | What it does                              |
+| Skill                  | What it does                              |
 | ---------------------- | ----------------------------------------- |
-| `/trellis:update-spec` | Capture learnings into specs.             |
-| `/trellis:break-loop`  | Debug when stuck in a loop.               |
-| `/trellis:onboard`     | Explain the project to a new team member. |
+| `trellis-update-spec`  | Capture learnings into specs.             |
+| `trellis-break-loop`   | Debug when stuck in a loop.               |
+
+Phase commands such as `/trellis:before-backend-dev`, `/trellis:check-backend`, `/trellis:record-session`, and `/trellis:parallel` were removed in Trellis 0.5. The current flow is task-based: create/plan the task, `continue` through the next step, and finish with `finish-work`.
 
 ## Using commands
 
 Type the command in Claude Code:
 
 ```
-/trellis:start
+/trellis:continue
 ```
 
 The command expands into a full prompt that tells the AI what to do. You don't see this prompt, but the AI follows it.
@@ -103,8 +94,8 @@ Commands use the folder name as a namespace:
 ```
 .claude/commands/
 ├── trellis/           # /trellis:* commands
-│   ├── start.md
-│   └── finish-work.md
+│   ├── finish-work.md
+│   └── continue.md
 └── my-project/        # /my-project:* commands
     └── deploy-check.md
 ```

@@ -11,15 +11,13 @@ description: 'Common questions about Trellis'
 
 Install with `npm install -g @mindfoldhq/trellis@beta`, then run `trellis init` in your project. That's it — you're ready to go.
 
-1. **Claude Code / iFlow users** — Open a new session and start working directly. The session start hook automatically injects everything the AI needs (Trellis workflow, recent git history, your latest journal entries, project context). Describe your requirements, the AI creates tasks, generates PRDs, loads relevant specs, and delegates to specialized agents (implement, check, etc.). After you verify the result, use `/trellis:record-session` to save the journal. You can also run `/trellis:start` manually to see the full workflow.
+1. **Claude Code / Cursor / OpenCode / Gemini / Qoder / CodeBuddy / Copilot / Droid / Pi Agent users** — Open a new session and start working directly. The SessionStart hook or extension automatically injects everything the AI needs (Trellis workflow, recent git history, latest journal entries, project context). Describe your requirements; the AI creates tasks, drafts PRDs, loads relevant specs, and delegates to `trellis-implement` / `trellis-check` where the platform supports sub-agents. After you verify and commit the result, use `/trellis:finish-work` (or the platform equivalent) to save the journal and archive completed tasks.
 
-2. **OpenCode users** — Similar to Claude Code. The session start plugin auto-injects context on your first message. Use `/trellis:start` to begin, then follow the same workflow: describe needs → AI loads specs → work → `/trellis:check-backend` or `/trellis:check-frontend` to self-review → `/trellis:record-session` to save. For full multi-agent pipeline support, install the [oh-my-opencode](https://github.com/nicepkg/oh-my-opencode) global plugin.
+2. **Codex / Kiro users** — Trellis content is delivered through skills, agents, preludes, and optional hooks. Describe the task directly, then use `continue` when you want Trellis to advance the current task to the next workflow step.
 
-3. **Cursor users** — Run `trellis init --cursor` to set up. Cursor doesn't support hooks yet, so manually trigger `/trellis-start` at the beginning of each session. The workflow is: `/trellis-start` → `/trellis-before-backend-dev` or `/trellis-before-frontend-dev` to load specs → do your work → `/trellis-check-backend` or `/trellis-check-frontend` to self-review → `/trellis-record-session` to save. Note: Cursor uses `-` instead of `:` in command names.
+3. **Kilo / Antigravity / Windsurf users** — These platforms do not expose the same hook/sub-agent primitives. Run the start workflow (`/start.md`, `.agent/workflows/start.md`, or `/trellis-start`), then the work runs inline in the main session.
 
-4. **Codex users** — Codex uses skills (`$` prefix) instead of slash commands. The workflow is: `$start` → `$before-backend-dev` or `$before-frontend-dev` → work → `$check-backend` or `$check-frontend` → `$record-session`.
-
-5. **Other tools** (Trae, Windsurf, etc.) — You can manually create slash commands matching your IDE/CLI format, then follow the same workflow as Cursor.
+4. **Other tools** — If they read `.agents/skills/`, they can consume the shared Trellis skills written by the Codex configurator. Otherwise, create platform-native prompts that call the same `.trellis/scripts/` workflow.
 
 </Accordion>
 
@@ -87,22 +85,20 @@ Specs are shared, which is the point — everyone follows the same conventions.
 </Accordion>
 
 <Accordion title="How does AI remember previous conversations?">
-Use `/trellis:record-session` to have AI write summaries to journal files. On the next session start, it reads recent journals and git info to restore context.
+Use `/trellis:finish-work` to have AI write summaries to journal files. On the next session start, it reads recent journals and git info to restore context.
 
 It's not magic memory. It's explicit journaling. You control what gets remembered.
 
 </Accordion>
 
 <Accordion title="Does Trellis work with Cursor?">
-Yes. Run `trellis init --cursor` to set up Cursor-specific commands.
+Yes. Run `trellis init --cursor` to set up Cursor-specific commands, skills, agents, and hooks.
 
-Trellis creates `.cursor/commands/` with all slash commands (e.g., `/trellis-start`, `/trellis-finish-work`). Note that Cursor uses `-` instead of `:` in command names.
+Trellis creates `.cursor/commands/` for session-boundary commands such as `/trellis-finish-work` and `/trellis-continue`. Note that Cursor uses `-` instead of `:` in command names.
 
-**Hooks**: Cursor doesn't support auto-injection hooks yet, so you need to manually trigger `/trellis-start` at the beginning of each session.
+**Hooks**: Cursor supports Trellis SessionStart, workflow-state, and sub-agent context injection hooks.
 
-**Multi-Agent** (same dir): Limited support, requires manual coordination.
-
-**Multi-Session** (worktree isolation): Not supported.
+**Sub-agents**: `trellis-implement`, `trellis-check`, and `trellis-research` are available.
 
 </Accordion>
 
@@ -150,7 +146,7 @@ Test it: new session, ask for code the spec covers, check if rules are followed.
 <Accordion title="What if I forget to set the current task?">
 Session runs without task-specific context. Specs still load from defaults, but the AI won't know your PRD or task-specific files.
 
-For task-specific work, use `/trellis:start` to begin a session.
+For task-specific work, run `task.py start "$TASK_DIR"` in the current AI session/window, or use `/trellis:continue` after the task is created and planned. Trellis stores that active task under `.trellis/.runtime/sessions/<session-key>.json`.
 
 </Accordion>
 

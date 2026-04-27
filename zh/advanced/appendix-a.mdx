@@ -17,15 +17,16 @@ title: '附录 A：关键文件路径速查'
 | `.trellis/.version`               | 当前 Trellis 版本                   | update                   |
 | `.trellis/.template-hashes.json`  | 模板文件 hash                       | update                   |
 | `.trellis/.developer`             | 开发者身份                          | 每次会话                 |
-| `.trellis/.current-task`          | 指向当前任务                        | Sub-agent 启动           |
+| `.trellis/.runtime/sessions/<session-key>.json` | 单个 AI 会话/窗口的 active task | continue、hook、sub-agent 启动 |
 
 ### 原生命令（Claude Code）
 
 | 文件                                                | 调用方式                  |
 | --------------------------------------------------- | ------------------------- |
-| `.claude/commands/trellis/start.md`                 | `/trellis:start`          |
 | `.claude/commands/trellis/finish-work.md`           | `/trellis:finish-work`    |
 | `.claude/commands/trellis/continue.md`              | `/trellis:continue`       |
+
+在 SessionStart 自动注入的平台上，`start` 不作为用户可见命令安装。agent-less 平台仍然保留手动 start workflow。
 
 ### 原生 sub-agent（Claude Code）
 
@@ -66,6 +67,7 @@ title: '附录 A：关键文件路径速查'
 - `.codebuddy/commands/trellis/`、`.codebuddy/skills/`、`.codebuddy/agents/`、`.codebuddy/hooks/`
 - `.factory/commands/trellis/`、`.factory/droids/`、`.factory/skills/`、`.factory/hooks/`
 - `.github/copilot-instructions.md`、`.github/prompts/`、`.github/skills/`、`.github/agents/`、`.github/copilot/hooks/`
+- `.pi/prompts/`、`.pi/skills/`、`.pi/agents/`、`.pi/extensions/trellis/`、`.pi/settings.json`
 - `.kilocode/workflows/`、`.kilocode/skills/`
 - `.agent/workflows/`、`.agent/skills/`（Antigravity）
 - `.windsurf/workflows/`、`.windsurf/rules/`

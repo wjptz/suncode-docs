@@ -1,143 +1,52 @@
 ---
 title: 'Parallel Sessions'
-description: 'Run multiple isolated AI sessions in parallel'
+description: 'Run multiple AI sessions without sharing active task state'
 ---
 
-## Two approaches
+## Current Model
 
-Trellis supports two ways to run multiple agents:
+Trellis 0.5 removed the old Multi-Agent Pipeline, `/trellis:parallel`, `worktree.yaml`, and the six-agent plan/dispatch/debug pipeline. Use your AI tool's native sessions and Git worktrees instead.
 
-| Approach          | Description                           | Isolation                    |
-| ----------------- | ------------------------------------- | ---------------------------- |
-| **Multi-Agent**   | Multiple agents in the same directory | Shared files, can conflict   |
-| **Multi-Session** | Each agent in separate Git worktree   | Fully isolated, no conflicts |
-
-This guide focuses on **Multi-Session** - the worktree-based approach.
-
-## Why Multi-Session
-
-Some tasks are independent. Adding a login page doesn't affect adding a settings page. With separate worktrees, agents can't interfere with each other.
+The important Trellis change is that the active task is now **session-scoped**:
 
 ```
-main repo
-    │
-    ├── worktree-1/  →  Session 1 (feature-a)
-    ├── worktree-2/  →  Session 2 (feature-b)
-    └── worktree-3/  →  Session 3 (feature-c)
+.trellis/.runtime/sessions/<session-key>.json
 ```
 
-Each worktree is a separate checkout on a separate branch. No merge conflicts during development.
+That means window A can work on task A while window B works on task B. Starting a task in one AI session does not overwrite another session's active task.
 
-When done, each session creates a PR. You review and merge.
+## Recommended Flow
 
-## Configuration
+1. Create one Trellis task per independent work item.
+2. Open one AI session/window per task.
+3. In each session, run `task.py start "$TASK_DIR"` for that task.
+4. Let each session follow the normal Plan → Execute → Finish workflow.
+5. Review and merge branches using your normal Git process.
 
-Before starting, create `worktree.yaml` in your project root:
-
-```yaml
-# worktree.yaml
-base_branch: main
-worktree_dir: ../.trellis-worktrees # Where to create worktrees
-tasks:
-  - id: feature-a
-    branch: feature/login-page
-    prd: |
-      Add login page with email/password authentication.
-      Include form validation and error handling.
-  - id: feature-b
-    branch: feature/settings-page
-    prd: |
-      Add user settings page.
-      Allow changing display name and password.
-```
-
-Each task defines:
-
-- `id`: Unique identifier
-- `branch`: Git branch name
-- `prd`: Requirements for this task
-
-## Starting parallel sessions
-
-Use the `/trellis:parallel` command in Claude Code. It reads `worktree.yaml` and:
-
-- Creates worktrees for each task
-- Spawns Claude Code sessions
-- Sets up branches
-
-Or use the script directly:
+For isolated code changes, create Git worktrees yourself:
 
 ```bash
-python3 .trellis/scripts/multi_agent/start.py
+git worktree add ../feature-login -b feature/login
+git worktree add ../feature-settings -b feature/settings
 ```
 
-Each session runs independently.
+Then run a separate AI session inside each worktree.
 
-## Monitoring progress
+## When This Works
 
-Check status with:
-
-```bash
-python3 .trellis/scripts/multi_agent/status.py
-```
-
-Output shows each task's current phase and branch.
-
-## Session pipeline
-
-Each session follows phases:
-
-1. **Plan** - Understand requirements, identify files to modify
-2. **Implement** - Write the code
-3. **Check** - Review against specs, self-fix issues
-4. **PR** - Create pull request
-
-The check phase has a "Ralph Loop" - if issues are found, it goes back to fix them. This prevents sloppy PRs.
-
-## When to use this
-
-Good for:
+Good fit:
 
 - Independent features
 - Parallel bug fixes
-- Generating variations (different approaches to same problem)
+- Separate packages or files
+- Experiments where each branch can be reviewed independently
 
-Not good for:
+Poor fit:
 
-- Features that depend on each other
-- Work that touches the same files
-- When you need to iterate with the AI
+- Tasks that touch the same files
+- Tasks that depend on each other's unmerged changes
+- Work that needs tight user feedback in one conversation
 
-## Cleanup
+## Context Injection
 
-When done, clean up worktrees:
-
-```bash
-python3 .trellis/scripts/multi_agent/cleanup.py
-```
-
-This removes worktrees but keeps branches. You can delete merged branches normally.
-
-## Platform support
-
-| Feature                  | Claude Code | Cursor           | iFlow   | OpenCode         | Codex            |
-| ------------------------ | ----------- | ---------------- | ------- | ---------------- | ---------------- |
-| Multi-Agent (same dir)   | ✅ Full     | ⚠️ Limited       | ✅ Full | ⚠️ Limited       | ⚠️ Limited       |
-| Multi-Session (worktree) | ✅ Full     | ❌ Not supported | ✅ Full | ❌ Not supported | ❌ Not supported |
-
-Multi-Session requires hooks for automatic context injection (currently supported by Claude Code and iFlow).
-
-### Agent pipeline
-
-Each multi-session task uses a 6-agent pipeline:
-
-| Agent         | Role                             |
-| ------------- | -------------------------------- |
-| **plan**      | Analyze requirements, plan files |
-| **dispatch**  | Orchestrate the pipeline         |
-| **implement** | Write the code                   |
-| **check**     | Review against specs, self-fix   |
-| **debug**     | Fix specific issues              |
-| **research**  | Search codebase, find patterns   |
-
-You also need enough API credits. Three sessions means three times the token usage.
+Hook/extension-backed platforms inject the active task context for that session. Pull-based platforms read the task JSONL files from their sub-agent prelude. In both cases, the session key decides which task is active; there is no global active-task pointer.

@@ -7,7 +7,7 @@ title: '定制 Sub-agent'
 Trellis 原生带有 3 个 sub-agent（`trellis-implement`、`trellis-check`、`trellis-research`）。你可以修改它们或新增自己的。本章以 Claude Code 格式作为主要例子，再列出其他平台的 frontmatter 差异。
 
 <Note>
-  Sub-agent 在 13 个配置平台里有 10 个可用：Claude Code、Cursor、OpenCode、Codex、Kiro、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid。agent 文件格式按平台分 Markdown / TOML / JSON；没有 sub-agent `PreToolUse` hook 的平台，sub-agent 自己通过 pull-based prelude `Read` 自己的 `implement.jsonl` / `check.jsonl`，不靠 hook 注入。Kilo、Antigravity、Windsurf 没有 sub-agent 原语——implement / check 在主会话里内联完成。
+  Sub-agent 在 14 个配置平台里有 11 个可用：Claude Code、Cursor、OpenCode、Codex、Kiro、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi Agent。agent 文件格式按平台分 Markdown / TOML / JSON；没有 sub-agent `PreToolUse` hook 或 extension 等价机制的平台，sub-agent 自己通过 pull-based prelude `Read` 自己的 `implement.jsonl` / `check.jsonl`，不靠 hook 注入。Kilo、Antigravity、Windsurf 没有 sub-agent 原语——implement / check 在主会话里内联完成。
 </Note>
 
 ### Sub-agent 定义（Claude Code 示例）
@@ -53,6 +53,7 @@ Claude Code 上的关键 frontmatter 字段：
 | CodeBuddy   | `.codebuddy/agents/{name}.md`         | CC 风格 `tools:` 逗号列表              | `Read, Write, Edit, Bash`                                         |
 | Copilot     | `.github/agents/{name}.agent.md`      | CC 风格 `tools:` 逗号列表              | `Read, Write, Edit, Bash`                                         |
 | Droid       | `.factory/droids/{name}.md`           | CC 风格 `tools:` 逗号列表              | `Read, Write, Edit, Bash`                                         |
+| Pi Agent    | `.pi/agents/{name}.md`                | CC 风格 `tools:` 逗号列表 + extension 上下文 | `Read, Write, Edit, Bash`                                  |
 
 写多平台通用的 sub-agent 时，把 Claude Code 版放在 `packages/cli/src/templates/claude/agents/` 作为规范版，`packages/cli/src/configurators/` 里各平台适配把 frontmatter 翻译成原生语法。原生的 `trellis-implement` / `trellis-check` / `trellis-research` 就是这么做的。
 
@@ -123,8 +124,8 @@ pnpm test
 如果希望你的 sub-agent 像原生 sub-agent 那样拿到 spec 上下文：
 
 1. 约定一个 JSONL 命名（如 `test.jsonl`）放在每个 task 目录下。
-2. 在有 sub-agent `PreToolUse` hook 的平台（Claude Code、Cursor、OpenCode、CodeBuddy、Droid）上，编辑 `inject-subagent-context`，让它处理这个新 sub-agent 类型。
-3. 在没有该 hook 的平台（Codex、Kiro、Gemini、Qoder、Copilot）上，参照原生 sub-agent 的"pull-based prelude"模式：在 agent 文件头部加一段要求 sub-agent 动手前先 `Read` 自己的 JSONL。
+2. 在有 sub-agent `PreToolUse` hook 或 extension 等价机制的平台（Claude Code、Cursor、OpenCode、CodeBuddy、Droid、Pi Agent）上，编辑 `inject-subagent-context` 或 Pi extension，让它处理这个新 sub-agent 类型。
+3. 在没有该注入点的平台（Codex、Kiro、Gemini、Qoder、Copilot）上，参照原生 sub-agent 的"pull-based prelude"模式：在 agent 文件头部加一段要求 sub-agent 动手前先 `Read` 自己的 JSONL。
 
 详细走查见[定制 Hooks](./custom-hooks)。
 

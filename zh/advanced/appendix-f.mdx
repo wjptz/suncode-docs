@@ -6,7 +6,7 @@ title: '附录 F：FAQ'
 
 ### Q1: 每次开会话要先跑点什么吗？
 
-有 SessionStart hook 的平台（Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid——以及开了 `codex_hooks = true` 的 Codex）上下文自动注入，直接描述任务就行。没有 SessionStart hook 的平台（Kiro、Kilo、Antigravity、Windsurf）跑 `/trellis:start`（Kiro 是 `@trellis:start`）加载完整上下文报告。
+有 SessionStart hook 或 extension 的平台（Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi Agent——以及开了 `codex_hooks = true` 的 Codex）上下文自动注入，直接描述任务就行。没有自动会话注入的平台（Kilo、Antigravity、Windsurf）跑 `/trellis:start` 或对应平台的 start workflow 加载完整上下文报告。
 
 ### Q2: 怎么让 AI 在我 commit 前验证质量？
 
@@ -32,13 +32,13 @@ skill 分析根因并提出预防机制。把结论走 `trellis-update-spec` ski
 
 ### Q6: 多人用 Trellis 会冲突吗？
 
-按开发者隔离（`workspace/{name}/`、`.developer`、`.current-task`）。共享状态是 `.trellis/spec/` 和 `.trellis/tasks/`，走 PR review。建任务时用 `--assignee` 避免撞车。
+按开发者和会话隔离（`workspace/{name}/`、`.developer`、`.runtime/sessions/<session-key>.json`）。共享状态是 `.trellis/spec/` 和 `.trellis/tasks/`，走 PR review。建任务时用 `--assignee` 避免撞车。
 
 ### Q7: 怎么把已有项目迁到 Trellis？
 
 1. `npm install -g @mindfoldhq/trellis@beta`
 2. 项目根下 `trellis init -u your-name`（自动建 bootstrap 任务）。
-3. 跑 `/trellis:start`，brainstorm skill 帮你填初始 spec。
+3. 打开已配置 Trellis 的 AI 会话；如果平台没有自动会话注入，就运行对应 start workflow。brainstorm skill 会帮你填初始 spec。
 4. 按团队约定手动补充核心 spec。
 5. 把 `.trellis/` 和你用的 `.{platform}/` 目录 add 并 commit。
 6. 队友 pull 后各自 `trellis init -u their-name`。
@@ -56,7 +56,7 @@ Trellis 在安装时对每个模板文件算 hash。update 时发现你改过的
 
 ### Q9: Cursor 用户能拿到和 Claude Code 一样的自动化吗？
 
-大部分能。Cursor 没有 SessionStart hook，但 `.cursor/rules/trellis.mdc` 是 `alwaysApply` 规则，把 Trellis prelude 带进每次对话。Cursor 没有 sub-agent，原本在 `trellis-implement` / `trellis-check` 里跑的工作会在主会话里内联。Skill 以 rules 内容形式交付，由 Cursor 的规则系统匹配。
+可以。Cursor 现在有 Trellis hooks、skills 和 sub-agents。SessionStart 会在对话开始注入 workflow，`UserPromptSubmit` 会追加 workflow-state 面包屑，sub-agent 上下文注入会在 `trellis-implement` / `trellis-check` 运行前把正确的 JSONL 内容传进去。
 
 ### Q10: Windows 用户怎么装 Trellis？
 
@@ -75,10 +75,10 @@ trellis init -u your-name
 
 ### Q11: 切换 AI 编码工具时要重配吗？
 
-不用。`trellis init` 带多个平台 flag 能一次写多份。已经用了 Cursor 后来想加 Claude Code：
+不用。`trellis init` 带多个平台 flag 能一次写多份。已经用了 Cursor 后来想加 Claude Code 和 Pi Agent：
 
 ```bash
-trellis init -u your-name --claude
+trellis init -u your-name --claude --pi
 ```
 
 `.trellis/` 跨工具共享，只是多写一个 `.{platform}/` 目录。
@@ -105,7 +105,7 @@ trellis init -u your-name --claude
 - **`workflow.md` 是单一事实源**：Phase 定义、skill 路由、每轮 workflow-state 提醒都在 `.trellis/workflow.md` 里。Fork 工作流 = 改一个 markdown 文件，不用动 Python、不用改 hook（见[自定义工作流](./custom-workflow)）。
 - **每轮 workflow-state 面包屑**：新增 `inject-workflow-state.py` hook，每条用户消息触发一次，按当前任务 status 注入 `<workflow-state>` 块，帮 AI 稳定走完 Plan → Execute → Finish 三阶段。
 - **3 个 sub-agent 取代 6 个**：`trellis-research` / `trellis-implement` / `trellis-check`；`dispatch` / `plan` / `debug` 移除；Ralph Loop 和它的 SubagentStop hook 也移除（check sub-agent 自带重试循环）。
-- **7 个平台升级为 agent-capable**：Cursor / OpenCode / Gemini CLI / Qoder / CodeBuddy / Copilot / Droid 都拿到了 sub-agent + hook；`.trellis/` 核心跨 13 个平台保持一致。
+- **8 个平台升级为 agent-capable**：Cursor / OpenCode / Gemini CLI / Qoder / CodeBuddy / Copilot / Droid / Pi Agent 都拿到了 sub-agent + hook 或 extension 等价机制；`.trellis/` 核心跨 14 个平台保持一致。
 - **Multi-Agent Pipeline、`/parallel`、`worktree.yaml` 移除**：现代 agent CLI 的原生 worktree 支持已经替代它。
 - **强制迁移 gate**：破坏性版本必须加 `--migrate`，没加会 exit 并打印说明，不再静默留下半迁移状态。
 

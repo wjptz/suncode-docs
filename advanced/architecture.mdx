@@ -14,8 +14,8 @@ title: 'Architecture Overview'
                               ▼
 ┌──────────────────────────────────────────────────────────────┐
 │  Claude Code / Cursor / OpenCode / Codex / Kiro / Gemini /   │
-│  Qoder / CodeBuddy / Copilot / Droid / Kilo / Antigravity /  │
-│  Windsurf  +  .agents/skills/ ecosystem (Amp, Cline, …)      │
+│  Qoder / CodeBuddy / Copilot / Droid / Pi / Kilo /           │
+│  Antigravity / Windsurf + .agents/skills ecosystem           │
 │               (AI Coding Assistant Interface)                │
 └─────────────────────────────┬────────────────────────────────┘
                               │
@@ -64,7 +64,7 @@ title: 'Architecture Overview'
 `.trellis/workflow.md` is the one file that defines the Plan / Execute / Finish contract — Phase 1 (1.0 `task.py create` → 1.4 `task.py start`), Phase 2 (2.1 `trellis-implement` → 2.2 `trellis-check`), Phase 3 (3.1 final check → 3.4 `/trellis:finish-work`). Every other piece of the system pulls from it:
 
 - **SessionStart hook** auto-injects its TOC + step-level details so AI knows the contract before you type anything.
-- **`/trellis:continue`** reads `.current-task` + task `status`, then consults `workflow.md` to figure out which step the task is on and what the next action should be.
+- **`/trellis:continue`** reads the current session runtime (`.trellis/.runtime/sessions/<session-key>.json`) + task `status`, then consults `workflow.md` to figure out which step the task is on and what the next action should be.
 - **Skills and sub-agents** receive it via JSONL (`workflow.md` is the first entry in the default `implement.jsonl`).
 - **Task state** — default statuses `planning` / `in_progress` / `completed` (set automatically by `task.py create` / `start` / `archive`) map one-to-one to the three phases in `workflow.md`. `workflow.md` has per-status reminder blocks; add custom statuses there when you need more states.
 
@@ -73,8 +73,8 @@ Edit `workflow.md` to change the workflow for your project; every platform, skil
 ### Session Startup Flow
 
 <Tabs>
-  <Tab title="Hook-capable (CC / Cursor / OC / Gemini / Qoder / CodeBuddy / Copilot / Droid)">
-    SessionStart hook fires automatically, so the platform-specific `session-start.py` / `session-start.js` injects Trellis context at every session open with no manual step. Describe your task directly; optionally run `/trellis:start` for an explicit context report.
+  <Tab title="Hook / extension capable (CC / Cursor / OC / Gemini / Qoder / CodeBuddy / Copilot / Droid / Pi)">
+    SessionStart hook or extension fires automatically, so the platform-specific `session-start.py` / `session-start.js` / Pi extension injects Trellis context at every session open with no manual step. Describe your task directly; optionally run `/trellis:start` on platforms that expose it for an explicit context report.
   </Tab>
   <Tab title="Codex">
     Codex auto-reads `AGENTS.md` at the repo root every session. When `codex_hooks = true` is enabled in `~/.codex/config.toml`, the SessionStart hook also runs and behaves identically to the hook-capable tab above. Without the flag, the prelude alone covers the basics.
@@ -122,10 +122,10 @@ When `/trellis:start` runs (or when a SessionStart hook fires automatically), he
 ### Spec Injection Mechanism
 
 <Info>
-  Automatic sub-agent spec injection relies on the platform's PreToolUse hook (or equivalent). Claude Code, Cursor, OpenCode, CodeBuddy, and Droid support this today. On the other platforms, the main session reads the JSONL files itself and passes the relevant content into sub-agent prompts.
+  Automatic sub-agent spec injection relies on the platform's PreToolUse hook or extension equivalent. Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent support this today. On the other platforms, the main session reads the JSONL files itself and passes the relevant content into sub-agent prompts.
 </Info>
 
-`inject-subagent-context` (Python on Claude Code, JS on OpenCode) is the core spec-injection engine. When the main session spawns a `trellis-*` sub-agent, this hook intercepts the call and injects the right JSONL-specified context.
+`inject-subagent-context` (Python on Claude Code, JS on OpenCode, extension code on Pi) is the core spec-injection engine. When the main session spawns a `trellis-*` sub-agent, the hook or extension intercepts the call and injects the right JSONL-specified context.
 
 **Workflow**:
 
@@ -134,30 +134,31 @@ Main session spawns: Task(subagent_type="trellis-implement", prompt="...")
      │
      ▼
 ┌──────────────────────────────────────────────────────────────┐
-│  Hook: inject-subagent-context  (runs BEFORE sub-agent)      │
+│  Hook / extension: inject-subagent-context                   │
+│  (runs BEFORE sub-agent)                                     │
 │                                                              │
-│  The HOOK (not the sub-agent) does the reading:              │
+│  The hook / extension (not the sub-agent) does the reading:  │
 │                                                              │
-│  1. Hook reads .trellis/.current-task                        │
+│  1. It reads the current session runtime                     │
+│     → .trellis/.runtime/sessions/<session-key>.json          │
 │     → current task directory path                            │
 │                                                              │
-│  2. Hook reads {task_dir}/implement.jsonl                    │
+│  2. It reads {task_dir}/implement.jsonl                      │
 │     → list of spec files this sub-agent needs                │
 │                                                              │
-│  3. Hook reads each file referenced in the JSONL             │
+│  3. It reads each file referenced in the JSONL               │
 │     → .trellis/spec/backend/index.md                         │
 │     → .trellis/spec/backend/database-guidelines.md           │
 │     → ...                                                    │
 │                                                              │
-│  4. Hook reads prd.md (requirements) and info.md (design)    │
+│  4. It reads prd.md (requirements) and info.md (design)      │
 │                                                              │
-│  5. Hook concatenates everything and prepends it to the      │
+│  5. It concatenates everything and prepends it to the        │
 │     sub-agent's prompt as "additionalContext"                │
 └───────────────────────┬──────────────────────────────────────┘
                         │
                         ▼
-The sub-agent wakes up with this already in its prompt
-(it does not read any of the files itself):
+The sub-agent wakes up with this already in its prompt on hook-push and extension-backed platforms (it does not read any of the files itself). Pull-based platforms put equivalent read instructions in the sub-agent prelude:
 
   # trellis-implement Task
   ## Your Context

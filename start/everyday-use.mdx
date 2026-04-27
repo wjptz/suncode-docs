@@ -4,13 +4,13 @@ title: 'Commands, Tasks & Specs'
 
 ## 1. Commands & Skills Reference
 
-Since 0.5.0, Trellis is **skill-first**: most capabilities are auto-trigger skills that the platform fires based on context — you don't have to remember them. Only three explicit slash commands remain, and they cover cross-session transitions.
+Since 0.5.0, Trellis is **skill-first**: most capabilities are auto-trigger skills that the platform fires based on context — you don't have to remember them. Only session-boundary entries remain. Agent-capable platforms expose `finish-work` and `continue`; platforms without automatic session injection also expose `start`.
 
 ### 1.1 Surface at a Glance
 
 | Kind          | Name                      | Trigger                                                   | Purpose                                     |
 | ------------- | ------------------------- | --------------------------------------------------------- | ------------------------------------------- |
-| **Command**   | `/trellis:start`          | Manual (or hook on hook-capable platforms)                | Open a session, load context, classify work |
+| **Command**   | `/trellis:start`          | Manual where no SessionStart hook / extension is available | Open a session, load context, classify work |
 | **Command**   | `/trellis:finish-work`    | Manual, after human testing + commit                      | Checklist + record session in journal       |
 | **Command**   | `/trellis:continue`       | Manual                                                    | Advance the current task to its next step — you don't memorize the workflow (see §1.2.3) |
 | **Skill**     | `trellis-brainstorm`      | Auto when user describes a feature / bug / ambiguous need | Turn request into task + `prd.md`           |
@@ -22,13 +22,13 @@ Since 0.5.0, Trellis is **skill-first**: most capabilities are auto-trigger skil
 | **Sub-agent** | `trellis-implement`       | Spawned by main session for coding                        | Writes code, no git commit                  |
 | **Sub-agent** | `trellis-check`           | Spawned by main session for verification                  | Runs verify + self-fix, has its own loop    |
 
-Only three slash commands are shipped: `start`, `finish-work`, `continue`. Everything that used to be a command (`/before-backend-dev`, `/check-backend`, `/record-session`, `/onboard`, …) has either been folded into a skill/sub-agent or removed.
+The user-facing command set is deliberately small: `finish-work` and `continue` everywhere they are useful, plus `start` on platforms that need a manual session entry point. Everything that used to be a phase command (`/before-backend-dev`, `/check-backend`, `/record-session`, `/onboard`, …) has either been folded into a skill/sub-agent or removed.
 
 ### 1.2 Commands
 
 #### 1.2.1 `/trellis:start`: Start a session
 
-Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable platforms (Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, plus Codex with `codex_hooks = true`), the SessionStart hook does this automatically; you may still run `/trellis:start` the first time to watch the flow.
+Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable or extension-capable platforms (Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `codex_hooks = true`), the SessionStart hook or extension does this automatically, so `start` is usually not installed as a user-facing command.
 
 What it does:
 
@@ -60,7 +60,7 @@ Steps:
 
 #### 1.2.3 `/trellis:continue`: Advance within the current task
 
-`continue` is a **within-task** continue — not a cross-task one. It reads `.trellis/.current-task` and the task's `status`, consults `workflow.md` to locate the current phase/step, and advances to the next one.
+`continue` is a **within-task** continue — not a cross-task one. It reads the current session runtime file (`.trellis/.runtime/sessions/<session-key>.json`) and the task's `status`, consults `workflow.md` to locate the current phase/step, and advances to the next one.
 
 A typical task conversation:
 
@@ -126,7 +126,7 @@ Sub-agents are isolated AI sub-processes with their own prompt and (platform-spe
 | `trellis-implement`  | Writes code, no commit| Once requirements + plan exist, for the coding phase |
 | `trellis-check`      | Writes code (fixes)  | Verification phase; runs self-fix loop internally     |
 
-On Claude Code, Cursor, OpenCode, CodeBuddy, and Droid, these sub-agents are hooked so the right JSONL context (`implement.jsonl`, `check.jsonl`, `research.jsonl`) is injected automatically before they start. On the rest, the main session reads the JSONL files itself and passes the relevant content into sub-agent prompts.
+On Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent, these sub-agents get the right JSONL context (`implement.jsonl`, `check.jsonl`, `research.jsonl`) injected automatically before they start. Pi uses its extension rather than a Python hook. On the rest, the main session reads the JSONL files itself and passes the relevant content into sub-agent prompts.
 
 ---
 
@@ -136,17 +136,16 @@ On Claude Code, Cursor, OpenCode, CodeBuddy, and Droid, these sub-agents are hoo
 
 ```
 create → curate jsonl → start → implement/check → finish → archive
-  │           │             │          │               │         │
-  │           │             │          │               │         │
-  ▼           ▼             ▼          ▼               ▼         ▼
-Create      AI fills     Set as     Development /    Clear     Archive to
-directory   seeded       current    check cycle      current   archive/
-task.json   jsonl (or    task ptr                    task
-+ seeded    add-context)
-jsonl
+
+create:         task directory + task.json + seeded jsonl
+curate jsonl:   AI fills implement/check/research context
+start:          writes current task for this AI session/window
+implement/check: development and verification loop
+finish:         clears this AI session/window's current task
+archive:        moves completed task to archive/
 ```
 
-`task.py create` auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / etc.); agent-less platforms (Kilo / Antigravity / Windsurf) skip this and load specs via the `trellis-before-dev` skill in Phase 2.
+`task.py create` auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / Pi / etc.); agent-less platforms (Kilo / Antigravity / Windsurf) skip this and load specs via the `trellis-before-dev` skill in Phase 2.
 
 ### 2.2 `task.py` Subcommands
 
@@ -200,10 +199,11 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 #### 2.2.3 Task Control
 
 ```bash
-# Set as current task (sub-agent hooks read .current-task for JSONL injection)
+# Set as the current task for this AI session/window
+# Writes .trellis/.runtime/sessions/<session-key>.json
 ./.trellis/scripts/task.py start "$TASK_DIR"
 
-# Clear current task (no arguments needed, auto-reads .current-task)
+# Clear the current task for this AI session/window
 ./.trellis/scripts/task.py finish
 
 # Set Git branch name
@@ -400,8 +400,8 @@ hooks:
 | Event           | Fires When                               | Use Case                               |
 | --------------- | ---------------------------------------- | -------------------------------------- |
 | `after_create`  | `task.py create` completes               | Create linked issue in project tracker |
-| `after_start`   | `task.py start` sets the current task    | Update issue status to "In Progress"   |
-| `after_finish`  | `task.py finish` clears the current task | Notify team, trigger review            |
+| `after_start`   | `task.py start` sets the current session task | Update issue status to "In Progress"   |
+| `after_finish`  | `task.py finish` clears the current session task | Notify team, trigger review            |
 | `after_archive` | `task.py archive` moves the task         | Mark issue as "Done"                   |
 
 #### 2.5.3 Environment Variables
@@ -494,7 +494,7 @@ The hook writes the Linear issue identifier back to `task.json` under `meta.line
     └── code-reuse-thinking-guide.md
 ```
 
-Running `trellis init` also creates a **bootstrap task** (`00-bootstrap-guidelines`). On first `/trellis:start`, AI detects it, runs `trellis-research` to read your actual codebase, then fills the placeholders with specs grounded in the real project (tech stack, conventions, directory shape). Skip this task and you'll be handing empty scaffolds to every sub-agent — don't.
+Running `trellis init` also creates a **bootstrap task** (`00-bootstrap-guidelines`). In the first Trellis session, AI detects it, runs `trellis-research` to read your actual codebase, then fills the placeholders with specs grounded in the real project (tech stack, conventions, directory shape). Skip this task and you'll be handing empty scaffolds to every sub-agent — don't.
 
 #### 3.1.2 The layout is only a convention
 
@@ -690,6 +690,6 @@ The bar: specific, actionable, with a code example, with a stated *why*, and —
 
 ### 3.4 Bootstrap Guided Initial Fill
 
-`trellis init` also creates a bootstrap task (`00-bootstrap-guidelines`). On the first `/trellis:start`, the AI recognizes it, runs `trellis-research` across your code, and fills the empty templates under `frontend/` / `backend/` / `guides/` with specs grounded in your actual project — tech stack, conventions, directory shape, all pulled from the code.
+`trellis init` also creates a bootstrap task (`00-bootstrap-guidelines`). In the first Trellis session, the AI recognizes it, runs `trellis-research` across your code, and fills the empty templates under `frontend/` / `backend/` / `guides/` with specs grounded in your actual project — tech stack, conventions, directory shape, all pulled from the code.
 
 ---

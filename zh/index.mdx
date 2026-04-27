@@ -7,7 +7,7 @@ description: '面向 10+ AI coding 平台的一站式 AI 框架和工具集'
 
 AI 的能力像藤蔓一样生长，充满活力但四处蔓延。Trellis 是 AI 的脚手架，引导它沿着规范的路径前进。
 
-支持平台：Claude Code、Cursor、OpenCode、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Windsurf、Qoder、CodeBuddy、GitHub Copilot、Droid，以及任何读取 `.agents/skills/` 规范的 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）。
+支持平台：Claude Code、Cursor、OpenCode、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Windsurf、Qoder、CodeBuddy、GitHub Copilot、Droid、Pi Agent，以及任何读取 `.agents/skills/` 规范的 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）。
 
 ### 一句话定位
 
@@ -25,7 +25,7 @@ AI 的能力像藤蔓一样生长，充满活力但四处蔓延。Trellis 是 AI
 | 跨会话记忆 | 无 | 无 | 无 | **workspace journal 持久化** |
 | 工作流固化 | 无 | 无 | 无 | **Auto-trigger skill + check sub-agent 验证循环** |
 | 团队共享 | 单人 | 单人 | 可分享但无标准 | **Git 版本化 Spec 库** |
-| 支持平台 | Cursor 专属 | Claude Code 专属 | 按平台 | **10+ 平台** |
+| 支持平台 | Cursor 专属 | Claude Code 专属 | 按平台 | **14 个已配置平台 + 共享 skill 生态** |
 
 ### 核心概念速览
 
@@ -36,7 +36,7 @@ AI 的能力像藤蔓一样生长，充满活力但四处蔓延。Trellis 是 AI
 | **Task（任务）** | 工作单元，包含需求文档和上下文配置 | `.trellis/tasks/` |
 | **Skill（技能）** | Auto-trigger 工作流模块：brainstorm / before-dev / check / update-spec / break-loop | 各平台的 skills 目录 |
 | **Sub-agent（子代理）** | 专门角色的 AI 子进程：`trellis-research`、`trellis-implement`、`trellis-check` | 各平台的 agents 目录 |
-| **Command（命令）** | 显式入口：`/trellis:start` 和 `/trellis:finish-work` | 各平台的 commands 目录 |
+| **Command（命令）** | 显式会话入口：`finish-work`、`continue`，以及需要手动入口的平台上的 `start` | 各平台的 commands 目录 |
 | **Hook（钩子）** | 自动触发的脚本，在会话启动、sub-agent 调用等时机注入上下文（支持 hook 的平台） | `.claude/hooks/` 等 |
 | **Journal（日志）** | 会话记录文件，记录每次开发做了什么 | `.trellis/workspace/{name}/journal-N.md` |
 
@@ -64,4 +64,3 @@ AI 的能力像藤蔓一样生长，充满活力但四处蔓延。Trellis 是 AI
     用 `trellis-update-spec` 把空模板变成可执行契约。
   </Card>
 </CardGroup>
-
