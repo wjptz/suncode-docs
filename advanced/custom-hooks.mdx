@@ -79,6 +79,8 @@ Notes:
 - `$CLAUDE_PROJECT_DIR`: expanded by Claude Code to the project root.
 - `timeout`: seconds; if exceeded, the hook is skipped.
 
+Trellis does not install a Claude Code `statusLine` by default. New installs do not create `.claude/hooks/statusline.py` or add `statusLine` to `.claude/settings.json`. If your project needs a custom status line, add a local Claude Code `statusLine` command manually; Trellis does not manage that file.
+
 ### Shipped hooks
 
 #### `session-start.py`: context loading
