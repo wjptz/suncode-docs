@@ -1,0 +1,45 @@
+---
+title: 'v0.5.0-beta.16'
+description: '2026-04-28'
+---
+
+Beta.16 is a compatibility patch for Claude Code statusLine upgrades after beta.15.
+
+## Bug Fixes
+
+### Existing Claude Code statusLine installs are preserved
+
+Beta.15 stopped installing Claude Code `statusLine` for new projects. That default is unchanged.
+
+The upgrade path is now more conservative:
+
+| Case | beta.16 behavior |
+|---|---|
+| New project | Trellis does not create `.claude/hooks/statusline.py` and does not add `statusLine` to `.claude/settings.json` |
+| Existing project with `.claude/hooks/statusline.py` | `trellis update` preserves the file |
+| Existing project with `.claude/settings.json` `statusLine` | `trellis update` carries that entry into the updated settings file |
+
+This means beta.16 no longer treats Claude Code statusLine as a cleanup target. Users who no longer want it can delete the file and settings entry manually.
+
+### Shared-hook cleanup still applies to orphan platform files
+
+The non-Claude `statusline.py` cleanup entries remain hash-verified safe deletes. Those platforms have no `statusLine` event, so the files were never invoked:
+
+- `.cursor/hooks/statusline.py`
+- `.codex/hooks/statusline.py`
+- `.gemini/hooks/statusline.py`
+- `.qoder/hooks/statusline.py`
+- `.github/copilot/hooks/statusline.py`
+- `.codebuddy/hooks/statusline.py`
+- `.factory/hooks/statusline.py`
+- `.kiro/hooks/statusline.py`
+
+## Upgrade
+
+Existing projects:
+
+```bash
+trellis update
+```
+
+No `--migrate` flag is required for this patch.

@@ -1,0 +1,45 @@
+---
+title: 'v0.5.0-beta.16'
+description: '2026-04-28'
+---
+
+beta.16 是 beta.15 之后的 Claude Code statusLine 升级兼容补丁。
+
+## Bug Fixes
+
+### 已安装的 Claude Code statusLine 会保留
+
+beta.15 开始，新项目默认不再安装 Claude Code `statusLine`。这个默认行为不变。
+
+升级路径现在更保守：
+
+| 场景 | beta.16 行为 |
+|---|---|
+| 新项目 | Trellis 不创建 `.claude/hooks/statusline.py`，也不在 `.claude/settings.json` 写 `statusLine` |
+| 已有项目存在 `.claude/hooks/statusline.py` | `trellis update` 保留这个文件 |
+| 已有项目的 `.claude/settings.json` 里有 `statusLine` | `trellis update` 会把这段配置带到更新后的 settings 文件里 |
+
+也就是说，beta.16 不再把 Claude Code statusLine 当成 cleanup 目标。如果用户不再需要它，可以手动删除文件和 settings entry。
+
+### Shared-hook cleanup 仍适用于其他平台的孤立文件
+
+非 Claude 平台的 `statusline.py` 清理项仍然保留，并且仍是 hash-verified safe delete。那些平台没有 `statusLine` event，所以这些文件不会被调用：
+
+- `.cursor/hooks/statusline.py`
+- `.codex/hooks/statusline.py`
+- `.gemini/hooks/statusline.py`
+- `.qoder/hooks/statusline.py`
+- `.github/copilot/hooks/statusline.py`
+- `.codebuddy/hooks/statusline.py`
+- `.factory/hooks/statusline.py`
+- `.kiro/hooks/statusline.py`
+
+## Upgrade
+
+已有项目：
+
+```bash
+trellis update
+```
+
+这个补丁不需要 `--migrate`。
