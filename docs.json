@@ -33,7 +33,12 @@
             "groups": [
               {
                 "group": "Start Here",
-                "pages": ["index", "start/install-and-first-task", "start/everyday-use"]
+                "pages": [
+                  "index",
+                  "start/install-and-first-task",
+                  "start/everyday-use",
+                  "start/real-world-scenarios"
+                ]
               },
               {
                 "group": "Advanced",
@@ -299,7 +304,12 @@
             "groups": [
               {
                 "group": "开始使用",
-                "pages": ["zh/index", "zh/start/install-and-first-task", "zh/start/everyday-use"]
+                "pages": [
+                  "zh/index",
+                  "zh/start/install-and-first-task",
+                  "zh/start/everyday-use",
+                  "zh/start/real-world-scenarios"
+                ]
               },
               {
                 "group": "进阶",
@@ -639,7 +649,7 @@
     },
     {
       "source": "/guide/ch08-real-world",
-      "destination": "/start/everyday-use"
+      "destination": "/start/real-world-scenarios"
     },
     {
       "source": "/guide/ch08-custom-workflow",
@@ -723,7 +733,7 @@
     },
     {
       "source": "/zh/guide/ch08-real-world",
-      "destination": "/zh/start/everyday-use"
+      "destination": "/zh/start/real-world-scenarios"
     },
     {
       "source": "/zh/guide/ch08-custom-workflow",

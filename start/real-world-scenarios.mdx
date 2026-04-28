@@ -1,0 +1,499 @@
+---
+title: 'Real-World Scenarios'
+description: 'Use Trellis in real engineering work: new products, brownfield repos, refactors, migrations, bug fixes, and team rollouts.'
+icon: 'map'
+---
+
+Most teams do not need another command list. They need a way to keep project decisions from disappearing between AI sessions: new projects need early rules before patterns spread, brownfield repos hide conventions in old PRs, refactors need invariants, migrations need batches, and production bugs need lessons that survive the fix.
+
+Each scenario below gives a starting prompt, the Trellis files to produce, the workflow to follow, and a concrete finish line. Pick the closest situation and adapt it into a task for your repo.
+
+<Note>
+  Trellis 0.5 is skill-first. Treat the prompts below as task inputs; Trellis routes the work
+  through the relevant skills for brainstorming, spec loading, checks, and knowledge capture. Use
+  `/trellis:start` only when your platform needs a manual session entry point.
+</Note>
+
+## Scenario map
+
+| Scenario                                                            | Use when                                             | Main Trellis value                                    |
+| ------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------- |
+| [Start a new project](#start-a-new-project)                         | You are creating a repo from zero                    | Make early decisions explicit before code spreads     |
+| [Adopt an existing project](#adopt-an-existing-project)             | The repo already exists and conventions are implicit | Extract real patterns without pausing feature work    |
+| [Ship a product feature](#ship-a-product-feature)                   | A task touches product, API, data, and UI            | Keep scope, specs, implementation, and checks aligned |
+| [Refactor a legacy module](#refactor-a-legacy-module)               | Code works but is hard to change safely              | Preserve behavior while making structure reviewable   |
+| [Run a migration](#run-a-migration)                                 | Many files need the same upgrade or API change       | Split broad change into batches with clear checks     |
+| [Fix a recurring bug](#fix-a-recurring-bug)                         | The same class of issue keeps returning              | Convert the fix into tests, specs, and session memory |
+| [Reduce repeated review feedback](#reduce-repeated-review-feedback) | Reviewers repeat the same comments                   | Promote review rules into shared repo context         |
+| [Coordinate parallel work](#coordinate-parallel-work)               | Several independent tasks can run at once            | Give each agent an isolated branch, PRD, and context  |
+| [Roll out to a team](#roll-out-to-a-team)                           | More people or tools need the same workflow          | Make adoption consistent across developers and agents |
+
+<Tip>
+  For the first week, optimize for one useful task, not a complete framework rollout. A small
+  working spec and a clear task PRD teach the team more than a large empty spec library.
+</Tip>
+
+## Start a new project
+
+Use this when you are creating a product, service, package, or internal tool from zero. The risk is that early AI output creates accidental conventions before the team has named them.
+
+### Example situation
+
+You are starting a B2B dashboard with authentication, team management, billing, and analytics. You want AI to help build quickly, but you do not want every session to invent a new folder layout, API style, or component pattern.
+
+### Starting prompt
+
+```text
+I am starting a new B2B dashboard from scratch. Help me set up Trellis for the first week of work.
+
+First, ask for the missing product and tech-stack decisions. Then create a small first-task PRD and
+the minimum specs needed for frontend structure, API shape, error handling, and tests.
+```
+
+### Trellis artifacts
+
+| Artifact                                          | Purpose                                              |
+| ------------------------------------------------- | ---------------------------------------------------- |
+| `.trellis/spec/*/index.md`                        | Lists the first specs that matter                    |
+| `.trellis/spec/frontend/directory-structure.md`   | Names the UI layout and component organization       |
+| `.trellis/spec/backend/api-patterns.md`           | Defines route shape, validation, and response format |
+| `.trellis/spec/unit-test/conventions.md`          | Records the first test expectations                  |
+| `.trellis/tasks/<date>-project-foundation/prd.md` | Defines the first buildable slice                    |
+| `.trellis/workspace/<developer>/journal-1.md`     | Captures decisions that should survive the session   |
+
+### Workflow
+
+1. Initialize Trellis after the repo and package manager exist.
+2. Ask the AI to draft only the specs needed for the first week.
+3. Edit those specs manually. Remove guesses, vague rules, and future plans.
+4. Create one task for the smallest useful vertical slice.
+5. Build that slice with check and finish steps enabled.
+6. Record the session so stack decisions and tradeoffs are easy to recover.
+
+```bash
+trellis init -u alice
+
+/trellis:start
+
+"Create the first task for project foundation. Keep scope to auth shell, app layout, lint/typecheck/test commands, and one sample route."
+```
+
+### Done means
+
+- A new developer can read the first task PRD and understand what is in scope.
+- The repo has runnable validation commands.
+- The first specs describe decisions already made, not speculative architecture.
+- The session journal records why the stack and project shape were chosen.
+
+<Warning>
+  Do not start with multi-agent parallel work on day one. New projects need a stable skeleton before
+  parallel agents can stay out of each other's way.
+</Warning>
+
+## Adopt an existing project
+
+Use this when the codebase already has real behavior, but conventions live in old PRs, reviewer habits, scattered docs, or senior engineers' memory.
+
+### Example situation
+
+You inherit a three-year-old SaaS repo. There are many patterns for API routes, permissions, and forms. AI can make local changes, but it often misses project-specific details.
+
+### Starting prompt
+
+```text
+This is an existing repo. Do not refactor code yet.
+
+Inspect the codebase and propose a minimal Trellis bootstrap for the next feature task. Identify the
+actual patterns used for API routes, auth checks, logging, tests, and frontend forms. Write specs only
+for patterns supported by current code examples.
+```
+
+### Trellis artifacts
+
+| Artifact                                            | Purpose                                      |
+| --------------------------------------------------- | -------------------------------------------- |
+| `.trellis/spec/*/index.md`                          | Separates filled specs from placeholders     |
+| `.trellis/spec/backend/error-handling.md`           | Captures existing error and logging behavior |
+| `.trellis/spec/frontend/components.md`              | Captures real component and form patterns    |
+| `.trellis/tasks/<date>-bootstrap-guidelines/prd.md` | Scopes the documentation pass                |
+| `.trellis/tasks/<date>-pilot-feature/prd.md`        | Proves the specs on one real change          |
+
+### Workflow
+
+1. Run `trellis init`.
+2. Keep the first task read-only: inspect the repo and draft specs from existing code.
+3. Ask the AI to cite file paths for every convention it writes.
+4. Review the specs like code. Delete rules that cannot be traced to real examples.
+5. Pick one pilot feature or bug fix.
+6. Run the pilot task and check whether the specs reduce repeated prompting.
+
+### Guardrails
+
+- Do not let the bootstrap task "clean up" the repo.
+- Do not document aspirational standards as if the code already follows them.
+- Do not fill every template. Empty placeholders are less harmful than false rules.
+
+### Done means
+
+- The first specs cite real source files.
+- The pilot task needs fewer reminders about local patterns.
+- Reviewers can point to `.trellis/spec/` instead of re-explaining conventions.
+
+## Ship a product feature
+
+Use this when a feature crosses multiple layers: product behavior, UI state, API contracts, database changes, permissions, tests, and release notes.
+
+### Example situation
+
+You need to add team invitations. The feature touches workspace permissions, invitation emails, API routes, database tables, frontend forms, and edge cases such as expired invites.
+
+### Starting prompt
+
+```text
+Create a Trellis task for team invitations.
+
+The feature should let workspace admins invite users by email, resend pending invites, revoke invites,
+and accept an invite. Include product requirements, out-of-scope items, data model changes, API shape,
+frontend states, tests, and rollout risks.
+```
+
+### PRD shape
+
+```markdown
+# Team Invitations
+
+## Goal
+
+Workspace admins can invite teammates by email and manage pending invites.
+
+## In scope
+
+- Create invite
+- Resend invite
+- Revoke invite
+- Accept invite
+- Expiration handling
+
+## Out of scope
+
+- Bulk CSV import
+- SSO provisioning
+- Role templates
+
+## Acceptance criteria
+
+- Non-admin users cannot create, resend, or revoke invites.
+- Expired invites show a recoverable error.
+- Invite acceptance is idempotent.
+- Tests cover permission checks and expired invite behavior.
+```
+
+### Workflow
+
+1. Create a task and write the PRD before coding.
+2. Add context entries for the product area, API patterns, database conventions, and test rules.
+3. Ask the AI to plan layer boundaries before implementation.
+4. Implement the smallest vertical slice first.
+5. Run checks for cross-layer contracts: UI input, API validation, database write, email side effect, and permission failure.
+6. Update specs only when the feature reveals a reusable convention.
+
+### Done means
+
+- The PRD explains in-scope and out-of-scope behavior.
+- The implementation has tests for the riskiest contracts.
+- Review can focus on product correctness instead of rediscovering architecture.
+- Any new reusable pattern is captured in `.trellis/spec/`.
+
+## Refactor a legacy module
+
+Use this when code works but is hard to change. A Trellis refactor task should be behavior-preserving by default.
+
+### Example situation
+
+`src/billing/invoice-service.ts` has grown to 1,200 lines. It calculates invoices, applies discounts, calls payment APIs, writes audit logs, and formats email content. You need to split it without changing billing behavior.
+
+### Starting prompt
+
+```text
+Create a behavior-preserving refactor task for src/billing/invoice-service.ts.
+
+First map current responsibilities, callers, side effects, and existing tests. Then propose the safest
+sequence. Do not change behavior until we have characterization tests or clear existing coverage for
+the important billing paths.
+```
+
+### Trellis artifacts
+
+| Artifact          | Purpose                                             |
+| ----------------- | --------------------------------------------------- |
+| Refactor PRD      | Defines invariants, touched files, and out-of-scope |
+| `implement.jsonl` | Loads callers, tests, and relevant specs            |
+| `check.jsonl`     | Loads behavior contracts and reviewer concerns      |
+| Updated spec      | Records the new module boundary after the refactor  |
+| Journal entry     | Explains why the final structure was chosen         |
+
+### Workflow
+
+1. Write invariants before code changes.
+2. Identify callers and side effects.
+3. Add or confirm characterization tests.
+4. Extract one responsibility at a time.
+5. Keep public interfaces stable unless the PRD explicitly permits changing them.
+6. Run tests after each meaningful extraction.
+7. Update specs after the new structure is proven.
+
+### Refactor invariants
+
+Put invariants directly in the PRD.
+
+```markdown
+## Behavior that must not change
+
+- Invoice totals must match existing calculation for active discounts.
+- Failed payment attempts must still write audit logs.
+- Email rendering output must remain byte-for-byte compatible for existing templates.
+- Public API response shape must not change.
+```
+
+### Done means
+
+- Tests prove the old and new behavior match for important paths.
+- The diff is reviewable by responsibility, not a giant rewrite.
+- New module boundaries are documented for the next AI session.
+- No opportunistic feature work is mixed into the refactor.
+
+<Warning>
+  If the AI proposes "modernizing" unrelated code during a refactor, move that work to a separate
+  task. Refactors fail when behavior preservation and product changes are mixed.
+</Warning>
+
+## Run a migration
+
+Use this when the same change needs to happen across many files: framework upgrade, API client replacement, design system migration, lint rule adoption, dependency removal, or test runner migration.
+
+### Example situation
+
+You need to migrate frontend data fetching from direct `fetch()` calls to a shared typed API client. The repo has dozens of call sites and several edge cases.
+
+### Starting prompt
+
+```text
+Plan a Trellis migration from direct fetch calls to the shared API client.
+
+Find call-site patterns, group them by risk, choose a small pilot batch, define verification commands,
+and create separate tasks for low-risk, medium-risk, and high-risk files. Do not migrate everything in
+one PR.
+```
+
+### Workflow
+
+1. Inventory call sites with search before editing.
+2. Group files by risk and ownership.
+3. Write a migration spec with the old pattern, new pattern, and exceptions.
+4. Run a pilot task on three to five representative files.
+5. Review the pilot and update the migration spec.
+6. Split the rest into batches that do not conflict.
+7. Run checks after every batch.
+
+### Batch table
+
+| Batch | Files                              | Risk    | Verification                         |
+| ----- | ---------------------------------- | ------- | ------------------------------------ |
+| 1     | Internal admin screens             | Low     | Typecheck and smoke test             |
+| 2     | Customer-facing dashboard          | Medium  | Typecheck, unit tests, manual review |
+| 3     | Checkout and billing flows         | High    | Full test suite and product sign-off |
+| 4     | Delete old helper and update specs | Cleanup | Search proves no old call sites      |
+
+### Done means
+
+- The migration has a visible inventory and batch plan.
+- Each PR has a narrow review surface.
+- The old pattern is removed or explicitly allowed as an exception.
+- Specs explain the new pattern so AI does not reintroduce the old one.
+
+## Fix a recurring bug
+
+Use this when a patch fixes the symptom, but the same bug class is likely to return.
+
+### Example situation
+
+Users can submit checkout twice when the network is slow. The immediate fix is button state, but the deeper issue is that submit flows do not share a consistent idempotency and UI-state rule.
+
+### Starting prompt
+
+```text
+Fix the duplicate checkout submission bug.
+
+Reproduce the issue, identify the smallest safe patch, add a regression test, and then run a
+break-loop analysis. If the root cause is a missing convention, propose a spec update.
+```
+
+### Workflow
+
+1. Reproduce or describe the failure mode.
+2. Fix the smallest behavior that stops the bug.
+3. Add a regression test before broad cleanup.
+4. Run the root-cause workflow.
+5. Convert the prevention into a spec, test helper, or checklist.
+6. Record the session so the reasoning survives.
+
+```bash
+/trellis:start
+
+"Users can submit checkout twice when the network is slow. Reproduce it, fix it, and add a regression test."
+
+Ask Trellis to run break-loop analysis.
+```
+
+### Done means
+
+- The patch fixes the reported behavior.
+- A regression test fails without the fix.
+- The root cause is documented.
+- A prevention mechanism exists outside the chat transcript.
+
+## Reduce repeated review feedback
+
+Use this when reviewers keep writing the same comments: missing loading states, inconsistent errors, no regression tests, unsafe SQL, custom date formatting, or new helpers that duplicate existing utilities.
+
+### Starting prompt
+
+```text
+Review the last few PR comments and help me convert repeated engineering feedback into Trellis specs.
+
+Only propose rules that are concrete, enforceable, and tied to actual review comments. For each rule,
+show the target spec file and a good/bad example.
+```
+
+### Convert feedback into specs
+
+| Repeated review comment                  | Better spec rule                                                                |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| "This needs a loading state."            | "Every async submit button has idle, loading, success, and error states."       |
+| "Do not use `any` here."                 | "Public component props cannot use `any`; use explicit interfaces or generics." |
+| "This API error format is inconsistent." | "All route handlers return `ApiError` through `toApiError()`."                  |
+| "We already have a helper for this."     | "Search `src/lib/formatters/` before adding a date or currency formatter."      |
+
+### Workflow
+
+1. Collect repeated feedback from real PRs.
+2. Group comments by engineering rule.
+3. Add short rules to the most relevant spec file.
+4. Add good and bad examples when possible.
+5. Run the next task through check and see whether the rule catches issues.
+6. Remove or rewrite rules that create noise.
+
+### Done means
+
+- Reviewers can link to a spec instead of rewriting the same explanation.
+- The AI can apply the rule before review.
+- The spec improves real work instead of recording personal preference.
+
+## Coordinate parallel work
+
+Use this when several tasks are independent enough to run in separate branches or worktrees.
+
+### Good candidates
+
+- Three unrelated settings pages.
+- Independent documentation pages that do not edit the same navigation block.
+- Separate bug fixes with different ownership.
+- Alternative implementation spikes that should become separate PRs.
+
+### Poor candidates
+
+- Tasks that change the same files.
+- Tasks that require constant product discussion.
+- Work where one task must finish before another can start.
+- A new repo before the architecture skeleton exists.
+
+### Starting prompt
+
+```text
+Split this work into parallel Trellis tasks.
+
+Identify dependencies, files likely to conflict, suggested branch names, PRD summaries, and the order
+in which the PRs should be reviewed. Only parallelize tasks that can be reviewed independently.
+```
+
+### Worktree plan
+
+```yaml
+base_branch: main
+worktree_dir: ../.trellis-worktrees
+tasks:
+  - id: billing-settings
+    branch: feature/billing-settings
+    prd: |
+      Add billing settings UI using existing settings page patterns.
+  - id: invoice-export
+    branch: feature/invoice-export
+    prd: |
+      Add CSV export for invoices using the existing export service.
+  - id: plan-limit-banner
+    branch: feature/plan-limit-banner
+    prd: |
+      Add plan limit warnings to the dashboard without changing billing APIs.
+```
+
+### Done means
+
+- Each agent has its own PRD and branch.
+- The task list names likely conflicts before work starts.
+- PRs can be reviewed and merged independently.
+- Shared specs are updated once, not differently in every worktree.
+
+## Roll out to a team
+
+Use this when Trellis adoption involves multiple developers, repos, or AI tools. The main risk is inconsistent usage, not installation.
+
+### Example situation
+
+A 50-person engineering department has Claude Code power users, Cursor users, and developers experimenting with other AI tools. Leadership wants shared conventions and reviewable AI work without forcing everyone into one IDE.
+
+### Starting prompt
+
+```text
+Create a Trellis rollout plan for one pilot repo and one department.
+
+Include pilot criteria, first specs, task workflow, review policy for spec changes, platform adapter
+setup, success metrics, and risks. Keep the first rollout small enough to complete in two weeks.
+```
+
+### Rollout phases
+
+| Phase | Goal                      | Exit criteria                                            |
+| ----- | ------------------------- | -------------------------------------------------------- |
+| 1     | Pilot one repo            | One real task completed with specs, checks, and journal  |
+| 2     | Capture repeated feedback | Three to five review patterns become specs               |
+| 3     | Standardize task workflow | Developers know when to start, check, finish, and record |
+| 4     | Add platform adapters     | Multiple AI tools consume the same `.trellis/` context   |
+| 5     | Govern updates            | Spec and workflow changes are reviewed like code         |
+
+### Success metrics
+
+- New AI sessions need less repeated explanation.
+- PRDs describe scope and out-of-scope work more clearly.
+- Repeated review comments decrease.
+- Teams can switch AI tools without losing conventions.
+- New developers complete a first task without relying on one senior engineer.
+- Bugs that trigger root-cause analysis become specs, tests, or checklist updates.
+
+## Pick the smallest next step
+
+If you are unsure which scenario applies, start with one of these:
+
+<CardGroup cols={2}>
+  <Card title="New repo" icon="rocket" href="#start-a-new-project">
+    Bootstrap a small spec set and one foundation task.
+  </Card>
+  <Card title="Existing repo" icon="folder-open" href="#adopt-an-existing-project">
+    Extract conventions from current code before changing behavior.
+  </Card>
+  <Card title="Refactor" icon="split" href="#refactor-a-legacy-module">
+    Define invariants, tests, and module boundaries before editing.
+  </Card>
+  <Card title="Team rollout" icon="users" href="#roll-out-to-a-team">
+    Pilot Trellis in one repo before expanding usage.
+  </Card>
+</CardGroup>
