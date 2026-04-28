@@ -33,11 +33,7 @@
             "groups": [
               {
                 "group": "Start Here",
-                "pages": [
-                  "index",
-                  "start/install-and-first-task",
-                  "start/everyday-use"
-                ]
+                "pages": ["index", "start/install-and-first-task", "start/everyday-use"]
               },
               {
                 "group": "Advanced",
@@ -59,9 +55,7 @@
               },
               {
                 "group": "Use Cases",
-                "pages": [
-                  "use-cases/open-typeless"
-                ]
+                "pages": ["use-cases/open-typeless"]
               },
               {
                 "group": "Resource Marketplace",
@@ -104,10 +98,7 @@
                   {
                     "group": "Contributing",
                     "expanded": false,
-                    "pages": [
-                      "contribute/docs",
-                      "contribute/trellis"
-                    ]
+                    "pages": ["contribute/docs", "contribute/trellis"]
                   },
                   {
                     "group": "Tech Blog",
@@ -122,6 +113,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "changelog/v0.5.0-beta.17",
                       "changelog/v0.5.0-beta.16",
                       "changelog/v0.5.0-beta.15",
                       "changelog/v0.5.0-beta.14",
@@ -219,9 +211,7 @@
               },
               {
                 "group": "Use Cases",
-                "pages": [
-                  "use-cases/open-typeless"
-                ]
+                "pages": ["use-cases/open-typeless"]
               },
               {
                 "group": "Resource Marketplace",
@@ -264,10 +254,7 @@
                   {
                     "group": "Contributing",
                     "expanded": false,
-                    "pages": [
-                      "contribute/docs",
-                      "contribute/trellis"
-                    ]
+                    "pages": ["contribute/docs", "contribute/trellis"]
                   },
                   {
                     "group": "Tech Blog",
@@ -312,11 +299,7 @@
             "groups": [
               {
                 "group": "开始使用",
-                "pages": [
-                  "zh/index",
-                  "zh/start/install-and-first-task",
-                  "zh/start/everyday-use"
-                ]
+                "pages": ["zh/index", "zh/start/install-and-first-task", "zh/start/everyday-use"]
               },
               {
                 "group": "进阶",
@@ -338,9 +321,7 @@
               },
               {
                 "group": "Use Cases",
-                "pages": [
-                  "zh/use-cases/open-typeless"
-                ]
+                "pages": ["zh/use-cases/open-typeless"]
               },
               {
                 "group": "Resource Marketplace",
@@ -383,10 +364,7 @@
                   {
                     "group": "贡献指南",
                     "expanded": false,
-                    "pages": [
-                      "zh/contribute/docs",
-                      "zh/contribute/trellis"
-                    ]
+                    "pages": ["zh/contribute/docs", "zh/contribute/trellis"]
                   },
                   {
                     "group": "Tech Blog",
@@ -401,6 +379,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "zh/changelog/v0.5.0-beta.17",
                       "zh/changelog/v0.5.0-beta.16",
                       "zh/changelog/v0.5.0-beta.15",
                       "zh/changelog/v0.5.0-beta.14",
@@ -498,9 +477,7 @@
               },
               {
                 "group": "Use Cases",
-                "pages": [
-                  "zh/use-cases/open-typeless"
-                ]
+                "pages": ["zh/use-cases/open-typeless"]
               },
               {
                 "group": "Resource Marketplace",
@@ -543,10 +520,7 @@
                   {
                     "group": "贡献指南",
                     "expanded": false,
-                    "pages": [
-                      "zh/contribute/docs",
-                      "zh/contribute/trellis"
-                    ]
+                    "pages": ["zh/contribute/docs", "zh/contribute/trellis"]
                   },
                   {
                     "group": "Tech Blog",
@@ -601,7 +575,7 @@
     "links": [
       {
         "label": "Changelog",
-        "href": "/changelog/v0.5.0-beta.16"
+        "href": "/changelog/v0.5.0-beta.17"
       },
       {
         "label": "Tech Blog",
@@ -619,11 +593,7 @@
     "deployBranch": "main"
   },
   "contextual": {
-    "options": [
-      "chatgpt",
-      "claude",
-      "perplexity"
-    ]
+    "options": ["chatgpt", "claude", "perplexity"]
   },
   "interaction": {
     "drilldown": true
