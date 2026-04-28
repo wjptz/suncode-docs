@@ -3,9 +3,46 @@ title: 'v0.5.0-beta.16'
 description: '2026-04-28'
 ---
 
-beta.16 是 beta.15 之后的 Claude Code statusLine 升级兼容补丁。
+beta.16 是 beta.15 之后的 template hash 可移植性、task archive 参数和 Claude Code statusLine 升级兼容补丁。
 
 ## Bug Fixes
+
+### Template hash portability
+
+template hash 存储现在使用 POSIX path key，并在计算 hash 前把内容归一化为 LF。
+
+`.trellis/.template-hashes.json` 现在使用带版本的 envelope：
+
+```json
+{
+  "__version": 2,
+  "hashes": {
+    ".trellis/scripts/task.py": "<sha256>"
+  }
+}
+```
+
+| 范围 | beta.16 行为 |
+|---|---|
+| Hash key | 所有宿主都用 `/` 分隔符存储 |
+| Hash input | SHA256 前先把 CRLF 内容归一化为 LF |
+| 旧 flat hash 文件 | 丢弃，并从已安装 template 重新生成 |
+| Directory safety check | `path.relative()` 输出先归一化，再做 template/hash lookup |
+| OpenCode template | collector 用 POSIX 形式存储 `.opencode/*` key |
+
+这修复了 Windows checkout 场景：backslash hash key 或 CRLF line ending 会让未修改 template 被误判为 modified。
+
+### `task.py archive` input contract
+
+`task.py archive` 现在接受和其他 task-directory 命令一致的 task 输入。
+
+| 输入形式 | 示例 |
+|---|---|
+| Bare task name | `python3 .trellis/scripts/task.py archive 04-27-example` |
+| Relative task path | `python3 .trellis/scripts/task.py archive .trellis/tasks/04-27-example` |
+| Absolute task path | `python3 .trellis/scripts/task.py archive /repo/.trellis/tasks/04-27-example` |
+
+之前 `archive` 是唯一一个只用 slug lookup 的 dir-style task command。传入 `.trellis/tasks/<slug>` 会报 `Task not found`，但其他 task 命令接受这种形式。
 
 ### 已安装的 Claude Code statusLine 会保留
 
