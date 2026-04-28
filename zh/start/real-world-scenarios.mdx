@@ -1,0 +1,498 @@
+---
+title: '真实业务场景'
+description: '把 Trellis 用在真实工程工作中：新项目、存量仓库、重构、迁移、bug 修复和团队推广。'
+icon: 'map'
+---
+
+多数团队缺的不是更多命令，而是让项目经验留在仓库里的办法：新项目需要在模式扩散前定规则，老项目的规范常常藏在历史 PR 里，重构需要先写清不变量，迁移需要分批计划，线上 bug 修完还要把教训留下来。
+
+下面按这些场景展开。每个场景都给出起始 prompt、应该产出的 Trellis 文件、推荐步骤和完成标准。选一个最接近你当前工作的场景，改成你项目里的任务即可。
+
+<Note>
+  Trellis 0.5 是 skill-first 的。下面的 prompt 应该作为任务输入使用；Trellis 会把工作路由到
+  brainstorming、spec 加载、检查和知识沉淀等相关 skills。只有在平台需要手动进入 session
+  时，才需要使用 `/trellis:start`。
+</Note>
+
+## 场景地图
+
+| 场景                                          | 适用时机                         | Trellis 的主要价值                      |
+| --------------------------------------------- | -------------------------------- | --------------------------------------- |
+| [从零开始新项目](#从零开始新项目)             | 新建产品、服务、包或内部工具     | 在代码扩散前把早期决策写清楚            |
+| [接入存量项目](#接入存量项目)                 | 仓库已存在，但规范主要靠人记忆   | 从真实代码提取模式，不打断业务开发      |
+| [交付产品功能](#交付产品功能)                 | 一个任务横跨产品、API、数据和 UI | 让 scope、specs、实现和检查保持一致     |
+| [重构老模块](#重构老模块)                     | 代码能跑，但已经难以安全修改     | 在保持行为不变的前提下，让结构可审查    |
+| [执行批量迁移](#执行批量迁移)                 | 大量文件需要同类升级或 API 替换  | 把大改动拆成批次，并明确每批检查方式    |
+| [修复反复出现的 bug](#修复反复出现的-bug)     | 同类问题多次出现                 | 把修复沉淀成测试、spec 和会话记忆       |
+| [减少重复 Review 反馈](#减少重复-review-反馈) | Reviewer 总是写同类评论          | 把 Review 规则提升为共享仓库上下文      |
+| [协调并行工作](#协调并行工作)                 | 多个独立任务可以同时推进         | 给每个 Agent 独立分支、PRD 和上下文     |
+| [推广到团队](#推广到团队)                     | 多人、多仓库或多 AI 工具要统一   | 让采用方式在开发者和 Agent 之间保持一致 |
+
+<Tip>
+  第一个星期先优化一个有实际价值的小任务，不要追求完整 rollout。一个能工作的 spec 和一份清晰的任务
+  PRD，比一大套空模板更能帮助团队建立信心。
+</Tip>
+
+## 从零开始新项目
+
+适用于新建产品、服务、SDK、包或内部工具。主要风险是：早期 AI 输出会在你还没意识到时创造出一堆偶然规范。
+
+### 真实情况
+
+你要做一个 B2B Dashboard，包括登录、团队管理、计费和分析页面。你希望 AI 帮你快速启动，但不希望每个会话都重新发明目录结构、API 风格或组件模式。
+
+### 起始 Prompt
+
+```text
+I am starting a new B2B dashboard from scratch. Help me set up Trellis for the first week of work.
+
+First, ask for the missing product and tech-stack decisions. Then create a small first-task PRD and
+the minimum specs needed for frontend structure, API shape, error handling, and tests.
+```
+
+### Trellis 产物
+
+| 产物                                              | 作用                         |
+| ------------------------------------------------- | ---------------------------- |
+| `.trellis/spec/*/index.md`                        | 列出第一批真正需要的 specs   |
+| `.trellis/spec/frontend/directory-structure.md`   | 明确 UI 布局和组件组织方式   |
+| `.trellis/spec/backend/api-patterns.md`           | 定义路由形状、校验和响应格式 |
+| `.trellis/spec/unit-test/conventions.md`          | 记录第一批测试期望           |
+| `.trellis/tasks/<date>-project-foundation/prd.md` | 定义第一个可交付切片         |
+| `.trellis/workspace/<developer>/journal-1.md`     | 记录需要跨会话保留的技术决策 |
+
+### 工作流
+
+1. 先创建仓库和包管理器，再运行 `trellis init`。
+2. 让 AI 只起草第一周需要的 specs。
+3. 人工编辑 specs，删掉猜测、空话和遥远未来才需要的规则。
+4. 创建一个最小的纵向切片任务。
+5. 用 check 和 finish 流程完成这个切片。
+6. 记录 session，让技术选型和取舍可以被之后的会话继承。
+
+```bash
+trellis init -u alice
+
+/trellis:start
+
+"Create the first task for project foundation. Keep scope to auth shell, app layout, lint/typecheck/test commands, and one sample route."
+```
+
+### 完成标准
+
+- 新成员能读懂第一份任务 PRD，并知道哪些在 scope 内。
+- 仓库有可运行的验证命令。
+- 第一批 specs 描述的是已经做出的决定，而不是推测性架构。
+- Session journal 记录了为什么选择当前技术栈和项目结构。
+
+<Warning>
+  不要在新项目第一天就启动多 Agent 并行。新项目需要先稳定骨架，否则并行 Agent 很容易互相踩文件。
+</Warning>
+
+## 接入存量项目
+
+适用于代码库已经有真实业务行为，但规范分散在历史 PR、Reviewer 习惯、零散文档和资深同事记忆里的情况。
+
+### 真实情况
+
+你接手一个三年前开始的 SaaS 仓库。API routes、权限、表单、错误处理都有很多隐含模式。AI 能做局部修改，但经常漏掉项目特有细节。
+
+### 起始 Prompt
+
+```text
+This is an existing repo. Do not refactor code yet.
+
+Inspect the codebase and propose a minimal Trellis bootstrap for the next feature task. Identify the
+actual patterns used for API routes, auth checks, logging, tests, and frontend forms. Write specs only
+for patterns supported by current code examples.
+```
+
+### Trellis 产物
+
+| 产物                                                | 作用                        |
+| --------------------------------------------------- | --------------------------- |
+| `.trellis/spec/*/index.md`                          | 区分已填写 specs 和占位模板 |
+| `.trellis/spec/backend/error-handling.md`           | 捕获现有错误处理和日志行为  |
+| `.trellis/spec/frontend/components.md`              | 捕获真实组件和表单模式      |
+| `.trellis/tasks/<date>-bootstrap-guidelines/prd.md` | 限定文档化任务范围          |
+| `.trellis/tasks/<date>-pilot-feature/prd.md`        | 用一个真实变更验证 specs    |
+
+### 工作流
+
+1. 运行 `trellis init`。
+2. 第一项任务只读：检查仓库，从现有代码起草 specs。
+3. 要求 AI 为每条规范引用具体文件路径。
+4. 像 Review 代码一样 Review specs，删掉不能追溯到真实例子的规则。
+5. 选择一个试点 feature 或 bugfix。
+6. 跑试点任务，观察 specs 是否减少重复提示。
+
+### 防护线
+
+- 不要让 bootstrap 任务顺手清理代码。
+- 不要把理想规范写成“当前项目已经如此”。
+- 不要填满所有模板。空模板比错误规则更安全。
+
+### 完成标准
+
+- 第一批 specs 能引用真实源文件。
+- 试点任务需要重复提醒的本地模式明显减少。
+- Reviewer 可以引用 `.trellis/spec/`，而不是每次重新解释约定。
+
+## 交付产品功能
+
+适用于横跨多个层次的功能：产品行为、UI 状态、API 契约、数据库变更、权限、测试和发布风险。
+
+### 真实情况
+
+你要添加团队邀请功能。它涉及 workspace 权限、邀请邮件、API routes、数据库表、前端表单，以及邀请过期等边界情况。
+
+### 起始 Prompt
+
+```text
+Create a Trellis task for team invitations.
+
+The feature should let workspace admins invite users by email, resend pending invites, revoke invites,
+and accept an invite. Include product requirements, out-of-scope items, data model changes, API shape,
+frontend states, tests, and rollout risks.
+```
+
+### PRD 形状
+
+```markdown
+# Team Invitations
+
+## Goal
+
+Workspace admins can invite teammates by email and manage pending invites.
+
+## In scope
+
+- Create invite
+- Resend invite
+- Revoke invite
+- Accept invite
+- Expiration handling
+
+## Out of scope
+
+- Bulk CSV import
+- SSO provisioning
+- Role templates
+
+## Acceptance criteria
+
+- Non-admin users cannot create, resend, or revoke invites.
+- Expired invites show a recoverable error.
+- Invite acceptance is idempotent.
+- Tests cover permission checks and expired invite behavior.
+```
+
+### 工作流
+
+1. 创建任务，并在写代码前完成 PRD。
+2. 加入产品区域、API 模式、数据库规范和测试规则相关上下文。
+3. 让 AI 先规划层次边界，再开始实现。
+4. 先实现最小纵向切片。
+5. 检查跨层契约：UI 输入、API 校验、数据库写入、邮件副作用、权限失败路径。
+6. 只有当功能产生可复用约定时，才更新 specs。
+
+### 完成标准
+
+- PRD 清楚说明 scope 和 out-of-scope。
+- 最有风险的契约都有测试覆盖。
+- Review 可以聚焦产品正确性，而不是重新发现架构。
+- 新出现的可复用模式被写入 `.trellis/spec/`。
+
+## 重构老模块
+
+适用于代码能跑、但已经难以安全修改的情况。Trellis 里的重构任务默认应该保持行为不变。
+
+### 真实情况
+
+`src/billing/invoice-service.ts` 已经长到 1200 行。它计算账单、处理折扣、调用支付 API、写审计日志，还负责邮件格式化。你想拆分它，但不能改变账单行为。
+
+### 起始 Prompt
+
+```text
+Create a behavior-preserving refactor task for src/billing/invoice-service.ts.
+
+First map current responsibilities, callers, side effects, and existing tests. Then propose the safest
+sequence. Do not change behavior until we have characterization tests or clear existing coverage for
+the important billing paths.
+```
+
+### Trellis 产物
+
+| 产物              | 作用                                |
+| ----------------- | ----------------------------------- |
+| 重构 PRD          | 定义不变量、触达文件和 out-of-scope |
+| `implement.jsonl` | 加载调用方、测试和相关 specs        |
+| `check.jsonl`     | 加载行为契约和 Reviewer 关注点      |
+| 更新后的 spec     | 在重构完成后记录新的模块边界        |
+| Journal 记录      | 解释为什么最终采用当前结构          |
+
+### 工作流
+
+1. 先写行为不变量，再改代码。
+2. 找出调用方和副作用。
+3. 添加或确认 characterization tests。
+4. 一次只抽取一个职责。
+5. 除非 PRD 明确允许，否则保持公共接口稳定。
+6. 每次有意义的抽取后都跑测试。
+7. 新结构被验证后，再更新 specs。
+
+### 重构不变量
+
+把不变量直接写进 PRD。
+
+```markdown
+## Behavior that must not change
+
+- Invoice totals must match existing calculation for active discounts.
+- Failed payment attempts must still write audit logs.
+- Email rendering output must remain byte-for-byte compatible for existing templates.
+- Public API response shape must not change.
+```
+
+### 完成标准
+
+- 测试证明关键路径的新旧行为一致。
+- Diff 按职责可审查，而不是一次性大重写。
+- 新模块边界已经被文档化，后续 AI 会话能继承。
+- 没有把顺手 feature 混进重构 PR。
+
+<Warning>
+  如果 AI 在重构中提出“顺便
+  modernize”无关代码，把那部分移到单独任务。行为保持和产品变更混在一起时，重构最容易失败。
+</Warning>
+
+## 执行批量迁移
+
+适用于同类改动需要跨很多文件发生的情况：框架升级、API client 替换、设计系统迁移、lint 规则落地、依赖移除或测试框架迁移。
+
+### 真实情况
+
+你要把前端里的直接 `fetch()` 调用迁移到共享 typed API client。仓库里有几十个 call sites，还有若干边界情况。
+
+### 起始 Prompt
+
+```text
+Plan a Trellis migration from direct fetch calls to the shared API client.
+
+Find call-site patterns, group them by risk, choose a small pilot batch, define verification commands,
+and create separate tasks for low-risk, medium-risk, and high-risk files. Do not migrate everything in
+one PR.
+```
+
+### 工作流
+
+1. 编辑前先搜索并盘点 call sites。
+2. 按风险和 owner 给文件分组。
+3. 写迁移 spec，说明旧模式、新模式和例外情况。
+4. 先在三到五个代表性文件上跑 pilot。
+5. Review pilot，并更新迁移 spec。
+6. 把剩余工作拆成互不冲突的批次。
+7. 每个批次都运行对应检查。
+
+### 批次表
+
+| 批次 | 文件范围                   | 风险 | 验证方式                     |
+| ---- | -------------------------- | ---- | ---------------------------- |
+| 1    | 内部 admin 页面            | 低   | Typecheck 和 smoke test      |
+| 2    | 客户可见 dashboard         | 中   | Typecheck、单测、人工 Review |
+| 3    | Checkout 和 billing flows  | 高   | 全量测试和产品确认           |
+| 4    | 删除旧 helper 并更新 specs | 清理 | 搜索确认没有旧 call sites    |
+
+### 完成标准
+
+- 迁移有可见的盘点和批次计划。
+- 每个 PR 的 Review 面都足够窄。
+- 旧模式被删除，或被明确列为例外。
+- Specs 解释新模式，AI 不会再把旧写法带回来。
+
+## 修复反复出现的 bug
+
+适用于修掉症状还不够的情况，因为同类 bug 很可能再次出现。
+
+### 真实情况
+
+用户在网络慢的时候可以重复提交 checkout。眼前修复是按钮状态，但更深层问题是提交流没有统一的 idempotency 和 UI 状态规范。
+
+### 起始 Prompt
+
+```text
+Fix the duplicate checkout submission bug.
+
+Reproduce the issue, identify the smallest safe patch, add a regression test, and then run a
+break-loop analysis. If the root cause is a missing convention, propose a spec update.
+```
+
+### 工作流
+
+1. 复现或明确描述失败模式。
+2. 用最小安全改动修掉行为。
+3. 在大清理前先加回归测试。
+4. 跑根因分析工作流。
+5. 把预防动作转成 spec、test helper 或 checklist。
+6. 记录 session，让推理过程留在仓库里。
+
+```bash
+/trellis:start
+
+"Users can submit checkout twice when the network is slow. Reproduce it, fix it, and add a regression test."
+
+让 Trellis 运行 break-loop 分析。
+```
+
+### 完成标准
+
+- Patch 修复了报告中的行为。
+- 没有 patch 时，回归测试会失败。
+- 根因被记录下来。
+- 预防机制存在于聊天记录之外。
+
+## 减少重复 Review 反馈
+
+适用于 Reviewer 总是在写同类评论的情况：缺少 loading 状态、错误格式不一致、没有回归测试、不安全 SQL、自定义日期格式，或新增 helper 重复已有工具。
+
+### 起始 Prompt
+
+```text
+Review the last few PR comments and help me convert repeated engineering feedback into Trellis specs.
+
+Only propose rules that are concrete, enforceable, and tied to actual review comments. For each rule,
+show the target spec file and a good/bad example.
+```
+
+### 把反馈转成 spec
+
+| 重复 Review comment                      | 更好的 spec 规则                                                                |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| "This needs a loading state."            | "Every async submit button has idle, loading, success, and error states."       |
+| "Do not use `any` here."                 | "Public component props cannot use `any`; use explicit interfaces or generics." |
+| "This API error format is inconsistent." | "All route handlers return `ApiError` through `toApiError()`."                  |
+| "We already have a helper for this."     | "Search `src/lib/formatters/` before adding a date or currency formatter."      |
+
+### 工作流
+
+1. 从真实 PR 中收集重复反馈。
+2. 按工程规则给评论分组。
+3. 把短规则加入最相关的 spec 文件。
+4. 尽量补 good 和 bad examples。
+5. 在下一个任务的 check 阶段验证这条规则是否能抓问题。
+6. 删除或改写制造噪音的规则。
+
+### 完成标准
+
+- Reviewer 可以链接 spec，而不是重复解释同一段话。
+- AI 能在 Review 前应用这条规则。
+- Spec 改善了真实工作，而不是记录个人偏好。
+
+## 协调并行工作
+
+适用于多个任务足够独立，可以在不同分支或 worktree 中同时推进的情况。
+
+### 适合并行
+
+- 三个互不相关的 settings 页面。
+- 不同 owner 的独立 bugfix。
+- 不会改同一段导航的多篇文档。
+- 需要产出独立 PR 的不同实现方案 spike。
+
+### 不适合并行
+
+- 会修改同一批文件的任务。
+- 需要持续产品讨论的任务。
+- 一个任务必须等另一个任务完成才能开始。
+- 新项目还没有稳定架构骨架。
+
+### 起始 Prompt
+
+```text
+Split this work into parallel Trellis tasks.
+
+Identify dependencies, files likely to conflict, suggested branch names, PRD summaries, and the order
+in which the PRs should be reviewed. Only parallelize tasks that can be reviewed independently.
+```
+
+### Worktree 计划
+
+```yaml
+base_branch: main
+worktree_dir: ../.trellis-worktrees
+tasks:
+  - id: billing-settings
+    branch: feature/billing-settings
+    prd: |
+      Add billing settings UI using existing settings page patterns.
+  - id: invoice-export
+    branch: feature/invoice-export
+    prd: |
+      Add CSV export for invoices using the existing export service.
+  - id: plan-limit-banner
+    branch: feature/plan-limit-banner
+    prd: |
+      Add plan limit warnings to the dashboard without changing billing APIs.
+```
+
+### 完成标准
+
+- 每个 Agent 都有自己的 PRD 和分支。
+- 开始前已经列出潜在冲突文件。
+- PR 可以独立 Review 和合并。
+- 共享 specs 只更新一次，而不是在每个 worktree 里各写一版。
+
+## 推广到团队
+
+适用于 Trellis 采用范围涉及多个开发者、仓库或 AI 工具的情况。主要风险不是安装，而是使用方式不一致。
+
+### 真实情况
+
+一个 50 人工程部门里，有人深度使用 Claude Code，有人用 Cursor，也有人试验其他 AI 工具。团队希望共享规范和可审查的 AI 工作流，但不想强制大家使用同一个 IDE。
+
+### 起始 Prompt
+
+```text
+Create a Trellis rollout plan for one pilot repo and one department.
+
+Include pilot criteria, first specs, task workflow, review policy for spec changes, platform adapter
+setup, success metrics, and risks. Keep the first rollout small enough to complete in two weeks.
+```
+
+### 推广阶段
+
+| 阶段 | 目标             | 退出标准                                    |
+| ---- | ---------------- | ------------------------------------------- |
+| 1    | 试点一个仓库     | 用 specs、checks、journal 完成一个真实任务  |
+| 2    | 捕获重复反馈     | 三到五条 Review 模式被沉淀进 specs          |
+| 3    | 标准化任务工作流 | 开发者知道何时 start、check、finish、record |
+| 4    | 增加平台适配     | 多个 AI 工具消费同一套 `.trellis/` 上下文   |
+| 5    | 治理更新         | spec 和 workflow 变更都像代码一样被 Review  |
+
+### 成功指标
+
+- 新 AI 会话需要重复解释的内容减少。
+- PRD 对 scope 和 out-of-scope 描述更清楚。
+- 重复出现的 Review comment 变少。
+- 团队切换 AI 工具时不会丢失规范。
+- 新成员不依赖某个资深同事也能完成第一个任务。
+- 触发根因分析的 bug 会沉淀为 specs、tests 或 checklist。
+
+## 选择最小下一步
+
+如果你不确定自己属于哪个场景，先从这四个入口选一个：
+
+<CardGroup cols={2}>
+  <Card title="新仓库" icon="rocket" href="#从零开始新项目">
+    先建立小规格 spec 集合和一个 foundation 任务。
+  </Card>
+  <Card title="存量仓库" icon="folder-open" href="#接入存量项目">
+    改行为前，先从当前代码提取真实规范。
+  </Card>
+  <Card title="重构" icon="split" href="#重构老模块">
+    编辑前先定义不变量、测试和模块边界。
+  </Card>
+  <Card title="团队推广" icon="users" href="#推广到团队">
+    先在一个仓库试点，再扩展到更多团队。
+  </Card>
+</CardGroup>

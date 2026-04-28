@@ -36,7 +36,8 @@
                 "pages": [
                   "index",
                   "start/install-and-first-task",
-                  "start/everyday-use"
+                  "start/everyday-use",
+                  "start/real-world-scenarios"
                 ]
               },
               {
@@ -59,9 +60,7 @@
               },
               {
                 "group": "Use Cases",
-                "pages": [
-                  "use-cases/open-typeless"
-                ]
+                "pages": ["use-cases/open-typeless"]
               },
               {
                 "group": "Resource Marketplace",
@@ -104,10 +103,7 @@
                   {
                     "group": "Contributing",
                     "expanded": false,
-                    "pages": [
-                      "contribute/docs",
-                      "contribute/trellis"
-                    ]
+                    "pages": ["contribute/docs", "contribute/trellis"]
                   },
                   {
                     "group": "Tech Blog",
@@ -219,9 +215,7 @@
               },
               {
                 "group": "Use Cases",
-                "pages": [
-                  "use-cases/open-typeless"
-                ]
+                "pages": ["use-cases/open-typeless"]
               },
               {
                 "group": "Resource Marketplace",
@@ -264,10 +258,7 @@
                   {
                     "group": "Contributing",
                     "expanded": false,
-                    "pages": [
-                      "contribute/docs",
-                      "contribute/trellis"
-                    ]
+                    "pages": ["contribute/docs", "contribute/trellis"]
                   },
                   {
                     "group": "Tech Blog",
@@ -315,7 +306,8 @@
                 "pages": [
                   "zh/index",
                   "zh/start/install-and-first-task",
-                  "zh/start/everyday-use"
+                  "zh/start/everyday-use",
+                  "zh/start/real-world-scenarios"
                 ]
               },
               {
@@ -338,9 +330,7 @@
               },
               {
                 "group": "Use Cases",
-                "pages": [
-                  "zh/use-cases/open-typeless"
-                ]
+                "pages": ["zh/use-cases/open-typeless"]
               },
               {
                 "group": "Resource Marketplace",
@@ -383,10 +373,7 @@
                   {
                     "group": "贡献指南",
                     "expanded": false,
-                    "pages": [
-                      "zh/contribute/docs",
-                      "zh/contribute/trellis"
-                    ]
+                    "pages": ["zh/contribute/docs", "zh/contribute/trellis"]
                   },
                   {
                     "group": "Tech Blog",
@@ -498,9 +485,7 @@
               },
               {
                 "group": "Use Cases",
-                "pages": [
-                  "zh/use-cases/open-typeless"
-                ]
+                "pages": ["zh/use-cases/open-typeless"]
               },
               {
                 "group": "Resource Marketplace",
@@ -543,10 +528,7 @@
                   {
                     "group": "贡献指南",
                     "expanded": false,
-                    "pages": [
-                      "zh/contribute/docs",
-                      "zh/contribute/trellis"
-                    ]
+                    "pages": ["zh/contribute/docs", "zh/contribute/trellis"]
                   },
                   {
                     "group": "Tech Blog",
@@ -619,11 +601,7 @@
     "deployBranch": "main"
   },
   "contextual": {
-    "options": [
-      "chatgpt",
-      "claude",
-      "perplexity"
-    ]
+    "options": ["chatgpt", "claude", "perplexity"]
   },
   "interaction": {
     "drilldown": true
@@ -669,7 +647,7 @@
     },
     {
       "source": "/guide/ch08-real-world",
-      "destination": "/start/everyday-use"
+      "destination": "/start/real-world-scenarios"
     },
     {
       "source": "/guide/ch08-custom-workflow",
@@ -753,7 +731,7 @@
     },
     {
       "source": "/zh/guide/ch08-real-world",
-      "destination": "/zh/start/everyday-use"
+      "destination": "/zh/start/real-world-scenarios"
     },
     {
       "source": "/zh/guide/ch08-custom-workflow",
