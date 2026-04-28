@@ -3,9 +3,9 @@ title: '概览'
 description: 'Trellis 即用技能'
 ---
 
-技能为 Trellis 扩展专业知识和工作流。安装一个技能，AI 就能立即帮你处理该领域的问题。
+技能为 Trellis 扩展专业知识和工作流。当前 Trellis 安装会自动包含内置 Trellis skills，marketplace skills 继续作为兼容路径和专业领域扩展。
 
-通过 [skills.sh](https://skills.sh) 一键安装：
+通过 [skills.sh](https://skills.sh) 一键安装 marketplace skills：
 
 ```bash
 npx skills add mindfold-ai/marketplace
@@ -13,11 +13,11 @@ npx skills add mindfold-ai/marketplace
 
 ## 官方技能
 
-| 技能                                           | 描述               | 安装                                              |
-| ---------------------------------------------- | ------------------ | ------------------------------------------------- |
-| [trellis-meta](/zh/skills-market/trellis-meta) | 定制和修改 Trellis | `npx skills add mindfold-ai/marketplace -s trellis-meta` |
-| [cc-codex-spec-bootstrap](/zh/skills-market/cc-codex-spec-bootstrap) | 用 CC + Codex 流水线引导生成编码规范 | `npx skills add mindfold-ai/marketplace -s cc-codex-spec-bootstrap` |
-| [frontend-fullchain-optimization](/zh/skills-market/frontend-fullchain-optimization) | 用 Web Vitals 诊断并优化前端性能 | `npx skills add mindfold-ai/marketplace -s frontend-fullchain-optimization` |
+| 技能                                                                                 | 描述                                 | 安装                                                                        |
+| ------------------------------------------------------------------------------------ | ------------------------------------ | --------------------------------------------------------------------------- |
+| [trellis-meta](/zh/skills-market/trellis-meta)                                       | 定制和修改 Trellis                   | `trellis init` 内置；marketplace 安装用于兼容                               |
+| [cc-codex-spec-bootstrap](/zh/skills-market/cc-codex-spec-bootstrap)                 | 用 CC + Codex 流水线引导生成编码规范 | `npx skills add mindfold-ai/marketplace -s cc-codex-spec-bootstrap`         |
+| [frontend-fullchain-optimization](/zh/skills-market/frontend-fullchain-optimization) | 用 Web Vitals 诊断并优化前端性能     | `npx skills add mindfold-ai/marketplace -s frontend-fullchain-optimization` |
 
 ## 社区技能
 

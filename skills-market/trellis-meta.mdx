@@ -3,16 +3,28 @@ title: 'trellis-meta'
 description: 'The essential skill for customizing Trellis'
 ---
 
-The official meta-skill for understanding and customizing Trellis. Install this skill, and AI can help you:
+The official meta-skill for understanding and customizing Trellis. Current Trellis projects get this skill automatically from `trellis init`, so AI can help you:
 
 - Add specialized agents for your workflow
 - Change how context gets injected
 - Add project-specific commands
-- Modify quality checks
+- Adapt local `.trellis/` and platform files to your project
 
 ## Install
 
-Works with Claude Code, Cursor, OpenCode, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, GitHub Copilot, Droid, and more.
+Works with all Trellis platform skill roots: Claude Code, Cursor, OpenCode, Codex, Kilo, Kiro, Gemini CLI, Antigravity, Windsurf, Qoder, CodeBuddy, GitHub Copilot, Factory Droid, and Pi Agent.
+
+For Trellis-managed projects, initialize or update the platform you use:
+
+```bash
+trellis init --claude
+trellis init --codex
+trellis update
+```
+
+`trellis init` writes `trellis-meta` into the selected platform's skill directory and `trellis update` keeps it hash-tracked with the rest of the built-in templates.
+
+For non-Trellis projects or older Trellis installs, use the marketplace compatibility path:
 
 ```bash
 npx skills add mindfold-ai/marketplace --skill trellis-meta
@@ -26,11 +38,11 @@ npx skills add mindfold-ai/marketplace
 
 Options:
 
-| Flag | Description |
-| --- | --- |
-| `-g` | Install globally (`~/.claude/skills/`) |
-| `-a claude-code` | Target a specific agent |
-| `-y` | Non-interactive mode |
+| Flag             | Description                            |
+| ---------------- | -------------------------------------- |
+| `-g`             | Install globally (`~/.claude/skills/`) |
+| `-a claude-code` | Target a specific agent                |
+| `-y`             | Non-interactive mode                   |
 
 ## Verify Installation
 
@@ -40,11 +52,11 @@ Check if the skill is available:
 What skills do you have access to?
 ```
 
-Claude should list `trellis-meta` in the response.
+Your AI tool should list `trellis-meta` in the response.
 
 ## Usage
 
-After installation, just tell AI what you want:
+After installation, tell AI what you want:
 
 ```
 I want to add a deploy agent to handle deployment workflow
@@ -62,9 +74,8 @@ AI will automatically use the skill's documentation and give you the correct mod
 
 ## What's Included
 
-| Directory        | Contents                                                        |
-| ---------------- | --------------------------------------------------------------- |
-| `core/`          | Core systems (workspace, tasks, specs, scripts)                 |
-| `claude-code/`   | Claude Code features (hooks, agents, Ralph Loop, multi-session) |
-| `how-to-modify/` | Modification guides (add agent, add command, modify hook, etc.) |
-| `meta/`          | Platform compatibility, self-iteration guide                    |
+| Directory             | Contents                                                                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `local-architecture/` | How local `.trellis/` workflow, tasks, specs, workspace, scripts, and context injection fit together                          |
+| `platform-files/`     | How platform settings, hooks, agents, skills, commands, prompts, and workflows connect to Trellis                             |
+| `customize-local/`    | How to modify generated local files for workflow, task lifecycle, context loading, hooks, agents, skills, commands, and specs |
