@@ -29,8 +29,8 @@ Each scenario below gives a starting prompt, the Trellis files to produce, the w
 | [Roll out to a team](#roll-out-to-a-team)                           | More people or tools need the same workflow          | Make adoption consistent across developers and agents |
 
 <Tip>
-  For the first week, optimize for one useful task, not a complete framework rollout. A small
-  working spec and a clear task PRD teach the team more than a large empty spec library.
+  Optimize for one useful task before pushing a complete framework rollout. A small working spec and
+  a clear task PRD teach the team more than a large empty spec library.
 </Tip>
 
 ## Start a new project
@@ -50,31 +50,22 @@ First, ask for the missing product and tech-stack decisions. Then create a small
 the minimum specs needed for frontend structure, API shape, error handling, and tests.
 ```
 
-### Trellis artifacts
-
-| Artifact                                          | Purpose                                              |
-| ------------------------------------------------- | ---------------------------------------------------- |
-| `.trellis/spec/*/index.md`                        | Lists the first specs that matter                    |
-| `.trellis/spec/frontend/directory-structure.md`   | Names the UI layout and component organization       |
-| `.trellis/spec/backend/api-patterns.md`           | Defines route shape, validation, and response format |
-| `.trellis/spec/unit-test/conventions.md`          | Records the first test expectations                  |
-| `.trellis/tasks/<date>-project-foundation/prd.md` | Defines the first buildable slice                    |
-| `.trellis/workspace/<developer>/journal-1.md`     | Captures decisions that should survive the session   |
-
 ### Workflow
 
-1. Initialize Trellis after the repo and package manager exist.
-2. Ask the AI to draft only the specs needed for the first week.
-3. Edit those specs manually. Remove guesses, vague rules, and future plans.
-4. Create one task for the smallest useful vertical slice.
-5. Build that slice with check and finish steps enabled.
-6. Record the session so stack decisions and tradeoffs are easy to recover.
+1. Run `trellis init` once the project is initialized — it writes default spec templates under `.trellis/spec/` and auto-creates a `00-bootstrap-guidelines` task.
+2. Inside the bootstrap task, walk the AI through the product requirements and tech stack so it has full context before doing anything else.
+3. Have the AI surface relevant high-quality skills (from the marketplace or your own skill library) that match the stack, and wire them in first.
+4. Fill in the default spec templates produced by `trellis init`, focusing on what the current work needs; do not pre-design the whole project.
+5. Edit those specs manually. Remove guesses, vague rules, and future plans.
+6. Create one task for the smallest useful vertical slice.
+7. Build that slice with check and finish steps enabled.
+8. Record the session so stack decisions and tradeoffs are easy to recover.
 
 ```bash
 trellis init -u alice
 
-/trellis:start
-
+# Agent-capable platforms (Claude Code / Cursor / OpenCode / etc.): open an AI session and type the prompt below.
+# Agent-less platforms (Kilo / Antigravity / Windsurf): run /trellis:start first.
 "Create the first task for project foundation. Keep scope to auth shell, app layout, lint/typecheck/test commands, and one sample route."
 ```
 
@@ -107,16 +98,6 @@ Inspect the codebase and propose a minimal Trellis bootstrap for the next featur
 actual patterns used for API routes, auth checks, logging, tests, and frontend forms. Write specs only
 for patterns supported by current code examples.
 ```
-
-### Trellis artifacts
-
-| Artifact                                            | Purpose                                      |
-| --------------------------------------------------- | -------------------------------------------- |
-| `.trellis/spec/*/index.md`                          | Separates filled specs from placeholders     |
-| `.trellis/spec/backend/error-handling.md`           | Captures existing error and logging behavior |
-| `.trellis/spec/frontend/components.md`              | Captures real component and form patterns    |
-| `.trellis/tasks/<date>-bootstrap-guidelines/prd.md` | Scopes the documentation pass                |
-| `.trellis/tasks/<date>-pilot-feature/prd.md`        | Proves the specs on one real change          |
 
 ### Workflow
 
@@ -222,16 +203,6 @@ sequence. Do not change behavior until we have characterization tests or clear e
 the important billing paths.
 ```
 
-### Trellis artifacts
-
-| Artifact          | Purpose                                             |
-| ----------------- | --------------------------------------------------- |
-| Refactor PRD      | Defines invariants, touched files, and out-of-scope |
-| `implement.jsonl` | Loads callers, tests, and relevant specs            |
-| `check.jsonl`     | Loads behavior contracts and reviewer concerns      |
-| Updated spec      | Records the new module boundary after the refactor  |
-| Journal entry     | Explains why the final structure was chosen         |
-
 ### Workflow
 
 1. Write invariants before code changes.
@@ -331,18 +302,17 @@ break-loop analysis. If the root cause is a missing convention, propose a spec u
 ### Workflow
 
 1. Reproduce or describe the failure mode.
-2. Fix the smallest behavior that stops the bug.
+2. Apply the smallest fix that stops the bug.
 3. Add a regression test before broad cleanup.
 4. Run the root-cause workflow.
 5. Convert the prevention into a spec, test helper, or checklist.
 6. Record the session so the reasoning survives.
 
 ```bash
-/trellis:start
-
+# Agent-capable platforms: type the prompt directly. Agent-less platforms: run /trellis:start first.
 "Users can submit checkout twice when the network is slow. Reproduce it, fix it, and add a regression test."
 
-Ask Trellis to run break-loop analysis.
+# Ask Trellis to run break-loop analysis.
 ```
 
 ### Done means
