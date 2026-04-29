@@ -8,16 +8,16 @@ title: '命令、任务与规范'
 
 ### 1.1 总览
 
-| 类型        | 名称                   | 触发                                    | 用途                                                                  |
-| ----------- | ---------------------- | --------------------------------------- | --------------------------------------------------------------------- |
-| **Command** | `/trellis:start`       | 手动（支持 hook 的平台会自动注入）      | 开启会话、加载上下文、任务分类                                        |
-| **Command** | `/trellis:continue`    | 手动                                    | 当前任务内推进下一步工作流，用户不用记 workflow（详见 1.2.2 小节）     |
-| **Command** | `/trellis:finish-work` | 手动，在人工测试 + commit 之后          | 收尾检查 + 写入 journal                                               |
-| **Skill**   | `trellis-brainstorm`   | 用户描述需求 / bug / 模糊诉求时自动触发 | 把请求转成 task + `prd.md`                                            |
-| **Skill**   | `trellis-before-dev`   | task 中动手改代码前自动触发             | 先读相关 spec 再写代码                                                |
-| **Skill**   | `trellis-check`        | 实现完成后自动触发；也被 sub-agent 调用 | 验证 + 自修复循环                                                     |
-| **Skill**   | `trellis-update-spec`  | 有值得沉淀的知识时自动触发              | 把经验固化进 `.trellis/spec/`                                         |
-| **Skill**   | `trellis-break-loop`   | 修完棘手 bug 后自动触发                 | 根因分析 + 预防机制                                                   |
+| 类型        | 名称                   | 触发                                    | 用途                                                               |
+| ----------- | ---------------------- | --------------------------------------- | ------------------------------------------------------------------ |
+| **Command** | `/trellis:start`       | 手动（支持 hook 的平台会自动注入）      | 开启会话、加载上下文、任务分类                                     |
+| **Command** | `/trellis:continue`    | 手动                                    | 当前任务内推进下一步工作流，用户不用记 workflow（详见 1.2.2 小节） |
+| **Command** | `/trellis:finish-work` | 手动，在 Phase 3.4 commit 落地之后      | 归档 task + 写入 session journal                                   |
+| **Skill**   | `trellis-brainstorm`   | 用户描述需求 / bug / 模糊诉求时自动触发 | 把请求转成 task + `prd.md`                                         |
+| **Skill**   | `trellis-before-dev`   | task 中动手改代码前自动触发             | 先读相关 spec 再写代码                                             |
+| **Skill**   | `trellis-check`        | 实现完成后自动触发；也被 sub-agent 调用 | 验证 + 自修复循环                                                  |
+| **Skill**   | `trellis-update-spec`  | 有值得沉淀的知识时自动触发              | 把经验固化进 `.trellis/spec/`                                      |
+| **Skill**   | `trellis-break-loop`   | 修完棘手 bug 后自动触发                 | 根因分析 + 预防机制                                                |
 
 只有 3 个 slash 命令：`start`、`continue`、`finish-work`。以前的 `/before-backend-dev`、`/check-backend`、`/record-session`、`/onboard` 等等都已经被折叠进 skill/sub-agent 或直接移除。
 
@@ -59,14 +59,16 @@ AI 做的任务分类：
 
 #### 1.2.3 `/trellis:finish-work`：收尾 + 归档
 
-前提：**人工**已经测试并 commit。AI 不会跑 `git commit`。
+前提：代码已经 commit。从 `0.5.0-beta.18` 起，AI 在 workflow Phase 3.4（见 `.trellis/workflow.md`）里主导批量 commit —— 起草本次 session 改动的 commit 计划、参考 `git log --oneline -5` 学习 repo 的 commit message 风格、一次性展示计划让用户 confirm、确认后逐批 `git commit`。`/finish-work` 自身只做 archive + journal，**工作区还有未提交代码改动时拒绝执行**，保证 bookkeeping commit 永远在 work commit 之后。
 
 步骤：
 
-1. `get_context.py --mode record` 确认有变更和活跃任务。
-2. 对每个工作已真正完成（代码已合入、验收条件满足）的 task，用 `task.py archive <name>` 归档。
-3. 用 `add_session.py --title … --commit …` 追加一条 journal。
-4. 本次会话有重要经验沉淀的，走 `trellis-update-spec`。
+1. 跑 `get_context.py --mode record`，列出 active tasks、git status 和 recent commits。用这一步发现除了当前 task 之外是否还有其它已完成但未归档的 task，并拿到 Step 4 要用的 work-commit hash。
+2. 跑 `git status --porcelain`，排除 `.trellis/workspace/` 和 `.trellis/tasks/`（这两个路径由脚本 auto-commit 管理）。其它路径有 dirty 文件就拒绝执行，引导用户回到 Phase 3.4。
+3. 用 `task.py archive <name>` 归档当前 active task（产生 `chore(task): archive ...` commit）。如果 Step 1 暴露出其它已完成 task 且用户确认了清理，本轮一并归档。
+4. 用 `add_session.py --title … --commit …` 追加一条 journal（产生 `chore: record journal` commit）。
+
+最终 git log 顺序：`<3.4 阶段的 work commits>` → `chore(task): archive ...`（可能多条）→ `chore: record journal`。把本次经验沉淀进 `trellis-update-spec` 属于 workflow Phase 3.3 在 commit 之前的事，不在这个 skill 的职责里。
 
 ### 1.3 Auto-trigger Skills
 
@@ -402,12 +404,12 @@ hooks:
 
 #### 2.5.2 支持的事件
 
-| 事件            | 触发时机                             | 用途                              |
-| --------------- | ------------------------------------ | --------------------------------- |
-| `after_create`  | `task.py create` 完成                | 在项目追踪工具里建 issue          |
-| `after_start`   | `task.py start` 设置当前会话任务     | 更新 issue 状态到 "In Progress"   |
-| `after_finish`  | `task.py finish` 清除当前会话任务    | 通知团队、触发 review             |
-| `after_archive` | `task.py archive` 移动任务           | 标记 issue 为 "Done"              |
+| 事件            | 触发时机                          | 用途                            |
+| --------------- | --------------------------------- | ------------------------------- |
+| `after_create`  | `task.py create` 完成             | 在项目追踪工具里建 issue        |
+| `after_start`   | `task.py start` 设置当前会话任务  | 更新 issue 状态到 "In Progress" |
+| `after_finish`  | `task.py finish` 清除当前会话任务 | 通知团队、触发 review           |
+| `after_archive` | `task.py archive` 移动任务        | 标记 issue 为 "Done"            |
 
 #### 2.5.3 环境变量
 
@@ -604,7 +606,7 @@ export default function UserProfile(props: any) {
 
 ### 3.3 Spec 应该长什么样
 
-`trellis-update-spec` skill 把 spec 当作**可执行契约**写，不是原则性文字。sub-agent 在 `trellis-implement` / `trellis-check` 时读到的每条都要能告诉它 *怎样安全地实现*——具体签名、契约、用例、测试。如果你写的只是"动手前该想到什么"，那东西属于 `guides/`。
+`trellis-update-spec` skill 把 spec 当作**可执行契约**写，不是原则性文字。sub-agent 在 `trellis-implement` / `trellis-check` 时读到的每条都要能告诉它 _怎样安全地实现_——具体签名、契约、用例、测试。如果你写的只是"动手前该想到什么"，那东西属于 `guides/`。
 
 #### 3.3.1 Code-Spec vs Guide
 
