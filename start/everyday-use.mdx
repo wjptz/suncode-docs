@@ -62,7 +62,7 @@ Final git log order: `<work commits from 3.4>` → `chore(task): archive ...` (o
 
 #### 1.2.3 `/trellis:continue`: Advance within the current task
 
-`continue` is a **within-task** continue — not a cross-task one. It reads the current session runtime file (`.trellis/.runtime/sessions/<session-key>.json`) and the task's `status`, consults `workflow.md` to locate the current phase/step, and advances to the next one.
+`continue` is a **within-task** continue — not a cross-task one. The AI picks up where the active task left off using its `task.json.status` plus the workflow-state breadcrumb the hook injects each turn, consults `workflow.md` to locate the current phase/step, and advances to the next one.
 
 A typical task conversation:
 

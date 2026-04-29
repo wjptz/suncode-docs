@@ -46,7 +46,7 @@ AI 做的任务分类：
 
 #### 1.2.2 `/trellis:continue`：当前任务内推进下一步
 
-`continue` 是**单个任务内**的 continue，不是跨任务的 continue。它读当前会话 runtime 文件（`.trellis/.runtime/sessions/<session-key>.json`）和该任务的 `status`，对照 `workflow.md` 判断当前处于哪个 phase/step，然后推进到下一步。
+`continue` 是**单个任务内**的 continue，不是跨任务的 continue。AI 根据当前 task 的 `task.json.status` 和每轮 hook 注入的 workflow-state breadcrumb，对照 `workflow.md` 判断当前在哪个 phase/step，然后推进到下一步。
 
 典型一次 task 的对话：
 

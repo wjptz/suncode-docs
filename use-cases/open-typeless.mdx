@@ -102,7 +102,7 @@ git worktree add ../asr-volcengine-client -b feature/asr-volcengine-client
 git worktree add ../asr-floating-window -b feature/asr-floating-window
 ```
 
-Each session uses its own `.trellis/.runtime/sessions/<session-key>.json`, so starting one task does not affect the others.
+Each session has its own active-task pointer, so starting a task in one session does not affect the others.
 
 ![parallel agents](/images/use-cases/open-typeless/step3-1.png)
 
@@ -150,12 +150,12 @@ AI helps with remaining setup (environment config, permissions):
 
 Using Trellis to build open-typeless:
 
-| Step | What                 | Trellis Feature                      |
-| ---- | -------------------- | ------------------------------------ |
-| 1    | Initialize project   | `trellis init`, spec organization    |
-| 2    | Plan tasks           | AI task breakdown, batch planning    |
+| Step | What                 | Trellis Feature                                     |
+| ---- | -------------------- | --------------------------------------------------- |
+| 1    | Initialize project   | `trellis init`, spec organization                   |
+| 2    | Plan tasks           | AI task breakdown, batch planning                   |
 | 3    | Parallel development | Native Git worktrees + session-scoped Trellis tasks |
-| 4    | Monitor & record     | `/trellis:finish-work`            |
-| 5    | Continue iterating   | Task hooks, implement/trellis-check sub-agents   |
+| 4    | Monitor & record     | `/trellis:finish-work`                              |
+| 5    | Continue iterating   | Task hooks, implement/trellis-check sub-agents      |
 
 **Result:** Complete Electron app in 1 day, with structured specs and documented progress.

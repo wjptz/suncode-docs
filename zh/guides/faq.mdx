@@ -142,7 +142,7 @@ AI 会读整个规范，但规范太长时每部分得到的注意力就少。
 <Accordion title="忘了设置当前任务会怎样？">
 会话在没有任务特定上下文的情况下运行。规范还是会从默认值加载，但 AI 不知道你的 PRD 或任务特定的文件。
 
-做任务相关的工作时，在当前 AI 会话/窗口里运行 `task.py start "$TASK_DIR"`，或者任务创建和规划后用 `/trellis:continue` 推进。Trellis 会把 active task 存在 `.trellis/.runtime/sessions/<session-key>.json`。
+做任务相关的工作时，在当前 AI 会话/窗口里运行 `task.py start "$TASK_DIR"`，或者任务创建和规划后用 `/trellis:continue` 推进。Trellis 会按会话/窗口分别记录当前 task，后续轮次自动加载对应上下文。
 
 </Accordion>
 

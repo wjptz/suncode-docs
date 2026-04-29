@@ -15,7 +15,8 @@ cd your-project
 ```
 
 <Note>
-  **Requirements**: Mac, Linux, and Windows are fully supported. Requires Node.js 18+ and Python 3.9+.
+  **Requirements**: Mac, Linux, and Windows are fully supported. Requires Node.js 18+ and Python
+  3.9+.
 </Note>
 
 `trellis init` auto-detects installed platforms. You can also specify them explicitly via flags. Each platform needs to be init'd at least once. Pick any combination:
@@ -41,22 +42,22 @@ Beyond these 14 configured platforms, any AI coding agent that reads the `.agent
 
 `trellis init` writes platform-specific config directories. Core concepts (`.trellis/`) are identical across platforms; the differences sit in how commands, skills, sub-agents, and hooks are delivered.
 
-| Platform        | Config Directory                                                                 |
-| --------------- | -------------------------------------------------------------------------------- |
-| **Claude Code** | `.claude/commands/trellis/`, `agents/`, `skills/`, `hooks/`                      |
-| **Cursor**      | `.cursor/commands/`, `agents/`, `skills/`, `hooks/`                              |
-| **OpenCode**    | `.opencode/commands/trellis/`, `agents/`, `skills/`, `plugins/`                  |
-| **Codex**       | `.codex/agents/`, `skills/`, `hooks/` + root `AGENTS.md`                         |
-| **Kiro**        | `.kiro/agents/`, `skills/`, `hooks/`                                             |
-| **Gemini CLI**  | `.gemini/commands/trellis/`, `agents/`, `skills/`, `hooks/`                      |
-| **Qoder**       | `.qoder/commands/`, `agents/`, `skills/`, `hooks/`                               |
-| **CodeBuddy**   | `.codebuddy/commands/trellis/`, `agents/`, `skills/`, `hooks/`                   |
-| **Copilot**     | `.github/copilot/`, `prompts/`, `agents/`, `skills/`, `hooks/`                   |
-| **Droid**       | `.factory/commands/trellis/`, `droids/`, `skills/`, `hooks/`                     |
-| **Pi Agent**    | `.pi/prompts/`, `skills/`, `agents/`, `extensions/trellis/`, `settings.json`     |
-| **Kilo**        | `.kilocode/workflows/`, `skills/`                                                |
-| **Antigravity** | `.agent/workflows/`, `skills/`                                                   |
-| **Windsurf**    | `.windsurf/workflows/`, `skills/`                                                |
+| Platform        | Config Directory                                                             |
+| --------------- | ---------------------------------------------------------------------------- |
+| **Claude Code** | `.claude/commands/trellis/`, `agents/`, `skills/`, `hooks/`                  |
+| **Cursor**      | `.cursor/commands/`, `agents/`, `skills/`, `hooks/`                          |
+| **OpenCode**    | `.opencode/commands/trellis/`, `agents/`, `skills/`, `plugins/`              |
+| **Codex**       | `.codex/agents/`, `skills/`, `hooks/` + root `AGENTS.md`                     |
+| **Kiro**        | `.kiro/agents/`, `skills/`, `hooks/`                                         |
+| **Gemini CLI**  | `.gemini/commands/trellis/`, `agents/`, `skills/`, `hooks/`                  |
+| **Qoder**       | `.qoder/commands/`, `agents/`, `skills/`, `hooks/`                           |
+| **CodeBuddy**   | `.codebuddy/commands/trellis/`, `agents/`, `skills/`, `hooks/`               |
+| **Copilot**     | `.github/copilot/`, `prompts/`, `agents/`, `skills/`, `hooks/`               |
+| **Droid**       | `.factory/commands/trellis/`, `droids/`, `skills/`, `hooks/`                 |
+| **Pi Agent**    | `.pi/prompts/`, `skills/`, `agents/`, `extensions/trellis/`, `settings.json` |
+| **Kilo**        | `.kilocode/workflows/`, `skills/`                                            |
+| **Antigravity** | `.agent/workflows/`, `skills/`                                               |
+| **Windsurf**    | `.windsurf/workflows/`, `skills/`                                            |
 
 `.agents/skills/` is a shared cross-platform layer ([agentskills.io](https://agentskills.io) standard). `trellis init` writes all skills into it too, so any agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, etc.) can consume them.
 
@@ -64,13 +65,13 @@ Beyond these 14 configured platforms, any AI coding agent that reads the `.agent
 
 `trellis init` dispatches on the presence of `.trellis/` and `.trellis/.developer`. Match your situation to the command:
 
-| Scenario | Command | Result |
-|---|---|---|
-| **First-time project init** | `trellis init -u your-name --claude` | Creates `.trellis/` + bootstrap task `00-bootstrap-guidelines` that walks you through filling project spec |
-| **Add a new platform to an existing project** | `trellis init --cursor` (or no-arg interactive — it lists unconfigured platforms) | Writes the new platform's config dir on top of the existing `.trellis/`; no task generated |
-| **New developer joining an existing project** | `trellis init -u their-name` | Generates the joiner onboarding task `00-join-<slug>` and guides reading workflow + spec; start it in the current AI session when ready |
-| **Same developer on a new machine** | Same as above | Also generates a joiner task (because `.developer` isn't committed). Archive it if you don't need the refresher. |
-| **Same dev, same machine, re-run init** | `trellis init -u your-name` | No-op — both `.trellis/` and `.developer` already exist |
+| Scenario                                      | Command                                                                           | Result                                                                                                                                  |
+| --------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **First-time project init**                   | `trellis init -u your-name --claude`                                              | Creates `.trellis/` + bootstrap task `00-bootstrap-guidelines` that walks you through filling project spec                              |
+| **Add a new platform to an existing project** | `trellis init --cursor` (or no-arg interactive — it lists unconfigured platforms) | Writes the new platform's config dir on top of the existing `.trellis/`; no task generated                                              |
+| **New developer joining an existing project** | `trellis init -u their-name`                                                      | Generates the joiner onboarding task `00-join-<slug>` and guides reading workflow + spec; start it in the current AI session when ready |
+| **Same developer on a new machine**           | Same as above                                                                     | Also generates a joiner task (because `.developer` isn't committed). Archive it if you don't need the refresher.                        |
+| **Same dev, same machine, re-run init**       | `trellis init -u your-name`                                                       | No-op — both `.trellis/` and `.developer` already exist                                                                                 |
 
 `--force` / `--skip-existing` only affect **how file conflicts are resolved** (overwrite vs skip); they don't change the dispatch logic itself.
 
@@ -93,7 +94,11 @@ Describe what you want to do; AI follows `workflow.md` through Plan → Execute 
 ```
 
 <Note>
-Agent-capable platforms (Claude Code, OpenCode, Cursor, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, and Codex with `codex_hooks` enabled) load workflow and context automatically via a SessionStart hook or extension on every new session — they don't ship `/trellis:start` as a slash command, so open a fresh session if you need a reload. Only agent-less platforms (Kilo, Antigravity, Windsurf) ship `/trellis:start` (or `/start.md`) as an explicit entry point.
+  Agent-capable platforms (Claude Code, OpenCode, Cursor, Gemini, Qoder, CodeBuddy, Copilot, Droid,
+  Pi Agent, and Codex with `codex_hooks` enabled) load workflow and context automatically via a
+  SessionStart hook or extension on every new session — they don't ship `/trellis:start` as a slash
+  command, so open a fresh session if you need a reload. Only agent-less platforms (Kilo,
+  Antigravity, Windsurf) ship `/trellis:start` (or `/start.md`) as an explicit entry point.
 </Note>
 
 ### Directory Structure
@@ -185,23 +190,25 @@ your-project/
   <Tab title="General">
   Open the terminal. The SessionStart hook fires automatically, so Trellis context is already in the AI's context:
 
-  - `workflow.md` TOC + Phase 1/2/3 step-level details
-  - Identity, git status, active task list
-  - Spec indexes
+- `workflow.md` TOC + Phase 1/2/3 step-level details
+- Identity, git status, active task list
+- Spec indexes
 
-  **Just describe your task.**
+**Just describe your task.**
 
-  If you suspect auto-injection didn't run or you want to reload context, just open a new session — the SessionStart hook re-runs `workflow.md` + `get_context.py` and asks **"What would you like to work on?"**. These platforms don't expose `/trellis:start` as a slash command (the hook already owns `start`), so don't go looking for it.
+If you suspect auto-injection didn't run or you want to reload context, just open a new session — the SessionStart hook re-runs `workflow.md` + `get_context.py` and asks **"What would you like to work on?"**. These platforms don't expose `/trellis:start` as a slash command (the hook already owns `start`), so don't go looking for it.
+
   </Tab>
   <Tab title="Codex">
   Enable in `~/.codex/config.toml`:
 
-  ```toml
-  [features]
-  codex_hooks = true
-  ```
+```toml
+[features]
+codex_hooks = true
+```
 
-  After that it's the same as the Class-1 tab: open the terminal, the SessionStart hook injects Trellis context automatically, describe your task directly.
+After that it's the same as the Class-1 tab: open the terminal, the SessionStart hook injects Trellis context automatically, describe your task directly.
+
   </Tab>
   <Tab title="Kiro">
   Kiro delivers Trellis content via its `.kiro/` agent / skill files. Kiro's Agent Hooks are user-configured (triggered on file save, build success, etc.); Trellis does not ship any Agent Hook wiring. Describe your task and Kiro's skill matcher enters the brainstorm flow; run `@trellis:start` when you want a full context report.
@@ -212,7 +219,8 @@ your-project/
   - Antigravity: open `.agent/workflows/start.md`
   - Windsurf: `/trellis-start`
 
-  The AI follows the workflow: reads `workflow.md`, runs `get_context.py`, reads spec indexes, asks what you want to do. The subsequent implement / check phases run inline in the main session instead of spawning sub-agents.
+The AI follows the workflow: reads `workflow.md`, runs `get_context.py`, reads spec indexes, asks what you want to do. The subsequent implement / check phases run inline in the main session instead of spawning sub-agents.
+
   </Tab>
 </Tabs>
 
@@ -246,7 +254,7 @@ Phase 3 — Finish
  3.4 AI reminds you to run /trellis:finish-work
 ```
 
-**When AI stalls or is skipping ahead**: run `/trellis:continue`. AI reads the current session runtime (`.trellis/.runtime/sessions/<session-key>.json`) + the task's status and, per `workflow.md`, figures out the next step (before-dev / check / update-spec, etc.) and continues.
+**When AI stalls or is skipping ahead**: run `/trellis:continue`. AI uses the active task's status plus the per-turn workflow-state breadcrumb and, per `workflow.md`, figures out the next step (before-dev / check / update-spec, etc.) and continues.
 
 ### Finishing the Session
 
@@ -266,7 +274,7 @@ AI: "Hi Alice — last session you finished the user login feature (commit abc12
      What next?"
 ```
 
-Journals live under `.trellis/workspace/{name}/journal-N.md`; every `/trellis:finish-work` appends one. `.trellis/.runtime/sessions/<session-key>.json` points this AI session/window to its unfinished task, if any, and `task.py finish` clears it.
+Journals live under `.trellis/workspace/{name}/journal-N.md`; every `/trellis:finish-work` appends one. Trellis tracks each AI session's active task internally so you can pick it up next time; `task.py finish` clears that pointer.
 
 ---
 

@@ -146,7 +146,7 @@ Test it: new session, ask for code the spec covers, check if rules are followed.
 <Accordion title="What if I forget to set the current task?">
 Session runs without task-specific context. Specs still load from defaults, but the AI won't know your PRD or task-specific files.
 
-For task-specific work, run `task.py start "$TASK_DIR"` in the current AI session/window, or use `/trellis:continue` after the task is created and planned. Trellis stores that active task under `.trellis/.runtime/sessions/<session-key>.json`.
+For task-specific work, run `task.py start "$TASK_DIR"` in the current AI session/window, or use `/trellis:continue` after the task is created and planned. Trellis tracks the active task per session/window so the right context loads automatically on subsequent turns.
 
 </Accordion>
 

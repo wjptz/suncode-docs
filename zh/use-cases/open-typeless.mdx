@@ -101,7 +101,7 @@ git worktree add ../asr-volcengine-client -b feature/asr-volcengine-client
 git worktree add ../asr-floating-window -b feature/asr-floating-window
 ```
 
-每个会话使用自己的 `.trellis/.runtime/sessions/<session-key>.json`，一个任务的 start 不会影响另一个会话。
+每个会话各自记录自己的当前 task，一个会话里 start 任务不会影响另一个会话。
 
 ![parallel agents](/images/use-cases/open-typeless/step3-1.png)
 
@@ -149,12 +149,12 @@ AI 帮助完成剩余设置（环境配置、权限）：
 
 用 Trellis 构建 open-typeless：
 
-| 步骤 | 做什么     | Trellis 功能                         |
-| ---- | ---------- | ------------------------------------ |
-| 1    | 初始化项目 | `trellis init`，spec 组织            |
-| 2    | 规划任务   | AI 任务拆分，批次规划                |
+| 步骤 | 做什么     | Trellis 功能                                     |
+| ---- | ---------- | ------------------------------------------------ |
+| 1    | 初始化项目 | `trellis init`，spec 组织                        |
+| 2    | 规划任务   | AI 任务拆分，批次规划                            |
 | 3    | 并行开发   | 原生 Git worktree + session-scoped Trellis tasks |
-| 4    | 监控和记录 | `/trellis:finish-work`            |
+| 4    | 监控和记录 | `/trellis:finish-work`                           |
 | 5    | 继续迭代   | Task hooks，implement/trellis-check sub-agents   |
 
 **结果：** 1 天完成完整 Electron 应用，有结构化的 spec 和文档化的进度。
