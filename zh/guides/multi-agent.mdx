@@ -5,15 +5,9 @@ description: '运行多个 AI 会话且不共享 active task 状态'
 
 ## 当前模型
 
-Trellis 0.5 已移除旧的 Multi-Agent Pipeline、`/trellis:parallel`、`worktree.yaml`，以及 plan/dispatch/debug 那套 6-agent 流水线。现在直接使用 AI 工具自己的会话能力和 Git worktree。
+Trellis 按 **AI 会话/窗口**独立追踪 active task。窗口 A 可以做 task A，窗口 B 可以做 task B；一个会话里 `task.py start` 不会覆盖另一个会话的 active task。
 
-关键变化是：active task 变成了**按会话隔离**：
-
-```
-.trellis/.runtime/sessions/<session-key>.json
-```
-
-这意味着窗口 A 可以做 task A，窗口 B 可以做 task B。一个 AI 会话里 start 任务，不会覆盖另一个会话的 active task。
+跑多条并行任务时，直接用 AI 工具自己的会话能力 + Git worktree，没有额外编排层。
 
 ## 推荐流程
 

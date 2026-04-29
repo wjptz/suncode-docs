@@ -5,15 +5,9 @@ description: 'Run multiple AI sessions without sharing active task state'
 
 ## Current Model
 
-Trellis 0.5 removed the old Multi-Agent Pipeline, `/trellis:parallel`, `worktree.yaml`, and the six-agent plan/dispatch/debug pipeline. Use your AI tool's native sessions and Git worktrees instead.
+Trellis tracks the active task per **AI session/window**. Window A can work on task A while window B works on task B; running `task.py start` in one session does not overwrite another session's active task.
 
-The important Trellis change is that the active task is now **session-scoped**:
-
-```
-.trellis/.runtime/sessions/<session-key>.json
-```
-
-That means window A can work on task A while window B works on task B. Starting a task in one AI session does not overwrite another session's active task.
+To run several tasks in parallel, use your AI tool's native sessions and Git worktrees directly — there is no additional orchestration layer.
 
 ## Recommended Flow
 
