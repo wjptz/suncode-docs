@@ -5,7 +5,6 @@
   "private": true,
   "scripts": {
     "dev": "mintlify dev",
-    "verify": "python3 .trellis/scripts/verify-docs.py",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . && markdownlint-cli2 '**/*.{md,mdx}'",
