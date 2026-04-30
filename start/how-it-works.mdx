@@ -2,167 +2,167 @@
 title: 'How It Works'
 ---
 
-跟着一个真实请求从头走一遍，看 Trellis 在每一步到底做了什么。看完你会知道：每条 prompt 进入会话之后，背后哪些 hook、skill、sub-agent、文件被串起来，最终产出代码并落到 commit。
+Walk through one real request end-to-end and see what Trellis actually does at every step. After this you'll know exactly which hooks, skills, sub-agents, and files get strung together when you send a prompt — and how the work flows from your message to a final commit.
 
-> 这页讲使用视角下的工作流。想了解每个组件的实现细节、怎么扩展、怎么 fork，看 [Architecture Overview](/advanced/architecture)。
+> This page is the user-facing flow. For component-level implementation details, extension points, and forking guidance, see [Architecture Overview](/advanced/architecture).
 
-## Step 1：你打开会话
+## Step 1: You open a session
 
-打开 Claude Code / Cursor / Codex / 任何支持的 AI coding 平台，进入有 `.trellis/` 的项目目录。
+You launch Claude Code / Cursor / Codex / any supported AI coding platform inside a project that has `.trellis/`.
 
-**SessionStart hook 自动触发**（hook-capable 平台），把这些塞进 AI 的初始 context：
+**The SessionStart hook fires automatically** (on hook-capable platforms) and pushes the following into the AI's initial context:
 
-- 当前 git status、最近 commit、当前分支
-- `.trellis/spec/` 索引（团队规范库的目录树）
-- 当前 session 的 active task pointer（如果有）
-- `.trellis/workflow.md` 的 Phase Index + 完整 step 走读
+- Current `git status`, recent commits, current branch
+- `.trellis/spec/` index (the directory tree of the team conventions library)
+- The session's active task pointer (if any)
+- The `Phase Index` and full step walkthrough from `.trellis/workflow.md`
 
-不同平台用不同机制：
+Different platforms use different mechanisms:
 
-| 平台                                                     | 注入方式                                     |
-| -------------------------------------------------------- | -------------------------------------------- |
-| Claude Code / Cursor / OpenCode / CodeBuddy / Droid / Pi | SessionStart hook，AI 启动前主动 push        |
-| Codex / Copilot / Gemini / Qoder                         | sub-agent 用 pull-based prelude（hook 可选） |
-| Kilo / Antigravity / Windsurf                            | 没有 hook 原语，靠主动加载 skill             |
+| Platform                                                 | Injection mechanism                               |
+| -------------------------------------------------------- | ------------------------------------------------- |
+| Claude Code / Cursor / OpenCode / CodeBuddy / Droid / Pi | SessionStart hook pushes context before AI starts |
+| Codex / Copilot / Gemini / Qoder                         | Sub-agents pull via prelude (hook optional)       |
+| Kilo / Antigravity / Windsurf                            | No hook primitive — skills are loaded on demand   |
 
-**结果**：你打开终端时，AI 已经知道这是个 Trellis 项目、当前没有 active task、规范都放在 `spec/` 哪些路径。你不用手动 `cat workflow.md`。
+**Outcome**: when you open the terminal, the AI already knows this is a Trellis project, what the active task is (if any), and where the conventions live in `spec/`. You don't have to `cat workflow.md` yourself.
 
-## Step 2：你发了第一句 prompt
+## Step 2: You send your first prompt
 
-每条用户消息都触发 `UserPromptSubmit` hook（hook-capable 平台）。这个 hook 做一件事：
+Every user message triggers the `UserPromptSubmit` hook (on hook-capable platforms). The hook does one thing:
 
-- 读 `task.json.status`（如果有 active task）
-- 找到 `.trellis/workflow.md` 里对应的 `[workflow-state:STATUS]` block
-- 把 block 内容包进 `<workflow-state>...</workflow-state>` 注入到 AI 的当前 turn
+- Reads `task.json.status` (if there's an active task)
+- Locates the matching `[workflow-state:STATUS]` block in `.trellis/workflow.md`
+- Wraps the block content in `<workflow-state>...</workflow-state>` and injects it into this turn
 
-这是 AI 每轮都看到的"工作流路标"。它告诉 AI：
+This is the per-turn workflow breadcrumb the AI sees on every message. It tells the AI:
 
-- 现在在哪个 phase（无任务 / 规划中 / 实施中 / 已完成）
-- 下一步该干什么
-- 哪些步骤是 `[required]` 不能跳的
-- 用户什么短语能让你跳过流程
+- Which phase you're in (no_task / planning / in_progress / completed)
+- What to do next
+- Which steps are `[required]` and can't be skipped
+- Which user phrases let the AI bypass the flow
 
 ```text
 <workflow-state>
 Status: no_task
-A 直接答 — 纯问答 / 解释 / 查询 / 闲聊...
-B 建任务 — 任何实施 / 改动 / 构建 / 重构工作...
-C inline 改 — 仅本轮，B 的 escape hatch...
+A — Direct answer: pure Q&A / lookup / chat...
+B — Create a task: any implementation / change / build / refactor work...
+C — Inline change: per-turn escape hatch for B...
 </workflow-state>
 ```
 
-**结果**：AI 不靠"记得"读 workflow.md，每轮都被 hook 主动喂一次当前 phase 的提醒。
+**Outcome**: the AI doesn't need to "remember" to read `workflow.md`. The hook re-feeds the current phase reminder on every single turn.
 
-## Step 3：AI 决定走哪条路
+## Step 3: The AI picks a path
 
-AI 看完你的 prompt + 当前 breadcrumb，决定走 **A / B / C** 三条路之一：
+After reading your prompt and the current breadcrumb, the AI picks one of three paths — **A / B / C**:
 
-- **A 直接答** — 纯问答、解释、文档查询、闲聊。判定是"不写文件 + 一句话能答清 + 仓库读不超过 2 个文件"。直接回答完事。
-- **B 建任务** — 你描述的是实施 / 改动 / 构建 / 重构工作。无论看上去多小，都进 Trellis 流程。
-- **C inline 改** — 你显式说了"直接改" / "skip trellis" / "小修一下" 等关键词，本轮跳过流程直接改。仅本轮生效，下轮还是默认走 B。
+- **A — Direct answer**: pure Q&A, explanation, doc lookup, chat. Decision rule: no file writes + a single-turn answer + no more than 2 repo files to read. Just answer and move on.
+- **B — Create a task**: you described implementation / change / build / refactor work. Regardless of how small it looks, this enters the Trellis flow.
+- **C — Inline change**: you said the magic phrase ("just do it" / "skip trellis" / "do it inline" / etc) and the AI bypasses the flow this turn. Per-turn only — next turn falls back to B.
 
-下面的 step 都是 B 路径展开。
+The rest of the steps below trace the **B path**.
 
-## Step 4：建任务
+## Step 4: Create a task
 
-AI 跑：
+The AI runs:
 
 ```bash
 python3 ./.trellis/scripts/task.py create "<title>" --slug <name>
 ```
 
-发生三件事：
+Three things happen:
 
-1. `.trellis/tasks/<MM-DD-name>/` 目录创建
-2. `task.json` 写入 `status: "planning"`
-3. **当前 session 的 active task pointer 自动指向新任务**（不用单独跑 `start`）
+1. `.trellis/tasks/<MM-DD-name>/` directory is created
+2. `task.json` is written with `status: "planning"`
+3. **The current session's active-task pointer is set automatically** (no separate `start` step needed)
 
-下一轮 breadcrumb 自动切到 `[workflow-state:planning]`，告诉 AI：
+Next turn, the breadcrumb auto-switches to `[workflow-state:planning]`, which tells the AI:
 
-> 接下来用 `trellis-brainstorm` skill 跟用户讨论需求，写 prd.md；写完整理 `implement.jsonl` / `check.jsonl`；然后 `task.py start`。
+> Now load the `trellis-brainstorm` skill, walk through requirements with the user, write `prd.md`. Once it's done, curate `implement.jsonl` / `check.jsonl`. Then `task.py start`.
 
-**brainstorm 阶段**：AI 加载 `trellis-brainstorm` skill，跟你 Q&A。一次问一个问题，每次回答完立刻把内容写进 `prd.md`。需要调研第三方库 / 跨平台对比，AI 会派 `trellis-research` sub-agent —— sub-agent 自己写到 `{task}/research/<topic>.md`，主对话不污染。
+**Brainstorm phase**: the AI loads the `trellis-brainstorm` skill, runs Q&A with you. One question at a time; every answer is written into `prd.md` immediately. When the AI needs to research a third-party library or compare cross-platform options, it dispatches a `trellis-research` sub-agent — the sub-agent persists findings to `{task}/research/<topic>.md`, keeping the main conversation clean.
 
-**Phase 1.3 jsonl curation**：prd 写完 AI 整理两个文件：
+**Phase 1.3 — JSONL curation**: with `prd.md` done, the AI curates two files:
 
-- `implement.jsonl` — 列出 implement sub-agent 写代码时要注入的 spec / research 文件
-- `check.jsonl` — 列出 check sub-agent 验收时要看的 spec
+- `implement.jsonl` — spec / research files the implement sub-agent should read while writing code
+- `check.jsonl` — spec files the check sub-agent should read while verifying
 
-只列 spec 文件路径和 research 文件路径，不列代码文件——代码 sub-agent 自己读。
+Only spec paths and research paths go in. No source code files — sub-agents read those themselves at execution time.
 
-**激活任务**：
+**Activate the task**:
 
 ```bash
 python3 ./.trellis/scripts/task.py start <task-dir>
 ```
 
-`status: "planning" → "in_progress"`，breadcrumb 切到 `[workflow-state:in_progress]`，下一步开始实施。
+`status: "planning" → "in_progress"`, the breadcrumb switches to `[workflow-state:in_progress]`, and implementation begins.
 
-## Step 5：Sub-agent 实施
+## Step 5: Sub-agent implementation
 
-AI 派出 `trellis-implement` sub-agent。**关键**：你不是让主对话写代码，是把活分给 sub-agent。
+The AI dispatches the `trellis-implement` sub-agent. **The point**: instead of having the main agent write code, the work is delegated.
 
-**Hook 自动注入** sub-agent 的初始 context：
+**Hooks auto-inject** the sub-agent's initial context:
 
-- `prd.md` 全文
-- `implement.jsonl` 里列的所有 spec 文件
-- `info.md`（如果有）
+- Full `prd.md`
+- Every spec file listed in `implement.jsonl`
+- `info.md` (if present)
 
-注入路径有三种，看平台：
+Three injection paths, depending on the platform:
 
-| 类型         | 平台                                                     | 机制                                                              |
-| ------------ | -------------------------------------------------------- | ----------------------------------------------------------------- |
-| Push hook    | Claude Code / Cursor / OpenCode / CodeBuddy / Droid / Pi | `inject-subagent-context.py` hook 在 sub-agent 启动前 push        |
-| Pull prelude | Codex / Copilot / Gemini / Qoder                         | sub-agent 定义里写好 prelude，sub-agent 自己 `Read`               |
-| Skill 内联   | Kilo / Antigravity / Windsurf                            | 没有 sub-agent 原语，主对话加载 `trellis-before-dev` skill 自己读 |
+| Type         | Platforms                                                | Mechanism                                                                               |
+| ------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Push hook    | Claude Code / Cursor / OpenCode / CodeBuddy / Droid / Pi | `inject-subagent-context.py` hook pushes before sub-agent starts                        |
+| Pull prelude | Codex / Copilot / Gemini / Qoder                         | Sub-agent definition contains a prelude that `Read`s the files itself                   |
+| Skill inline | Kilo / Antigravity / Windsurf                            | No sub-agent primitive — main session loads `trellis-before-dev` skill and reads inline |
 
-Sub-agent 写代码、跑 lint / typecheck，结束。**写完不 commit** —— commit 是人的边界。
+The sub-agent writes the code, runs `lint` and `type-check`, and finishes. **It does not commit** — that boundary belongs to humans.
 
-## Step 6：自动验收
+## Step 6: Automatic verification
 
-AI 派 `trellis-check` sub-agent。同样有 hook 注入 `check.jsonl` 列的 spec。
+The AI dispatches `trellis-check`. Same injection mechanism, this time wired to `check.jsonl`.
 
-check sub-agent 干四件事：
+The check sub-agent does four things:
 
-1. 对照 spec 复核所有改动
-2. 跑 lint / type-check / 测试
-3. 跨层一致性检查（改动跨多个 layer 时）
-4. 发现问题**直接修**，不光报告
+1. Reviews every change against the listed specs
+2. Runs `lint` / `type-check` / tests
+3. Cross-layer consistency check (when changes span multiple layers)
+4. **Self-fixes any findings** — not just report
 
-跑通 → 进 Step 7。跑不通 → 报 finding，回 Step 5 修，再 check。
+Pass → Step 7. Fail → reports findings, returns to Step 5, re-checks afterward.
 
-## Step 7：沉淀 + 提交
+## Step 7: Distill + commit
 
-**3.3 update-spec**：AI 加载 `trellis-update-spec` skill，问"本次任务有没有新发现值得写回 `spec/`"。例：踩了某个坑、发现某个新 pattern、定了某个技术决策——写进 `spec/<package>/<layer>/*.md`，下次别的任务的 sub-agent 自动读得到。
+**3.3 update-spec**: the AI loads the `trellis-update-spec` skill and asks "did this task produce anything worth writing back to `spec/`?". Examples: a pitfall that was hit, a new pattern that emerged, a technical decision that was made — write it into `spec/<package>/<layer>/*.md`. Future tasks' sub-agents pick it up automatically.
 
-**3.4 commit（required）**：主 agent 主导 commit。先把 commit 计划告诉你，等你确认后跑 `git commit`。**不会 push**——push 是你的事。
+**3.4 commit (required)**: the main agent drives the commit. It states the commit plan in user-facing text, waits for your confirmation, then runs `git commit`. **It does not push** — push is yours.
 
-**3.5 收尾**：AI 提示你跑 `/trellis:finish-work`：
+**3.5 wrap-up**: the AI prompts you to run `/trellis:finish-work`:
 
-- `task.py archive` 把任务搬到 `tasks/archive/YYYY-MM/`
-- 写 session journal 到 `.trellis/workspace/<dev>/journal-N.md`
+- `task.py archive` moves the task into `tasks/archive/YYYY-MM/`
+- A session journal is written to `.trellis/workspace/<dev>/journal-N.md`
 
-任务结束。
+Task done.
 
-## 落到文件，不落到对话
+## Knowledge lives in files, not conversations
 
-整套流程跑完，**沉淀都在文件里**：
+After the full flow runs, **everything is persisted in files**:
 
-- 你的 PRD / research / info → `tasks/<task>/`
-- 抽提的规范 → `spec/`
-- 个人决策日志 → `workspace/<dev>/journal-N.md`
-- 归档的任务 → `tasks/archive/YYYY-MM/<task>/`
+- Your PRD / research / info → `tasks/<task>/`
+- Distilled conventions → `spec/`
+- Personal decision log → `workspace/<dev>/journal-N.md`
+- Archived tasks → `tasks/archive/YYYY-MM/<task>/`
 
-下个会话开始时，SessionStart hook 把这些都索引到 AI 的初始 context。**全队的 sub-agent 下次都能读到**——不光是你自己。
+When the next session opens, the SessionStart hook indexes all of this into the AI's initial context. **The whole team's sub-agents read it next time** — not just yours.
 
-## 为什么这样设计
+## Why it's designed this way
 
-每一步都不是随便加的：
+Every step is here for a reason:
 
-- **Hook 在 AI 看 prompt 之前主动 push** → AI 不靠"记得读 spec"
-- **Sub-agent 三层（research / implement / check）分工** → 每个 agent 范围有限，不会一个 agent 干所有事，互相约束
-- **JSONL 配置而不是 dump 全部 spec** → context 不爆炸，每个任务只注入它真正用到的
-- **AI 不 commit** → commit 是 PR review 的入口，必须人决定
-- **沉淀回 `spec/`** → 一次解决永久受益，全团队复利
+- **Hooks push before the AI sees your prompt** → the AI doesn't rely on "remembering" to read specs
+- **Three-tier sub-agents (research / implement / check)** → each agent has bounded scope and clear responsibility, mutual constraint
+- **JSONL config instead of dumping all specs** → context stays small, every task injects only what it actually uses
+- **AI doesn't commit** → commit is the PR review gate; humans must decide
+- **Distillation back to `spec/`** → solve once, benefit forever, compounding across the team
 
-想看每个组件的实现细节、怎么扩展、怎么 fork —— 看 [Architecture Overview](/advanced/architecture)。
+For component-level details, extension points, and forking guidance, see [Architecture Overview](/advanced/architecture).
