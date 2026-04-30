@@ -2,68 +2,48 @@
 title: 'Architecture Overview'
 ---
 
-## Architecture Overview
+## System Layers
 
-Trellis is an AI workflow system that lives in your repo. Files carry team conventions, task context, workflow definition, and session journals; hooks / skills / commands / sub-agents inject them into different AI coding platforms. This page walks through every layer: what each one does, what it neighbors, and where you can customize.
+Trellis layers are a classification, not a flow. Layers don't run in sequence; how a request actually traverses them depends on the platform and is described in [Session Boot Flow](#session-boot-flow) and the mechanism sections that follow.
 
-### System Layers
+**User layer**
 
-```
-┌────────────────────────────────────────────────────────────────────┐
-│                              User                                   │
-│  Describe needs · /trellis:continue at boundaries · Verify diffs    │
-└──────────────────────────────────┬─────────────────────────────────┘
-                                   │
-┌──────────────────────────────────▼─────────────────────────────────┐
-│                       AI Coding Platform Layer                      │
-│  Claude Code · Cursor · OpenCode · Codex · Gemini · Qoder ·        │
-│  CodeBuddy · Copilot · Droid · Pi · Kiro · Kilo · Antigravity ·    │
-│  Windsurf  +  .agents/skills/ shared layer (agentskills.io)        │
-└──────────────────────────────────┬─────────────────────────────────┘
-                                   │
-        ┌──────────────────────────┼──────────────────────────┐
-        ▼                          ▼                          ▼
-┌────────────────┐       ┌──────────────────┐       ┌───────────────────┐
-│   Command      │       │  Skill           │       │  Hook / Extension │
-│  /trellis:*    │       │  (auto-trigger)  │       │  (hook-capable)   │
-│                │       │                  │       │                   │
-│  start         │       │  brainstorm      │       │  SessionStart     │
-│  continue      │       │  before-dev      │       │  UserPromptSubmit │
-│  finish-work   │       │  check           │       │  PreToolUse:Agent │
-│                │       │  update-spec     │       │                   │
-│                │       │  break-loop      │       │                   │
-└────────┬───────┘       └────────┬─────────┘       └─────────┬─────────┘
-         │                        │                           │
-         └────────────────────────┼───────────────────────────┘
-                                  │
-                                  ▼
-        ┌────────────────────────────────────────────────────────────┐
-        │                    .trellis/ Project Layer                  │
-        │                                                            │
-        │  workflow.md  ← single source of truth                      │
-        │  spec/        ← team conventions                            │
-        │  tasks/       ← task PRDs / context / research              │
-        │  workspace/   ← per-developer journals                      │
-        │  scripts/     ← Python automation (task.py / etc.)          │
-        │  config.yaml  ← project config                              │
-        └─────────────────────────────────┬──────────────────────────┘
-                                          │
-                                          ▼
-        ┌────────────────────────────────────────────────────────────┐
-        │                      Sub-agent System                       │
-        │                                                            │
-        │  trellis-research → trellis-implement → trellis-check       │
-        │  Each sub-agent gets task-scoped context via JSONL          │
-        └─────────────────────────────────┬──────────────────────────┘
-                                          │
-                                          ▼
-        ┌────────────────────────────────────────────────────────────┐
-        │                       Project Code                          │
-        │       AI generates / modifies code per spec and PRD         │
-        └────────────────────────────────────────────────────────────┘
-```
+Describe needs · `/trellis:continue` at phase boundaries · verify diffs
 
-### Design Principles
+**AI Coding Platform layer**
+
+Claude Code · Cursor · OpenCode · Codex · Gemini · Qoder · CodeBuddy · Copilot · Droid · Pi · Kiro · Kilo · Antigravity · Windsurf
+
+\+ `.agents/skills/` shared layer (agentskills.io)
+
+**Injection mechanisms** (three peer forms — not a sequence)
+
+| Form             | How it triggers                                  | Built-in members                                                     |
+| ---------------- | ------------------------------------------------ | -------------------------------------------------------------------- |
+| Command          | User invokes `/trellis:*`                        | `start` / `continue` / `finish-work`                                 |
+| Skill            | Auto-trigger (AI loads when description matches) | `brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` |
+| Hook / Extension | Platform event (hook-capable platforms only)     | `SessionStart` / `UserPromptSubmit` / `PreToolUse:Agent`             |
+
+**`.trellis/` project layer** (the in-repo fact layer)
+
+| Path          | Role                                                    |
+| ------------- | ------------------------------------------------------- |
+| `workflow.md` | Workflow single source of truth                         |
+| `spec/`       | Team conventions                                        |
+| `tasks/`      | Task PRDs / context / research                          |
+| `workspace/`  | Per-developer journals                                  |
+| `scripts/`    | Python automation (`task.py` / `get_context.py` / etc.) |
+| `config.yaml` | Project config                                          |
+
+**Sub-agent system**
+
+`trellis-research` / `trellis-implement` / `trellis-check`. Each sub-agent receives task-scoped context via JSONL.
+
+**Project code**
+
+AI generates or modifies code per spec and PRD.
+
+## Design Principles
 
 | Principle                           | Meaning                                                                                     |
 | ----------------------------------- | ------------------------------------------------------------------------------------------- |
@@ -73,7 +53,7 @@ Trellis is an AI workflow system that lives in your repo. Files carry team conve
 | **AI doesn't commit**               | Sub-agents finish, humans verify and commit; every change goes through PR review            |
 | **Single workflow source of truth** | Edit `workflow.md` — one file — and the entire project's workflow updates everywhere        |
 
-### `workflow.md`: Single Source of Truth
+## `workflow.md`: Single Source of Truth
 
 `.trellis/workflow.md` is the only definition of the Plan / Execute / Finish contract. All steps across the three phases (1.0 `task.py create` → 1.4 `task.py start` → 2.1 `trellis-implement` → 2.2 `trellis-check` → 3.4 `/trellis:finish-work`) live here. Every other system component reads from it:
 
