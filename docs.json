@@ -36,6 +36,7 @@
                 "pages": [
                   "index",
                   "start/install-and-first-task",
+                  "start/how-it-works",
                   "start/everyday-use",
                   "start/real-world-scenarios"
                 ]
@@ -310,6 +311,7 @@
                 "pages": [
                   "zh/index",
                   "zh/start/install-and-first-task",
+                  "zh/start/how-it-works",
                   "zh/start/everyday-use",
                   "zh/start/real-world-scenarios"
                 ]
