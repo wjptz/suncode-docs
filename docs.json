@@ -44,6 +44,7 @@
                 "group": "Advanced",
                 "pages": [
                   "advanced/architecture",
+                  "advanced/roadmap",
                   "advanced/custom-workflow",
                   "advanced/custom-commands",
                   "advanced/custom-agents",
@@ -317,6 +318,7 @@
                 "group": "进阶",
                 "pages": [
                   "zh/advanced/architecture",
+                  "zh/advanced/roadmap",
                   "zh/advanced/custom-workflow",
                   "zh/advanced/custom-commands",
                   "zh/advanced/custom-agents",
