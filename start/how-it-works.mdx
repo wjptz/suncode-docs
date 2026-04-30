@@ -2,45 +2,36 @@
 title: 'How It Works'
 ---
 
-Walk through one real request end-to-end and see what Trellis actually does at every step. After this you'll know exactly which hooks, skills, sub-agents, and files get strung together when you send a prompt — and how the work flows from your message to a final commit.
+Walk through one real request from start to finish. By the end you'll know which hooks, skills, sub-agents, and files get strung together when you send a prompt, and how it ends at a commit.
 
-> This page is the user-facing flow. For component-level implementation details, extension points, and forking guidance, see [Architecture Overview](/advanced/architecture).
+> This is the user-facing flow. For component-level details, extension points, and forking guidance, see [Architecture Overview](/advanced/architecture).
 
-## Step 1: You open a session
+## 1. You open a session
 
-You launch Claude Code / Cursor / Codex / any supported AI coding platform inside a project that has `.trellis/`.
+Launch Claude Code, Cursor, Codex, or any supported AI coding platform inside a project that has `.trellis/`.
 
-**The SessionStart hook fires automatically** (on hook-capable platforms) and pushes the following into the AI's initial context:
+Hook-capable platforms fire the SessionStart hook automatically. It pushes the following into the AI's initial context:
 
 - Current `git status`, recent commits, current branch
-- `.trellis/spec/` index (the directory tree of the team conventions library)
-- The session's active task pointer (if any)
-- The `Phase Index` and full step walkthrough from `.trellis/workflow.md`
+- The `.trellis/spec/` tree (the team conventions library)
+- The session's active task pointer, if any
+- The `Phase Index` plus full step walkthrough from `.trellis/workflow.md`
 
 Different platforms use different mechanisms:
 
-| Platform                                                 | Injection mechanism                               |
-| -------------------------------------------------------- | ------------------------------------------------- |
-| Claude Code / Cursor / OpenCode / CodeBuddy / Droid / Pi | SessionStart hook pushes context before AI starts |
-| Codex / Copilot / Gemini / Qoder                         | Sub-agents pull via prelude (hook optional)       |
-| Kilo / Antigravity / Windsurf                            | No hook primitive — skills are loaded on demand   |
+| Platform                                            | Injection mechanism                                   |
+| --------------------------------------------------- | ----------------------------------------------------- |
+| Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi | SessionStart hook pushes context before the AI starts |
+| Codex, Copilot, Gemini, Qoder                       | Sub-agents pull via prelude (hook optional)           |
+| Kilo, Antigravity, Windsurf                         | No hook primitive; skills are loaded on demand        |
 
-**Outcome**: when you open the terminal, the AI already knows this is a Trellis project, what the active task is (if any), and where the conventions live in `spec/`. You don't have to `cat workflow.md` yourself.
+By the time your terminal opens, the AI already knows this is a Trellis project, what the active task is, and where the conventions live in `spec/`. You don't `cat workflow.md` yourself.
 
-## Step 2: You send your first prompt
+## 2. You send your first prompt
 
-Every user message triggers the `UserPromptSubmit` hook (on hook-capable platforms). The hook does one thing:
+Every user message triggers the `UserPromptSubmit` hook. The hook reads `task.json.status`, looks up the matching `[workflow-state:STATUS]` block in `.trellis/workflow.md`, wraps it in `<workflow-state>...</workflow-state>`, and injects it into this turn.
 
-- Reads `task.json.status` (if there's an active task)
-- Locates the matching `[workflow-state:STATUS]` block in `.trellis/workflow.md`
-- Wraps the block content in `<workflow-state>...</workflow-state>` and injects it into this turn
-
-This is the per-turn workflow breadcrumb the AI sees on every message. It tells the AI:
-
-- Which phase you're in (no_task / planning / in_progress / completed)
-- What to do next
-- Which steps are `[required]` and can't be skipped
-- Which user phrases let the AI bypass the flow
+The AI sees this breadcrumb on every single message. It tells the AI which phase you're in (`no_task` / `planning` / `in_progress` / `completed`), what to do next, which steps are `[required]` and can't be skipped, and which user phrases let the AI bypass the flow.
 
 ```text
 <workflow-state>
@@ -51,19 +42,19 @@ C — Inline change: per-turn escape hatch for B...
 </workflow-state>
 ```
 
-**Outcome**: the AI doesn't need to "remember" to read `workflow.md`. The hook re-feeds the current phase reminder on every single turn.
+The AI doesn't rely on remembering to read `workflow.md`. The hook re-feeds the current phase reminder every turn.
 
-## Step 3: The AI picks a path
+## 3. The AI picks a path
 
-After reading your prompt and the current breadcrumb, the AI picks one of three paths — **A / B / C**:
+Reading your prompt and the breadcrumb, the AI picks one of three paths:
 
-- **A — Direct answer**: pure Q&A, explanation, doc lookup, chat. Decision rule: no file writes + a single-turn answer + no more than 2 repo files to read. Just answer and move on.
-- **B — Create a task**: you described implementation / change / build / refactor work. Regardless of how small it looks, this enters the Trellis flow.
-- **C — Inline change**: you said the magic phrase ("just do it" / "skip trellis" / "do it inline" / etc) and the AI bypasses the flow this turn. Per-turn only — next turn falls back to B.
+- **A — Direct answer**: pure Q&A, explanation, doc lookup, chat. Decision rule is "no file writes, single-turn answer, at most 2 repo files to read." Answer and move on.
+- **B — Create a task**: you described work to be done — implement, change, build, refactor. However small it looks, this enters the Trellis flow.
+- **C — Inline change**: you said the magic phrase ("just do it" / "skip trellis" / "do it inline" / etc). The AI bypasses the flow this turn. Per-turn only; next turn falls back to B.
 
-The rest of the steps below trace the **B path**.
+The rest of the steps below trace the B path.
 
-## Step 4: Create a task
+## 4. Create a task
 
 The AI runs:
 
@@ -71,98 +62,70 @@ The AI runs:
 python3 ./.trellis/scripts/task.py create "<title>" --slug <name>
 ```
 
-Three things happen:
+Three things happen: `.trellis/tasks/<MM-DD-name>/` is created, `task.json` is written with `status: "planning"`, and the current session's active-task pointer is auto-set to the new task. The third one means no separate `start` step is needed yet.
 
-1. `.trellis/tasks/<MM-DD-name>/` directory is created
-2. `task.json` is written with `status: "planning"`
-3. **The current session's active-task pointer is set automatically** (no separate `start` step needed)
+Next turn the breadcrumb switches to `[workflow-state:planning]` and tells the AI: load the `trellis-brainstorm` skill, walk through requirements with the user, write `prd.md`. Once that's done, curate `implement.jsonl` and `check.jsonl`. Then `task.py start`.
 
-Next turn, the breadcrumb auto-switches to `[workflow-state:planning]`, which tells the AI:
+Brainstorm runs next. The AI loads the `trellis-brainstorm` skill and runs Q&A with you. One question at a time; every answer is written into `prd.md` immediately. When the AI needs to research a third-party library or compare cross-platform options, it dispatches a `trellis-research` sub-agent. The sub-agent persists findings to `{task}/research/<topic>.md` so the main conversation stays clean.
 
-> Now load the `trellis-brainstorm` skill, walk through requirements with the user, write `prd.md`. Once it's done, curate `implement.jsonl` / `check.jsonl`. Then `task.py start`.
+With `prd.md` done, the AI moves to Phase 1.3 and curates two JSONL files:
 
-**Brainstorm phase**: the AI loads the `trellis-brainstorm` skill, runs Q&A with you. One question at a time; every answer is written into `prd.md` immediately. When the AI needs to research a third-party library or compare cross-platform options, it dispatches a `trellis-research` sub-agent — the sub-agent persists findings to `{task}/research/<topic>.md`, keeping the main conversation clean.
+- `implement.jsonl`: spec and research files the implement sub-agent should read while writing code
+- `check.jsonl`: spec files the check sub-agent should read while verifying
 
-**Phase 1.3 — JSONL curation**: with `prd.md` done, the AI curates two files:
+Only spec paths and research paths go in. Source files do not — sub-agents read those at execution time.
 
-- `implement.jsonl` — spec / research files the implement sub-agent should read while writing code
-- `check.jsonl` — spec files the check sub-agent should read while verifying
-
-Only spec paths and research paths go in. No source code files — sub-agents read those themselves at execution time.
-
-**Activate the task**:
+Last, activate the task:
 
 ```bash
 python3 ./.trellis/scripts/task.py start <task-dir>
 ```
 
-`status: "planning" → "in_progress"`, the breadcrumb switches to `[workflow-state:in_progress]`, and implementation begins.
+`status` flips from `planning` to `in_progress`, the breadcrumb switches to `[workflow-state:in_progress]`, implementation begins.
 
-## Step 5: Sub-agent implementation
+## 5. Sub-agent implementation
 
-The AI dispatches the `trellis-implement` sub-agent. **The point**: instead of having the main agent write code, the work is delegated.
+The AI dispatches the `trellis-implement` sub-agent. The point: instead of having the main agent write code, the work is delegated.
 
-**Hooks auto-inject** the sub-agent's initial context:
+Hooks auto-inject the sub-agent's initial context with `prd.md`, every spec file listed in `implement.jsonl`, and `info.md` if present. Three injection paths exist depending on platform:
 
-- Full `prd.md`
-- Every spec file listed in `implement.jsonl`
-- `info.md` (if present)
+| Type         | Platforms                                           | Mechanism                                                                               |
+| ------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Push hook    | Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi | `inject-subagent-context.py` hook pushes before sub-agent starts                        |
+| Pull prelude | Codex, Copilot, Gemini, Qoder                       | Sub-agent definition embeds a prelude that `Read`s the files itself                     |
+| Skill inline | Kilo, Antigravity, Windsurf                         | No sub-agent primitive — main session loads `trellis-before-dev` skill and reads inline |
 
-Three injection paths, depending on the platform:
+The sub-agent writes the code, runs `lint` and `type-check`, and exits. It does not commit. The commit boundary stays with humans.
 
-| Type         | Platforms                                                | Mechanism                                                                               |
-| ------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Push hook    | Claude Code / Cursor / OpenCode / CodeBuddy / Droid / Pi | `inject-subagent-context.py` hook pushes before sub-agent starts                        |
-| Pull prelude | Codex / Copilot / Gemini / Qoder                         | Sub-agent definition contains a prelude that `Read`s the files itself                   |
-| Skill inline | Kilo / Antigravity / Windsurf                            | No sub-agent primitive — main session loads `trellis-before-dev` skill and reads inline |
-
-The sub-agent writes the code, runs `lint` and `type-check`, and finishes. **It does not commit** — that boundary belongs to humans.
-
-## Step 6: Automatic verification
+## 6. Automatic verification
 
 The AI dispatches `trellis-check`. Same injection mechanism, this time wired to `check.jsonl`.
 
-The check sub-agent does four things:
+The check sub-agent does four things: reviews every change against the listed specs, runs `lint` / `type-check` / tests, runs cross-layer consistency checks when changes span multiple layers, and self-fixes any findings instead of just reporting them.
 
-1. Reviews every change against the listed specs
-2. Runs `lint` / `type-check` / tests
-3. Cross-layer consistency check (when changes span multiple layers)
-4. **Self-fixes any findings** — not just report
+Pass advances to step 7. Fail reports findings, returns to step 5, re-checks afterward.
 
-Pass → Step 7. Fail → reports findings, returns to Step 5, re-checks afterward.
+## 7. Distill and commit
 
-## Step 7: Distill + commit
+The AI loads `trellis-update-spec` and asks itself: did this task produce anything worth writing back to `spec/`? Examples include a pitfall hit during implementation, a new pattern that emerged, a technical decision made — these go into `spec/<package>/<layer>/*.md` so future tasks' sub-agents pick them up automatically.
 
-**3.3 update-spec**: the AI loads the `trellis-update-spec` skill and asks "did this task produce anything worth writing back to `spec/`?". Examples: a pitfall that was hit, a new pattern that emerged, a technical decision that was made — write it into `spec/<package>/<layer>/*.md`. Future tasks' sub-agents pick it up automatically.
+Then the main agent drives the commit (Phase 3.4, required). It states the commit plan in user-facing text, waits for your confirmation, runs `git commit`. It doesn't push. Push is yours.
 
-**3.4 commit (required)**: the main agent drives the commit. It states the commit plan in user-facing text, waits for your confirmation, then runs `git commit`. **It does not push** — push is yours.
+Finally the AI prompts you to run `/trellis:finish-work`. That archives the task into `tasks/archive/YYYY-MM/` and writes a session journal to `.trellis/workspace/<dev>/journal-N.md`.
 
-**3.5 wrap-up**: the AI prompts you to run `/trellis:finish-work`:
+## Knowledge lives in files
 
-- `task.py archive` moves the task into `tasks/archive/YYYY-MM/`
-- A session journal is written to `.trellis/workspace/<dev>/journal-N.md`
+After the full flow runs, everything is persisted:
 
-Task done.
-
-## Knowledge lives in files, not conversations
-
-After the full flow runs, **everything is persisted in files**:
-
-- Your PRD / research / info → `tasks/<task>/`
+- Your PRD, research, info → `tasks/<task>/`
 - Distilled conventions → `spec/`
 - Personal decision log → `workspace/<dev>/journal-N.md`
 - Archived tasks → `tasks/archive/YYYY-MM/<task>/`
 
-When the next session opens, the SessionStart hook indexes all of this into the AI's initial context. **The whole team's sub-agents read it next time** — not just yours.
+When the next session opens, the SessionStart hook indexes all of this into the AI's initial context. The whole team's sub-agents read it next time, not just the developer who wrote it.
 
-## Why it's designed this way
+## Why it works this way
 
-Every step is here for a reason:
-
-- **Hooks push before the AI sees your prompt** → the AI doesn't rely on "remembering" to read specs
-- **Three-tier sub-agents (research / implement / check)** → each agent has bounded scope and clear responsibility, mutual constraint
-- **JSONL config instead of dumping all specs** → context stays small, every task injects only what it actually uses
-- **AI doesn't commit** → commit is the PR review gate; humans must decide
-- **Distillation back to `spec/`** → solve once, benefit forever, compounding across the team
+Hooks push specs in before the AI sees your prompt — the AI doesn't have to remember to read them. Three-tier sub-agents (research, implement, check) keep each agent's scope narrow and constrain each other through clear handoffs. JSONL config injects only the specs each task actually uses, so context stays small. The AI doesn't commit; that's the PR review gate, and humans hold it. Conventions distilled back to `spec/` get read by everyone's sub-agent next time, not just yours.
 
 For component-level details, extension points, and forking guidance, see [Architecture Overview](/advanced/architecture).
