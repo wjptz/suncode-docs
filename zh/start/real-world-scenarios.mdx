@@ -198,7 +198,31 @@ Workspace admins can invite teammates by email and manage pending invites.
 - Tests cover permission checks and expired invite behavior.
 ```
 
-### 3.4 工作流
+### 3.4 Task 和 subtask 怎么拆
+
+Trellis task 是功能交付边界：一份 PRD、一组实现上下文、一组检查上下文，最后形成一个可 review 的 diff。
+
+```text
+Task: team-invitations
+Goal: workspace admins can invite, resend, revoke, and accept invites safely.
+Task files: .trellis/tasks/<date>-team-invitations/prd.md, implement.jsonl, check.jsonl
+```
+
+在这个 task 内部，再拆成边界明确的 subtask，让不同 agent 可以并行做事，但共享同一份产品上下文：
+
+| Subtask             | 范围                                                       | 典型 owner / 文件                                                                  |
+| ------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 产品和契约          | 邀请生命周期、角色规则、过期行为、out-of-scope             | Main session 更新 `prd.md` 和 API contract notes                                   |
+| 数据模型            | `invitations` 表、token hash、过期时间、唯一约束、审计字段 | Backend implementer 负责 migration、schema、model tests                            |
+| API 和 service 行为 | 创建、重发、撤销、接受邀请；admin 校验；幂等性             | Backend implementer 负责 routes、service code、API tests                           |
+| 邮件副作用          | 邀请邮件模板、重发行为、测试 mailer / fake provider        | Backend implementer 负责 mailer code 和 side-effect tests                          |
+| UI 状态             | 邀请表单、待处理邀请列表、撤销 / 重发操作、接受邀请页面    | Frontend implementer 负责 routes、components、form validation、UI tests            |
+| 跨层检查            | 从创建邀请到接受邀请并成为成员的端到端路径                 | `trellis-check` 检查 UI input、API validation、database writes、permissions、email |
+
+这些 subtask 必须一起发布时，就留在同一个 Trellis task 里。只有当工作有独立 scope 和独立发布边界时，才拆成另一个
+Trellis task，比如 bulk CSV import、SSO provisioning、role templates。
+
+### 3.5 工作流
 
 1. **用户** 用自然语言描述要做的功能；后续在头脑风暴中回答澄清问题、确认 scope → **AI** 自动触发 trellis-brainstorm skill，跟用户来回讨论需求；过程中通过 `task.py create` 建任务，把讨论中澄清出来的 Goal、In scope、Out of scope、Acceptance criteria 写到 `prd.md`（Phase 1.1）。
 2. **AI** 配置 `implement.jsonl` / `check.jsonl`，把任务相关的 spec 加进来（Phase 1.3）。
@@ -336,13 +360,13 @@ setup, success metrics, and risks. Keep the first rollout small enough to comple
 
 ### 7.3 推广阶段
 
-| 阶段 | 目标             | 退出标准                                                                                         |
-| ---- | ---------------- | ------------------------------------------------------------------------------------------------ |
-| 1    | 试点一个仓库     | 用 specs、checks、journal 完成一个真实任务（可选先用 `cc-codex-spec-bootstrap` 生成第一版 spec） |
-| 2    | 捕获重复反馈     | 三到五条 Review 模式被沉淀进 specs                                                               |
-| 3    | 标准化任务工作流 | 开发者熟悉 `/trellis:start` / `/trellis:continue` / `/trellis:finish-work` 各自的使用时机        |
-| 4    | 增加平台适配     | 多个 AI 工具消费同一套 `.trellis/` 上下文                                                        |
-| 5    | 治理更新         | spec 和 workflow 变更都像代码一样被 Review                                                       |
+| 阶段 | 目标             | 退出标准                                                                                                                                                                                                                                        |
+| ---- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | 试点一个仓库     | 用 specs、checks、journal 完成一个真实任务。spec 起点两个选项：从 [spec template marketplace](/zh/start/install-and-first-task#官方-marketplace) 拉一个匹配技术栈的 spec 包；或用 `cc-codex-spec-bootstrap` 让 CC + Codex 从代码生成第一版 spec |
+| 2    | 捕获重复反馈     | 三到五条 Review 模式被沉淀进 specs                                                                                                                                                                                                              |
+| 3    | 标准化任务工作流 | 开发者熟悉 `/trellis:start` / `/trellis:continue` / `/trellis:finish-work` 各自的使用时机                                                                                                                                                       |
+| 4    | 增加平台适配     | 多个 AI 工具消费同一套 `.trellis/` 上下文                                                                                                                                                                                                       |
+| 5    | 治理更新         | spec 和 workflow 变更都像代码一样被 Review                                                                                                                                                                                                      |
 
 ### 7.4 成功指标
 

@@ -202,7 +202,34 @@ Workspace admins can invite teammates by email and manage pending invites.
 - Tests cover permission checks and expired invite behavior.
 ```
 
-### 3.4 Workflow
+### 3.4 Task and subtask split
+
+The Trellis task is the feature boundary: one PRD, one implementation context,
+one check context, and one final reviewable diff.
+
+```text
+Task: team-invitations
+Goal: workspace admins can invite, resend, revoke, and accept invites safely.
+Task files: .trellis/tasks/<date>-team-invitations/prd.md, implement.jsonl, check.jsonl
+```
+
+Inside that task, split the work into bounded subtasks so agents can work in
+parallel without losing the shared product context:
+
+| Subtask                  | Scope                                                                   | Typical owner / files                                                                  |
+| ------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Product and contract     | Invite lifecycle, role rules, expiration behavior, out-of-scope choices | Main session updates `prd.md` and API contract notes                                   |
+| Data model               | `invitations` table, token hash, expiry, uniqueness, audit fields       | Backend implementer owns migrations, schema files, model tests                         |
+| API and service behavior | Create, resend, revoke, accept invite; admin checks; idempotency        | Backend implementer owns routes, service code, API tests                               |
+| Email side effect        | Invite email template, resend behavior, test mailer/fake provider       | Backend implementer owns mailer code and side-effect tests                             |
+| UI states                | Invite form, pending invites list, revoke/resend actions, accept screen | Frontend implementer owns routes, components, form validation, UI tests                |
+| Cross-layer check        | End-to-end path from create invite to accepted membership               | `trellis-check` verifies UI input, API validation, database writes, permissions, email |
+
+Keep these subtasks under the same Trellis task when they must ship together.
+Split a separate Trellis task only when the work has its own scope and release
+boundary, such as bulk CSV import, SSO provisioning, or role templates.
+
+### 3.5 Workflow
 
 1. **User** describes the feature in natural language; answers clarifying questions and confirms scope as the brainstorm progresses → **AI** auto-triggers the trellis-brainstorm skill and runs a back-and-forth requirements discussion; during the conversation it creates the task (`task.py create`) and captures clarified Goal / In scope / Out of scope / Acceptance criteria into `prd.md` (Phase 1.1).
 2. **AI** configures `implement.jsonl` / `check.jsonl` with the specs the task touches (Phase 1.3).
@@ -340,13 +367,13 @@ setup, success metrics, and risks. Keep the first rollout small enough to comple
 
 ### 7.3 Rollout phases
 
-| Phase | Goal                      | Exit criteria                                                                                                               |
-| ----- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| 1     | Pilot one repo            | One real task completed with specs, checks, and journal (optionally use `cc-codex-spec-bootstrap` to draft the first specs) |
-| 2     | Capture repeated feedback | Three to five review patterns become specs                                                                                  |
-| 3     | Standardize task workflow | Developers know when to use `/trellis:start`, `/trellis:continue`, and `/trellis:finish-work`                               |
-| 4     | Add platform adapters     | Multiple AI tools consume the same `.trellis/` context                                                                      |
-| 5     | Govern updates            | Spec and workflow changes are reviewed like code                                                                            |
+| Phase | Goal                      | Exit criteria                                                                                                                                                                                                                                                                                                      |
+| ----- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1     | Pilot one repo            | One real task completed with specs, checks, and journal. Two options for the spec starting point: pull a stack-matched spec pack from the [spec template marketplace](/start/install-and-first-task#official-marketplace), or use `cc-codex-spec-bootstrap` so CC + Codex draft first-pass specs from the codebase |
+| 2     | Capture repeated feedback | Three to five review patterns become specs                                                                                                                                                                                                                                                                         |
+| 3     | Standardize task workflow | Developers know when to use `/trellis:start`, `/trellis:continue`, and `/trellis:finish-work`                                                                                                                                                                                                                      |
+| 4     | Add platform adapters     | Multiple AI tools consume the same `.trellis/` context                                                                                                                                                                                                                                                             |
+| 5     | Govern updates            | Spec and workflow changes are reviewed like code                                                                                                                                                                                                                                                                   |
 
 ### 7.4 Success metrics
 
