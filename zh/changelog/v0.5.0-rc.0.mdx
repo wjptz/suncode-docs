@@ -1,0 +1,128 @@
+---
+title: 'v0.5.0-rc.0'
+description: '2026-04-30'
+---
+
+`v0.5.0-rc.0` 是 0.5.0 发布前的候选版本。本版本聚焦发布稳定化：非交互 init 恢复、workflow breadcrumb 从 `workflow.md` 读取、`workflow.md` breadcrumb 自动更新，以及内置 `trellis-meta` 参考文档同步。
+
+## Enhancements
+
+### Workflow breadcrumbs
+
+每轮提示 AI 当前该走哪一步的 workflow breadcrumb，现在从 `.trellis/workflow.md` 的 `[workflow-state:STATUS]` block 读取。
+
+| 组件                                                                   | 改动                                                                                                                    |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `packages/cli/src/templates/shared-hooks/inject-workflow-state.py`     | 删除 `_FALLBACK_BREADCRUMBS`；缺少 tag 时降级为通用 `Refer to workflow.md` 提示                                         |
+| `packages/cli/src/templates/opencode/plugins/inject-workflow-state.js` | 删除 OpenCode JS fallback 字典                                                                                          |
+| `.trellis/workflow.md` / template copy                                 | `planning` 提示加入必需的 Phase 1.3 jsonl curation；`in_progress` 提示加入 `/trellis:finish-work` 前的 Phase 3.4 commit |
+| `packages/cli/src/templates/shared-hooks/session-start.py`             | 从 SessionStart payload 里移除完整 breadcrumb tag block，避免同一段内容被注入两次                                       |
+
+解析器和移除逻辑都要求 tag 成对匹配：
+
+```md
+[workflow-state:planning]
+...
+[/workflow-state:planning]
+```
+
+### `workflow.md` breadcrumb 自动更新
+
+`trellis update` 现在会自动更新 `.trellis/workflow.md` 里的 `[workflow-state:*]` block。它们是 hook 用来提示 AI 下一步做什么的文本；普通说明文字仍然按用户自己的版本保留。
+
+| 场景                            | 行为                                                  |
+| ------------------------------- | ----------------------------------------------------- |
+| 用户文件有同名 status block     | 用 CLI template block 替换该 block 内容               |
+| 用户文件缺少某个 status block   | 把缺失 block 追加到 `workflow.md` 末尾                |
+| 用户改了 tag block 外的内容     | 原样保留                                              |
+| 用户改了 tag block 内的提示文本 | 用当前 CLI 版本替换，并打印 warning 列出受影响 status |
+
+实现位于 `buildWorkflowMdTemplate`（`packages/cli/src/commands/update.ts`）。
+
+### `task.py create` 后设置 session active task
+
+`task.py create` 现在会 best-effort 设置 session active-task pointer。创建任务后，planning breadcrumb 可以立刻出现，AI 会看到 Phase 1.1 到 Phase 1.4 的 guidance，而不是落回 no-task 路径。
+
+`trellis continue` 也改为按 `task.json.status` 加必需 artifact 路由，包含 `prd.md` 和 jsonl context 就绪后的 Phase 1.4 activation 分支。
+
+### 内置 `trellis-meta` 参考文档
+
+内置 `trellis-meta` skill 的参考页面现在统一描述 workflow-state 如何读取 `workflow.md`：
+
+| Reference                                  | 更新                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------ |
+| `customize-local/change-workflow.md`       | 说明 `[workflow-state:STATUS]` block 会被运行时 hook 解析                      |
+| `customize-local/change-task-lifecycle.md` | 增加 `task.py create` / `task.py start` 的 session active-task pointer 说明    |
+| `local-architecture/context-injection.md`  | workflow-state injection 指向 `workflow.md`，不再描述重复的 hook fallback 文本 |
+| `platform-files/hooks-and-settings.md`     | hook 描述与当前 workflow-state 行为对齐                                        |
+
+## Bug Fixes
+
+### 非交互 `trellis init --yes`
+
+`trellis init --yes` 在文件已存在时也保持非交互。
+
+| 层                                      | 修复                                                          |
+| --------------------------------------- | ------------------------------------------------------------- |
+| `packages/cli/src/commands/init.ts`     | 除非传入 `--force`，否则 `--yes` 把写入冲突映射到 `skip` mode |
+| `packages/cli/src/utils/file-writer.ts` | 非 TTY 的 `ask` mode 降级到 `skip`，不再触发 prompt           |
+| 避免的失败                              | stdin 不可用后 prompt 代码抛出的 `ERR_USE_AFTER_CLOSE`        |
+
+`--force` 仍然覆盖已有文件。`--yes` 默认保留已有文件。
+
+### 首次 init 中断后的恢复
+
+如果之前的 init 已写入 `.trellis/`，但在创建任何 task 之前中断，重新运行 init 现在会创建 bootstrap task，而不是误走 joiner onboarding。
+
+| 磁盘状态                            | 命令                                           | rc.0 行为                      |
+| ----------------------------------- | ---------------------------------------------- | ------------------------------ |
+| `.trellis/` 存在，`tasks/` 为空     | `trellis init -u <name> --codex --yes`         | 创建 `00-bootstrap-guidelines` |
+| `.trellis/` 存在，`tasks/` 为空     | `trellis init -u <name> --codex --yes --force` | 创建 `00-bootstrap-guidelines` |
+| 已有 active 或 archived task 的项目 | `trellis init -u <name> --yes`                 | 保持正常 re-init / joiner 路由 |
+
+empty-`tasks/` early check 会绕过 `handleReinit`，随后由 main dispatch 的 bootstrap fallback 接管。
+
+## Testing
+
+### Init recovery coverage
+
+init 测试现在覆盖：
+
+| 测试文件                                                     | 覆盖点                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| `packages/cli/test/commands/init-joiner.integration.test.ts` | `--yes` alone 和 `--force` 两种 empty-`tasks/` 恢复路径 |
+| `packages/cli/test/utils/file-writer.test.ts`                | 非 TTY 冲突从 `ask` 降级到 `skip`                       |
+
+### Workflow-state coverage
+
+回归测试现在守住这些 invariant：
+
+| Invariant                                        | 覆盖点                       |
+| ------------------------------------------------ | ---------------------------- |
+| Phase 1.3 出现在 `planning` breadcrumb           | `workflow.md` template test  |
+| Phase 3.4 commit 出现在 `in_progress` breadcrumb | `workflow.md` template test  |
+| Python / JS fallback 字典保持删除                | Hook source tests            |
+| 成对 tag 解析                                    | SessionStart strip test      |
+| `workflow.md` breadcrumb block 自动更新          | `update.integration.test.ts` |
+
+## Upgrade
+
+安装 RC：
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+```
+
+已有 0.5 beta 项目：
+
+```bash
+trellis update
+```
+
+从 0.4.x 升级的项目：
+
+```bash
+trellis update --migrate
+```
+
+`0.5.0-rc.0` 不新增迁移条目，但 0.4.x 项目仍需执行从 `0.5.0-beta.0` 开始的 0.5 迁移链。
