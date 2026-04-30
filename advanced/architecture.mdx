@@ -2,56 +2,56 @@
 title: 'Architecture Overview'
 ---
 
-## System Layers
+Trellis is a **team-level agent harness with a built-in LLM wiki** — an engineering shell wrapping AI coding plus an in-repo knowledge base the LLM reads directly. This page is for developers who want to understand how the system runs and where to extend. End-user usage flow lives at [How it works](/start/how-it-works).
 
-Trellis layers are a classification, not a flow. Layers don't run in sequence; how a request actually traverses them depends on the platform and is described in [Session Boot Flow](#session-boot-flow) and the mechanism sections that follow.
+## Design Philosophy
 
-**User layer**
+Trellis treats AI coding as an engineering problem, not a chat problem.
 
-Describe needs · `/trellis:continue` at phase boundaries · verify diffs
+- **No reliance on memory** — specs are pushed into hooks / sub-agent preludes; the AI doesn't need to "remember" to read them
+- **No reliance on conversation** — knowledge lives in files (`spec/` / `tasks/` / `workspace/`); compacted conversations don't lose state
+- **No reliance on a single super-agent** — work is split across sub-agents with bounded scope and clear responsibility
+- **No reliance on trust** — the AI does not commit; the commit boundary stays with humans
+- **No reliance on generic answers** — team conventions are project-specific corpus, not Stack Overflow
 
-**AI Coding Platform layer**
+## Feature Overview
 
-Claude Code · Cursor · OpenCode · Codex · Gemini · Qoder · CodeBuddy · Copilot · Droid · Pi · Kiro · Kilo · Antigravity · Windsurf
+Three concurrent threads derive from the vision: harness governs AI behavior, wiki governs team knowledge, and the team-level dimension amplifies both.
 
-\+ `.agents/skills/` shared layer (agentskills.io)
+### Agent Harness (engineering shell that constrains AI behavior)
 
-**Injection mechanisms** (three peer forms — not a sequence)
+- **Native support across 14+ AI coding platforms** — Claude Code / Cursor / Codex / Gemini / Qoder / OpenCode / Copilot / CodeBuddy / Droid / Pi / Kiro / Kilo / Antigravity / Windsurf. Each platform uses its native hook / skill / extension / workflow primitive; the same `.trellis/` produces equivalent behavior everywhere
+- **Three-Phase workflow state machine** — Plan / Execute / Finish, with a per-turn breadcrumb injected into the main session at every step. When the AI tries to skip a step, the hook pulls it back
+- **Three-tier sub-agent execution** — `trellis-research` (investigate) / `trellis-implement` (write code) / `trellis-check` (verify and self-fix); separation of concerns plus mutual constraint
+- **Mandatory read-before-write** — three mechanisms (`before-dev` skill / `implement.jsonl` injection / pull-based prelude) ensure sub-agents read the relevant spec before writing code
+- **AI does not commit** — harness boundary: sub-agents finish, humans verify and commit; every change goes through PR review
 
-| Form             | How it triggers                                  | Built-in members                                                     |
-| ---------------- | ------------------------------------------------ | -------------------------------------------------------------------- |
-| Command          | User invokes `/trellis:*`                        | `start` / `continue` / `finish-work`                                 |
-| Skill            | Auto-trigger (AI loads when description matches) | `brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` |
-| Hook / Extension | Platform event (hook-capable platforms only)     | `SessionStart` / `UserPromptSubmit` / `PreToolUse:Agent`             |
+### Built-in LLM Wiki (team knowledge that the AI reads automatically)
 
-**`.trellis/` project layer** (the in-repo fact layer)
+- **`.trellis/spec/`** — team conventions library; organized by package and layer; sub-agents pull on demand via the task's `implement.jsonl`, never dumped wholesale into the main session
+- **`.trellis/tasks/`** — task-level knowledge; each task carries its own `prd.md` + `research/*.md` + `info.md` + jsonl context manifests
+- **`.trellis/workspace/`** — developer-level journals; cross-session retro, decision log, prevent re-stepping on the same rake
+- **`.trellis/workflow.md`** — the workflow's own wiki; single source of truth, edit one file and the whole project's workflow shifts
 
-| Path          | Role                                                    |
-| ------------- | ------------------------------------------------------- |
-| `workflow.md` | Workflow single source of truth                         |
-| `spec/`       | Team conventions                                        |
-| `tasks/`      | Task PRDs / context / research                          |
-| `workspace/`  | Per-developer journals                                  |
-| `scripts/`    | Python automation (`task.py` / `get_context.py` / etc.) |
-| `config.yaml` | Project config                                          |
+### Team-level (collaboration dimension)
 
-**Sub-agent system**
+- **`.trellis/` belongs to the team, not the individual** — workflow / spec / tasks are all git-tracked; a new developer `git clone`s and gets the full harness plus team knowledge base; the first `trellis init` auto-creates a joiner task to onboard
+- **Multi-task parallelism + subtask trees** — multiple tasks running in the same repo at once; subtask branches roll up to the parent; the active-task pointer is session-scoped so multiple windows don't cross-talk
+- **Cross-developer knowledge accrual** — PRDs and research someone wrote into a task, products archived under `tasks/archive/`, conventions distilled into `spec/` — every team member's sub-agents can read them next time (not just the original author)
+- **Per-developer workspace** — `.trellis/workspace/<dev>/` isolates each developer's journals so they don't overwrite each other; `spec/` remains the team's shared SoT
 
-`trellis-research` / `trellis-implement` / `trellis-check`. Each sub-agent receives task-scoped context via JSONL.
+## Feature × Module Map
 
-**Project code**
-
-AI generates or modifies code per spec and PRD.
-
-## Design Principles
-
-| Principle                           | Meaning                                                                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------- |
-| **Specs injected, not remembered**  | Hooks push specs into the sub-agent before it starts; AI doesn't have to "remember" to read |
-| **Load on demand, not in bulk**     | Each task lists only the specs it actually uses in `implement.jsonl` / `check.jsonl`        |
-| **Read before write**               | The `before-dev` skill pre-reads relevant specs before coding starts, not after             |
-| **AI doesn't commit**               | Sub-agents finish, humans verify and commit; every change goes through PR review            |
-| **Single workflow source of truth** | Edit `workflow.md` — one file — and the entire project's workflow updates everywhere        |
+| Feature                            | Primary modules                                                          | Key files                                                                  |
+| ---------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| 14+ platform native support        | Platform configurators + shared hooks / skills                           | `.claude/`, `.codex/`, `.cursor/`, ... + `packages/cli/src/configurators/` |
+| Three-Phase workflow state machine | `workflow.md` + `inject-workflow-state.py` hook                          | `.trellis/workflow.md`, `[workflow-state:STATUS]` blocks                   |
+| Three-tier sub-agent execution     | Sub-agent definitions + JSONL injection                                  | `.{platform}/agents/trellis-{research,implement,check}.*`                  |
+| Read-before-write                  | `before-dev` skill + `inject-subagent-context` hook + pull-based prelude | `.{platform}/skills/trellis-before-dev/`, `{task}/implement.jsonl`         |
+| AI does not commit                 | `/trellis:finish-work` command + dirty-tree refusal                      | `commands/trellis/finish-work.md`                                          |
+| Team knowledge base                | `.trellis/spec/` / `tasks/` / `workspace/`                               | git-tracked file layer                                                     |
+| Multi-task parallelism             | Session-scoped active-task pointer                                       | `.trellis/.runtime/sessions/<session-key>.json`                            |
+| New-member onboarding              | Joiner task auto-generation                                              | `init.ts` + `00-join-<dev>` task template                                  |
 
 ## `workflow.md`: Single Source of Truth
 

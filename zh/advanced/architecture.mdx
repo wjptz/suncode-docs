@@ -2,56 +2,56 @@
 title: '架构全景'
 ---
 
-## 系统分层
+Trellis 的产品定位是 **Team-level Agent Harness with built-in LLM wiki** —— 在团队仓库里的 AI 工程化外壳 + LLM 直接读的团队知识库。本页给开发者讲整套系统怎么运转、每个模块怎么扩。普通用户使用流程看 [How it works](/start/how-it-works)。
 
-按"谁拿谁的数据 / 谁注入谁"维度，Trellis 分成下面几层。**层与层之间没有时序，只有归属**——一次请求经过哪些层，看 [Session 启动流程](#会话启动流程) 和后面各机制小节。
+## 设计理念
 
-**用户层**
+Trellis 把 AI coding 当工程问题，不当聊天问题。
 
-描述需求 / 阶段边界输入 / `/trellis:continue` / 验收 diff
+- **不靠记忆** — spec 由 hook / sub-agent prelude 主动注入，AI 不需要"记得"读
+- **不靠对话** — 知识落到文件（`spec/` / `tasks/` / `workspace/`），对话压缩了也不会丢
+- **不靠超人** — 多 sub-agent 分工，每个 agent 范围有限职责清晰
+- **不靠信任** — AI 不提交代码，commit 边界由人把守
+- **不靠通用** — 团队规范是"项目语料"，不是 Stack Overflow 答案
 
-**AI Coding Platform 层**
+## Feature 全景
 
-Claude Code · Cursor · OpenCode · Codex · Gemini · Qoder · CodeBuddy · Copilot · Droid · Pi · Kiro · Kilo · Antigravity · Windsurf
+围绕 vision 拆三条主线：harness 治 AI 行为、wiki 治团队知识、team-level 是这两件事的协作放大器。
 
-\+ `.agents/skills/` 跨平台共享层（agentskills.io 标准）
+### Agent Harness（约束 AI 行为的工程化外壳）
 
-**注入机制层**（三种并列的形式，不是先后顺序）
+- **14+ AI coding 平台原生适配** — Claude Code / Cursor / Codex / Gemini / Qoder / OpenCode / Copilot / CodeBuddy / Droid / Pi / Kiro / Kilo / Antigravity / Windsurf。每个平台用各自的 hook / skill / extension / workflow 原语，同一份 `.trellis/` 行为一致
+- **三 Phase 工作流状态机** — Plan / Execute / Finish，每步都有 breadcrumb 在主会话每轮注入；AI 跳步被 hook 拽回来
+- **Sub-agent 三层执行** — `trellis-research`（调研）/ `trellis-implement`（写代码）/ `trellis-check`（验收 + 自修），分工 + 互相约束
+- **强制 read-before-write** — `before-dev` skill / `implement.jsonl` 注入 / pull-based prelude 三种机制，sub-agent 写代码前先读本任务相关的 spec
+- **AI 不提交代码** — harness 边界：sub-agent 写完，人类验收 commit；每次变更都过 PR review
 
-| 形式             | 触发方式                                 | 内置成员                                                             |
-| ---------------- | ---------------------------------------- | -------------------------------------------------------------------- |
-| Command          | `/trellis:*` 用户主动调用                | `start` / `continue` / `finish-work`                                 |
-| Skill            | auto-trigger（描述匹配时由 AI 自动加载） | `brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` |
-| Hook / Extension | hook-capable 平台事件                    | `SessionStart` / `UserPromptSubmit` / `PreToolUse:Agent`             |
+### Built-in LLM Wiki（团队知识沉淀，AI 自动读）
 
-**`.trellis/` 项目层**（仓库内的事实层）
+- **`.trellis/spec/`** — 团队规范库；按 package / layer 组织，sub-agent 通过任务 `implement.jsonl` 按需注入，主会话不需要 dump 全量
+- **`.trellis/tasks/`** — 任务级知识；每个任务自带 `prd.md` + `research/*.md` + `info.md` + jsonl context manifests
+- **`.trellis/workspace/`** — 开发者级 journal；跨 session 复盘、记录决策、避免重复踩坑
+- **`.trellis/workflow.md`** — 工作流自身的 wiki；单一事实源，改一个文件整个项目的工作流就改了
 
-| 路径          | 角色                                             |
-| ------------- | ------------------------------------------------ |
-| `workflow.md` | 工作流单一事实源                                 |
-| `spec/`       | 团队规范                                         |
-| `tasks/`      | 任务 PRD / 上下文 / research                     |
-| `workspace/`  | 个人 journal                                     |
-| `scripts/`    | Python 自动化（`task.py` / `get_context.py` 等） |
-| `config.yaml` | 项目级配置                                       |
+### Team-level（协作维度）
 
-**Sub-agent 系统**
+- **`.trellis/` 是团队的，不是个人的** — workflow / spec / tasks 全部 git-tracked，新开发者 `git clone` 拿到完整 harness + 团队知识库；首次跑 `trellis init` 自动建 joiner task 引导上手
+- **多任务并行 + 子任务树** — 同一仓库同时跑多个任务，subtask 分支汇总到 parent；active task pointer 按 session 隔离，多窗口互不串
+- **跨开发者知识沉淀** — 一个人在任务里写的 PRD + research、归档到 `tasks/archive/` 的产物、提炼到 `spec/` 的规范，全团队下次的 sub-agent 都能自动读到（不只是你自己）
+- **每开发者独立 workspace** — `.trellis/workspace/<dev>/` 按 developer 隔离 journal 不互相覆盖；`spec/` 是团队共享 SoT
 
-`trellis-research` / `trellis-implement` / `trellis-check`，每个通过 JSONL 拿到本任务专属的上下文。
+## Feature × 模块映射
 
-**项目代码**
-
-AI 按 spec / PRD 生成或修改的实际代码。
-
-## 设计原则
-
-| 原则                     | 含义                                                                           |
-| ------------------------ | ------------------------------------------------------------------------------ |
-| **强制注入而非依赖记忆** | Hook 在 sub-agent 启动前主动 push spec，AI 不需要"记得"读                      |
-| **按需而非全量加载**     | 每个任务在 `implement.jsonl` / `check.jsonl` 列出真正用到的 spec，不每次塞全部 |
-| **读完再写**             | `before-dev` skill 在写代码前预读相关规范，避免"先写后改"                      |
-| **AI 不提交代码**        | sub-agent 实现完毕由人验收 + commit，仓库变更全过 PR review                    |
-| **单一工作流事实源**     | 改 `workflow.md` 一个文件就改整个项目的工作流，不在多处硬编码                  |
+| Feature               | 主要模块                                                                 | 关键文件                                                                  |
+| --------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| 14+ 平台原生适配      | Platform configurator + 共享 hook / skill                                | `.claude/`、`.codex/`、`.cursor/` ... + `packages/cli/src/configurators/` |
+| 三 Phase 工作流状态机 | `workflow.md` + `inject-workflow-state.py` hook                          | `.trellis/workflow.md`，`[workflow-state:STATUS]` 块                      |
+| Sub-agent 三层执行    | sub-agent 定义 + JSONL 注入                                              | `.{platform}/agents/trellis-{research,implement,check}.*`                 |
+| Read-before-write     | `before-dev` skill + `inject-subagent-context` hook + pull-based prelude | `.{platform}/skills/trellis-before-dev/`，`{task}/implement.jsonl`        |
+| AI 不提交代码         | `/trellis:finish-work` 命令 + 脏树拒跑                                   | `commands/trellis/finish-work.md`                                         |
+| Team 知识库           | `.trellis/spec/` / `tasks/` / `workspace/`                               | git-tracked 文件层                                                        |
+| 多任务并行            | session-scoped active task pointer                                       | `.trellis/.runtime/sessions/<session-key>.json`                           |
+| 新成员 onboarding     | joiner task auto-generation                                              | `init.ts` + `00-join-<dev>` task 模板                                     |
 
 ## `workflow.md`：单一事实源
 
