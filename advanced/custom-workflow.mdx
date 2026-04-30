@@ -4,7 +4,7 @@ title: 'Customizing the Workflow'
 
 ## Customizing the Workflow
 
-`/.trellis/workflow.md` is the **single source of truth** for how Trellis runs development. Phase definitions, skill routing, per-turn reminders, and the `task.py` command catalog all live in this one file. Forking the workflow means editing one markdown file — no Python, no hook code, no re-releasing Trellis.
+`/.trellis/workflow.md` defines how Trellis runs development. Phase definitions, skill routing, per-turn reminders, and the `task.py` command catalog all live in this one file. Forking the workflow means editing one markdown file — no Python, no hook code, no re-releasing Trellis.
 
 Before 0.5, workflow behavior was scattered across three places: hook Python scripts, configurator TypeScript, and command markdown. Keeping them in sync while forking was painful. 0.5 collapses the three into `workflow.md`.
 

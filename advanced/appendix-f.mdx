@@ -18,7 +18,7 @@ On platforms without a SessionStart hook (Kilo, Antigravity, Windsurf), still ru
 
 ### Q2: How do I migrate an existing project to Trellis?
 
-1. `npm install -g @mindfoldhq/trellis@beta`
+1. `npm install -g @mindfoldhq/trellis@rc`
 2. `trellis init -u your-name` in the project root (auto-creates a bootstrap task).
 3. Open a Trellis-enabled AI session, or run the platform's start workflow if it has no automatic session injection; the brainstorm skill helps fill initial specs.
 4. Manually supplement core specs based on your conventions.
@@ -36,13 +36,13 @@ All Trellis scripts are Python, cross-platform:
 ```bash
 # 1. Install Node.js 18+ and Python 3.9+
 # 2. Install Trellis
-npm install -g @mindfoldhq/trellis@beta
+npm install -g @mindfoldhq/trellis@rc
 # 3. Initialize
 cd your-project
 trellis init -u your-name
 ```
 
-`trellis init` writes `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` into `.claude/settings.json` automatically (since 0.5.0-beta.8). That env var keeps the Bash tool's cwd stable so hook scripts resolve paths correctly on Windows — no manual setup required.
+`trellis init` now writes `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` into `.claude/settings.json` automatically. That env var keeps the Bash tool's cwd stable so hook scripts resolve paths correctly on Windows — no manual setup required.
 
 ### Q5: How do I update Trellis without losing my customizations?
 
@@ -72,11 +72,11 @@ Every update creates a timestamped backup at `.trellis/.backup-*` first; locally
 Upgrade is two steps for two layers:
 
 ```bash
-npm install -g @mindfoldhq/trellis@beta   # 1. upgrade the CLI itself
+npm install -g @mindfoldhq/trellis@rc     # 1. upgrade the CLI itself
 trellis update --migrate                  # 2. sync the project to the CLI's current version
 ```
 
-`trellis update` only brings the project up to the CLI's version. If the CLI is still 0.4.0, the project can only reach 0.4.0. Bump the global CLI to `@beta` first, then run `trellis update --migrate`.
+`trellis update` only brings the project up to the CLI's version. If the CLI is still 0.4.0, the project can only reach 0.4.0. Bump the global CLI to `@rc` first, then run `trellis update --migrate`.
 
 ## Core concepts
 
@@ -121,14 +121,14 @@ Mental model: `start` opens a window onto the project; `continue` moves the curs
 The headline changes:
 
 - **Skill-first**: `brainstorm` / `before-dev` / `check` / `update-spec` / `break-loop` moved from slash commands to auto-trigger skills that the platform matches based on user intent.
-- **`workflow.md` is the single source of truth**: Phase definitions, skill routing, and per-turn workflow-state reminders all live in `.trellis/workflow.md`. Fork the workflow by editing one markdown file — no Python or hook changes needed (see chapter 8).
+- **`workflow.md` holds the workflow rules**: Phase definitions, skill routing, and per-turn workflow-state reminders all live in `.trellis/workflow.md`. Fork the workflow by editing one markdown file — no Python or hook changes needed (see chapter 8).
 - **Per-turn workflow-state breadcrumbs**: a new `inject-workflow-state.py` hook fires on every user message and injects a `<workflow-state>` block driven by the current task's status, keeping the AI aligned with the Plan → Execute → Finish phases.
 - **Three sub-agents replaced six**: `trellis-research` / `trellis-implement` / `trellis-check`. `dispatch` / `plan` / `debug` were removed; Ralph Loop and its SubagentStop hook were removed (the check sub-agent owns its retry loop now).
 - **Eight platforms upgraded to agent-capable**: Cursor / OpenCode / Gemini CLI / Qoder / CodeBuddy / Copilot / Droid / Pi Agent all got sub-agents and hooks or extension-backed equivalents; `.trellis/` core is unchanged across 14 platforms.
 - **Multi-Agent Pipeline, `/parallel`, `worktree.yaml` removed**: native worktree support in modern agent CLIs replaces them.
 - **Forced migration gate**: breaking releases require `trellis update --migrate` and exit with instructions instead of silently leaving half-migrated files.
 
-For the full list, read the changelog for `v0.5.0-beta.0`.
+For the full list, read the 0.5.0 breaking-change changelog.
 
 ### Q14: `/trellis:record-session` is gone. What replaces it?
 

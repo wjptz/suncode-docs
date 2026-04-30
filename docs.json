@@ -3,7 +3,7 @@
   "theme": "mint",
   "js": "/terminal-demo.js",
   "banner": {
-    "content": "📦 Reading **Beta** docs (0.5 track). Check your install: `trellis --version`. Install latest: `npm install -g @mindfoldhq/trellis@beta`. Switch to **Release** in the version dropdown ↘",
+    "content": "📦 Reading **RC** docs (0.5.0-rc.0). Check your install: `trellis --version`. Install latest: `npm install -g @mindfoldhq/trellis@rc`. Switch to **Release** in the version dropdown ↘",
     "dismissible": true
   },
   "exclude": [
@@ -28,7 +28,7 @@
         "language": "en",
         "versions": [
           {
-            "version": "Beta",
+            "version": "RC",
             "default": true,
             "groups": [
               {
@@ -305,7 +305,7 @@
         "language": "zh",
         "versions": [
           {
-            "version": "Beta",
+            "version": "RC",
             "default": true,
             "groups": [
               {

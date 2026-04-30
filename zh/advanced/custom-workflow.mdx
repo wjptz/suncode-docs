@@ -4,7 +4,7 @@ title: '定制 Workflow'
 
 ## 定制 Workflow
 
-`.trellis/workflow.md` 是 Trellis 开发流程的**单一事实源（single source of truth）**——Phase 定义、skill 路由、每轮面包屑、`task.py` 命令参考都在这一个文件里。Fork 工作流 = 改一个 markdown 文件，不用动 Python、不用改 hook、不用重发包。
+`.trellis/workflow.md` 定义 Trellis 的开发流程：Phase 定义、skill 路由、每轮提醒、`task.py` 命令参考都在这一个文件里。Fork 工作流 = 改一个 markdown 文件，不用动 Python、不用改 hook、不用重发包。
 
 0.5 之前，工作流行为分散在三处：hook Python 脚本、configurator TypeScript、命令 markdown；想 fork 一份"自己的工作流"得同时改三处才能自洽。0.5 把这三处收敛到 `workflow.md` 一个文件。
 

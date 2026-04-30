@@ -25,7 +25,7 @@ description: 'See the full Trellis workflow in action: from brainstorm to ship'
         </div>
         <div className="td-line td-line-ai td-d1">
           <span className="td-bullet">● </span>
-          Loaded: workflow, 3 active tasks, branch <span className="td-link">feat/v0.5.0-beta</span>
+          Loaded: workflow, 3 active tasks, branch <span className="td-link">feat/v0.5.0-rc</span>
         </div>
         <div className="td-line td-line-ai td-d2">
           <span className="td-bullet">● </span>
@@ -201,38 +201,45 @@ This demo replays a real Trellis session where we added **Gemini CLI platform su
 
 <Steps>
   <Step title="Start session">
-    SessionStart hook or extension loads your project context: workflow rules, active tasks, git status, and recent journal entries. The AI is immediately oriented.
+    SessionStart hook or extension loads your project context: workflow rules, active tasks, git
+    status, and recent journal entries. The AI is immediately oriented.
   </Step>
   <Step title="Describe the feature">
-    You describe what you want in natural language. Trellis creates a tracked task with a structured PRD.
+    You describe what you want in natural language. Trellis creates a tracked task with a structured
+    PRD.
   </Step>
   <Step title="Research & configure">
-    trellis-research sub-agent reads 36 files to find relevant specs and code patterns. Context files are configured in jsonl so agents receive the right conventions via hooks.
+    trellis-research sub-agent reads 36 files to find relevant specs and code patterns. Context
+    files are configured in jsonl so agents receive the right conventions via hooks.
   </Step>
   <Step title="Implement">
-    trellis-implement sub-agent writes code across 5 layers (types → templates → configurator → CLI → Python). 99 tool calls. All 337 tests pass on first try.
+    trellis-implement sub-agent writes code across 5 layers (types → templates → configurator → CLI
+    → Python). 99 tool calls. All 337 tests pass on first try.
   </Step>
   <Step title="Quality check">
-    trellis-check sub-agent reviews every changed file against code-specs. Finds 1 missing `EXCLUDE_PATTERNS` entry and fixes it automatically.
+    trellis-check sub-agent reviews every changed file against code-specs. Finds 1 missing
+    `EXCLUDE_PATTERNS` entry and fixes it automatically.
   </Step>
   <Step title="Update specs">
-    The `trellis-update-spec` skill captures new patterns learned from this session into the spec library: making future sessions even better.
+    The `trellis-update-spec` skill captures new patterns learned from this session into the spec
+    library: making future sessions even better.
   </Step>
   <Step title="Finish & ship">
-    `/trellis:finish-work` archives the task and records the session to your journal. 5 atomic commits on the feature branch, ready for review.
+    `/trellis:finish-work` archives the task and records the session to your journal. 5 atomic
+    commits on the feature branch, ready for review.
   </Step>
 </Steps>
 
 ### Key metrics
 
-| Metric | Value |
-|--------|-------|
-| **Total time** | ~20 minutes |
-| **Tool calls** | 169 (explore + research + implement + check) |
-| **Files changed** | 14 TOML templates + 5 source files |
-| **Tests** | 337/337 passed |
-| **Commits** | 5 atomic commits |
-| **Human input** | 3 messages (feature request + update-spec + finish-work) |
+| Metric            | Value                                                    |
+| ----------------- | -------------------------------------------------------- |
+| **Total time**    | ~20 minutes                                              |
+| **Tool calls**    | 169 (explore + research + implement + check)             |
+| **Files changed** | 14 TOML templates + 5 source files                       |
+| **Tests**         | 337/337 passed                                           |
+| **Commits**       | 5 atomic commits                                         |
+| **Human input**   | 3 messages (feature request + update-spec + finish-work) |
 
 <Card title="Try it yourself" icon="rocket" href="/start/install-and-first-task">
   Install Trellis, open a new AI session, and describe your feature request.

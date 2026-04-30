@@ -49,7 +49,7 @@ When in doubt, use the task workflow; it's what ensures sub-agents get spec inje
 
 #### 1.2.2 `/trellis:finish-work`: Wrap up + archive
 
-Prerequisite: code is already committed. As of `0.5.0-beta.18`, the AI drives a batched commit step in workflow Phase 3.4 (see `.trellis/workflow.md`) where it drafts commits from this session's edits, learns the repo's commit-message style from `git log --oneline -5`, presents the plan once for one-shot user confirmation, and runs `git commit` per batch. `/finish-work` itself focuses on archive + journal and **refuses to run on a dirty working tree** to keep bookkeeping commits ordered after work commits.
+Prerequisite: code is already committed. The AI drives a batched commit step in workflow Phase 3.4 (see `.trellis/workflow.md`) where it drafts commits from this session's edits, learns the repo's commit-message style from `git log --oneline -5`, presents the plan once for one-shot user confirmation, and runs `git commit` per batch. `/finish-work` itself focuses on archive + journal and **refuses to run on a dirty working tree** to keep bookkeeping commits ordered after work commits.
 
 Steps:
 
@@ -325,7 +325,7 @@ task.py start         →  flips planning to in_progress (other statuses preserv
 task.py archive       →  status: "completed" + move to archive/
 ```
 
-`planning` / `in_progress` / `completed` align with the three phases in `workflow.md`. As of 0.5.0-beta.13, `task.py start` rewrites `planning` to `in_progress` automatically; non-planning statuses (`in_progress`, `review`, `completed`) are left untouched, so re-starting a task in `review` doesn't clobber its state. `task.py list --status` also accepts `review` as a filter — add any custom statuses you need by writing a matching `[workflow-state:<name>]` block in `workflow.md`.
+`planning` / `in_progress` / `completed` align with the three phases in `workflow.md`. `task.py start` rewrites `planning` to `in_progress` automatically; non-planning statuses (`in_progress`, `review`, `completed`) are left untouched, so re-starting a task in `review` doesn't clobber its state. `task.py list --status` also accepts `review` as a filter — add any custom statuses you need by writing a matching `[workflow-state:<name>]` block in `workflow.md`.
 
 ### 2.4 JSONL Context Configuration in Practice
 

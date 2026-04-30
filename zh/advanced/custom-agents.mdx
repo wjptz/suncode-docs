@@ -33,12 +33,12 @@ Sub-agent 的指令写在这里。把它当成 sub-agent 的 system prompt。
 
 Claude Code 上的关键 frontmatter 字段：
 
-| 字段          | 含义                                                                                                |
-| ------------- | --------------------------------------------------------------------------------------------------- |
-| `name`        | Sub-agent 标识，在 `Task(subagent_type="...")` 调用里使用                                           |
-| `description` | 主会话据此决定何时 spawn 该 sub-agent                                                               |
-| `tools`       | 用逗号分隔的 sub-agent 可调用工具列表                                                               |
-| `model`       | 可选的模型覆盖。省略则继承会话模型（0.5.0-beta.5 起推荐省略，避免 Cursor 等用户被强制按 Opus 计费） |
+| 字段          | 含义                                                                             |
+| ------------- | -------------------------------------------------------------------------------- |
+| `name`        | Sub-agent 标识，在 `Task(subagent_type="...")` 调用里使用                        |
+| `description` | 主会话据此决定何时 spawn 该 sub-agent                                            |
+| `tools`       | 用逗号分隔的 sub-agent 可调用工具列表                                            |
+| `model`       | 可选的模型覆盖。建议省略，让它继承会话模型，避免 Cursor 等用户被强制按 Opus 计费 |
 
 ### Sub-agent 文件格式按平台不同
 

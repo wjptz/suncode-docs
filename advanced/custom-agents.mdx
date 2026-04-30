@@ -34,12 +34,12 @@ Instructions for the sub-agent go here. Treat it as the sub-agent's system promp
 
 Key frontmatter fields on Claude Code:
 
-| Field         | Meaning                                                                                                                                                          |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`        | Sub-agent identifier used in `Task(subagent_type="...")` calls                                                                                                   |
-| `description` | Used by the main session to decide when to spawn this sub-agent                                                                                                  |
-| `tools`       | Comma-separated list of tools the sub-agent may call                                                                                                             |
-| `model`       | Optional model override. Omit to inherit the session model (recommended since 0.5.0-beta.5, so Cursor users and similar are not billed on a forced Opus default) |
+| Field         | Meaning                                                                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`        | Sub-agent identifier used in `Task(subagent_type="...")` calls                                                                                                     |
+| `description` | Used by the main session to decide when to spawn this sub-agent                                                                                                    |
+| `tools`       | Comma-separated list of tools the sub-agent may call                                                                                                               |
+| `model`       | Optional model override. Omit to inherit the session model; this is the current recommendation so Cursor users and similar are not billed on a forced Opus default |
 
 ### Sub-agent file format is platform-specific
 
