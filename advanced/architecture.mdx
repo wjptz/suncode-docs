@@ -79,10 +79,10 @@ Trellis is an AI workflow system that lives in your repo. Files carry team conve
 
 - **SessionStart hook** auto-injects its TOC + step bodies, so the AI has the contract before you say anything
 - **`/trellis:continue`** reads the current session runtime (`.trellis/.runtime/sessions/<session-key>.json`) plus the task's `status`, then matches against `workflow.md` to decide which step you're on and what's next
-- **Per-turn `<workflow-state>` breadcrumbs** (`inject-workflow-state.py` hook) fire on every user message and inject the state block matching the active task's `status`
+- **Per-turn `<workflow-state>` breadcrumbs** (`inject-workflow-state.py` hook) fire on every user message and inject the `[workflow-state:STATUS]` block matching the active task's `status`. The hook is parser-only; body text comes verbatim from `workflow.md`. When a status has no matching block, the hook emits `Refer to workflow.md for current step.` instead.
 - **Sub-agent injection** — `workflow.md` is the default first entry of `implement.jsonl`, so sub-agents see the contract too
 
-**Default task statuses**: `planning` / `in_progress` / `completed`, set automatically by `task.py create` / `start` / `archive` and aligned 1:1 with the three phases. `workflow.md` carries one block per status. Adding a custom status (e.g. `review` / `blocked`) means adding a `[workflow-state:STATE]...[/workflow-state:STATE]` block — no code changes.
+**Default task statuses**: `planning` / `in_progress` / `completed`, written by `task.py create` / `start` / `archive` respectively, aligned 1:1 with the three phases. `task.py create` also sets the active-task pointer for the current session, so `[workflow-state:planning]` fires immediately. `workflow.md` carries one `[workflow-state:STATUS]` block per status. Adding a custom status (e.g. `review` / `blocked`) means adding a `[workflow-state:STATUS]...[/workflow-state:STATUS]` block — no code changes.
 
 > Edit `workflow.md` and the entire project's workflow changes. Next session, every platform / skill / sub-agent / command picks up the new version. There's no workflow logic hardcoded elsewhere.
 

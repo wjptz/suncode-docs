@@ -7,20 +7,20 @@ title: 'Custom Hooks'
 <Note>
   Hook support varies by platform and by event:
 
-  - **`SessionStart` hook / extension** ships on Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent (and Codex with `codex_hooks = true` in `~/.codex/config.toml`). Kiro's Agent Hooks are user-configured — Trellis does not install any out of the box.
-  - **`PreToolUse` / extension sub-agent context injection** ships on Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi Agent. The other hook-capable platforms rely on a pull-based prelude inside each sub-agent instead.
-  - **`UserPromptSubmit` / workflow-state nudge** ships on the same platforms as `SessionStart`.
-  - **Kilo, Antigravity, Windsurf** have no hook primitive at all; behavior is delivered via workflow files + skills.
-</Note>
+- **`SessionStart` hook / extension** ships on Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent (and Codex with `codex_hooks = true` in `~/.codex/config.toml`). Kiro's Agent Hooks are user-configured — Trellis does not install any out of the box.
+- **`PreToolUse` / extension sub-agent context injection** ships on Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi Agent. The other hook-capable platforms rely on a pull-based prelude inside each sub-agent instead.
+- **`UserPromptSubmit` / workflow-state nudge** ships on the same platforms as `SessionStart`.
+- **Kilo, Antigravity, Windsurf** have no hook primitive at all; behavior is delivered via workflow files + skills.
+  </Note>
 
 ### Hook types
 
-| Hook              | Trigger                       | Purpose                                        |
-| ----------------- | ----------------------------- | ---------------------------------------------- |
-| `SessionStart`    | A new session starts          | Load context, initialize environment           |
-| `UserPromptSubmit`| User submits a prompt         | Nudge the AI toward the current task state     |
-| `PreToolUse`      | Before a tool invocation      | Intercept, modify parameters, inject context   |
-| `PostToolUse`     | After a tool invocation       | Log activity, trigger follow-up actions        |
+| Hook               | Trigger                  | Purpose                                      |
+| ------------------ | ------------------------ | -------------------------------------------- |
+| `SessionStart`     | A new session starts     | Load context, initialize environment         |
+| `UserPromptSubmit` | User submits a prompt    | Nudge the AI toward the current task state   |
+| `PreToolUse`       | Before a tool invocation | Intercept, modify parameters, inject context |
+| `PostToolUse`      | After a tool invocation  | Log activity, trigger follow-up actions      |
 
 Claude Code, Cursor, CodeBuddy, and Droid share a Python-hook layout compatible with CC's event model (`settings.json` or `hooks.json` referencing Python scripts). OpenCode uses JS plugins (factory functions in `.opencode/plugins/`) with the same event semantics. Pi Agent uses `.pi/extensions/trellis/index.ts` instead of Python hook files. The rest of the hook-capable platforms (Codex, Gemini, Qoder, Copilot) run a `session-start.py` only — no `PreToolUse` — and configure it via a platform-native config file.
 
@@ -101,7 +101,9 @@ Trellis does not install a Claude Code `statusLine` by default. New installs do 
 
 **Trigger**: `UserPromptSubmit`.
 
-**What it does**: when a task is active, appends a short breadcrumb to the user message so the AI is reminded of the current task's phase (planning / in_progress / finishing). Parsed from `.trellis/workflow.md`.
+**What it does**: parses `[workflow-state:STATUS]` blocks from `.trellis/workflow.md` and emits the body matching the active task's `status` as a `<workflow-state>` preamble for the turn. Parser-only — the hook does not embed any fallback body text. When the active task's status has no matching block, the hook emits the generic line `Refer to workflow.md for current step.` so the AI re-reads the workflow contract.
+
+To customize per-turn wording, edit the `[workflow-state:STATUS]` block in `.trellis/workflow.md`. No script change required.
 
 #### `inject-subagent-context.py`: spec injection engine
 
