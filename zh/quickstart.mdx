@@ -5,11 +5,11 @@ description: '在你的项目中配置 Trellis'
 
 ## 前置要求
 
-| 要求 | 最低版本 | 用途 |
-|---|---|---|
-| **Node.js** | 18 | `trellis` CLI 运行时 |
-| **Python** | 3.9 | Hook 和自动化脚本（Windows 用 `python`，macOS / Linux 用 `python3`） |
-| **git** | 任意较新版本 | 任务分支、worktree、提交元信息 |
+| 要求        | 最低版本     | 用途                                                                 |
+| ----------- | ------------ | -------------------------------------------------------------------- |
+| **Node.js** | 18           | `trellis` CLI 运行时                                                 |
+| **Python**  | 3.9          | Hook 和自动化脚本（Windows 用 `python`，macOS / Linux 用 `python3`） |
+| **git**     | 任意较新版本 | 任务分支、worktree、提交元信息                                       |
 
 `trellis init` 会检查它将写入生成文件里的同一个 Python 命令：Windows 上是
 `python --version`，macOS / Linux 上是 `python3 --version`。如果该命令低于
@@ -159,8 +159,5 @@ trellis update --migrate     # 执行文件迁移（重命名、删除）
   常用工作流的 Slash 命令。
 </Card>
 
-<Card title="多 Agent 协作" icon="users" href="/zh/guides/multi-agent">
-  并行运行多个 AI Agent。
-</Card>
-
 </CardGroup>
+```
