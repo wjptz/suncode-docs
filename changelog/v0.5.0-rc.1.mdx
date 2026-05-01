@@ -1,0 +1,53 @@
+---
+title: 'v0.5.0-rc.1'
+description: '2026-05-01'
+---
+
+`v0.5.0-rc.1` patches rc.0 with two OpenCode fixes ([#211](https://github.com/mindfold-ai/Trellis/issues/211), [#212](https://github.com/mindfold-ai/Trellis/issues/212)). No new migrations.
+
+## Bug Fixes
+
+### `trellis-research` subagent on OpenCode (#211)
+
+`packages/cli/src/templates/opencode/agents/trellis-research.md`:
+
+| Slice                    | Change                                                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontmatter `permission` | `write: allow`, `edit: allow` (were `deny`)                                                                                                                  |
+| Prompt body              | Replaced with the cursor/claude shape: Core Principle (PERSIST), Workflow Step 1–5 with `mkdir -p {TASK_DIR}/research/`, Scope Limits, File Format, DO/DON'T |
+| Removed                  | "Context Self-Loading" section — `inject-subagent-context.js` already pre-loads spec dir context                                                             |
+
+Description string updated to mention `PERSISTS every finding to the current task's research/ directory`, matching the other platforms.
+
+The existing regression test group `regression: research agent persists findings to task dir` covered six platforms but not OpenCode. rc.1 adds an OpenCode case asserting:
+
+- YAML `permission:` frontmatter contains `write: allow` and `edit: allow`
+- Body contains `{TASK_DIR}/research/` and `PERSIST`
+- Body does not contain a top-level `- Modify any files` rule
+
+### OpenCode SessionStart plugin loading (#212)
+
+OpenCode 1.2.x plugin loader iterates `Object.entries(mod)` and invokes every export as a plugin factory. `.opencode/plugins/session-start.js` declared two named exports (`buildSessionContext`, `hasInjectedTrellisContext`) alongside `export default`, which caused the loader to call the named exports with the factory input shape, throw, abort the load, and never reach `export default`.
+
+Fix: extract the helpers to `packages/cli/src/templates/opencode/lib/session-utils.js`. Each plugin file now has only `export default`.
+
+```text
+.opencode/plugins/session-start.js          → export default
+.opencode/plugins/inject-workflow-state.js  → export default
+.opencode/plugins/inject-subagent-context.js → export default
+.opencode/lib/session-utils.js              → buildSessionContext,
+                                              hasInjectedTrellisContext,
+                                              hasPersistedInjectedContext,
+                                              markContextInjected
+```
+
+A new regression test walks `packages/cli/src/templates/opencode/plugins/*.js` and asserts each file has exactly one top-level export, matching `^export\s+default\s/`.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```
+
+Projects already on 0.5 (beta or rc.0) run `trellis update`. Projects upgrading from 0.4.x run `trellis update --migrate` because the 0.5 migration chain begins at 0.5.0-beta.0. rc.1 adds no new migration entries.

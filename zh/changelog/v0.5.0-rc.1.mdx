@@ -1,0 +1,53 @@
+---
+title: 'v0.5.0-rc.1'
+description: '2026-05-01'
+---
+
+`v0.5.0-rc.1` 是 rc.0 的补丁，包含两个 OpenCode fix（[#211](https://github.com/mindfold-ai/Trellis/issues/211)、[#212](https://github.com/mindfold-ai/Trellis/issues/212)）。无新增 migration。
+
+## Bug Fixes
+
+### OpenCode `trellis-research` subagent (#211)
+
+`packages/cli/src/templates/opencode/agents/trellis-research.md`：
+
+| 部位                     | 改动                                                                                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontmatter `permission` | `write: allow`、`edit: allow`（原为 `deny`）                                                                                                          |
+| 正文                     | 改用 cursor/claude 共用的版本：Core Principle (PERSIST)、Workflow Step 1–5（含 `mkdir -p {TASK_DIR}/research/`）、Scope Limits、File Format、DO/DON'T |
+| 删除                     | "Context Self-Loading" 段——`inject-subagent-context.js` 已预先注入 spec 目录结构                                                                      |
+
+description 字段改为含 `PERSISTS every finding to the current task's research/ directory`，与其他平台一致。
+
+回归测试组 `regression: research agent persists findings to task dir` 原本覆盖 6 个平台，未包含 OpenCode。rc.1 新增 OpenCode 用例，断言：
+
+- YAML `permission:` frontmatter 含 `write: allow` 和 `edit: allow`
+- 正文含 `{TASK_DIR}/research/` 和 `PERSIST`
+- 正文不含顶层 `- Modify any files` 规则
+
+### OpenCode SessionStart 插件加载 (#212)
+
+OpenCode 1.2.x 插件 loader 用 `Object.entries(mod)` 遍历模块，将每个 export 作为 plugin factory 调用。`.opencode/plugins/session-start.js` 在 `export default` 之外还声明了两个 named export（`buildSessionContext`、`hasInjectedTrellisContext`），导致 loader 用 factory 入参调用这两个 named export、抛错、整体加载中止，`export default` 永远到不了。
+
+Fix：把工具函数抽到 `packages/cli/src/templates/opencode/lib/session-utils.js`，每个 plugin 文件只剩 `export default`。
+
+```text
+.opencode/plugins/session-start.js          → export default
+.opencode/plugins/inject-workflow-state.js  → export default
+.opencode/plugins/inject-subagent-context.js → export default
+.opencode/lib/session-utils.js              → buildSessionContext、
+                                              hasInjectedTrellisContext、
+                                              hasPersistedInjectedContext、
+                                              markContextInjected
+```
+
+新增回归测试遍历 `packages/cli/src/templates/opencode/plugins/*.js`，断言每个文件只有 1 行 top-level export 且匹配 `^export\s+default\s/`。
+
+## 升级
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```
+
+已在 0.5（beta 或 rc.0）的项目执行 `trellis update`。从 0.4.x 升级的项目执行 `trellis update --migrate`，0.5 migration 链从 0.5.0-beta.0 起。rc.1 不增加 migration entry。
