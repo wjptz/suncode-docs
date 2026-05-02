@@ -108,6 +108,18 @@ trellis update --migrate     # Run file migrations (renames, deletes)
 
 `trellis update` only touches unmodified files. Your customizations stay intact. A timestamped backup is created automatically before any changes.
 
+## Uninstalling Trellis
+
+To remove every file Trellis wrote into a project — `.trellis/` itself plus the platform-specific files under `.claude/`, `.cursor/`, `.codex/`, `.pi/`, etc. — run:
+
+```bash
+trellis uninstall              # interactive: lists what will be deleted/modified, asks Continue?
+trellis uninstall --dry-run    # only print the plan, change nothing
+trellis uninstall --yes        # skip the prompt (for scripts)
+```
+
+Trellis only removes files it tracks in `.trellis/.template-hashes.json`. Files you added under managed directories (e.g. your own hook scripts under `.claude/hooks/`) are never deleted. Structured config files such as `.claude/settings.json` keep your custom fields; only the trellis-owned hook entries are stripped.
+
 ## Write your first spec
 
 Open `.trellis/spec/backend/index.md` (or `frontend/` if that's your focus) and fill in the template.

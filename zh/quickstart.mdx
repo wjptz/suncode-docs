@@ -108,6 +108,18 @@ trellis update --migrate     # 执行文件迁移（重命名、删除）
 
 `trellis update` 只动没改过的文件，你的自定义不会丢。变更前会自动创建备份。
 
+## 卸载 Trellis
+
+要把 Trellis 在项目里写入的所有内容（`.trellis/` 目录 + 各平台 `.claude/`、`.cursor/`、`.codex/`、`.pi/` 等下的相关文件）一次清干净：
+
+```bash
+trellis uninstall              # 交互模式：列出待删除/待修改清单后询问 Continue?
+trellis uninstall --dry-run    # 只打印清单，不改任何文件
+trellis uninstall --yes        # 脚本场景跳过确认
+```
+
+只有 `.trellis/.template-hashes.json` 跟踪的文件会被删除。你自己加在管理目录下的文件（比如自己写在 `.claude/hooks/` 的脚本）永远不动。`.claude/settings.json` 这类混合配置文件会保留你的自定义字段，只剥离 trellis 写入的 hook 项。
+
 ## 写第一个 Spec
 
 打开 `.trellis/spec/backend/index.md`（如果主要写前端就打开 `frontend/`），填写模板。
