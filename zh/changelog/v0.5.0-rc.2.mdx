@@ -1,0 +1,82 @@
+---
+title: 'v0.5.0-rc.2'
+description: '2026-05-02'
+---
+
+`v0.5.0-rc.2` 新增 `trellis uninstall` 命令（[#221](https://github.com/mindfold-ai/Trellis/issues/221)），并修复 Windows 兼容性（[#218](https://github.com/mindfold-ai/Trellis/issues/218)）和 Copilot 自定义 agent frontmatter（PR [#210](https://github.com/mindfold-ai/Trellis/pull/210)）。无新增 migration。
+
+## Enhancements
+
+### `trellis uninstall` 命令 (#221)
+
+移除所有 trellis 生成的文件和 `.trellis/` 目录。删除清单来自 `.trellis/.template-hashes.json`；未列入 manifest 的文件不予处理。
+
+```bash
+trellis uninstall              # 默认：列清单 + Continue? [Y/n]
+trellis uninstall --yes        # 跳过提示
+trellis uninstall --dry-run    # 列清单后退出，不修改
+```
+
+预检：
+
+| 条件                                            | 行为                                                          |
+| ----------------------------------------------- | ------------------------------------------------------------- |
+| `.trellis/` 目录不存在                          | 友好退出 0，提示 `"Trellis is not installed in this project"` |
+| `.trellis/` 存在但 `.template-hashes.json` 缺失 | 退出 1，提示用户可手动删除 `.trellis/`                        |
+| 两者都存在                                      | 进入扫描 + 列清单流程                                         |
+
+输出分两栏：
+
+- **Will be deleted** —— 纯内容文件（`.py` / `.md` / `.ts`）+ 被 scrubber 处理后变空的结构化文件 + `.trellis/` 目录本身。
+- **Will be modified** —— 结构化配置文件中只剥离 trellis 的字段，保留用户自定义内容。
+
+四个 scrubber 覆盖 11 个结构化配置文件：
+
+| Scrubber                   | 文件                                                                                                                                                |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scrubHooksJson`（嵌套）   | `.claude/settings.json`、`.gemini/settings.json`、`.factory/settings.json`、`.codebuddy/settings.json`、`.qoder/settings.json`、`.codex/hooks.json` |
+| `scrubHooksJson`（扁平）   | `.cursor/hooks.json`、`.github/copilot/hooks.json`                                                                                                  |
+| `scrubOpencodePackageJson` | `.opencode/package.json` —— 移除 `dependencies["@opencode-ai/plugin"]`                                                                              |
+| `scrubPiSettings`          | `.pi/settings.json` —— 从 `extensions` / `skills` / `prompts` 数组剥离 trellis 条目；移除 `enableSkillCommands`                                     |
+| `scrubCodexConfigToml`     | `.codex/config.toml` —— 移除 `project_doc_fallback_filenames` 和 trellis NOTE 注释段                                                                |
+
+Command 匹配规则：以 `command` 字符串最后一个 whitespace token（脚本路径）作为比对依据。子串出现在其他位置（如 `echo` 内容）不触发匹配。
+
+执行顺序：scrubber → `unlink` → `cleanupEmptyDirs`（清理被删空的子目录）→ managed-root 扫描（清理空的 `.claude/` / `.cursor/` 等顶层目录）→ `rm -rf .trellis/`。含用户文件的目录保留。
+
+Manifest 中列出的路径无条件删除，不做 hash 校验。被用户修改过的 trellis 文件同样删除。
+
+新增 23 个测试（15 个 scrubber 单元测试 + 8 个集成测试），全测试套件 830 项通过。
+
+## Bug Fixes
+
+### Windows `python3` → `python` 写入时替换 (#218、PR [#220](https://github.com/mindfold-ai/Trellis/pull/220))
+
+Windows 上无 `python3` 可执行文件。`replacePythonCommandLiterals()` 在 `process.platform === "win32"` 下、init/update 写入时执行：
+
+```ts
+content
+  .split('\n')
+  .map((line) => (line.startsWith('#!') ? line : line.replaceAll('python3', 'python')))
+  .join('\n');
+```
+
+- **写入时替换** —— 模板源文件保持 `python3`，实际生成时进行替换。
+- **Shebang 保留** —— 以 `#!` 开头的行不替换。
+- **幂等** —— `python` 不含 `python3`，多次执行结果一致。
+- **覆盖范围** —— `configurators/{claude,codex,copilot,opencode,pi}.ts`、`configurators/shared.ts`（`writeSkills` / `writeAgents` / `writeSharedHooks` / `resolvePlaceholders` / `buildPullBasedPrelude`）、`configurators/workflow.ts`、`templates/extract.ts`、`configurators/index.ts`（`collectPlatformTemplates`）、`commands/update.ts`（`collectTemplateFiles`）。init 与 update 在 Windows 上输出字节级一致。
+
+`test/configurators/shared.test.ts` 新增 9 个 platform-mocked 单测，覆盖 win32/linux/darwin、shebang 保留、多行内容、幂等、`python3x` 子串边界。
+
+### Copilot 自定义 agent 工具 frontmatter (PR [#210](https://github.com/mindfold-ai/Trellis/pull/210))
+
+`injectPullBasedPreludeMarkdown()` 改用正则切分 frontmatter（`splitMarkdownFrontmatter`），支持 CRLF 行尾。`mapLegacyToolToCopilot()` 将 Claude 风格的工具名（`Read` / `Write` / `Edit` / `Glob` 等）映射为 Copilot 的小写形式（`read` / `edit` 等）。`test/regression.test.ts` 增加回归用例。
+
+## 升级
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```
+
+已在 0.5（beta 或更早 rc）的项目执行 `trellis update`。从 0.4.x 升级的项目执行 `trellis update --migrate`，0.5 migration 链从 0.5.0-beta.0 起。rc.2 不增加 migration entry。
