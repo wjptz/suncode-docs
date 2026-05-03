@@ -121,6 +121,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "changelog/v0.5.0-rc.3",
                       "changelog/v0.5.0-rc.2",
                       "changelog/v0.5.0-rc.1",
                       "changelog/v0.5.0-rc.0",
@@ -400,6 +401,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "zh/changelog/v0.5.0-rc.3",
                       "zh/changelog/v0.5.0-rc.2",
                       "zh/changelog/v0.5.0-rc.1",
                       "zh/changelog/v0.5.0-rc.0",
@@ -601,7 +603,7 @@
     "links": [
       {
         "label": "Changelog",
-        "href": "/changelog/v0.5.0-rc.2"
+        "href": "/changelog/v0.5.0-rc.3"
       },
       {
         "label": "Tech Blog",

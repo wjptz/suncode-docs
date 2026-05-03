@@ -1,0 +1,50 @@
+---
+title: 'v0.5.0-rc.3'
+description: '2026-05-03'
+---
+
+Patches Gemini CLI 0.40.x template compatibility ([#224](https://github.com/mindfold-ai/Trellis/issues/224)). No new migrations.
+
+## Bug Fixes
+
+### Gemini CLI 0.40.x template compat (#224)
+
+Three changes to `trellis init --gemini` output:
+
+| File                                                   | Change                                               |
+| ------------------------------------------------------ | ---------------------------------------------------- |
+| `.gemini/agents/trellis-{check,implement,research}.md` | Drop `tools:` line — sub-agent inherits parent tools |
+| `.gemini/settings.json`                                | Hook event `UserPromptSubmit` → `BeforeAgent`        |
+| Shared skills destination                              | `.gemini/skills/` → `.agents/skills/`                |
+
+Existing Gemini installs: re-run `trellis init --gemini` or delete `.gemini/skills/` manually.
+
+### `inject-workflow-state.py` per-platform `hookEventName`
+
+Branches via `_detect_platform()`:
+
+```python
+hook_event_name = (
+    "BeforeAgent" if _detect_platform(data) == "gemini" else "UserPromptSubmit"
+)
+```
+
+### `needsCodexUpgrade()` false-positive on Gemini installs
+
+Narrowed from any `.agents/skills/` hash entry to:
+
+```ts
+keys.some((k) => k === '.agents/skills/trellis-continue/SKILL.md') ||
+  keys.some((k) => k === '.agents/skills/trellis-finish-work/SKILL.md');
+```
+
+Only Codex writes those two files. The previous broad heuristic auto-installed Codex on `trellis update` for Gemini-only projects.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```
+
+Projects on 0.5 (beta or earlier rc) run `trellis update`. From 0.4.x: `trellis update --migrate`.

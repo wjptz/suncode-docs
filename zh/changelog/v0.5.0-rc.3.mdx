@@ -1,0 +1,50 @@
+---
+title: 'v0.5.0-rc.3'
+description: '2026-05-03'
+---
+
+修复 Gemini CLI 0.40.x 模板兼容问题（[#224](https://github.com/mindfold-ai/Trellis/issues/224)）。无新增 migration。
+
+## Bug Fixes
+
+### Gemini CLI 0.40.x 模板兼容 (#224)
+
+`trellis init --gemini` 输出三处变更：
+
+| 文件                                                   | 变更                                         |
+| ------------------------------------------------------ | -------------------------------------------- |
+| `.gemini/agents/trellis-{check,implement,research}.md` | 删除 `tools:` 行——sub-agent 继承父工具       |
+| `.gemini/settings.json`                                | Hook 事件 `UserPromptSubmit` → `BeforeAgent` |
+| 共享 skills 目标路径                                   | `.gemini/skills/` → `.agents/skills/`        |
+
+已安装 Gemini 的项目：重跑 `trellis init --gemini` 或手动删除 `.gemini/skills/`。
+
+### `inject-workflow-state.py` 按平台分支 `hookEventName`
+
+通过 `_detect_platform()` 分支：
+
+```python
+hook_event_name = (
+    "BeforeAgent" if _detect_platform(data) == "gemini" else "UserPromptSubmit"
+)
+```
+
+### `needsCodexUpgrade()` 在 Gemini 安装上误判
+
+从匹配任意 `.agents/skills/` hash 条目收窄为：
+
+```ts
+keys.some((k) => k === '.agents/skills/trellis-continue/SKILL.md') ||
+  keys.some((k) => k === '.agents/skills/trellis-finish-work/SKILL.md');
+```
+
+只有 Codex 写这两个文件。原先的宽匹配会让纯 Gemini 项目跑 `trellis update` 时被自动装上 Codex。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```
+
+0.5（beta 或更早 rc）项目跑 `trellis update`。从 0.4.x 升级：`trellis update --migrate`。
