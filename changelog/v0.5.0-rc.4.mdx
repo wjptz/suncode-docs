@@ -1,0 +1,39 @@
+---
+title: 'v0.5.0-rc.4'
+description: '2026-05-05'
+---
+
+Adds `TRELLIS_HOOKS` env var to disable Trellis hooks at runtime. No new migrations.
+
+## Enhancements
+
+### `TRELLIS_HOOKS=0` disables all Trellis hooks
+
+Every shipped Trellis hook now early-returns when `TRELLIS_HOOKS=0` (or `TRELLIS_DISABLE_HOOKS=1`) is set on the host CLI process — no `additionalContext` is emitted, the host session starts clean.
+
+| Hook                            | File                                                                                                                         |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Shared per-platform             | `shared-hooks/session-start.py`, `inject-workflow-state.py`, `inject-subagent-context.py`, `inject-shell-session-context.py` |
+| Platform-specific session-start | `codex/hooks/session-start.py`, `copilot/hooks/session-start.py`                                                             |
+| OpenCode plugins                | `opencode/plugins/session-start.js`, `inject-workflow-state.js`, `inject-subagent-context.js`                                |
+
+Usage:
+
+```bash
+# Wrapper for casual chat sessions — no workflow breadcrumb, no spec index
+TRELLIS_HOOKS=0 claude
+
+# Subprocess spawn — pass via env so the gate inherits to host CLI's hook subprocesses
+spawn("codex", args, { env: { ...process.env, TRELLIS_HOOKS: "0" } })
+```
+
+`TRELLIS_HOOKS=0` and `TRELLIS_DISABLE_HOOKS=1` are equivalent. None of Claude Code / Codex / OpenCode / Cursor expose a true mid-session hook toggle, so the env-var gate runs at host startup.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```
+
+Projects on 0.5 (beta or earlier rc) run `trellis update`. From 0.4.x: `trellis update --migrate`.

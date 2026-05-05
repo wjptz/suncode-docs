@@ -1,0 +1,39 @@
+---
+title: 'v0.5.0-rc.4'
+description: '2026-05-05'
+---
+
+新增 `TRELLIS_HOOKS` 环境变量，在运行时禁用 Trellis hooks。无新增 migration。
+
+## Enhancements
+
+### `TRELLIS_HOOKS=0` 禁用所有 Trellis hooks
+
+宿主 CLI 进程设置 `TRELLIS_HOOKS=0`（或 `TRELLIS_DISABLE_HOOKS=1`）时，所有已发布的 Trellis hook 提前返回——不再输出 `additionalContext`，宿主会话保持干净。
+
+| Hook                   | 文件                                                                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 跨平台共享             | `shared-hooks/session-start.py`, `inject-workflow-state.py`, `inject-subagent-context.py`, `inject-shell-session-context.py` |
+| 平台特定 session-start | `codex/hooks/session-start.py`, `copilot/hooks/session-start.py`                                                             |
+| OpenCode 插件          | `opencode/plugins/session-start.js`, `inject-workflow-state.js`, `inject-subagent-context.js`                                |
+
+用法：
+
+```bash
+# Wrapper：普通对话场景，不要 workflow breadcrumb / spec 索引
+TRELLIS_HOOKS=0 claude
+
+# 子进程注入：通过 env 传给宿主 CLI，gate 会被它启动的 hook 子进程继承
+spawn("codex", args, { env: { ...process.env, TRELLIS_HOOKS: "0" } })
+```
+
+`TRELLIS_HOOKS=0` 与 `TRELLIS_DISABLE_HOOKS=1` 等价。Claude Code / Codex / OpenCode / Cursor 均未提供真正的运行中 hook 开关，env-var gate 在宿主启动时生效。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```
+
+0.5（beta 或更早 rc）项目跑 `trellis update`。从 0.4.x 升级：`trellis update --migrate`。
