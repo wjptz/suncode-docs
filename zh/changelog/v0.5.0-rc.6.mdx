@@ -1,0 +1,44 @@
+---
+title: 'v0.5.0-rc.6'
+description: '2026-05-06'
+---
+
+Windows `session-start.py` 归一化 MSYS / Cygwin / WSL 路径。`finish-work` Step 2 分类处理 dirty 路径，不再对范围外路径无条件中止。无新增 migration。
+
+## Enhancements
+
+### `finish-work` Step 2 分类处理 dirty 路径
+
+Step 2 处理 `.trellis/workspace/` 和 `.trellis/tasks/` 之外的 dirty 路径时，按下表分类：
+
+| 分类     | 处理                                |
+| -------- | ----------------------------------- |
+| 当前任务 | 中止；列出文件；返回 Phase 3.4 提交 |
+| 其他窗口 | 报告后继续 Step 3                   |
+| 不确定   | 询问用户后按回答路由                |
+
+判定为"当前任务"的条件：路径出现在任务的 `prd.md` / `implement.jsonl` / `check.jsonl`，或匹配任务声明范围，或当前会话 AI 编辑过。
+
+8 处同步：`packages/cli/src/templates/common/commands/finish-work.md` + 5 个平台副本（`.claude/`、`.cursor/`、`.opencode/`、`.pi/`、`copilot`）+ 2 份 `SKILL.md`（`.agents/`、`codex/skills/`）。
+
+## Bug Fixes
+
+### Windows `session-start.py`：MSYS / Cygwin / WSL 路径
+
+修复 [#226](https://github.com/mindfold-ai/Trellis/issues/226)。Windows 上 `Path(val).resolve()` 解析 Git Bash 传入的 Unix 风格 cwd 出错，hook 抛 `ModuleNotFoundError: common`，context 注入被跳过。
+
+| 输入                | 归一化为       |
+| ------------------- | -------------- |
+| `/d/Users/...`      | `D:\Users\...` |
+| `/cygdrive/d/...`   | `D:\...`       |
+| `/mnt/d/...`        | `D:\...`       |
+| `D:\...` / `D:/...` | 不变           |
+
+6 个 `session-start.py` 副本同步：`.claude/`、`.codex/`、`.cursor/`、`templates/shared-hooks/`、`templates/codex/`、`templates/copilot/`。非 Windows：early return。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```

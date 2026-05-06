@@ -1,0 +1,44 @@
+---
+title: 'v0.5.0-rc.6'
+description: '2026-05-06'
+---
+
+Windows `session-start.py` normalizes MSYS / Cygwin / WSL paths. `finish-work` Step 2 classifies dirty paths instead of aborting on any out-of-scope path. No new migrations.
+
+## Enhancements
+
+### `finish-work` Step 2 classifies dirty paths
+
+For dirty paths outside `.trellis/workspace/` and `.trellis/tasks/`, Step 2 classifies into:
+
+| Class         | Action                                           |
+| ------------- | ------------------------------------------------ |
+| Current task  | Abort; list files; return to Phase 3.4 to commit |
+| Other window  | Report and continue Step 3                       |
+| Indeterminate | Prompt user, route by answer                     |
+
+A path is classified as "current task" if it appears in the task's `prd.md` / `implement.jsonl` / `check.jsonl`, matches the task's declared scope, or was edited by the AI in this session.
+
+Synced to 8 copies: `packages/cli/src/templates/common/commands/finish-work.md` + 5 platform copies (`.claude/`, `.cursor/`, `.opencode/`, `.pi/`, `copilot`) + 2 `SKILL.md` (`.agents/`, `codex/skills/`).
+
+## Bug Fixes
+
+### Windows `session-start.py`: MSYS / Cygwin / WSL paths
+
+Fixes [#226](https://github.com/mindfold-ai/Trellis/issues/226). On Windows, `Path(val).resolve()` misparses Unix-style cwd values from Git Bash; the hook raises `ModuleNotFoundError: common` and context injection is skipped.
+
+| Input               | Normalized to  |
+| ------------------- | -------------- |
+| `/d/Users/...`      | `D:\Users\...` |
+| `/cygdrive/d/...`   | `D:\...`       |
+| `/mnt/d/...`        | `D:\...`       |
+| `D:\...` / `D:/...` | unchanged      |
+
+Synced to 6 `session-start.py` copies: `.claude/`, `.codex/`, `.cursor/`, `templates/shared-hooks/`, `templates/codex/`, `templates/copilot/`. Non-Windows: early return.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```
