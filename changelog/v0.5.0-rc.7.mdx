@@ -31,8 +31,6 @@ to refresh the lockfile to the latest 1.x.
 | `EPERM` / `EACCES`                    | Throw "Python not found" | Warn (yellow) + proceed; assume `python3` on PATH; return "version unknown" |
 | `TRELLIS_SKIP_PYTHON_CHECK=1` env var | (didn't exist)           | Skip the probe entirely; return "version check skipped"                     |
 
-The env var is the final escape hatch when neither the standard probe nor the sandbox-restricted fallback works for a given environment.
-
 ## Upgrade
 
 ```bash

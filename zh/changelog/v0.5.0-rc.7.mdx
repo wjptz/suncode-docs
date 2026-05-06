@@ -31,8 +31,6 @@ bun install   # 或 pnpm/npm 等价命令
 | `EPERM` / `EACCES`                    | 抛 "Python not found" | 黄色警告 + 放行；假定 `python3` 在 PATH；返回 "version unknown" |
 | `TRELLIS_SKIP_PYTHON_CHECK=1` env var | （之前没有）          | 完全跳过探测；返回 "version check skipped"                      |
 
-env var 是终极逃生阀 —— 标准探测和沙箱回退都不行的环境用它。
-
 ## Upgrade
 
 ```bash
