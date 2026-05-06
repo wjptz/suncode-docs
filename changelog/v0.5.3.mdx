@@ -1,0 +1,35 @@
+---
+title: 'v0.5.3'
+description: '2026-05-06'
+---
+
+Fix sub-agent context injection on class-1 platforms when the PreToolUse hook silent-skips (Windows + Claude Code, `--continue` resume, fork distributions, etc.); make `task.py start` non-blocking when session identity is missing. No new migrations.
+
+## Bug Fixes
+
+### Class-1 sub-agents: marker-based context loading fallback
+
+Class-1 platforms (claude / cursor / opencode / kiro / codebuddy / droid) inject sub-agent context — `prd.md` + `implement.jsonl` / `check.jsonl` content — via `PreToolUse` hook. The hook silent-skips on Windows at v2.1.119 (upstream [`anthropics/claude-code#53254`](https://github.com/anthropics/claude-code/issues/53254)); the existing sub-agent definition files trusted the hook to always fire and had no fallback, so sub-agents ran without specs.
+
+Add marker-based dual-channel context loading:
+
+| Layer                    | File                                                                                                                                                 | Change                                                                                                                                                                                                                                |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hook (success path only) | `packages/cli/src/templates/shared-hooks/inject-subagent-context.py`                                                                                 | Prepend `<!-- trellis-hook-injected -->` sentinel to `build_implement_prompt` / `build_check_prompt` / `build_finish_prompt` outputs                                                                                                  |
+| Sub-agent definitions    | `claude/agents/`, `cursor/agents/`, `codebuddy/agents/`, `opencode/agents/`, `droid/droids/`, `kiro/agents/` (`trellis-implement` + `trellis-check`) | Open with a `Trellis Context Loading Protocol` section: marker present → hook injected, proceed directly; marker absent → read `Active task: <path>` line from dispatch prompt, then Read `prd.md` + the relevant jsonl file yourself |
+| Workflow                 | `packages/cli/src/templates/trellis/workflow.md`                                                                                                     | Dispatch protocol scope changed from class-2-only to all platforms (`trellis-research` excluded)                                                                                                                                      |
+
+Class-2 platforms (codex / copilot / gemini / qoder) untouched — they already use `buildPullBasedPrelude`. `trellis-research` is intentionally not marker'd because research is decoupled from active task.
+
+### `task.py start`: non-blocking degraded mode
+
+`task.py start` previously hard-failed (`return 1`) when `resolve_context_key()` returned `None` — i.e. when no SessionStart hook had injected `TRELLIS_CONTEXT_ID`. The error message blamed the AI session, but the real cause is upstream: Windows + Claude Code didn't source `CLAUDE_ENV_FILE` pre-v2.1.111 and still skips PowerShell tool / `--continue` resume paths.
+
+Replace the hard-fail with a yellow-tagged degraded-mode warning, still flip `task.json.status: planning → in_progress`, and return 0 so the AI continues based on conversation context. Happy path (`resolve_context_key()` truthy) is byte-identical to before.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```

@@ -1,0 +1,35 @@
+---
+title: 'v0.5.3'
+description: '2026-05-06'
+---
+
+修 class-1 平台 sub-agent context 注入 hook 不触发时的 fallback（Windows + Claude Code、`--continue` resume、fork 发行版等场景）；`task.py start` 拿不到 session identity 时不再硬退出。无新增 migration。
+
+## Bug Fixes
+
+### Class-1 sub-agent：marker-based context loading fallback
+
+class-1 平台（claude / cursor / opencode / kiro / codebuddy / droid）通过 `PreToolUse` hook 给 sub-agent 注入 `prd.md` + `implement.jsonl` / `check.jsonl` 内容。这条 hook 在 Windows 上至 v2.1.119 仍 silent skip（上游 [`anthropics/claude-code#53254`](https://github.com/anthropics/claude-code/issues/53254)）；之前各平台 sub-agent 定义文件**没有 fallback**，假设 hook 一定触发——结果 sub-agent 收不到 spec 上下文。
+
+加 marker + 条件 fallback 的双通道：
+
+| 层                 | 文件                                                                                                                                                  | 改动                                                                                                                                                                                        |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hook（仅成功路径） | `packages/cli/src/templates/shared-hooks/inject-subagent-context.py`                                                                                  | `build_implement_prompt` / `build_check_prompt` / `build_finish_prompt` 输出顶部加 `<!-- trellis-hook-injected -->` sentinel                                                                |
+| Sub-agent 定义文件 | `claude/agents/`、`cursor/agents/`、`codebuddy/agents/`、`opencode/agents/`、`droid/droids/`、`kiro/agents/`（`trellis-implement` + `trellis-check`） | 顶部加 `Trellis Context Loading Protocol` 节：看到 marker → hook 注入成功，直接干活；没看到 → 从 dispatch prompt 第一行 `Active task: <path>` 拿 task 路径，自己 Read `prd.md` + 对应 jsonl |
+| Workflow           | `packages/cli/src/templates/trellis/workflow.md`                                                                                                      | dispatch 协议范围从仅 class-2 扩到所有平台（`trellis-research` 除外）                                                                                                                       |
+
+class-2 平台（codex / copilot / gemini / qoder）不动——它们已经用 `buildPullBasedPrelude`。`trellis-research` 不加 marker，research 跟 active task 解耦。
+
+### `task.py start`：非阻塞 degraded mode
+
+`task.py start` 之前 `resolve_context_key()` 返回 `None` 时直接 `return 1`（即没有 SessionStart hook 注入 `TRELLIS_CONTEXT_ID` 的场景）。错误信息怪 AI session，但真正原因在上游：Windows + Claude Code 在 v2.1.111 之前不会 source `CLAUDE_ENV_FILE`，PowerShell tool / `--continue` resume 路径至今仍 skip。
+
+改成黄色 degraded-mode 警告 + 仍翻 `task.json.status: planning → in_progress` + return 0，让 AI 基于对话上下文继续。`resolve_context_key()` 真值的成功路径完全不变。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
