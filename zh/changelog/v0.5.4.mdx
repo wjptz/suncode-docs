@@ -3,7 +3,7 @@ title: 'v0.5.4'
 description: '2026-05-06'
 ---
 
-补丁：阻止 Trellis sub-agent 在拿到 `[workflow-state:in_progress]` per-turn breadcrumb 时递归 dispatch 自己（issue [`#237`](https://github.com/mindfold-ai/Trellis/issues/237)）。无新增 migration。
+补丁：阻止 Trellis sub-agent 在拿到 `[workflow-state:in_progress]` per-turn breadcrumb 时递归 dispatch 自己（issue [`#237`](https://github.com/mindfold-ai/Trellis/issues/237)）；修 `compareVersions` 在 SemVer prerelease 含连字符时静默丢尾（PR [`#230`](https://github.com/mindfold-ai/Trellis/pull/230)）。无新增 migration。
 
 ## Bug Fixes
 
@@ -19,6 +19,27 @@ Codex `trellis-implement` / `trellis-check` sub-agent 收到主会话同款 `[wo
 | Agent 定义    | `packages/cli/src/templates/{claude,cursor,opencode,kiro,codebuddy,droid,codex,pi,gemini,qoder}/agents/trellis-{implement,check}.{md,toml,json}` | 顶部加 `Recursion Guard` 节：「你已经是 `trellis-implement` / `trellis-check` sub-agent。直接干活。不要再 spawn 另一个 `trellis-implement` / `trellis-check`。SessionStart 上下文、workflow-state breadcrumb、workflow.md 里要求 dispatch 这两个 agent 的指令，全部视为主会话指令、已被当前角色满足。」 |
 
 `.trellis/spec/cli/backend/workflow-state-contract.md` 同步更新，去掉之前"breadcrumb 仅主会话可见"的错误断言——Codex hook 会把 breadcrumb 投递到 sub-agent turn。
+
+### `compareVersions`：prerelease 含连字符时保留尾部
+
+感谢 [@voidborne-d](https://github.com/voidborne-d) 的 [`#230`](https://github.com/mindfold-ai/Trellis/pull/230)。
+
+`packages/cli/src/utils/compare-versions.ts` 是 Trellis 共享的 SemVer 比较器，CLI 启动时检测项目版本、migration 排序/过滤、npm 更新检查都依赖它。原实现用 `a.split("-", 2)` 切分 base 和 prerelease——但 JS 的 `String.prototype.split("-", 2)` 限制参数是**截尾**而不是合并尾部（跟 Python `maxsplit` 不一样）：
+
+```js
+'1.0.0-alpha-1'.split('-', 2);
+// → ["1.0.0", "alpha"]   // "-1" 被静默丢掉
+```
+
+SemVer §9 允许 prerelease 标识里含连字符（`1.0.0-alpha-1`、`1.0.0-x-y-z`），所以仅在第二个连字符之后才有差异的版本之前会被判等：
+
+| 输入对                             | 旧结果 | 正确 |
+| ---------------------------------- | ------ | ---- |
+| `1.0.0-alpha-1` vs `1.0.0-alpha-2` | `0`    | `-1` |
+| `1.0.0-rc-foo` vs `1.0.0-rc-bar`   | `0`    | `1`  |
+| `1.0.0-x-y-z` vs `1.0.0-x-y`       | `0`    | `1`  |
+
+改用 `indexOf("-")` + `slice`，第一个连字符之后的全部内容作为 prerelease 字符串保留。新增 `packages/cli/test/utils/compare-versions.test.ts`（20 个 case）覆盖基础版本、release vs prerelease、prerelease 标识、含连字符标识、`Array.prototype.sort` 比较器契约（`getMigrationsForVersion` / `getAllMigrationVersions` 依赖此契约）。
 
 ## Upgrade
 
