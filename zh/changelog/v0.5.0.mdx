@@ -1,0 +1,194 @@
+---
+title: 'v0.5.0'
+description: '2026-05-06'
+---
+
+`0.5.0-rc.6` 的稳定版升级，src/ 无新增改动。v0.5.0 相对 0.4.x 是 breaking release —— skill-first 架构、7 个平台升级到 agent-capable、`workflow.md` 作为工作流的单一事实源。
+
+<Tip>
+  **`/start` 不再是必需的入口。** 现在直接自然语言描述需求就可以进入 Trellis 工作流；不放心的话用
+  `/continue 需求是 xxx` 也可以；如果更习惯先手动 start 一下再开始对话，现在 `/trellis:continue`
+  可以直接替代之前的 `/start` 当起手命令。详见下方 "[/continue 命令](#/continue-命令)" 段。
+</Tip>
+
+<Note>
+**Codex 用户 —— beta 阶段反馈在 0.5.0 收尾：**
+
+- **`multi_agent_v2` 默认开启（rc.5）** —— `.codex/config.toml` 模板从注释指引改为直接写入 feature 配置。`min_wait_timeout_ms = 480000`（8 分钟）的 `wait()` 超时下限阻止父线程频繁轮询子 agent 状态。**需要 Codex CLI ≥ v0.128.0** —— 旧版 Codex 会报 `Error loading config.toml: data did not match any variant of untagged enum FeatureToml in features.multi_agent_v2`。
+
+</Note>
+
+<Warning>
+**Codex 上游已知问题（Trellis 侧无法修复）：**
+
+- **Hook context 渲染在终端（[#191](https://github.com/mindfold-ai/Trellis/issues/191)）** —— Codex 每轮对话都会把 SessionStart hook 的 context 打印到终端。目前没有开关能关闭（如果使用 Codex app 可以避免这个问题）。
+- **Sub-agent 启动卡在 MCP server 上** —— sub-agent 初始化可能等某个 MCP 永远不返回。从 Codex `multi_agent_v1` 时期就存在，`v2` 仍未修复。
+
+</Warning>
+
+## 架构
+
+### Skill-first 模板
+
+5 个命令迁移为自动触发 skill：
+
+- `before-dev` / `brainstorm` / `break-loop` / `check` / `update-spec`
+
+命令和 skill 收敛到 `packages/cli/src/templates/common/` 单一源 —— 之前 N 个平台副本之间的内容漂移问题消除。`/start` / `/continue` / `/finish-work` 仍然是用户主动触发的 slash 命令。
+
+### `workflow.md` 作为单一事实源
+
+工作流定义集中在 `.trellis/workflow.md`：
+
+- Phase 1 / 2 / 3 step 内容（AI 从这里读指令）
+- `[workflow-state:STATUS]` 标签块定义每轮面包屑内容
+- Skill routing 表
+- `task.py` 16 个子命令参考表（lifecycle / context / metadata / hierarchy / PR）
+
+Fork 工作流 = 改一个 markdown 文件。不动 Python，不改 hook，不重发包。
+
+### `/continue` 命令
+
+`/continue` 是**单个任务内**的 continue，不是跨任务的。它消除用户对 Trellis 工作流的学习成本。
+
+**之前**：用户自己记住每一步该调哪个 slash 命令 —— `brainstorm` 写 PRD → 讨论 → 让 AI 写 `implement.jsonl` → 调 sub-agent → `check` → `check-cross-layer` → `finish-work` → `record-session`。学习负担在用户身上。
+
+**现在**：
+
+1. 自然语言对话进入 brainstorm 状态、创建 task
+2. 规划完，AI 与你确认 PRD；你觉得 ok 就输入 `continue`
+3. AI 知道下一步是填充 `implement.jsonl` context；填完再确认
+4. 你 `continue` —— AI 知道该调 sub-agent 跑 implement + check
+5. 你 `continue` —— AI 知道该 `update-spec`
+6. 你 `continue` —— AI 知道该 commit + finish-work
+
+**用户只需要自然语言 + 一路 `continue`**，不用学工作流，不用记 slash 命令。
+
+底层机制：`/continue` 读 `task.json.status` + artifact 状态（`prd.md` / `implement.jsonl` curation），通过 `get_context.py --mode phase --step X.X` 加载具体 step 的 how-to。会话被 compact、新 session resume、AI 不确定当前位置时也用它定位。
+
+### Session-scoped 任务状态：多窗口并行不再互相覆盖
+
+active-task 指针从全局 `.trellis/.current-task` 文件改为 per-session `.trellis/.runtime/sessions/<context-key>.json`。
+
+| 旧                                             | 新                                                                       |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| 单一 `.current-task` 全局文件                  | 每个会话独立的 session 文件                                              |
+| 多窗口并行：A 窗口 `task.py start` 覆盖 B 窗口 | 多窗口并行：每个窗口独立 active task，互不影响                           |
+| Bootstrap / joiner 任务写全局 pointer 会污染   | Bootstrap / joiner 不写 pointer，PRD 指示 AI 从有 session 身份的会话启动 |
+
+各平台的 session-key 来源：Claude Code 走 `CLAUDE_ENV_FILE` 写 `TRELLIS_CONTEXT_ID`；Codex 用 `CODEX_SESSION_ID` / `CODEX_THREAD_ID`；Cursor 用 `beforeShellExecution` ticket；OpenCode 走 Bash 前缀；Pi 注入 Bash + nested `pi --mode json` 进程。
+
+### Joiner onboarding：新开发者克隆已有 Trellis 项目
+
+`trellis init` 三分支自动调度（基于 `.trellis/` × `.trellis/.developer` 的存在状态）：
+
+| 项目状态                           | 任务                               |
+| ---------------------------------- | ---------------------------------- |
+| 无 `.trellis/`                     | **Creator bootstrap**（原有路径）  |
+| `.trellis/` 存在 + 无 `.developer` | **Joiner**（新）：`00-join-<slug>` |
+| 都存在                             | no-op                              |
+
+`.developer` 文件 gitignore 掉，每次 checkout 是干净信号。`workspace/<name>/` 不能用做这个判定 —— 它是 commit 进 git 的。
+
+Bootstrap + joiner PRD 都改写成给 AI 看的 instructions（不再是用户视角的 "Welcome, do X"）：包含运行时机制说明（SessionStart hook、`<workflow-state>` 标签、implement/check sub-agent、jsonl manifest）和建议的开场白。同样的内容覆盖范围，更顺的首次会话体验。
+
+## 平台覆盖
+
+### 7 个平台升级到 agent-capable
+
+Qoder、CodeBuddy、Factory Droid、Cursor、Gemini CLI、Kiro、GitHub Copilot —— 从仅命令升级到完整的 sub-agent + hook 集成。
+
+| 层级           | 实现                                                                                                  |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| Sub-agent 定义 | 各平台原生格式（Claude-like Markdown、Kiro JSON、Gemini settings.json、Copilot agent.md ……）          |
+| Hook           | `shared-hooks/` Python 脚本（session-start、inject-subagent-context、statusline）+ 各平台输出 adapter |
+| Claude Code    | 从 1,435 行专有实现迁移到 shared-hooks                                                                |
+
+iFlow 平台移除（CLI 上游不再维护）。
+
+### Sub-agent 上下文注入：class-1 hook vs class-2 pull-based
+
+| 分类    | 平台                                                  | 机制                                                                                    |
+| ------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Class-1 | Claude / Cursor / OpenCode / Kiro / CodeBuddy / Droid | Hook 推送：SessionStart / inject-subagent-context 改写 sub-agent prompt                 |
+| Class-2 | Codex / Copilot / Gemini / Qoder                      | Pull-based prelude：sub-agent 定义里读取 `.current-task` + `prd.md` + `implement.jsonl` |
+
+两条路径都在共享基础设施里，新加平台二选一。
+
+### 每轮工作流面包屑
+
+`inject-workflow-state.py` 在每次用户消息时触发（8 个平台走 `UserPromptSubmit`；OpenCode 走 Bun plugin 的 `chat.message`）。注入 ~200 字节的 `<workflow-state>` 块，按 `task.json.status` 分类（`no_task` / `planning` / `in_progress` / `completed`）。标签内容来自 `workflow.md` 的 `[workflow-state:STATUS]` 标签块。
+
+## SessionStart payload 重构
+
+| 区段           | 之前    | 之后    |
+| -------------- | ------- | ------- |
+| `<workflow>`   | 2.7 KB  | 9.5 KB  |
+| `<guidelines>` | 10.9 KB | 4.6 KB  |
+| 总计           | ~16 KB  | 16.7 KB |
+
+`<workflow>` 增长是把 Phase 1/2/3 step 内容内联进来 —— AI 开场就有 step 级 how-to，不用临时 lazy-load `get_context.py --mode phase --step X.Y`。`<guidelines>` 收紧是把 `spec/<pkg>/<layer>/index.md` 改成 paths-only（sub-agent 通过 jsonl 注入按需取）。总量仍然在 Claude Code 的 ~20 KB 截断阈值下。
+
+## 迁移与升级流程
+
+| 行为                                       | 0.5.0 之前                                                                                 | 0.5.0                                                                                                |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Breaking-change gate                       | 静默半迁移（rename/delete 条目跳过）                                                       | `trellis update` exit 1，要求加 `--migrate`                                                          |
+| breaking 时 `config.yaml` 的 `update.skip` | 半迁移状态（老路径保留、新模板没写入）                                                     | 自动 bypass：`safe-file-delete` / 新文件写入 / 模板更新都不再被 skip 拦                              |
+| Confirm prompt                             | 通用提示 "Modified by you, [k]eep / [r]eplace?"                                            | 展示 `What`（migration 做什么）+ `Why prompted`（per-entry `reason` 字段）+ 每个选项的推荐场景与后果 |
+| Backup 内容                                | 包含 `.claude/worktrees/`、`.cursor/worktrees/`、`.gemini/worktrees/`（可能膨胀到几百 MB） | 排除                                                                                                 |
+
+`--dry-run` 仍然绕过 gate，可以先预览完整迁移计划再决定是否执行。
+
+## 清理
+
+138 条 `safe-file-delete` migration，hash 校验 —— 本地修改过的文件保留并警告，只清理原版 Trellis 写入的文件。
+
+| 移除项                                  | 原因                                                              |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| iFlow 平台                              | CLI 上游不再维护                                                  |
+| Multi-agent 流水线                      | 主流 agent CLI/IDE 都已原生支持 worktree                          |
+| Ralph Loop hook                         | SubagentStop + exit-code-2 跨平台不可移植；`check` 自修复循环已够 |
+| `parallel` 命令                         | 被原生 worktree 取代                                              |
+| `onboard` 命令                          | 使用率低                                                          |
+| `create-command`                        | 使用率低                                                          |
+| `integrate-skill`                       | 使用率低                                                          |
+| `check-cross-layer`                     | 合并进 `check`                                                    |
+| `record-session`                        | 合并进 `finish-work` Step 3                                       |
+| `dispatch` / `debug` / `plan` sub-agent | 被 skill routing 取代                                             |
+
+## RC 阶段稳定性修复（rc.0 → rc.6）
+
+| 版本 | 改动                                                                                                                             |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------- |
+| rc.0 | 非交互式 init 恢复修复；面包屑改为从 `workflow.md` 读取                                                                          |
+| rc.1 | OpenCode `trellis-research` 写权限（#211）；`session-start.js` 适配 1.2.x loader（#212）                                         |
+| rc.2 | `trellis uninstall` 命令（#221）；Windows `python3` → `python` 写时替换（#218）；Copilot custom-agent frontmatter 归一化（#210） |
+| rc.3 | Gemini CLI 0.40.x 模板兼容（#224）                                                                                               |
+| rc.4 | `TRELLIS_HOOKS` 环境变量，运行时禁用 hook                                                                                        |
+| rc.5 | Codex `multi_agent_v2` 默认启用，`wait` 超时下限 8 分钟；AGENTS.md `wait` 工具规则                                               |
+| rc.6 | Windows `session-start.py` 归一化 MSYS/Cygwin/WSL 路径（#226）；`finish-work` Step 2 分类处理 dirty 路径                         |
+
+## 升级
+
+从 0.4.x：
+
+```bash
+trellis update --migrate
+```
+
+`--migrate` 必加 —— `0.5.0-beta.0` 的 breaking-change gate 在遍历 migration 链时触发。138 条 `safe-file-delete` 经 hash 校验，本地改过的文件保留并警告。每条 confirm prompt 的 `reason` 字段会内联说明版本特定的判定原因。
+
+从任意 0.5.0 预发布版本（`beta.X` / `rc.X`）：
+
+```bash
+trellis update
+```
+
+普通 `trellis update`，clean version bump，不需要 flag。
+
+安装：
+
+```bash
+npm install -g @mindfoldhq/trellis
+```

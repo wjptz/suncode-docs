@@ -18,7 +18,7 @@ On platforms without a SessionStart hook (Kilo, Antigravity, Windsurf), still ru
 
 ### Q2: How do I migrate an existing project to Trellis?
 
-1. `npm install -g @mindfoldhq/trellis@rc`
+1. `npm install -g @mindfoldhq/trellis`
 2. `trellis init -u your-name` in the project root (auto-creates a bootstrap task).
 3. Open a Trellis-enabled AI session, or run the platform's start workflow if it has no automatic session injection; the brainstorm skill helps fill initial specs.
 4. Manually supplement core specs based on your conventions.
@@ -36,7 +36,7 @@ All Trellis scripts are Python, cross-platform:
 ```bash
 # 1. Install Node.js 18+ and Python 3.9+
 # 2. Install Trellis
-npm install -g @mindfoldhq/trellis@rc
+npm install -g @mindfoldhq/trellis
 # 3. Initialize
 cd your-project
 trellis init -u your-name
@@ -72,11 +72,11 @@ Every update creates a timestamped backup at `.trellis/.backup-*` first; locally
 Upgrade is two steps for two layers:
 
 ```bash
-npm install -g @mindfoldhq/trellis@rc     # 1. upgrade the CLI itself
+npm install -g @mindfoldhq/trellis     # 1. upgrade the CLI itself
 trellis update --migrate                  # 2. sync the project to the CLI's current version
 ```
 
-`trellis update` only brings the project up to the CLI's version. If the CLI is still 0.4.0, the project can only reach 0.4.0. Bump the global CLI to `@rc` first, then run `trellis update --migrate`.
+`trellis update` only brings the project up to the CLI's version. If the CLI is still 0.4.0, the project can only reach 0.4.0. Bump the global CLI to `@latest` first, then run `trellis update --migrate`.
 
 ## Core concepts
 

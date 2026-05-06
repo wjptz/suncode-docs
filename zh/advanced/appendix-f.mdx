@@ -18,7 +18,7 @@ title: '附录 F：FAQ'
 
 ### Q2: 怎么把已有项目迁到 Trellis？
 
-1. `npm install -g @mindfoldhq/trellis@rc`
+1. `npm install -g @mindfoldhq/trellis`
 2. 项目根下 `trellis init -u your-name`（自动建 bootstrap 任务）。
 3. 打开已配置 Trellis 的 AI 会话；如果平台没有自动会话注入，就运行对应 start workflow。brainstorm skill 会帮你填初始 spec。
 4. 按团队约定手动补充核心 spec。
@@ -36,7 +36,7 @@ title: '附录 F：FAQ'
 ```bash
 # 1. 装 Node.js 18+ 和 Python 3.9+
 # 2. 装 Trellis
-npm install -g @mindfoldhq/trellis@rc
+npm install -g @mindfoldhq/trellis
 # 3. 初始化
 cd your-project
 trellis init -u your-name
@@ -72,11 +72,11 @@ trellis update                       # 验证：应该提示 "Already up to date
 升级是两步，对应两个层面：
 
 ```bash
-npm install -g @mindfoldhq/trellis@rc     # 1. 升级 CLI 本身
+npm install -g @mindfoldhq/trellis     # 1. 升级 CLI 本身
 trellis update --migrate                  # 2. 把项目同步到 CLI 当前版本
 ```
 
-`trellis update` 只把项目升到当前 CLI 版本。如果 CLI 自己还是 0.4.0，那项目最多也只能到 0.4.0。先把全局 CLI 升到 `@rc`，再跑 `trellis update --migrate`。
+`trellis update` 只把项目升到当前 CLI 版本。如果 CLI 自己还是 0.4.0，那项目最多也只能到 0.4.0。先把全局 CLI 升到 `@latest`，再跑 `trellis update --migrate`。
 
 ## 核心概念
 

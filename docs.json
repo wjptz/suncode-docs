@@ -2,10 +2,6 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "js": "/terminal-demo.js",
-  "banner": {
-    "content": "📦 Reading **RC** docs (0.5.0-rc.0). Check your install: `trellis --version`. Install latest: `npm install -g @mindfoldhq/trellis@rc`. Switch to **Release** in the version dropdown ↘",
-    "dismissible": true
-  },
   "exclude": [
     ".trellis/**",
     "AGENTS.md",
@@ -28,7 +24,7 @@
         "language": "en",
         "versions": [
           {
-            "version": "RC",
+            "version": "Release",
             "default": true,
             "groups": [
               {
@@ -121,6 +117,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "changelog/v0.5.0",
                       "changelog/v0.5.0-rc.7",
                       "changelog/v0.5.0-rc.6",
                       "changelog/v0.5.0-rc.5",
@@ -197,114 +194,6 @@
                 ]
               }
             ]
-          },
-          {
-            "version": "Release",
-            "groups": [
-              {
-                "group": "Start Here",
-                "pages": [
-                  "release/index",
-                  "release/start/install-and-first-task",
-                  "release/start/everyday-use"
-                ]
-              },
-              {
-                "group": "Advanced",
-                "pages": [
-                  "release/advanced/architecture",
-                  "release/advanced/custom-commands",
-                  "release/advanced/custom-agents",
-                  "release/advanced/custom-hooks",
-                  "release/advanced/custom-skills",
-                  "release/advanced/multi-platform",
-                  "release/advanced/appendix-a",
-                  "release/advanced/appendix-b",
-                  "release/advanced/appendix-c",
-                  "release/advanced/appendix-d",
-                  "release/advanced/appendix-e",
-                  "release/advanced/appendix-f",
-                  "release/advanced/resources"
-                ]
-              },
-              {
-                "group": "Use Cases",
-                "pages": ["use-cases/open-typeless"]
-              },
-              {
-                "group": "Resource Marketplace",
-                "pages": [
-                  {
-                    "group": "Skills",
-                    "expanded": false,
-                    "pages": [
-                      "skills-market/index",
-                      "skills-market/trellis-meta",
-                      "skills-market/cc-codex-spec-bootstrap",
-                      "skills-market/frontend-fullchain-optimization"
-                    ]
-                  },
-                  {
-                    "group": "Spec Templates",
-                    "expanded": false,
-                    "pages": [
-                      "templates/specs-index",
-                      "templates/specs-electron",
-                      "templates/specs-nextjs",
-                      "templates/specs-cf-workers"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Community",
-                "pages": [
-                  {
-                    "group": "Showcase",
-                    "expanded": false,
-                    "pages": [
-                      "showcase/index",
-                      "showcase/terminal-demo",
-                      "showcase/open-typeless",
-                      "showcase/trellis-cursor"
-                    ]
-                  },
-                  {
-                    "group": "Contributing",
-                    "expanded": false,
-                    "pages": ["contribute/docs", "contribute/trellis"]
-                  },
-                  {
-                    "group": "Tech Blog",
-                    "expanded": false,
-                    "pages": [
-                      "blog/index",
-                      "blog/use-k8s-to-know-trellis",
-                      "blog/ai-collaborative-dev-system"
-                    ]
-                  },
-                  {
-                    "group": "Changelog",
-                    "expanded": false,
-                    "pages": [
-                      "release/changelog/v0.4.0",
-                      "release/changelog/v0.3.10",
-                      "release/changelog/v0.3.9",
-                      "release/changelog/v0.3.8",
-                      "release/changelog/v0.3.7",
-                      "release/changelog/v0.3.6",
-                      "release/changelog/v0.3.5",
-                      "release/changelog/v0.3.4",
-                      "release/changelog/v0.3.3",
-                      "release/changelog/v0.3.2",
-                      "release/changelog/v0.3.1",
-                      "release/changelog/v0.2.0",
-                      "release/changelog/v0.1.9"
-                    ]
-                  }
-                ]
-              }
-            ]
           }
         ]
       },
@@ -312,7 +201,7 @@
         "language": "zh",
         "versions": [
           {
-            "version": "RC",
+            "version": "Release",
             "default": true,
             "groups": [
               {
@@ -405,6 +294,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "zh/changelog/v0.5.0",
                       "zh/changelog/v0.5.0-rc.7",
                       "zh/changelog/v0.5.0-rc.6",
                       "zh/changelog/v0.5.0-rc.5",
@@ -481,114 +371,6 @@
                 ]
               }
             ]
-          },
-          {
-            "version": "Release",
-            "groups": [
-              {
-                "group": "开始使用",
-                "pages": [
-                  "zh/release/index",
-                  "zh/release/start/install-and-first-task",
-                  "zh/release/start/everyday-use"
-                ]
-              },
-              {
-                "group": "进阶",
-                "pages": [
-                  "zh/release/advanced/architecture",
-                  "zh/release/advanced/custom-commands",
-                  "zh/release/advanced/custom-agents",
-                  "zh/release/advanced/custom-hooks",
-                  "zh/release/advanced/custom-skills",
-                  "zh/release/advanced/multi-platform",
-                  "zh/release/advanced/appendix-a",
-                  "zh/release/advanced/appendix-b",
-                  "zh/release/advanced/appendix-c",
-                  "zh/release/advanced/appendix-d",
-                  "zh/release/advanced/appendix-e",
-                  "zh/release/advanced/appendix-f",
-                  "zh/release/advanced/resources"
-                ]
-              },
-              {
-                "group": "Use Cases",
-                "pages": ["zh/use-cases/open-typeless"]
-              },
-              {
-                "group": "Resource Marketplace",
-                "pages": [
-                  {
-                    "group": "Skills",
-                    "expanded": false,
-                    "pages": [
-                      "zh/skills-market/index",
-                      "zh/skills-market/trellis-meta",
-                      "zh/skills-market/cc-codex-spec-bootstrap",
-                      "zh/skills-market/frontend-fullchain-optimization"
-                    ]
-                  },
-                  {
-                    "group": "Spec Templates",
-                    "expanded": false,
-                    "pages": [
-                      "zh/templates/specs-index",
-                      "zh/templates/specs-electron",
-                      "zh/templates/specs-nextjs",
-                      "zh/templates/specs-cf-workers"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "社区",
-                "pages": [
-                  {
-                    "group": "项目展示",
-                    "expanded": false,
-                    "pages": [
-                      "zh/showcase/index",
-                      "zh/showcase/terminal-demo",
-                      "zh/showcase/open-typeless",
-                      "zh/showcase/trellis-cursor"
-                    ]
-                  },
-                  {
-                    "group": "贡献指南",
-                    "expanded": false,
-                    "pages": ["zh/contribute/docs", "zh/contribute/trellis"]
-                  },
-                  {
-                    "group": "Tech Blog",
-                    "expanded": false,
-                    "pages": [
-                      "zh/blog/index",
-                      "zh/blog/use-k8s-to-know-trellis",
-                      "zh/blog/ai-collaborative-dev-system"
-                    ]
-                  },
-                  {
-                    "group": "Changelog",
-                    "expanded": false,
-                    "pages": [
-                      "zh/release/changelog/v0.4.0",
-                      "zh/release/changelog/v0.3.10",
-                      "zh/release/changelog/v0.3.9",
-                      "zh/release/changelog/v0.3.8",
-                      "zh/release/changelog/v0.3.7",
-                      "zh/release/changelog/v0.3.6",
-                      "zh/release/changelog/v0.3.5",
-                      "zh/release/changelog/v0.3.4",
-                      "zh/release/changelog/v0.3.3",
-                      "zh/release/changelog/v0.3.2",
-                      "zh/release/changelog/v0.3.1",
-                      "zh/release/changelog/v0.2.0",
-                      "zh/release/changelog/v0.1.9"
-                    ]
-                  }
-                ]
-              }
-            ]
           }
         ]
       }
@@ -611,7 +393,7 @@
     "links": [
       {
         "label": "Changelog",
-        "href": "/changelog/v0.5.0-rc.7"
+        "href": "/changelog/v0.5.0"
       },
       {
         "label": "Tech Blog",
