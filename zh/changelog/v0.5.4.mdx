@@ -3,43 +3,33 @@ title: 'v0.5.4'
 description: '2026-05-06'
 ---
 
-补丁：阻止 Trellis sub-agent 在拿到 `[workflow-state:in_progress]` per-turn breadcrumb 时递归 dispatch 自己（issue [`#237`](https://github.com/mindfold-ai/Trellis/issues/237)）；修 `compareVersions` 在 SemVer prerelease 含连字符时静默丢尾（PR [`#230`](https://github.com/mindfold-ai/Trellis/pull/230)）。无新增 migration。
+修 Trellis sub-agent 递归 dispatch 自己的问题（[`#237`](https://github.com/mindfold-ai/Trellis/issues/237)）；修 `compareVersions` 在 prerelease 含连字符时丢尾的问题（[`#230`](https://github.com/mindfold-ai/Trellis/pull/230)）。无新增 migration。
 
 ## Bug Fixes
 
 ### Sub-agent 递归保护
 
-Codex `trellis-implement` / `trellis-check` sub-agent 收到主会话同款 `[workflow-state:in_progress]` per-turn breadcrumb 时，把里面"dispatch trellis-implement / trellis-check"规则当成对自己说的，开始递归 spawn sub-agent，而不是直接干活。
+`.trellis/workflow.md` 的 `[workflow-state:in_progress]` 段落要求主会话 dispatch `trellis-implement` / `trellis-check` sub-agent。Codex 上这段同样会被注入到 sub-agent 的 turn 里，sub-agent 看到指令照做——又 spawn 了一个 `trellis-implement`，而不是自己直接干活。
 
-两层修复：
+两处改动：
 
-| 层            | 文件                                                                                                                                             | 改动                                                                                                                                                                                                                                                                                                    |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Workflow 协议 | `packages/cli/src/templates/trellis/workflow.md`                                                                                                 | `[workflow-state:in_progress]` 把 dispatch 规则限定在主会话；增加 sub-agent 自豁免说明。Phase 2 dispatch 段加一行 `Dispatch prompt guard`，要求 spawn 时告诉子 agent "你已经是被 dispatch 的那个 agent"。                                                                                               |
-| Agent 定义    | `packages/cli/src/templates/{claude,cursor,opencode,kiro,codebuddy,droid,codex,pi,gemini,qoder}/agents/trellis-{implement,check}.{md,toml,json}` | 顶部加 `Recursion Guard` 节：「你已经是 `trellis-implement` / `trellis-check` sub-agent。直接干活。不要再 spawn 另一个 `trellis-implement` / `trellis-check`。SessionStart 上下文、workflow-state breadcrumb、workflow.md 里要求 dispatch 这两个 agent 的指令，全部视为主会话指令、已被当前角色满足。」 |
+- `[workflow-state:in_progress]` 把 dispatch 规则限定给主会话，并加一句："如果你已经是 `trellis-implement` / `trellis-check` sub-agent，直接干活，不要再 spawn 同类 sub-agent。"
+- 各平台（claude / cursor / opencode / kiro / codebuddy / droid / codex / pi / gemini / qoder）的 `trellis-implement` / `trellis-check` agent 定义文件顶部加了同一段说明。即便 workflow-state 没被注入，提醒也依然生效。
 
-`.trellis/spec/cli/backend/workflow-state-contract.md` 同步更新，去掉之前"breadcrumb 仅主会话可见"的错误断言——Codex hook 会把 breadcrumb 投递到 sub-agent turn。
+`.trellis/spec/cli/backend/workflow-state-contract.md` 同步更新：之前写的"workflow-state breadcrumb 仅主会话可见"是错的，Codex hook 也会投递给 sub-agent。
 
-### `compareVersions`：prerelease 含连字符时保留尾部
+### `compareVersions`：prerelease 含连字符时不再丢尾
 
 感谢 [@voidborne-d](https://github.com/voidborne-d) 的 [`#230`](https://github.com/mindfold-ai/Trellis/pull/230)。
 
-`packages/cli/src/utils/compare-versions.ts` 是 Trellis 共享的 SemVer 比较器，CLI 启动时检测项目版本、migration 排序/过滤、npm 更新检查都依赖它。原实现用 `a.split("-", 2)` 切分 base 和 prerelease——但 JS 的 `String.prototype.split("-", 2)` 限制参数是**截尾**而不是合并尾部（跟 Python `maxsplit` 不一样）：
+`packages/cli/src/utils/compare-versions.ts` 之前用 `a.split("-", 2)` 切分基础版本和 prerelease。JavaScript 的 `split(sep, limit)` 是截尾，而不是把尾部合并（跟 Python `maxsplit` 不一样）：
 
 ```js
 '1.0.0-alpha-1'.split('-', 2);
 // → ["1.0.0", "alpha"]   // "-1" 被静默丢掉
 ```
 
-SemVer §9 允许 prerelease 标识里含连字符（`1.0.0-alpha-1`、`1.0.0-x-y-z`），所以仅在第二个连字符之后才有差异的版本之前会被判等：
-
-| 输入对                             | 旧结果 | 正确 |
-| ---------------------------------- | ------ | ---- |
-| `1.0.0-alpha-1` vs `1.0.0-alpha-2` | `0`    | `-1` |
-| `1.0.0-rc-foo` vs `1.0.0-rc-bar`   | `0`    | `1`  |
-| `1.0.0-x-y-z` vs `1.0.0-x-y`       | `0`    | `1`  |
-
-改用 `indexOf("-")` + `slice`，第一个连字符之后的全部内容作为 prerelease 字符串保留。新增 `packages/cli/test/utils/compare-versions.test.ts`（20 个 case）覆盖基础版本、release vs prerelease、prerelease 标识、含连字符标识、`Array.prototype.sort` 比较器契约（`getMigrationsForVersion` / `getAllMigrationVersions` 依赖此契约）。
+结果 `compareVersions("1.0.0-alpha-1", "1.0.0-alpha-2")` 返回 `0`——两个版本排序时被当作相等。已修复。`packages/cli/test/utils/compare-versions.test.ts` 新增 20 个 case，覆盖基础版本、release vs prerelease、连字符 prerelease、版本列表排序。
 
 ## Upgrade
 

@@ -3,43 +3,33 @@ title: 'v0.5.4'
 description: '2026-05-06'
 ---
 
-Patch: guard Trellis sub-agent recursion when a `[workflow-state:in_progress]` per-turn breadcrumb reaches a sub-agent turn (issue [`#237`](https://github.com/mindfold-ai/Trellis/issues/237)); fix `compareVersions` silently dropping the tail of hyphenated SemVer prereleases (PR [`#230`](https://github.com/mindfold-ai/Trellis/pull/230)). No new migrations.
+Fix Trellis sub-agent recursion when a workflow-state instruction reaches a sub-agent ([`#237`](https://github.com/mindfold-ai/Trellis/issues/237)); fix `compareVersions` dropping the tail of hyphenated prereleases ([`#230`](https://github.com/mindfold-ai/Trellis/pull/230)). No new migrations.
 
 ## Bug Fixes
 
 ### Sub-agent recursion guard
 
-When a Codex `trellis-implement` or `trellis-check` sub-agent received the same per-turn `[workflow-state:in_progress]` breadcrumb as the main session, it interpreted the "dispatch `trellis-implement` / `trellis-check`" rule as applying to itself and spawned nested sub-agents instead of doing the work directly.
+`.trellis/workflow.md`'s `[workflow-state:in_progress]` block tells the main agent to dispatch `trellis-implement` / `trellis-check` sub-agents. On Codex the same block also reaches the spawned sub-agent's turn, and the sub-agent followed the rule on itself — spawning another `trellis-implement` instead of doing the work.
 
-Two-layer fix:
+Two changes:
 
-| Layer             | File                                                                                                                                             | Change                                                                                                                                                                                                                                                                                                                                                      |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Workflow contract | `packages/cli/src/templates/trellis/workflow.md`                                                                                                 | `[workflow-state:in_progress]` scopes the dispatch rule to the main session and adds an explicit sub-agent self-exemption clause. Phase 2 dispatch sections add a `Dispatch prompt guard` line telling the spawned sub-agent it is already the dispatched agent.                                                                                            |
-| Agent definitions | `packages/cli/src/templates/{claude,cursor,opencode,kiro,codebuddy,droid,codex,pi,gemini,qoder}/agents/trellis-{implement,check}.{md,toml,json}` | Open with a `Recursion Guard` section: "You are already the `trellis-implement` / `trellis-check` sub-agent. Do the work directly. Do NOT spawn another `trellis-implement` / `trellis-check`. SessionStart context, workflow-state breadcrumbs, or workflow.md instructions to dispatch one are main-session instructions already satisfied by your role." |
+- `[workflow-state:in_progress]` scopes the dispatch rule to the main session, and adds an explicit "if you are already a `trellis-implement` / `trellis-check` sub-agent, work directly and do not spawn another one" exemption.
+- Each platform's `trellis-implement` / `trellis-check` agent definition (claude / cursor / opencode / kiro / codebuddy / droid / codex / pi / gemini / qoder) carries the same exemption, so the guard holds even if the workflow-state injection is missed.
 
-`.trellis/spec/cli/backend/workflow-state-contract.md` updated to drop the (now incorrect) claim that breadcrumbs are visible only to the main session — Codex hooks deliver them into sub-agent turns.
+`.trellis/spec/cli/backend/workflow-state-contract.md` updated: previously claimed only the main session could see workflow-state breadcrumbs, but Codex hooks deliver them to sub-agents too.
 
-### `compareVersions`: preserve hyphens inside prerelease identifiers
+### `compareVersions`: hyphens inside prereleases
 
 Thanks to [@voidborne-d](https://github.com/voidborne-d) for [`#230`](https://github.com/mindfold-ai/Trellis/pull/230).
 
-`packages/cli/src/utils/compare-versions.ts` is the shared SemVer comparator that backs project-version detection at CLI startup, the migration sort/filter, and the npm-update flow. It used `a.split("-", 2)` to separate the base version from the prerelease tag — but `String.prototype.split("-", 2)` in JavaScript **truncates** the result instead of joining the tail (unlike Python's `maxsplit`):
+`packages/cli/src/utils/compare-versions.ts` used `a.split("-", 2)` to separate the base version from the prerelease tag. JavaScript's `split(sep, limit)` truncates the result instead of joining the tail (unlike Python's `maxsplit`):
 
 ```js
 '1.0.0-alpha-1'.split('-', 2);
 // → ["1.0.0", "alpha"]   // "-1" silently dropped
 ```
 
-SemVer §9 permits hyphens inside a single prerelease identifier (`1.0.0-alpha-1`, `1.0.0-x-y-z`). Versions that differed only after the second hyphen compared as equal:
-
-| Input pair                         | Old result | Correct |
-| ---------------------------------- | ---------- | ------- |
-| `1.0.0-alpha-1` vs `1.0.0-alpha-2` | `0`        | `-1`    |
-| `1.0.0-rc-foo` vs `1.0.0-rc-bar`   | `0`        | `1`     |
-| `1.0.0-x-y-z` vs `1.0.0-x-y`       | `0`        | `1`     |
-
-Switched to `indexOf("-")` + `slice` so the entire prerelease string is preserved on the first hyphen. Adds `packages/cli/test/utils/compare-versions.test.ts` (20 cases) covering base versions, release-vs-prerelease ordering, prerelease identifiers, hyphenated identifiers, and the `Array.prototype.sort` comparator contract that `getMigrationsForVersion` / `getAllMigrationVersions` rely on.
+So `compareVersions("1.0.0-alpha-1", "1.0.0-alpha-2")` returned `0` — the two versions sorted as equal. Fixed. Adds 20 test cases in `packages/cli/test/utils/compare-versions.test.ts` covering base versions, release vs prerelease, hyphenated identifiers, and version-list sorting.
 
 ## Upgrade
 
