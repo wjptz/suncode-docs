@@ -1,0 +1,28 @@
+---
+title: 'v0.5.4'
+description: '2026-05-06'
+---
+
+Patch: guard Trellis sub-agent recursion when a `[workflow-state:in_progress]` per-turn breadcrumb reaches a sub-agent turn (issue [`#237`](https://github.com/mindfold-ai/Trellis/issues/237)). No new migrations.
+
+## Bug Fixes
+
+### Sub-agent recursion guard
+
+When a Codex `trellis-implement` or `trellis-check` sub-agent received the same per-turn `[workflow-state:in_progress]` breadcrumb as the main session, it interpreted the "dispatch `trellis-implement` / `trellis-check`" rule as applying to itself and spawned nested sub-agents instead of doing the work directly.
+
+Two-layer fix:
+
+| Layer             | File                                                                                                                                             | Change                                                                                                                                                                                                                                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workflow contract | `packages/cli/src/templates/trellis/workflow.md`                                                                                                 | `[workflow-state:in_progress]` scopes the dispatch rule to the main session and adds an explicit sub-agent self-exemption clause. Phase 2 dispatch sections add a `Dispatch prompt guard` line telling the spawned sub-agent it is already the dispatched agent.                                                                                            |
+| Agent definitions | `packages/cli/src/templates/{claude,cursor,opencode,kiro,codebuddy,droid,codex,pi,gemini,qoder}/agents/trellis-{implement,check}.{md,toml,json}` | Open with a `Recursion Guard` section: "You are already the `trellis-implement` / `trellis-check` sub-agent. Do the work directly. Do NOT spawn another `trellis-implement` / `trellis-check`. SessionStart context, workflow-state breadcrumbs, or workflow.md instructions to dispatch one are main-session instructions already satisfied by your role." |
+
+`.trellis/spec/cli/backend/workflow-state-contract.md` updated to drop the (now incorrect) claim that breadcrumbs are visible only to the main session — Codex hooks deliver them into sub-agent turns.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
