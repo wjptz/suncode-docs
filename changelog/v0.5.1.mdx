@@ -1,0 +1,41 @@
+---
+title: 'v0.5.1'
+description: '2026-05-06'
+---
+
+Fix Codex sub-agent recursion via `SessionStart` injection ([#234](https://github.com/mindfold-ai/Trellis/issues/234)) and Cursor agent `description` field rendering. No new migrations.
+
+## Bug Fixes
+
+### Codex `multi_agent_v2`: fix `SessionStart` hook dispatch wording misleading sub-agents
+
+`packages/cli/src/templates/codex/hooks/session-start.py` injects a "main session should dispatch `trellis-implement`" line when a task is in READY state. Under `multi_agent_v2` Codex runs `SessionStart` for every spawned session, so the same line reached the freshly spawned `trellis-implement` sub-agent. The sub-agent followed it and dispatched another `trellis-implement`. The outer sub-agent stayed `running` while the inner one completed; `wait_agent` in the main session timed out.
+
+Codex `SessionStart` stdin has no agent-identity field ([`openai/codex#16226`](https://github.com/openai/codex/issues/16226)), so the hook cannot filter sub-agent sessions directly. Patched at the prompt layer:
+
+| File                                                        | Change                                                                                                                                |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `codex/agents/trellis-implement.toml`, `trellis-check.toml` | `developer_instructions` opens with "do not dispatch `trellis-implement` / `trellis-check`"                                           |
+| `codex/hooks/session-start.py`                              | "if you are a sub-agent reading this, ignore the dispatch instruction" appended to the READY-state block and the `<guidelines>` block |
+
+### `shared-hooks/session-start.py`: same as above
+
+The same dispatch wording lives in `packages/cli/src/templates/shared-hooks/session-start.py` (Claude Code / Cursor / Gemini CLI / Qoder / CodeBuddy / Factory Droid / Kiro). The recursion has not been reported on these platforms but the trigger condition is identical to Codex. Same fix as Codex.
+
+### Cursor: agent frontmatter `description` switched to single-line literal
+
+`packages/cli/src/templates/cursor/agents/trellis-{research,implement,check}.md` previously used a YAML block scalar:
+
+```yaml
+description: |
+  Trellis research agent. Use this exact agent ...
+```
+
+Cursor's agent parser only reads single-line `description: ...` and drops block-scalar values, leaving the UI Description field blank. Switched to single-line literals; body text unchanged.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
