@@ -1,0 +1,33 @@
+---
+title: 'v0.5.5'
+description: '2026-05-07'
+---
+
+Structural fix for the Codex sub-agent recursion bug ([`#240`](https://github.com/mindfold-ai/Trellis/issues/240), [`#242`](https://github.com/mindfold-ai/Trellis/issues/242)). Removes the Codex `SessionStart` hook entirely and replaces the bootstrap path with a `trellis-start` skill invoked from `UserPromptSubmit`. No new migrations.
+
+## Bug Fixes
+
+### Codex sub-agent recursion (turtles all the way down)
+
+Codex fires `SessionStart` for every spawned sub-agent session and exposes no `agent_id` / `agent_type` field on the hook input ([`openai/codex#16226`](https://github.com/openai/codex/issues/16226)). So the dispatch directive in `packages/cli/src/templates/codex/hooks/session-start.py` was being injected into every sub-agent's session start payload as well — the sub-agent read "Next required action: dispatch `trellis-implement`", thought it was the main session, and spawned its own `trellis-implement`. Then that sub-agent did the same thing.
+
+The 0.5.4 patch ([`#237`](https://github.com/mindfold-ai/Trellis/issues/237)) added a `Sub-agent self-exemption:` clause to the same prompt block, but it sat inline alongside the dispatch directive. LLMs kept picking the command-style instruction over the conditional exemption.
+
+Structural fix:
+
+- Removed the `SessionStart` entry from `packages/cli/src/templates/codex/hooks.json` — the heavy session-start payload no longer reaches any session, sub-agent or main.
+- `packages/cli/src/templates/shared-hooks/inject-workflow-state.py` (`UserPromptSubmit`) now injects a `<trellis-bootstrap>` block on `no_task` turns that tells the AI to invoke `$trellis-start` once. The notice carries an explicit sub-agent exemption (sub-agents read the existing `<sub-agent-notice>` first and skip everything below it).
+- `packages/cli/src/configurators/codex.ts` writes `.agents/skills/trellis-start/SKILL.md` for Codex. The skill content is the existing `common/commands/start.md` template wrapped with skill frontmatter.
+
+Sub-agent sessions now only see the `<sub-agent-notice>` from the per-turn breadcrumb. No command-style "must dispatch" text exists anywhere in the new injection, so the recursion vector is gone at source.
+
+Other agent-capable platforms (Claude Code, Cursor, OpenCode, Kiro, etc.) keep their working `SessionStart` hooks unchanged — only Codex is affected by `openai/codex#16226`.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+Codex users will get a new `.agents/skills/trellis-start/SKILL.md` file and a `hooks.json` without `SessionStart` wiring. No flag needed.
