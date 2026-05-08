@@ -95,10 +95,11 @@ Describe what you want to do; AI follows `workflow.md` through Plan → Execute 
 
 <Note>
   Agent-capable platforms (Claude Code, OpenCode, Cursor, Gemini, Qoder, CodeBuddy, Copilot, Droid,
-  Pi Agent, and Codex with `codex_hooks` enabled) load workflow and context automatically via a
-  SessionStart hook or extension on every new session — they don't ship `/trellis:start` as a slash
-  command, so open a fresh session if you need a reload. Only agent-less platforms (Kilo,
-  Antigravity, Windsurf) ship `/trellis:start` (or `/start.md`) as an explicit entry point.
+  Pi Agent, and Codex with `features.hooks` enabled — legacy: `codex_hooks`) load workflow and
+  context automatically via a SessionStart hook or extension on every new session — they don't ship
+  `/trellis:start` as a slash command, so open a fresh session if you need a reload. Only agent-less
+  platforms (Kilo, Antigravity, Windsurf) ship `/trellis:start` (or `/start.md`) as an explicit
+  entry point.
 </Note>
 
 ### Directory Structure
@@ -204,8 +205,10 @@ If you suspect auto-injection didn't run or you want to reload context, just ope
 
 ```toml
 [features]
-codex_hooks = true
+hooks = true   # Codex 0.129+. Older versions: `codex_hooks = true`.
 ```
+
+Codex 0.129+ also gates each installed hook behind a one-time `/hooks` TUI review. Open Codex once, run `/hooks`, and approve the Trellis `UserPromptSubmit` hook. Until you do, the workflow breadcrumb won't auto-inject; Trellis includes a fallback that directs the AI to read the `trellis-start` skill manually so the workflow still runs, just less smoothly.
 
 After that it's the same as the Class-1 tab: open the terminal, the SessionStart hook injects Trellis context automatically, describe your task directly.
 

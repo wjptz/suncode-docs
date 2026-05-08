@@ -194,13 +194,13 @@ JSONL 行是普通文件引用：
 
 Trellis 使用每个平台可用的原语。真实项目以本地生成文件为准，默认能力分组如下：
 
-| 分组                          | 平台                                                | 启动上下文                                               | 每轮 workflow-state        | 实现 / 验收上下文                               |
-| ----------------------------- | --------------------------------------------------- | -------------------------------------------------------- | -------------------------- | ----------------------------------------------- |
-| Hook + hook-push sub-agent    | Claude Code、Cursor、OpenCode、CodeBuddy、Droid、Pi | Hook、plugin 或 extension                                | Hook 或等价机制            | Sub-agent 启动前由 hook 注入 PRD + JSONL 文件。 |
-| Hook + pull-prelude sub-agent | Gemini CLI、Qoder、Copilot                          | Hook                                                     | Hook                       | Sub-agent 启动后自己读取 PRD + JSONL。          |
-| Codex                         | Codex                                               | `AGENTS.md`；开启 `codex_hooks = true` 后有 SessionStart | 开启后有可选 hook          | Pull-based prelude 加共享 `.agents/skills/`。   |
-| Kiro                          | Kiro                                                | `.kiro/` 下的 skill 文件                                 | 默认没有 Trellis 每轮 hook | Agent / skill 文件读取 Trellis 上下文。         |
-| 主会话 workflow / skill       | Kilo、Antigravity、Windsurf                         | 手动 workflow 或 skill 入口                              | 默认没有 Trellis 每轮 hook | 主会话内联读取 spec 和 task 文件。              |
+| 分组                          | 平台                                                | 启动上下文                                                                                 | 每轮 workflow-state                            | 实现 / 验收上下文                               |
+| ----------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------- | ----------------------------------------------- |
+| Hook + hook-push sub-agent    | Claude Code、Cursor、OpenCode、CodeBuddy、Droid、Pi | Hook、plugin 或 extension                                                                  | Hook 或等价机制                                | Sub-agent 启动前由 hook 注入 PRD + JSONL 文件。 |
+| Hook + pull-prelude sub-agent | Gemini CLI、Qoder、Copilot                          | Hook                                                                                       | Hook                                           | Sub-agent 启动后自己读取 PRD + JSONL。          |
+| Codex                         | Codex                                               | `AGENTS.md`；开启 `features.hooks = true` 后有 SessionStart（旧版用 `codex_hooks = true`） | 开启后有可选 hook（0.129+ 还需 `/hooks` 审批） | Pull-based prelude 加共享 `.agents/skills/`。   |
+| Kiro                          | Kiro                                                | `.kiro/` 下的 skill 文件                                                                   | 默认没有 Trellis 每轮 hook                     | Agent / skill 文件读取 Trellis 上下文。         |
+| 主会话 workflow / skill       | Kilo、Antigravity、Windsurf                         | 手动 workflow 或 skill 入口                                                                | 默认没有 Trellis 每轮 hook                     | 主会话内联读取 spec 和 task 文件。              |
 
 如果本地 settings 文件跟这张表不一致，以本地 settings 为准。Trellis 项目本来就允许定制。
 

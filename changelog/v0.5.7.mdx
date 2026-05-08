@@ -3,7 +3,57 @@ title: 'v0.5.7'
 description: '2026-05-08'
 ---
 
-Sub-agent collab tools are structurally disabled instead of prompt-layer-warned ([`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up, [`#241`](https://github.com/mindfold-ai/Trellis/issues/241)). `trellis update` now writes the `trellis-start` skill that `trellis init` had been writing alone. Kiro CLI agent JSON migrated to Kiro's current schema ([`#247`](https://github.com/mindfold-ai/Trellis/issues/247)). Windows `trellis init` walks a Python command fallback chain ([`#236`](https://github.com/mindfold-ai/Trellis/issues/236)). No new migrations.
+After upgrading Codex 0.129, run `/hooks` once and approve the Trellis hook (without approval the workflow won't auto-inject; details below). New `codex.dispatch_mode` knob lets Codex projects opt into `inline` dispatch. Fixes: Codex sub-agent `wait_agent` deadlock ([`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up, [`#241`](https://github.com/mindfold-ai/Trellis/issues/241)), Kiro CLI rejecting agent JSON ([`#247`](https://github.com/mindfold-ai/Trellis/issues/247)), Windows `trellis init` not finding `python3` / `py -3` ([`#236`](https://github.com/mindfold-ai/Trellis/issues/236)). No new migrations.
+
+## Codex 0.129 compatibility
+
+### `/hooks` review gate (TUI approval required)
+
+Codex 0.129 gates each installed hook behind a one-time `/hooks` TUI review. Until the user runs `/hooks` in Codex and approves the Trellis `UserPromptSubmit` hook, the workflow breadcrumb won't auto-inject; every fresh Codex session looks like Trellis isn't wired in.
+
+The existing `<trellis-bootstrap>` fallback in `inject-workflow-state.py` covers this gap: when the hook hasn't fired, the fallback directs the AI to read the `trellis-start` skill manually so the workflow still runs (just less smoothly). No Trellis code change needed for the fallback. **Run `/hooks` once after upgrading Codex** to restore full auto-injection.
+
+### `[features].codex_hooks` to `[features].hooks` rename
+
+Codex 0.129 renamed `[features].codex_hooks` to `[features].hooks` (legacy name still works but emits a deprecation warning on startup). Trellis docs (`advanced/multi-platform`, `advanced/architecture`, `advanced/custom-hooks`, `advanced/appendix-f`, `start/install-and-first-task`, `start/everyday-use`, `start/how-it-works`), the `spec/cli/backend/platform-integration.md` rules, and the `trellis init` runtime warning now point at the new name. The uninstall scrubber recognizes both `hooks = true` and the legacy `codex_hooks = true` so older projects still clean up cleanly.
+
+## Enhancements
+
+### Codex configurable dispatch mode
+
+New project-level knob in `.trellis/config.yaml`:
+
+```yaml
+codex:
+  dispatch_mode: sub-agent # default; set to "inline" to skip sub-agent dispatch
+```
+
+When `inline` is set, the `<workflow-state>` breadcrumb tells the main Codex agent to load `trellis-before-dev`, edit code directly, then load `trellis-check` for lint / typecheck / tests, instead of dispatching `trellis-implement` / `trellis-check` sub-agents.
+
+Mechanism: `inject-workflow-state.py` reads the config and resolves `[workflow-state:in_progress-inline]` / `[workflow-state:planning-inline]` blocks from `workflow.md` when codex+inline is set; `get_context.py --platform codex` swaps to the `[Kilo, Antigravity, Windsurf]` block content. Per-turn override phrases (`do it inline` / `你直接改` / etc.) keep working in both modes.
+
+Codex-only. Class-1 platforms (Claude Code, Cursor, OpenCode, Kiro, CodeBuddy, Droid) and the other class-2 platforms keep the dispatch default. `.codex/agents/*.toml` files are still written; sub-agent infrastructure stays installed.
+
+### `configSectionsAdded` manifest field
+
+New optional manifest field declares which top-level keys this release introduces in `.trellis/config.yaml`:
+
+```jsonc
+{
+  "version": "0.5.7",
+  "configSectionsAdded": [
+    {
+      "file": ".trellis/config.yaml",
+      "sentinel": "codex:",
+      "sectionHeading": "Codex (sub-agent dispatch behavior)",
+    },
+  ],
+}
+```
+
+`trellis update` walks each manifest's `configSectionsAdded`, and for each entry whose `sentinel` is missing from the user's target file, appends the section content extracted from the bundled template. Append-only, idempotent (sentinel check on rerun). User customizations stay untouched. Future config additions declare a new entry in their own manifest, no `update.ts` change needed per addition.
+
+Replaces the prior "modified-file confirm prompt" path, where users who customized `config.yaml` had to either accept template (losing edits) or skip (missing the new section).
 
 ## Bug Fixes
 
@@ -90,4 +140,4 @@ npm install -g @mindfoldhq/trellis@latest
 trellis update
 ```
 
-No `--migrate` needed. Codex users get hardened sub-agent role files; Windows users no longer need to install 0.4.0 first.
+No `--migrate` needed. Codex users get hardened sub-agent role files; Windows users no longer need to install 0.4.0 first. Codex 0.129+ users should run `/hooks` once after upgrading Codex to approve the Trellis `UserPromptSubmit` hook.

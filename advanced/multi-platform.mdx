@@ -45,7 +45,7 @@ After that, on platforms with a SessionStart hook or extension, opening a new se
 | Auto-trigger skills                  |     ✅      |   ✅   |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
 | Explicit `/trellis:*` commands       |     ✅      |   ✅   |    ✅    |   —   |  —   |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
 
-Legend: ✅ Trellis wires the config and the platform executes it · ⚡ Partial (Codex requires `codex_hooks = true` opt-in; Kiro's Agent Hooks are user-configured, not auto-executed) · ❌ the platform does not expose this event · — the platform has no command primitive; start / finish-work / continue are delivered as skills instead. Qoder uses `/trellis-{name}` (hyphen, not colon) via its native Custom Commands for `finish-work` / `continue`; `start` is covered by its SessionStart hook. Pi Agent uses an extension rather than Python hook files, but the behavior is the same: session context, Bash environment propagation, and sub-agent context injection are handled before the agent acts.
+Legend: ✅ Trellis wires the config and the platform executes it · ⚡ Partial (Codex requires `features.hooks = true` opt-in plus a one-time `/hooks` review on 0.129+; Kiro's Agent Hooks are user-configured, not auto-executed) · ❌ the platform does not expose this event · — the platform has no command primitive; start / finish-work / continue are delivered as skills instead. Qoder uses `/trellis-{name}` (hyphen, not colon) via its native Custom Commands for `finish-work` / `continue`; `start` is covered by its SessionStart hook. Pi Agent uses an extension rather than Python hook files, but the behavior is the same: session context, Bash environment propagation, and sub-agent context injection are handled before the agent acts.
 
 `.kilocode/`, `.agent/` (Antigravity), and `.windsurf/` are workflow-and-skill only: no sub-agents and no hooks. `.agents/skills/` is written by every platform as a cross-platform shared layer.
 
@@ -109,14 +109,14 @@ Layout:
 - `.codex/hooks/session-start.py` + `.codex/hooks.json`: SessionStart hook (experimental)
 
 <Note>
-Codex hooks are experimental. Enable by adding to `~/.codex/config.toml`:
+Codex hooks require enabling. Add to `~/.codex/config.toml`:
 
 ```toml
 [features]
-codex_hooks = true
+hooks = true   # Codex 0.129+. Older versions: `codex_hooks = true`.
 ```
 
-Without this, Codex falls back to prelude-only (reads `AGENTS.md` every session): same content, just no event-driven injection.
+Codex 0.129+ also gates each installed hook behind a one-time `/hooks` TUI review — run `/hooks` once in Codex and approve the Trellis `UserPromptSubmit` hook, otherwise the workflow breadcrumb won't auto-inject. Without these, Codex falls back to prelude-only (reads `AGENTS.md` every session): same content, just no event-driven injection.
 
 </Note>
 

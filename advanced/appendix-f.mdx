@@ -10,7 +10,7 @@ title: 'Appendix F: FAQ'
 
 Type `/trellis:continue` instead — it gets you the same thing.
 
-The context the old `/trellis:start` injected explicitly — current developer identity, git branch and status, active task, list of active tasks, `workflow.md` phase rules, spec index, recent journal summaries — is now injected automatically by the SessionStart hook on every new session (Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `codex_hooks = true`). Just describe your task.
+The context the old `/trellis:start` injected explicitly — current developer identity, git branch and status, active task, list of active tasks, `workflow.md` phase rules, spec index, recent journal summaries — is now injected automatically by the SessionStart hook on every new session (Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `features.hooks = true` and one-time `/hooks` approval; Codex < 0.129 uses the legacy `codex_hooks = true`). Just describe your task.
 
 When you want to re-orient the AI mid-session or push it to the next workflow step, type `/trellis:continue`. It reads task state + `workflow.md` and decides what to do.
 

@@ -10,7 +10,7 @@ title: '附录 F：FAQ'
 
 直接输入 `/trellis:continue` 就能拿到原来 `/trellis:start` 的效果。
 
-之前 `/trellis:start` 显式注入的那套上下文 —— 当前开发者身份、git 分支和状态、active task、active tasks 列表、`workflow.md` 的 phase 规则、spec 索引、最近 journal 摘要 —— 0.5.0 之后由 SessionStart hook 在新会话开启时自动注入（Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi Agent，以及开了 `codex_hooks = true` 的 Codex）。开新会话直接描述任务即可。
+之前 `/trellis:start` 显式注入的那套上下文 —— 当前开发者身份、git 分支和状态、active task、active tasks 列表、`workflow.md` 的 phase 规则、spec 索引、最近 journal 摘要 —— 0.5.0 之后由 SessionStart hook 在新会话开启时自动注入（Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi Agent，以及开了 `features.hooks = true` 并跑过 `/hooks` 审批的 Codex；Codex < 0.129 用旧的 `codex_hooks = true`）。开新会话直接描述任务即可。
 
 需要让 AI 重新定位当前流程位置 / 推进下一步时，输入 `/trellis:continue`，AI 会读 task 状态 + `workflow.md` 决定下一步。
 

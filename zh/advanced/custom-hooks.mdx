@@ -6,7 +6,7 @@ title: '定制 Hook'
 
 <Note>Hook 支持按平台和按事件分档——具体见下面的事件矩阵。</Note>
 
-- **`SessionStart` hook / extension** 在 Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi Agent 上原生启用（以及开了 `~/.codex/config.toml` 里 `codex_hooks = true` 的 Codex）。Kiro 的 Agent Hook 是用户自己配的，Trellis 不原生带任何。
+- **`SessionStart` hook / extension** 在 Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi Agent 上原生启用（以及开了 `~/.codex/config.toml` 里 `features.hooks = true` 的 Codex；Codex < 0.129 用旧的 `codex_hooks = true`）。Kiro 的 Agent Hook 是用户自己配的，Trellis 不原生带任何。
 - **`PreToolUse` / extension sub-agent 上下文注入** 在 Claude Code、Cursor、OpenCode、CodeBuddy、Droid、Pi Agent 原生启用。其他 hook 可用平台通过 sub-agent 内部的 pull-based prelude 替代。
 - **`UserPromptSubmit` / 工作流状态提示** 平台范围与 `SessionStart` 相同。
 - **Kilo、Antigravity、Windsurf** 完全没有 hook 原语，行为通过 workflow 文件 + skill 交付。

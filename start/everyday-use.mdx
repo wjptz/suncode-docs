@@ -28,7 +28,7 @@ The user-facing command set is deliberately small: `finish-work` and `continue` 
 
 #### 1.2.1 `/trellis:start`: Start a session
 
-Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable or extension-capable platforms (Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `codex_hooks = true`), the SessionStart hook or extension does this automatically, so `start` is usually not installed as a user-facing command.
+Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable or extension-capable platforms (Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `features.hooks = true` — legacy: `codex_hooks = true`), the SessionStart hook or extension does this automatically, so `start` is usually not installed as a user-facing command.
 
 What it does:
 

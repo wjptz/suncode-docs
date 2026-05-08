@@ -26,12 +26,12 @@ Typical startup context includes:
 
 The delivery path depends on the platform:
 
-| Platform group                                                                  | Startup behavior                                                                                                        |
-| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi | A SessionStart hook, plugin, or extension injects startup context automatically.                                        |
-| Codex                                                                           | `AGENTS.md` loads automatically. The SessionStart hook also runs when `codex_hooks = true` is enabled.                  |
-| Kiro                                                                            | Trellis content is delivered through `.kiro/` skills and agent files; there is no Trellis SessionStart hook by default. |
-| Kilo, Antigravity, Windsurf                                                     | The main session reads a workflow or skill entry explicitly.                                                            |
+| Platform group                                                                  | Startup behavior                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi | A SessionStart hook, plugin, or extension injects startup context automatically.                                                                                                                               |
+| Codex                                                                           | `AGENTS.md` loads automatically. The SessionStart hook also runs when `features.hooks = true` is enabled (legacy: `codex_hooks = true`); Codex 0.129+ also requires running `/hooks` once to approve the hook. |
+| Kiro                                                                            | Trellis content is delivered through `.kiro/` skills and agent files; there is no Trellis SessionStart hook by default.                                                                                        |
+| Kilo, Antigravity, Windsurf                                                     | The main session reads a workflow or skill entry explicitly.                                                                                                                                                   |
 
 After this step, the AI should know whether there is an active task, where the workflow lives, and where project specs are indexed. It still has to open the detailed files when the current task needs them.
 

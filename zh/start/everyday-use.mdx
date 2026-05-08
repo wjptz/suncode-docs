@@ -25,7 +25,7 @@ title: '命令、任务与规范'
 
 #### 1.2.1 `/trellis:start`：开启会话
 
-如果平台不自动注入上下文就手动跑一下。Hook 或 extension 可用的平台（Claude Code、Cursor、OpenCode、Gemini、Qoder、CodeBuddy、Copilot、Droid、Pi Agent，以及开了 `codex_hooks = true` 的 Codex）有 SessionStart hook 或 extension，打开终端就自动执行，所以通常不会安装用户可见的 `start` 命令。
+如果平台不自动注入上下文就手动跑一下。Hook 或 extension 可用的平台（Claude Code、Cursor、OpenCode、Gemini、Qoder、CodeBuddy、Copilot、Droid、Pi Agent，以及开了 `features.hooks = true` 的 Codex —— 旧版用 `codex_hooks = true`）有 SessionStart hook 或 extension，打开终端就自动执行，所以通常不会安装用户可见的 `start` 命令。
 
 行为：
 

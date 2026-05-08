@@ -92,8 +92,8 @@ trellis init -u your-name --pi
 
 <Note>
   Agent-capable 平台（Claude Code、OpenCode、Cursor、Gemini、Qoder、CodeBuddy、Copilot、Droid、Pi
-  Agent，以及开了 `codex_hooks` 的 Codex）每次开会话都会通过 SessionStart hook 或 extension 自动加载
-  workflow 和上下文，这些平台本身不发 `/trellis:start` 这个 slash
+  Agent，以及开了 `features.hooks` 的 Codex —— 旧版用 `codex_hooks`）每次开会话都会通过 SessionStart
+  hook 或 extension 自动加载 workflow 和上下文，这些平台本身不发 `/trellis:start` 这个 slash
   命令；想重新加载就新开一个会话。只有 Kilo / Antigravity / Windsurf 这类 agent-less 平台会发
   `/trellis:start`（或 `/start.md`）作为显式入口。
 </Note>
@@ -201,8 +201,10 @@ your-project/
 
 ```toml
 [features]
-codex_hooks = true
+hooks = true   # Codex 0.129+。旧版用 `codex_hooks = true`。
 ```
+
+Codex 0.129+ 还要在 TUI 里跑一次 `/hooks` 命令，审批 Trellis 安装的 `UserPromptSubmit` hook，否则 hook 不会激活、workflow 指引不会自动注入。Trellis 内置 fallback 会在 hook 没触发时让 AI 手动读 `trellis-start` skill，所以工作流仍然能跑，只是体验下降。
 
 之后和 Class-1 平台一样：打开终端，SessionStart hook 自动注入 Trellis 上下文，直接描述任务即可。
 

@@ -3,7 +3,57 @@ title: 'v0.5.7'
 description: '2026-05-08'
 ---
 
-子代理 collab 工具从 prompt-layer 警告升级为协议层硬禁用（[`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up、[`#241`](https://github.com/mindfold-ai/Trellis/issues/241)）。`trellis update` 现在会写 `trellis-start` skill，之前只有 `trellis init` 写。Kiro CLI agent JSON 迁移到 Kiro 当前 schema（[`#247`](https://github.com/mindfold-ai/Trellis/issues/247)）。Windows `trellis init` 改成 Python 命令 fallback chain（[`#236`](https://github.com/mindfold-ai/Trellis/issues/236)）。无新增 migration。
+升级 Codex 0.129 后跑一次 `/hooks` 审批 Trellis hook（不审批工作流不会自动注入，详见下方）。新增 `codex.dispatch_mode`，Codex 项目可切换到 `inline` 派发模式。修复：Codex 子代理 `wait_agent` 卡死（[`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up、[`#241`](https://github.com/mindfold-ai/Trellis/issues/241)）、Kiro CLI 拒认 agent JSON（[`#247`](https://github.com/mindfold-ai/Trellis/issues/247)）、Windows `trellis init` 找不到 `python3` / `py -3`（[`#236`](https://github.com/mindfold-ai/Trellis/issues/236)）。无新增 migration。
+
+## Codex 0.129 兼容性
+
+### `/hooks` 审批门（必须在 TUI 里授权）
+
+Codex 0.129 把每个安装的 hook 卡在一次性 `/hooks` TUI 审批之后。用户没在 Codex 里跑 `/hooks` 审批 Trellis 的 `UserPromptSubmit` hook 之前，workflow 指引不会自动注入；升级后每个新 Codex 会话看起来都像 Trellis 没接进去。
+
+`inject-workflow-state.py` 里现成的 `<trellis-bootstrap>` fallback 会兜底：hook 没触发时让 AI 手动读 `trellis-start` skill，工作流照常跑（只是体验降一点）。Trellis 这边不需要任何代码变更。**升级 Codex 后跑一次 `/hooks`** 完成审批，自动注入恢复。
+
+### `[features].codex_hooks` 改名为 `[features].hooks`
+
+Codex 0.129 把 `[features].codex_hooks` 改名为 `[features].hooks`（旧名仍能用，但启动会打 deprecation 警告）。Trellis 文档（`advanced/multi-platform`、`advanced/architecture`、`advanced/custom-hooks`、`advanced/appendix-f`、`start/install-and-first-task`、`start/everyday-use`、`start/how-it-works`）、`spec/cli/backend/platform-integration.md` 规则、`trellis init` 运行时警告都更新到新名字。卸载脚本同时识别新的 `hooks = true` 和旧的 `codex_hooks = true`，老项目卸载不受影响。
+
+## Enhancements
+
+### Codex 可配置派发模式
+
+`.trellis/config.yaml` 新增项目级开关：
+
+```yaml
+codex:
+  dispatch_mode: sub-agent # 默认；设为 "inline" 跳过子代理派发
+```
+
+设为 `inline` 后，`<workflow-state>` 指引会让主 Codex 代理加载 `trellis-before-dev` 直接改代码，然后加载 `trellis-check` 跑 lint / typecheck / tests，而不再派发 `trellis-implement` / `trellis-check` 子代理。
+
+机制：`inject-workflow-state.py` 读 config，命中 codex+inline 时从 `workflow.md` 拿 `[workflow-state:in_progress-inline]` / `[workflow-state:planning-inline]` 块；`get_context.py --platform codex` 在 inline 模式下切到 `[Kilo, Antigravity, Windsurf]` 块内容。每轮的 inline override 短语（`do it inline` / `你直接改` 等）在两种模式下都继续生效。
+
+仅限 Codex。Class-1 平台（Claude Code、Cursor、OpenCode、Kiro、CodeBuddy、Droid）和其他 class-2 平台保持派发默认。`.codex/agents/*.toml` 文件依旧写入，子代理基础设施保留。
+
+### `configSectionsAdded` manifest 字段
+
+新增可选 manifest 字段，声明本版本在 `.trellis/config.yaml` 引入的顶层 key：
+
+```jsonc
+{
+  "version": "0.5.7",
+  "configSectionsAdded": [
+    {
+      "file": ".trellis/config.yaml",
+      "sentinel": "codex:",
+      "sectionHeading": "Codex (sub-agent dispatch behavior)",
+    },
+  ],
+}
+```
+
+`trellis update` 遍历每个 manifest 的 `configSectionsAdded`，对每条缺 `sentinel` 的目标文件，从打包模板提取对应 section 追加到末尾。仅追加，幂等（重跑时 sentinel 已在），用户自定义内容不动。未来新增 config section 在对应版本 manifest 加条目即可，`update.ts` 无需改动。
+
+替换原来的"已修改文件覆盖提示"路径，之前用户自定义过 `config.yaml` 后只能在"接受模板（丢自定义）"和"跳过（拿不到新 section）"中二选一。
 
 ## Bug Fixes
 
@@ -90,4 +140,4 @@ npm install -g @mindfoldhq/trellis@latest
 trellis update
 ```
 
-不需要 `--migrate`。Codex 用户拿到加固后的 sub-agent role 文件；Windows 用户不再需要先装 0.4.0。
+不需要 `--migrate`。Codex 用户拿到加固后的 sub-agent role 文件；Windows 用户不再需要先装 0.4.0。Codex 0.129+ 用户在 Codex 升级后跑一次 `/hooks` 审批 Trellis 的 `UserPromptSubmit` hook。

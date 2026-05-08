@@ -26,12 +26,12 @@ AI 会话启动时，Trellis 会先给主会话加载足够的项目上下文，
 
 不同平台的交付方式不同：
 
-| 平台组                                                                          | 启动行为                                                                                     |
-| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi | SessionStart hook、plugin 或 extension 自动注入启动上下文。                                  |
-| Codex                                                                           | `AGENTS.md` 自动加载；开启 `codex_hooks = true` 后 SessionStart hook 也会运行。              |
-| Kiro                                                                            | Trellis 内容通过 `.kiro/` 下的 skill 和 agent 文件交付；默认没有 Trellis SessionStart hook。 |
-| Kilo、Antigravity、Windsurf                                                     | 主会话显式读取 workflow 或 skill 入口。                                                      |
+| 平台组                                                                          | 启动行为                                                                                                                                                   |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi | SessionStart hook、plugin 或 extension 自动注入启动上下文。                                                                                                |
+| Codex                                                                           | `AGENTS.md` 自动加载；开启 `features.hooks = true` 后 SessionStart hook 也会运行（旧版用 `codex_hooks = true`）；Codex 0.129+ 还需先跑一次 `/hooks` 审批。 |
+| Kiro                                                                            | Trellis 内容通过 `.kiro/` 下的 skill 和 agent 文件交付；默认没有 Trellis SessionStart hook。                                                               |
+| Kilo、Antigravity、Windsurf                                                     | 主会话显式读取 workflow 或 skill 入口。                                                                                                                    |
 
 这一步结束后，AI 应该知道当前有没有 active task、workflow 在哪里、项目 spec 索引在哪里。真正执行任务时，它仍然需要打开具体文件。
 
