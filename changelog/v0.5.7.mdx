@@ -26,7 +26,7 @@ multi_agent = false
 enabled = false
 ```
 
-With both flags off, Codex doesn't register `spawn_agent` / `wait_agent` / `list_agents` / `close_agent` for the sub-agent. The model literally cannot call them. No API to wishfully ignore.
+With both flags off, Codex doesn't register `spawn_agent` / `wait_agent` / `list_agents` / `close_agent` for the sub-agent.
 
 Adds `[issue-241-followup]` regression test asserting all three template toml files retain the disable block.
 
@@ -37,8 +37,6 @@ Adds `[issue-241-followup]` regression test asserting all three template toml fi
 Result: users upgrading from 0.4.x to 0.5.5/0.5.6 ran the safe-file-delete migration that removed `.agents/skills/start/`, then `trellis update` regenerated all the other `trellis-*` skill dirs from `collectTemplates`, but never wrote `trellis-start`. Their AI then reported "no `.agents/skills/trellis-start/SKILL.md`" on every turn that hit `<trellis-bootstrap>`.
 
 Fix: extracted `resolveCodexTrellisStartSkill()` helper in `configurators/shared.ts`, called from both `configureCodex()` (init) and `collectPlatformTemplates.codex` (update) so the file shows up on both paths. No drift possible. Both call the same helper.
-
-Existing 0.5.5/0.5.6 users who hit this should see the skill appear after running `trellis update` on 0.5.7+.
 
 ### Kiro CLI agent JSON schema migration ([`#247`](https://github.com/mindfold-ai/Trellis/issues/247))
 
@@ -59,13 +57,13 @@ Kiro CLI rejected Trellis's pre-0.5.7 agent JSON with "invalid agent". Three sch
    }
    ```
 
-   `on` field removed (event is now the key). `timeout_ms` removed (not in Kiro's documented hook entry schema; was being ignored).
+   `on` field removed (event is now the key). `timeout_ms` removed.
 
 Affects all three `trellis-{implement,check,research}.json` files. Adds `[issue-247]` regression test asserting the new schema (prompt present, instructions absent, allowedTools array, hooks object not array).
 
 ### Windows Python detection fallback chain ([`#236`](https://github.com/mindfold-ai/Trellis/issues/236))
 
-`trellis init` previously tried only `python --version` on Windows. If the host had Python under `python3` (Microsoft Store) or `py -3` (python.org launcher) but not `python`, init failed outright with `Python command "python" not found`. The workaround was to install 0.4.0 first (less strict probe) then upgrade.
+`trellis init` previously tried only `python --version` on Windows. If the host had Python under `python3` (Microsoft Store) or `py -3` (python.org launcher) but not `python`, init failed outright with `Python command "python" not found`.
 
 `resolveSupportedPython()` in `packages/cli/src/commands/init.ts` now walks a per-platform candidate list:
 

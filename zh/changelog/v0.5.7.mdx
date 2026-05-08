@@ -26,7 +26,7 @@ multi_agent = false
 enabled = false
 ```
 
-两个 flag 都关之后，Codex 不会给子代理注册 `spawn_agent` / `wait_agent` / `list_agents` / `close_agent`。模型**根本看不到这些工具**，谈不上"忽略 prompt"，根本没有 API 可调。
+两个 flag 都关之后，Codex 不会给子代理注册 `spawn_agent` / `wait_agent` / `list_agents` / `close_agent`。
 
 新增 `[issue-241-followup]` 回归测试断言三个 template toml 都保留 disable block。
 
@@ -37,8 +37,6 @@ enabled = false
 后果：用户从 0.4.x 升到 0.5.5/0.5.6 时，先跑 safe-file-delete migration 删掉 `.agents/skills/start/`，然后 `trellis update` 通过 `collectTemplates` 重写其他 `trellis-*` skill 目录，但**永远不写 `trellis-start`**。AI 之后每次命中 `<trellis-bootstrap>` 都报 "no `.agents/skills/trellis-start/SKILL.md`"。
 
 修法：抽 `resolveCodexTrellisStartSkill()` helper 进 `configurators/shared.ts`，在 `configureCodex()`（init）和 `collectPlatformTemplates.codex`（update）两处都调，让文件在两条路径都生成。两边共享同一个 helper，drift 不可能再发生。
-
-之前在 0.5.5/0.5.6 踩到这个的用户，0.5.7+ 跑 `trellis update` 后 skill 会出现。
 
 ### Kiro CLI agent JSON schema 迁移（[`#247`](https://github.com/mindfold-ai/Trellis/issues/247)）
 
@@ -59,13 +57,13 @@ Kiro CLI 拒绝 Trellis 0.5.7 之前的 agent JSON，报 "invalid agent"。按 K
    }
    ```
 
-   `on` 字段去掉（事件名变 key）。`timeout_ms` 去掉（Kiro hook entry schema 没这个字段，之前一直被忽略）。
+   `on` 字段去掉（事件名变 key）。`timeout_ms` 去掉。
 
 影响 `trellis-{implement,check,research}.json` 三个文件。新增 `[issue-247]` 回归测试断言新 schema（`prompt` 存在、`instructions` 不存在、`allowedTools` 是数组、`hooks` 是对象）。
 
 ### Windows Python 检测 fallback chain（[`#236`](https://github.com/mindfold-ai/Trellis/issues/236)）
 
-`trellis init` 之前在 Windows 上只 try `python --version`。如果 host 上 Python 装在 `python3`（Microsoft Store）或 `py -3`（python.org launcher）下而没有 `python`，init 会直接失败 `Python command "python" not found`。临时 workaround 是先装 0.4.0（检查更宽松）再升 0.5.0+。
+`trellis init` 之前在 Windows 上只 try `python --version`。如果 host 上 Python 装在 `python3`（Microsoft Store）或 `py -3`（python.org launcher）下而没有 `python`，init 会直接失败 `Python command "python" not found`。
 
 `packages/cli/src/commands/init.ts` 里的 `resolveSupportedPython()` 改成按平台 candidate list 顺序探测：
 
