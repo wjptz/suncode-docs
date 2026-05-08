@@ -170,7 +170,7 @@ Current task 按 session 隔离：
 
 这个文件把一个 AI session 或窗口指向一个任务。同一仓库里的不同窗口可以做不同任务。
 
-`.trellis/.current-task` 是命令行场景的 fallback。平台能提供 session identity 时，session runtime pointer 优先。
+平台没有暴露 session identity 时，`task.py start` 会直接退出并提示显式设置 `TRELLIS_CONTEXT_ID`——当前代码不会写全局 `.trellis/.current-task` fallback。（老项目里残留的 `.trellis/.current-task` 文件会被保留，但 active-task 解析已不再读它。）
 
 ## Context-loading module
 

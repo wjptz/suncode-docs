@@ -170,7 +170,7 @@ The current task is session-scoped:
 
 That file points one AI session or window at one task. Different windows can work on different tasks in the same repository.
 
-`.trellis/.current-task` is a fallback for command-line contexts. Session-scoped runtime pointers take precedence when the platform provides a session identity.
+If the platform doesn't expose a session identity, `task.py start` exits with a hint to set `TRELLIS_CONTEXT_ID` explicitly — current code does not write a global `.trellis/.current-task` fallback. (Older projects may still have a leftover `.trellis/.current-task` file; it is preserved but ignored by active-task resolution.)
 
 ## Context-loading module
 
