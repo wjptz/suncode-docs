@@ -3,7 +3,7 @@ title: 'v0.5.7'
 description: '2026-05-08'
 ---
 
-五个修复 —— 三个 Codex、一个 Kiro、一个 Windows。子代理 collab 工具从 prompt-layer 警告升级为协议层硬禁用（[`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up、[`#241`](https://github.com/mindfold-ai/Trellis/issues/241)）。`trellis update` 现在会写 `trellis-start` skill —— 之前只有 `trellis init` 写。Kiro CLI agent JSON 迁移到 Kiro 当前 schema（[`#247`](https://github.com/mindfold-ai/Trellis/issues/247)）。把原来只在本地 dogfood 里的"Load Trellis Context First"段 port 回 Codex agent 模板。Windows `trellis init` 改成 Python 命令 fallback chain（[`#236`](https://github.com/mindfold-ai/Trellis/issues/236)）。无新增 migration。
+四个修复 —— 两个 Codex、一个 Kiro、一个 Windows。子代理 collab 工具从 prompt-layer 警告升级为协议层硬禁用（[`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up、[`#241`](https://github.com/mindfold-ai/Trellis/issues/241)）。`trellis update` 现在会写 `trellis-start` skill —— 之前只有 `trellis init` 写。Kiro CLI agent JSON 迁移到 Kiro 当前 schema（[`#247`](https://github.com/mindfold-ai/Trellis/issues/247)）。Windows `trellis init` 改成 Python 命令 fallback chain（[`#236`](https://github.com/mindfold-ai/Trellis/issues/236)）。无新增 migration。
 
 ## Bug Fixes
 
@@ -26,11 +26,9 @@ multi_agent = false
 enabled = false
 ```
 
-Codex 工具注册（[`codex-rs/tools/src/tool_config.rs:179-180`](https://github.com/openai/codex/blob/main/codex-rs/tools/src/tool_config.rs#L179-L180)）以 `Collab || MultiAgentV2` 为门：两个都关 → `spawn_agent` / `wait_agent` / `list_agents` / `close_agent` 不会注册到子代理工具列表。模型**根本看不到这些工具**，无所谓"忽略 prompt"——根本没有 API 可调。
+两个 flag 都关之后，Codex 不会给子代理注册 `spawn_agent` / `wait_agent` / `list_agents` / `close_agent` —— 模型**根本看不到这些工具**，谈不上"忽略 prompt"，根本没有 API 可调。
 
-之所以可行：Codex agent role 文件支持完整 `ConfigToml` 覆盖层（[`codex-rs/core/src/config/agent_roles.rs:217-225`](https://github.com/openai/codex/blob/main/codex-rs/core/src/config/agent_roles.rs#L217-L225) — `RawAgentRoleFileToml` flatten 了 `ConfigToml`），`[features]` table 在 spawn 时会覆盖 base config。
-
-新增 `packages/cli/test/regression.test.ts` 中 `[issue-241-followup]` 回归测试，断言三个 template toml 都保留 disable block。
+新增 `[issue-241-followup]` 回归测试断言三个 template toml 都保留 disable block。
 
 ### Codex `trellis-start` skill 在升级路径丢失
 
@@ -44,9 +42,7 @@ Codex 工具注册（[`codex-rs/tools/src/tool_config.rs:179-180`](https://githu
 
 ### Kiro CLI agent JSON schema 迁移（[`#247`](https://github.com/mindfold-ai/Trellis/issues/247)）
 
-[the-jsc 反馈](https://github.com/mindfold-ai/Trellis/issues/247) Kiro CLI 拒绝 Trellis 0.5.7 之前的 agent JSON，报 "invalid agent trellis-implement / trellis-check / trellis-research"。Kiro CLI 自带的 auto-fixer 把 `instructions` 改成 `prompt`，调整了 tool 名字，重新格式化了 hooks。Trellis 还在用旧 schema。
-
-按 Kiro 官方 [Agent Configuration Reference](https://kiro.dev/docs/cli/custom-agents/configuration-reference)，三处 schema 变更：
+Kiro CLI 拒绝 Trellis 0.5.7 之前的 agent JSON，报 "invalid agent"。按 Kiro 官方 [Agent Configuration Reference](https://kiro.dev/docs/cli/custom-agents/configuration-reference)，三处 schema 变更：
 
 1. **`instructions` → `prompt`** —— Kiro CLI 不再接受 `instructions`。
 2. **新增 `allowedTools` 字段** —— 镜像 `tools`。Kiro 把"可用工具"和"允许调用工具"分开；没 `allowedTools` 的话 agent 实际上没法调任何工具。
@@ -66,14 +62,6 @@ Codex 工具注册（[`codex-rs/tools/src/tool_config.rs:179-180`](https://githu
    `on` 字段去掉（事件名变 key）。`timeout_ms` 去掉（Kiro hook entry schema 没这个字段，之前一直被忽略）。
 
 影响 `trellis-{implement,check,research}.json` 三个文件。新增 `[issue-247]` 回归测试断言新 schema（`prompt` 存在、`instructions` 不存在、`allowedTools` 是数组、`hooks` 是对象）。
-
-### Codex agent 模板 drift — "Load Trellis Context First" 段补回
-
-`.codex/agents/`（项目本地 dogfood）下的 Codex 子代理 role 文件原本就带 27 行 "## Required: Load Trellis Context First" 段，告诉子代理在 class-2 平台上怎么找到 active task 路径。但 `packages/cli/src/templates/codex/agents/trellis-{implement,check}.toml` 这两个 template 文件**缺这段**。drift 没被发现：dogfood 比 `trellis init` 实际派发给用户的内容更丰富。
-
-用户能看到的症状：用户项目里的 Codex 子代理不知道去 dispatch prompt 第一行读 `Active task: <path>`，落到 `task.py current --source`，再因为 session-id 不匹配而落到"问用户"——所以**每次都问用户**，没法自动加载 task context。
-
-修法：把 `.codex/agents/trellis-implement.toml` 和 `trellis-check.toml` 里的这段 copy 回同名 template 文件。`trellis-research.toml` 原本就一致。dogfood 不变；用户项目通过 `trellis update` 升级时会拿到新段。
 
 ### Windows Python 检测 fallback chain（[`#236`](https://github.com/mindfold-ai/Trellis/issues/236)）
 
