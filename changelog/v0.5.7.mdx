@@ -3,18 +3,18 @@ title: 'v0.5.7'
 description: '2026-05-08'
 ---
 
-Four fixes — two Codex, one Kiro, one Windows. Sub-agent collab tools are structurally disabled instead of prompt-layer-warned ([`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up, [`#241`](https://github.com/mindfold-ai/Trellis/issues/241)). `trellis update` now writes the `trellis-start` skill that `trellis init` had been writing alone. Kiro CLI agent JSON migrated to Kiro's current schema ([`#247`](https://github.com/mindfold-ai/Trellis/issues/247)). Windows `trellis init` walks a Python command fallback chain ([`#236`](https://github.com/mindfold-ai/Trellis/issues/236)). No new migrations.
+Sub-agent collab tools are structurally disabled instead of prompt-layer-warned ([`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up, [`#241`](https://github.com/mindfold-ai/Trellis/issues/241)). `trellis update` now writes the `trellis-start` skill that `trellis init` had been writing alone. Kiro CLI agent JSON migrated to Kiro's current schema ([`#247`](https://github.com/mindfold-ai/Trellis/issues/247)). Windows `trellis init` walks a Python command fallback chain ([`#236`](https://github.com/mindfold-ai/Trellis/issues/236)). No new migrations.
 
 ## Bug Fixes
 
-### Codex sub-agent collab tools — structural disable ([`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up, [`#241`](https://github.com/mindfold-ai/Trellis/issues/241))
+### Codex sub-agent collab tools, structural disable ([`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up, [`#241`](https://github.com/mindfold-ai/Trellis/issues/241))
 
 [v0.5.5](/changelog/v0.5.5) removed the `SessionStart` injection vector. [v0.5.6](/changelog/v0.5.6) added prompt-layer `fork_turns="none"` guidance to `AGENTS.md`. Both were prompt-layer mitigations. [Ca11back's reproduction on `#241`](https://github.com/mindfold-ai/Trellis/issues/241) showed the prompt-layer fix didn't reach reality:
 
 - The main agent still spawned `trellis-research` with default `fork_turns="all"` despite the AGENTS.md rule.
 - The child inherited the parent's transcript including prior `spawn_agent(...)` tool-call records.
 - The child read AGENTS.md's "ALWAYS wait for every spawned subagent..." rule, applied it to _itself_, and called `wait_agent` on the inherited records.
-- No agents to wait for → `No agents completed yet` → stuck.
+- No agents to wait for. `No agents completed yet`. Stuck.
 
 Structural fix: each `packages/cli/src/templates/codex/agents/trellis-{implement,check,research}.toml` now contains:
 
@@ -26,17 +26,17 @@ multi_agent = false
 enabled = false
 ```
 
-With both flags off, Codex doesn't register `spawn_agent` / `wait_agent` / `list_agents` / `close_agent` for the sub-agent — the model literally cannot call them, no API to wishfully ignore.
+With both flags off, Codex doesn't register `spawn_agent` / `wait_agent` / `list_agents` / `close_agent` for the sub-agent. The model literally cannot call them. No API to wishfully ignore.
 
 Adds `[issue-241-followup]` regression test asserting all three template toml files retain the disable block.
 
 ### Codex `trellis-start` skill missing on update path
 
-0.5.5's `configureCodex()` writes `.agents/skills/trellis-start/SKILL.md` so the `<trellis-bootstrap>` notice from `inject-workflow-state.py` resolves to a real skill — but `collectPlatformTemplates.codex.collectTemplates()` (used by `trellis update`) was missed.
+0.5.5's `configureCodex()` writes `.agents/skills/trellis-start/SKILL.md` so the `<trellis-bootstrap>` notice from `inject-workflow-state.py` resolves to a real skill. But `collectPlatformTemplates.codex.collectTemplates()` (used by `trellis update`) was missed.
 
-Result: users upgrading from 0.4.x → 0.5.5/0.5.6 ran the safe-file-delete migration that removed `.agents/skills/start/`, then `trellis update` regenerated all the other `trellis-*` skill dirs from `collectTemplates` — but never wrote `trellis-start`. Their AI then reported "no `.agents/skills/trellis-start/SKILL.md`" on every turn that hit `<trellis-bootstrap>`.
+Result: users upgrading from 0.4.x to 0.5.5/0.5.6 ran the safe-file-delete migration that removed `.agents/skills/start/`, then `trellis update` regenerated all the other `trellis-*` skill dirs from `collectTemplates`, but never wrote `trellis-start`. Their AI then reported "no `.agents/skills/trellis-start/SKILL.md`" on every turn that hit `<trellis-bootstrap>`.
 
-Fix: extracted `resolveCodexTrellisStartSkill()` helper in `configurators/shared.ts`, called from both `configureCodex()` (init) and `collectPlatformTemplates.codex` (update) so the file shows up on both paths. No drift possible — both call the same helper.
+Fix: extracted `resolveCodexTrellisStartSkill()` helper in `configurators/shared.ts`, called from both `configureCodex()` (init) and `collectPlatformTemplates.codex` (update) so the file shows up on both paths. No drift possible. Both call the same helper.
 
 Existing 0.5.5/0.5.6 users who hit this should see the skill appear after running `trellis update` on 0.5.7+.
 
@@ -44,9 +44,9 @@ Existing 0.5.5/0.5.6 users who hit this should see the skill appear after runnin
 
 Kiro CLI rejected Trellis's pre-0.5.7 agent JSON with "invalid agent". Three schema changes per Kiro's [Agent Configuration Reference](https://kiro.dev/docs/cli/custom-agents/configuration-reference):
 
-1. **`instructions` → `prompt`** — Kiro CLI no longer accepts `instructions`.
-2. **Adds `allowedTools` field** — mirrors `tools`. Kiro splits "available tools" from "permitted tools"; without `allowedTools` the agent can't actually invoke anything.
-3. **`hooks` array → object keyed by event name**:
+1. **`instructions` becomes `prompt`**. Kiro CLI no longer accepts `instructions`.
+2. **Adds `allowedTools` field** mirroring `tools`. Kiro splits "available tools" from "permitted tools"; without `allowedTools` the agent can't actually invoke anything.
+3. **`hooks` array becomes object keyed by event name**:
 
    ```json
    // before
@@ -69,17 +69,17 @@ Affects all three `trellis-{implement,check,research}.json` files. Adds `[issue-
 
 `resolveSupportedPython()` in `packages/cli/src/commands/init.ts` now walks a per-platform candidate list:
 
-| Platform | Candidate order            |
-| -------- | -------------------------- |
-| Windows  | `python → python3 → py -3` |
-| Other    | `python3 → python`         |
+| Platform | Candidate order              |
+| -------- | ---------------------------- |
+| Windows  | `python`, `python3`, `py -3` |
+| Other    | `python3`, `python`          |
 
 First candidate whose `--version` matches Python ≥ 3.9 wins. The resolved command is cached via `setResolvedPythonCommand()` in `configurators/shared.ts` so `replacePythonCommandLiterals()` and all downstream template / configurator writes pick up the same value.
 
 Two env-var escape hatches:
 
-- `TRELLIS_PYTHON_CMD=<cmd>` — explicit override, no probe.
-- `TRELLIS_SKIP_PYTHON_CHECK=1` — skip probe entirely (pre-existing).
+- `TRELLIS_PYTHON_CMD=<cmd>` for explicit override (no probe).
+- `TRELLIS_SKIP_PYTHON_CHECK=1` for skipping the probe entirely (pre-existing).
 
 Failure case throws an aggregated error listing every candidate's probe result plus a Windows-specific install hint pointing at python.org with the "Add Python to PATH" reminder.
 
