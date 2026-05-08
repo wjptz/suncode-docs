@@ -7,9 +7,10 @@
     "dev": "mintlify dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint . && markdownlint-cli2 '**/*.{md,mdx}'",
+    "lint": "eslint . && markdownlint-cli2 '**/*.{md,mdx}' && node scripts/check-shared-groups.mjs",
     "lint:md": "markdownlint-cli2 '**/*.{md,mdx}'",
     "lint:js": "eslint .",
+    "lint:docs-json": "node scripts/check-shared-groups.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -19,6 +20,9 @@
     ],
     "*.{json,yaml,yml}": [
       "prettier --write"
+    ],
+    "docs.json": [
+      "node scripts/check-shared-groups.mjs"
     ],
     "*.{js,mjs,cjs}": [
       "eslint --fix",
