@@ -1,0 +1,27 @@
+---
+title: 'v0.6.0-beta.2'
+description: '2026-05-08'
+---
+
+## Bug Fixes
+
+- **`tl mem list / search --since X` 现在正确处理跨天 session**。之前一个 session 只要首条事件在窗口之前就会被丢掉——哪怕它后来在窗口里继续活跃。一个 5/7 开启、5/8 还在写的 29 MB Claude session 在 `--since 2026-05-08` 下完全搜不到，即便当天其内容里有 19 处关键词命中。根因：`claudeListSessions` / `codexListSessions` 用 `created` 单点 `inRange` 过滤。新加 `inRangeOverlap(start, end, f)` helper —— session 的 `[created, updated]` 与 `[f.since, f.until]` 区间有交集就保留。三个 list 路径全切换；codex 那条文件名时间戳早期短路是一个误优化（重新引入了跨天 bug），删掉。新增 23 个测试覆盖五种区间关系 × 三个平台。
+
+## Internal
+
+- 内部 spec drift 修复（`.trellis/spec/*`）：`script-conventions.md` 删掉已移除的 `task_context.py init-context` 描述；`workflow-state-contract.md` writer-table 行号校准到现行代码；`directory-structure.md` configurators / utils / commands 目录树补齐。`docs-site/advanced/architecture.mdx` 修复 `.trellis/.current-task` fallback 错误描述（EN + ZH 同步）。npm 用户安装的 artifact 不变。
+
+## Other Platforms
+
+Claude Code、Cursor、OpenCode、Kiro、CodeBuddy、Droid、Gemini、Qoder、Copilot、Codex — 不变。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+## 已知权衡
+
+移除 codex 文件名时间戳早期短路后，每个 codex session 现在都会跑 `readJsonlFirst`。可接受；未来补丁可能加一个安全的、单侧 `--until`-only 快速剪枝，不会重新引入跨天 bug。

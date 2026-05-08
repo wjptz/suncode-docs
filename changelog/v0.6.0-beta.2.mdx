@@ -1,0 +1,27 @@
+---
+title: 'v0.6.0-beta.2'
+description: '2026-05-08'
+---
+
+## Bug Fixes
+
+- **`tl mem list / search --since X` now respects cross-day session activity.** Previously a session whose first event fell before the window was dropped from results even if it stayed active inside it. A 29 MB Claude session that started 5/7 and was still being written 5/8 returned 0 matches under `--since 2026-05-08` despite containing 19 occurrences of the searched keyword written that day. Root cause: `claudeListSessions` and `codexListSessions` filtered by `created` only (single-point `inRange`). New helper `inRangeOverlap(start, end, f)` keeps a session iff its `[created, updated]` interval overlaps `[f.since, f.until]`. Three list sites switched over; the early `tsFromName` short-circuit in codex was a misoptimization that re-introduced the cross-day bug and is removed. 23 new tests cover all five interval relations × three platforms.
+
+## Internal
+
+- Spec drift cleanup (`.trellis/spec/*`): `script-conventions.md` drops removed `task_context.py init-context`; `workflow-state-contract.md` writer-table line numbers refreshed against current code; `directory-structure.md` configurators / utils / commands trees aligned. `docs-site/advanced/architecture.mdx` corrected the false `.trellis/.current-task` fallback claim (EN + ZH). User-facing artifact unchanged.
+
+## Other Platforms
+
+Claude Code, Cursor, OpenCode, Kiro, CodeBuddy, Droid, Gemini, Qoder, Copilot, Codex — unchanged.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+## Known Trade-Off
+
+Removing the codex filename-ts short-circuit means every codex session now does `readJsonlFirst`. Acceptable; a future patch may add a safe one-sided `--until`-only fast prune that does not reintroduce the cross-day bug.
