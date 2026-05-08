@@ -1,0 +1,35 @@
+---
+title: 'v0.6.0-beta.0'
+description: '2026-05-08'
+---
+
+第一个 0.6 beta。新增 `trellis mem`：在 Claude Code、Codex、OpenCode 的历史会话里按关键词找内容、查看那一轮前后的对话、导出整段记录。
+
+## 新功能：`trellis mem`
+
+读 Claude Code、Codex、OpenCode 各自存在磁盘上的 session 文件，去掉 hook 注入、AGENTS.md 引导文、工具调用噪声，让你按关键词搜，看到匹配那一轮前后的真实对话。
+
+```bash
+trellis mem list                          # 列出跨平台所有 session
+trellis mem search "user login"           # 找内容匹配的 session
+trellis mem context <session-id>          # top-N hit turns + 上下文窗口
+trellis mem extract <session-id>          # 导出已清洗对话（--grep KW 过滤）
+trellis mem projects                      # 列出活跃项目 cwd（AI 路由用）
+```
+
+子命令支持过滤：`--since 2026-04-01`、`--cwd /abs/path`、`--platform claude|codex|opencode`、`--json`。完整 flag 跑 `trellis mem help`。
+
+机制：
+
+- 读 `~/.claude/projects/<encoded-cwd>/<uuid>.jsonl`（Claude Code）、Codex session JSON、OpenCode `<storage>/messages/<session-id>/*.json`。不挂活进程，已结束 session 也能读。
+- 剥 workflow-state 指引、session-context 块、hook 输出，搜索命中只看真实 user / assistant 轮次。处理 compaction（Claude `isCompactSummary` + Codex `compacted` 事件）。
+- 84 个单测（Tier 1 纯函数 + Tier 2 fixture 驱动平台 parser + Tier 3 子命令 integration）。mem.ts 覆盖率 81.89% statement / 89.04% function / 87.93% line。
+
+## 安装
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+这是 beta 版。0.5 稳定线还会按需打补丁；用 `@latest` 拿最新稳定版。从 beta 切回稳定：`npm install -g @mindfoldhq/trellis@latest`。
