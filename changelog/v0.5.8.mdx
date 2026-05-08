@@ -1,0 +1,24 @@
+---
+title: 'v0.5.8'
+description: '2026-05-08'
+---
+
+## Bug Fixes
+
+- **Removing the sub-agent guidance in `AGENTS.md` stops Codex from calling / waiting on research agents.** Deleted the `## Subagents` section (36 lines, including the "ALWAYS wait for every spawned subagent" rule).
+- **Sub-agent mode fix: `trellis-research` on Codex no longer exits prematurely / produces no research files due to missing task context** (the main agent now includes the `Active task:` line when dispatching to research agents too).
+
+## Added
+
+- `CoreRule` block prepended to the `trellis-brainstorm` skill (adapted from https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md ).
+
+## Other Platforms
+
+Claude Code, Cursor, OpenCode, Kiro, CodeBuddy, and Droid unchanged.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
