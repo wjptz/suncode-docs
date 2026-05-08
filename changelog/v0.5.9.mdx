@@ -1,0 +1,24 @@
+---
+title: 'v0.5.9'
+description: '2026-05-08'
+---
+
+## Bug Fixes
+
+- **Codex `dispatch_mode` default flipped from `sub-agent` to `inline`.** Codex sub-agents run with `fork_turns="none"` isolation, so they can't inherit the parent session's task context — they either exit silently or recursively dispatch. Inline mode keeps the main Codex agent in charge so context isn't lost. To opt back into the legacy dispatch flow, uncomment `codex.dispatch_mode: sub-agent` in `.trellis/config.yaml`. Invalid values fall back to inline.
+- **`--platform codex` now namespaces into `codex-inline` / `codex-sub-agent` virtual platforms.** `workflow.md` `[Platform A, B, ...]` blocks render different guidance per mode (inline mode tells the main agent to edit code; sub-agent mode tells it to dispatch `trellis-implement` / `trellis-check`). `inject-workflow-state.py` emits a `<codex-mode>` banner in the per-turn UserPromptSubmit prompt so Codex knows which mode it is in. `[workflow-state:STATUS-inline]` blocks drive the breadcrumb path for inline mode.
+
+## Internal
+
+- Restored `0.6.0-beta.0.json` on `main`. The version was published from `feat/v0.6.0-beta` but its manifest never landed on main, breaking adjacent-version update chains for users hopping between stable and beta lines.
+
+## Other Platforms
+
+Claude Code, Cursor, OpenCode, Kiro, CodeBuddy, Droid, Gemini, Qoder, Copilot — unchanged.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
