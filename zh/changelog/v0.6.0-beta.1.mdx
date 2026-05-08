@@ -1,0 +1,22 @@
+---
+title: 'v0.6.0-beta.1'
+description: '2026-05-08'
+---
+
+Beta 补丁，同步 `0.5.9` 的 Codex 派发修复。
+
+## Bug Fixes
+
+- **Codex `dispatch_mode` 默认值从 `sub-agent` 翻成 `inline`**。Codex sub-agent 跑在 `fork_turns="none"` 隔离里，拿不到父会话的任务上下文 — 要么沉默退出，要么套娃派发。inline 模式让主 Codex agent 自己改代码，上下文不会丢。要切回旧的派发模式，把 `.trellis/config.yaml` 里的 `codex.dispatch_mode: sub-agent` 取消注释即可。无效值会回退到 inline。
+- **`--platform codex` 现在按 mode 拆成 `codex-inline` / `codex-sub-agent` 两个虚拟平台**。`workflow.md` 里的 `[Platform A, B, ...]` 块按 mode 渲染不同分支（inline 模式让主 agent 直接改代码，sub-agent 模式让它派发 `trellis-implement` / `trellis-check`）。`inject-workflow-state.py` 在每轮 UserPromptSubmit 注入 `<codex-mode>` banner，让 Codex 知道当前是哪种 mode。`[workflow-state:STATUS-inline]` 块为 inline 模式驱动 breadcrumb 路径。
+
+## Other Platforms
+
+Claude Code、Cursor、OpenCode、Kiro、CodeBuddy、Droid、Gemini、Qoder、Copilot — 不变。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
