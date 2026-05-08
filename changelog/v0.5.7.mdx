@@ -1,9 +1,9 @@
 ---
 title: 'v0.5.7'
-description: '2026-05-07'
+description: '2026-05-08'
 ---
 
-Three Codex / Windows fixes. Sub-agent collab tools are now structurally disabled instead of prompt-layer-warned ([`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up, [`#241`](https://github.com/mindfold-ai/Trellis/issues/241)). The previously-dogfood-only "Load Trellis Context First" section is ported back to the canonical templates. Windows `trellis init` walks a Python command fallback chain instead of failing on the first miss ([`#236`](https://github.com/mindfold-ai/Trellis/issues/236)). No new migrations.
+Five fixes — three Codex, one Kiro, one Windows. Sub-agent collab tools are structurally disabled instead of prompt-layer-warned ([`#240`](https://github.com/mindfold-ai/Trellis/issues/240) follow-up, [`#241`](https://github.com/mindfold-ai/Trellis/issues/241)). `trellis update` now writes the `trellis-start` skill that `trellis init` had been writing alone. Kiro CLI agent JSON migrated to Kiro's current schema ([`#247`](https://github.com/mindfold-ai/Trellis/issues/247)). The previously-dogfood-only "Load Trellis Context First" section ported back to canonical Codex agent templates. Windows `trellis init` walks a Python command fallback chain ([`#236`](https://github.com/mindfold-ai/Trellis/issues/236)). No new migrations.
 
 ## Bug Fixes
 
@@ -31,6 +31,41 @@ Codex's tool registration ([`codex-rs/tools/src/tool_config.rs:179-180`](https:/
 This works because Codex agent role files support full `ConfigToml` override layers ([`codex-rs/core/src/config/agent_roles.rs:217-225`](https://github.com/openai/codex/blob/main/codex-rs/core/src/config/agent_roles.rs#L217-L225) — `RawAgentRoleFileToml` flattens `ConfigToml`), so `[features]` table entries override the base config when the role is applied at spawn time.
 
 Adds `[issue-241-followup]` regression test in `packages/cli/test/regression.test.ts` asserting all three template toml files retain the disable block.
+
+### Codex `trellis-start` skill missing on update path
+
+0.5.5's `configureCodex()` writes `.agents/skills/trellis-start/SKILL.md` so the `<trellis-bootstrap>` notice from `inject-workflow-state.py` resolves to a real skill — but `collectPlatformTemplates.codex.collectTemplates()` (used by `trellis update`) was missed.
+
+Result: users upgrading from 0.4.x → 0.5.5/0.5.6 ran the safe-file-delete migration that removed `.agents/skills/start/`, then `trellis update` regenerated all the other `trellis-*` skill dirs from `collectTemplates` — but never wrote `trellis-start`. Their AI then reported "no `.agents/skills/trellis-start/SKILL.md`" on every turn that hit `<trellis-bootstrap>`.
+
+Fix: extracted `resolveCodexTrellisStartSkill()` helper in `configurators/shared.ts`, called from both `configureCodex()` (init) and `collectPlatformTemplates.codex` (update) so the file shows up on both paths. No drift possible — both call the same helper.
+
+Existing 0.5.5/0.5.6 users who hit this should see the skill appear after running `trellis update` on 0.5.7+.
+
+### Kiro CLI agent JSON schema migration ([`#247`](https://github.com/mindfold-ai/Trellis/issues/247))
+
+[the-jsc reported](https://github.com/mindfold-ai/Trellis/issues/247) that Kiro CLI rejected Trellis's pre-0.5.7 agent JSON with "invalid agent trellis-implement / trellis-check / trellis-research". Kiro CLI's auto-fixer renamed `instructions` → `prompt`, adjusted tool names, and reformatted hooks. Trellis was still on the older schema.
+
+Three schema changes per Kiro's [Agent Configuration Reference](https://kiro.dev/docs/cli/custom-agents/configuration-reference):
+
+1. **`instructions` → `prompt`** — Kiro CLI no longer accepts `instructions`.
+2. **Adds `allowedTools` field** — mirrors `tools`. Kiro splits "available tools" from "permitted tools"; without `allowedTools` the agent can't actually invoke anything.
+3. **`hooks` array → object keyed by event name**:
+
+   ```json
+   // before
+   "hooks": [
+     { "on": "agentSpawn", "command": "...", "timeout_ms": 30000 }
+   ]
+   // after
+   "hooks": {
+     "agentSpawn": [{ "command": "..." }]
+   }
+   ```
+
+   `on` field removed (event is now the key). `timeout_ms` removed (not in Kiro's documented hook entry schema; was being ignored).
+
+Affects all three `trellis-{implement,check,research}.json` files. Adds `[issue-247]` regression test asserting the new schema (prompt present, instructions absent, allowedTools array, hooks object not array).
 
 ### Codex agent template drift — "Load Trellis Context First" port
 
