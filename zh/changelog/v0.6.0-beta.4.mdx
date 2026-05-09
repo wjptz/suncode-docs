@@ -1,0 +1,16 @@
+---
+title: 'v0.6.0-beta.4'
+description: '2026-05-09'
+---
+
+## Bug Fixes
+
+- **撤掉 `better-sqlite3` 依赖**。回滚 0.6.0-beta.3 加入的 OpenCode SQLite reader。修复 `npm install -g @mindfoldhq/trellis@beta` 在 prebuilt binary 下载失败且本地无 C 工具链时安装失败的问题。
+- **OpenCode 平台降级**。`tl mem list / search / extract` 在 platform `opencode` 上返回空 + 一次性 stderr 警告。Claude / Codex 路径不变。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
