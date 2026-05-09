@@ -1,0 +1,23 @@
+---
+title: 'v0.6.0-beta.5'
+description: '2026-05-09'
+---
+
+Brings the four `v0.5.10` stable fixes / features into the 0.6 beta line.
+
+## Bug Fixes
+
+- **`git add -f .trellis/` runaway prevented.** `add_session.py` and `task.py archive` now stage only specific Trellis-owned paths and auto-retry with `git add -f -- <specific-paths>` only on `ignored by` stderr. Warning text explicitly states `Do NOT use \`git add -f .trellis/\``, listing`.trellis/.backup-\*`,`.trellis/worktrees/`,`.trellis/.template-hashes.json`,`.trellis/.runtime/`,`.trellis/.cache/`as the paths to keep ignored. Helper centralized in`templates/trellis/scripts/common/safe_commit.py`.
+- **Pi platform `<workflow-state>` / `<session-overview>` / subagent dispatch protocol injection.** Pi extension injects breadcrumb + session-overview every `input` / `before_agent_start`, and the `subagent` tool registration carries `promptSnippet` with `Active task: <path>`. Closes [#249](https://github.com/mindfold-ai/Trellis/issues/249).
+- **Pi `npm:pi-subagents` project-level isolation.** `.pi/settings.json` overrides global `npm:pi-subagents` package with empty resource lists. `scrubPiSettings` reverses on uninstall. Closes [#246](https://github.com/mindfold-ai/Trellis/pull/246) (thanks @RenaLio).
+
+## Enhancements
+
+- **Session-start version-update hint.** `get_context.py` default mode performs a once-per-session `trellis --version` check and prepends `Trellis update available: <current> -> <latest>, run npm install -g @mindfoldhq/trellis@latest` when the local install lags. Best-effort with 1-second timeout; failures silently skip. Marker under `.trellis/.runtime/`. Closes [#254](https://github.com/mindfold-ai/Trellis/pull/254) (thanks @jdjingdian).
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```

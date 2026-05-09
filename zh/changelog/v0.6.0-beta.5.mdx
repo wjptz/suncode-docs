@@ -1,0 +1,23 @@
+---
+title: 'v0.6.0-beta.5'
+description: '2026-05-09'
+---
+
+把 `v0.5.10` 的四个 stable fix / feature 同步到 0.6 beta 线。
+
+## Bug Fixes
+
+- **防止 `git add -f .trellis/` 失控**。`add_session.py` 和 `task.py archive` 现在只 stage Trellis 自己拥有的具体路径，并仅在 stderr 含 `ignored by` 时用 `git add -f -- <specific-paths>` 自动重试。fallback 警告显式写明 `Do NOT use \`git add -f .trellis/\``，并列出`.trellis/.backup-\*`、`.trellis/worktrees/`、`.trellis/.template-hashes.json`、`.trellis/.runtime/`、`.trellis/.cache/`才是应该被 ignore 的子路径。Helper 集中在`templates/trellis/scripts/common/safe_commit.py`。
+- **Pi 平台 `<workflow-state>` / `<session-overview>` / subagent dispatch protocol 注入**。Pi extension 每次 `input` / `before_agent_start` 注入 breadcrumb + session-overview；`subagent` 工具注册时带 `promptSnippet` 含 `Active task: <path>` 派发协议。Closes [#249](https://github.com/mindfold-ai/Trellis/issues/249)。
+- **Pi `npm:pi-subagents` 项目级隔离**。`.pi/settings.json` 项目级覆盖全局 `npm:pi-subagents` 包，资源列表全置空。`scrubPiSettings` 在 uninstall 时反向清理。Closes [#246](https://github.com/mindfold-ai/Trellis/pull/246)（感谢 @RenaLio）。
+
+## Enhancements
+
+- **Session-start 版本更新提示**。`get_context.py` 的 default mode 现在每个 session 跑一次 `trellis --version` 检查，本地版本落后时在 context 顶部加一行 `Trellis update available: <current> -> <latest>, run npm install -g @mindfoldhq/trellis@latest`。Best-effort，1 秒超时，失败静默跳过。Marker 存 `.trellis/.runtime/`。Closes [#254](https://github.com/mindfold-ai/Trellis/pull/254)（感谢 @jdjingdian）。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
