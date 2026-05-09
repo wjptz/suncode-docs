@@ -1,0 +1,17 @@
+---
+title: 'v0.5.10'
+description: '2026-05-09'
+---
+
+## Bug Fixes
+
+- **防止 `git add -f .trellis/` 失控**。`add_session.py` 和 `task.py archive` 现在只 stage Trellis 自己拥有的具体路径（journal、`index.md`、活跃 task 目录、archive 子树），并仅在 stderr 含 `ignored by` 时用 `git add -f -- <specific-paths>` 自动重试。fallback 警告显式写明 `Do NOT use \`git add -f .trellis/\``，并列出`.trellis/.backup-\*`、`.trellis/worktrees/`、`.trellis/.template-hashes.json`、`.trellis/.runtime/`、`.trellis/.cache/`才是应该被 ignore 的子路径。Helper 集中在`templates/trellis/scripts/common/safe_commit.py`。
+- **Pi 平台 `<workflow-state>` / `<session-overview>` / subagent dispatch protocol 注入**。Pi extension 现在每次 `input` 和 `before_agent_start` 事件都注入 `[workflow-state:STATUS]` breadcrumb，加上来自 `.trellis/scripts/get_context.py` 的 `<session-overview>` 块。`subagent` 工具注册时带 `promptSnippet`，包含 `Active task: <path>` 派发协议。Closes [#249](https://github.com/mindfold-ai/Trellis/issues/249)。
+- **Pi `npm:pi-subagents` 项目级隔离**。`.pi/settings.json` 加了项目级 `packages` 条目覆盖 `npm:pi-subagents`，把 `extensions / skills / prompts / themes` 全置空，全局安装的 `npm:pi-subagents` 不再污染当前 Trellis 项目。`scrubPiSettings` 在 `trellis uninstall` 时反向清理。Closes [#246](https://github.com/mindfold-ai/Trellis/pull/246)（感谢 @RenaLio）。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
