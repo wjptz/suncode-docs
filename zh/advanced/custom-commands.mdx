@@ -4,7 +4,7 @@ title: '定制 Slash 命令'
 
 ## 定制 Slash 命令
 
-Trellis 0.5 原生带的 slash 命令留得很少。Agent-capable 平台（Claude Code、OpenCode、Cursor、Codex、Pi Agent 等）只发 `finish-work` 和 `continue`——`start` 不用手动跑，SessionStart hook 或 extension 每次开会话自动加载 workflow 和上下文；agent-less 平台（Kilo、Antigravity、Windsurf）没有 hook，`start` 才会作为 slash 命令发出来。过去的其他命令全部迁成 auto-trigger skill（见[定制 Skill](./custom-skills)）。自己加 slash 命令的时机：有一个明确想让用户显式调用的入口。
+Trellis 0.5 原生带的 slash 命令留得很少。Agent-capable 平台（Claude Code、OpenCode、Cursor、Codex、Pi Agent 等）只发 `finish-work` 和 `continue`。`start` 通常不是用户可见命令，因为启动上下文通过 SessionStart hook、extension、`AGENTS.md` 或 prompt-hook bootstrap 交付。Agent-less 平台（Kilo、Antigravity、Windsurf）没有 hook，`start` 才会作为 slash 命令发出来。过去的其他命令全部迁成 auto-trigger skill（见[定制 Skill](./custom-skills)）。自己加 slash 命令的时机：有一个明确想让用户显式调用的入口。
 
 ### 命令文件格式和位置
 
@@ -12,43 +12,43 @@ Trellis 0.5 原生带的 slash 命令留得很少。Agent-capable 平台（Claud
 
 **显式 slash 命令**——用户输入 `/trellis:<name>`，平台把命令文件内容注入为 prompt。
 
-| 平台            | 位置                                           | 调用方式                   |
-| --------------- | ---------------------------------------------- | -------------------------- |
-| Claude Code     | `.claude/commands/trellis/{name}.md`           | `/trellis:{name}`          |
-| Cursor          | `.cursor/commands/trellis-{name}.md`           | `/trellis-{name}`          |
-| OpenCode        | `.opencode/commands/trellis/{name}.md`         | `/trellis:{name}`          |
-| Codex           | `.codex/prompts/trellis-{name}.md`             | `/trellis-{name}`          |
-| Gemini CLI      | `.gemini/commands/trellis/{name}.toml`         | `/trellis:{name}`          |
-| Qoder           | `.qoder/commands/trellis-{name}.md`（YAML frontmatter 含 `name` + `description`） | `/trellis-{name}` |
-| CodeBuddy       | `.codebuddy/commands/trellis/{name}.md`        | `/trellis:{name}`          |
-| Droid           | `.factory/commands/trellis/{name}.md`          | `/trellis:{name}`          |
-| Pi Agent        | `.pi/prompts/trellis-{name}.md`                | `/trellis-{name}`          |
-| Copilot         | `.github/prompts/trellis-{name}.prompt.md`     | prompt 文件选择器          |
+| 平台        | 位置                                                                              | 调用方式          |
+| ----------- | --------------------------------------------------------------------------------- | ----------------- |
+| Claude Code | `.claude/commands/trellis/{name}.md`                                              | `/trellis:{name}` |
+| Cursor      | `.cursor/commands/trellis-{name}.md`                                              | `/trellis-{name}` |
+| OpenCode    | `.opencode/commands/trellis/{name}.md`                                            | `/trellis:{name}` |
+| Codex       | `.codex/prompts/trellis-{name}.md`                                                | `/trellis-{name}` |
+| Gemini CLI  | `.gemini/commands/trellis/{name}.toml`                                            | `/trellis:{name}` |
+| Qoder       | `.qoder/commands/trellis-{name}.md`（YAML frontmatter 含 `name` + `description`） | `/trellis-{name}` |
+| CodeBuddy   | `.codebuddy/commands/trellis/{name}.md`                                           | `/trellis:{name}` |
+| Droid       | `.factory/commands/trellis/{name}.md`                                             | `/trellis:{name}` |
+| Pi Agent    | `.pi/prompts/trellis-{name}.md`                                                   | `/trellis-{name}` |
+| Copilot     | `.github/prompts/trellis-{name}.prompt.md`                                        | prompt 文件选择器 |
 
 命令文件是 Markdown；Gemini 用 TOML（`prompt = """..."""` 字段）。
 
 **Workflow 文件**——没有独立 slash 命令原语的平台，用户按名字跑 workflow。
 
-| 平台        | 位置                                    | 调用方式                           |
-| ----------- | --------------------------------------- | ---------------------------------- |
+| 平台        | 位置                                    | 调用方式                              |
+| ----------- | --------------------------------------- | ------------------------------------- |
 | Kilo        | `.kilocode/workflows/{name}.md`         | `/{name}.md`（Kilo 的 workflow 入口） |
-| Antigravity | `.agent/workflows/{name}.md`            | 从 `.agent/workflows/` 打开        |
-| Windsurf    | `.windsurf/workflows/trellis-{name}.md` | `/trellis-{name}`                  |
+| Antigravity | `.agent/workflows/{name}.md`            | 从 `.agent/workflows/` 打开           |
+| Windsurf    | `.windsurf/workflows/trellis-{name}.md` | `/trellis-{name}`                     |
 
 **Skill-only**——完全没有 slash 命令原语的平台，`start` / `finish-work` / `continue` 全都做成 auto-trigger skill。
 
-| 平台  | 命令在哪里                               | 调用方式                          |
-| ----- | ---------------------------------------- | --------------------------------- |
-| Kiro  | `.kiro/skills/trellis-{name}/SKILL.md`   | skill 匹配（或 `@trellis:{name}`）|
+| 平台 | 命令在哪里                             | 调用方式                           |
+| ---- | -------------------------------------- | ---------------------------------- |
+| Kiro | `.kiro/skills/trellis-{name}/SKILL.md` | skill 匹配（或 `@trellis:{name}`） |
 
 ### 什么时候用命令，什么时候用 skill
 
-| 用 slash 命令                                | 用 skill                                       |
-| -------------------------------------------- | ---------------------------------------------- |
-| 由用户决定何时运行                           | 由 AI 根据意图自动触发                         |
-| 标记会话边界（开始、结束、恢复）             | 属于任务内部阶段（before-dev、check、update-spec）|
-| 没有可靠的自然触发短语                       | 有可预测的用户意图可匹配                       |
-| 即使没有活跃任务也需要可用                   | 只在有活跃任务时才有意义                       |
+| 用 slash 命令                    | 用 skill                                           |
+| -------------------------------- | -------------------------------------------------- |
+| 由用户决定何时运行               | 由 AI 根据意图自动触发                             |
+| 标记会话边界（开始、结束、恢复） | 属于任务内部阶段（before-dev、check、update-spec） |
+| 没有可靠的自然触发短语           | 有可预测的用户意图可匹配                           |
+| 即使没有活跃任务也需要可用       | 只在有活跃任务时才有意义                           |
 
 如果两个都需要，做成 skill，然后再配一个手动触发该 skill 的命令。
 
@@ -102,6 +102,7 @@ cat .env.production
 ## 验证
 
 检查以下项：
+
 - [ ] 全部测试通过
 - [ ] 生产代码无 TODO
 - [ ] 环境变量已设置

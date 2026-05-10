@@ -11,13 +11,20 @@ title: '附录 D：JSONL 配置格式参考'
 ### 文件条目
 
 ```jsonl
-{"file": ".trellis/spec/backend/index.md", "reason": "后端开发指南"}
+{
+  "file": ".trellis/spec/backend/index.md",
+  "reason": "后端开发指南"
+}
 ```
 
 ### 目录条目
 
 ```jsonl
-{"file": ".trellis/tasks/02-27-user-login/research/", "type": "directory", "reason": "本任务的 research 产出"}
+{
+  "file": ".trellis/tasks/02-27-user-login/research/",
+  "type": "directory",
+  "reason": "本任务的 research 产出"
+}
 ```
 
 目录条目下 hook 会读目录里所有 `.md`，最多 20 个。常见用途：挂任务自己的 `research/` 目录，让 sub-agent 拿到前置调研结论。
@@ -40,6 +47,8 @@ title: '附录 D：JSONL 配置格式参考'
 | ----------------- | ------------------- | ------------------------------------------------- |
 | `implement.jsonl` | `trellis-implement` | workflow + 相关 spec 索引 + 任务 `research/` 目录 |
 | `check.jsonl`     | `trellis-check`     | 质量相关 spec + finish-work / check 命令规范      |
-| `research.jsonl`  | `trellis-research`  | 调研参考文件（通常是 spec 或外部 doc 摘录）       |
+
+`trellis-research` 把持久结论写在 `research/` 目录下，不再有默认 research
+manifest。
 
 ---

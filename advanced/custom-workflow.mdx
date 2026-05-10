@@ -10,13 +10,13 @@ Before 0.5, workflow behavior was scattered across three places: hook Python scr
 
 ### What workflow.md controls
 
-| Section in `workflow.md`                                | Who reads it                                           | Effect                                                                                   |
-| ------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `## Phase Index` + `## Phase 1/2/3`                     | AI at session start (via `SessionStart` hook)          | Defines the three-phase flow and the step-by-step how-to inside each phase               |
-| `### Skill Routing`                                     | AI at session start                                    | Maps user intent → which skill to load (e.g. "wants new feature" → `trellis-brainstorm`) |
-| `### DO NOT skip skills`                                | AI at session start                                    | Inlines the common excuses for skipping skills and the reasons why they're wrong         |
-| `[workflow-state:STATUS]` blocks under `## Phase Index` | `inject-workflow-state.py` on every `UserPromptSubmit` | Per-turn reminder shown as `<workflow-state>…</workflow-state>` based on task status     |
-| `### Task System` (task.py command list)                | AI at session start                                    | Reference for the 16 `task.py` subcommands grouped by purpose                            |
+| Section in `workflow.md`                                | Who reads it                                              | Effect                                                                                   |
+| ------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `## Phase Index` + `## Phase 1/2/3`                     | AI startup path, `trellis-start`, and `/trellis:continue` | Defines the three-phase flow and the step-by-step how-to inside each phase               |
+| `### Skill Routing`                                     | AI startup path and skills                                | Maps user intent → which skill to load (e.g. "wants new feature" → `trellis-brainstorm`) |
+| `### DO NOT skip skills`                                | AI at session start                                       | Inlines the common excuses for skipping skills and the reasons why they're wrong         |
+| `[workflow-state:STATUS]` blocks under `## Phase Index` | `inject-workflow-state.py` on every `UserPromptSubmit`    | Per-turn reminder shown as `<workflow-state>…</workflow-state>` based on task status     |
+| `### Task System` (task.py command list)                | AI at session start                                       | Reference for the 16 `task.py` subcommands grouped by purpose                            |
 
 All injection paths read `workflow.md` at runtime — you don't need to rebuild anything after editing.
 
@@ -28,13 +28,14 @@ The per-turn `<workflow-state>` block is what nudges the AI at each message base
 ## Phase Index
 
 [workflow-state:no_task]
-No active task. If the user describes multi-step work, load trellis-brainstorm skill…
+No active task. First classify the current turn and ask for task-creation consent before creating any Trellis task.
 [/workflow-state:no_task]
 
 ### Phase 1: Plan
 
 [workflow-state:planning]
-Complete prd.md via trellis-brainstorm skill; then run task.py start.
+Load trellis-brainstorm; stay in planning.
+Lightweight: prd.md can be enough. Complex: finish prd.md, design.md, and implement.md; ask for review before task.py start.
 [/workflow-state:planning]
 
 ### Phase 2: Execute
@@ -56,8 +57,8 @@ Rules:
 - Tag `STATUS` matches `task.json.status`. Defaults: `planning` / `in_progress` / `completed`, plus `no_task` when no task is active.
 - Hyphens and underscores are both allowed in the tag (`blocked` / `in-review` / `needs_qa` etc.).
 - If a status has no matching tag block, the hook emits the generic line `Refer to workflow.md for current step.` and the AI falls back to reading the workflow contract directly. Delete blocks you don't need.
-- `task.py create` now sets the active-task pointer alongside writing `status=planning`, so the `[workflow-state:planning]` block fires from the very next turn — during brainstorm and JSONL curation, not just after `task.py start`.
-- Keep each block short (~200 bytes). This is injected every turn; bloat means the AI pays attention cost on every message.
+- `task.py create` sets the active-task pointer alongside writing `status=planning`, so the `[workflow-state:planning]` block fires from the very next turn — during brainstorm and planning artifact work, not just after `task.py start`.
+- Keep each block compact. This is injected every turn; bloat means the AI pays attention cost on every message.
 
 ### Adding a custom workflow state
 
@@ -111,7 +112,9 @@ The Phase sections in `workflow.md` are plain markdown. You can:
 - **Split Plan into two branches (A/B)** — replace step numbering with 1A.1 / 1B.1 naming; the AI follows what's in the text.
 - **Shorten Finish** — delete steps you don't care about (e.g. drop 3.2 debug retrospective).
 
-Keep the Phase Index in sync with the detailed Phase sections — the index is inlined at SessionStart so the AI sees both consistently.
+Keep the Phase Index in sync with the detailed Phase sections. Startup context
+usually injects the compact Phase Index, while `/trellis:continue` and
+`get_context.py --mode phase --step X.Y` load detailed step bodies on demand.
 
 <Note>
   `get_context.py --mode phase --step X.Y` parses `## Phase X` headings + `#### X.Y` step headings
