@@ -1,0 +1,15 @@
+---
+title: 'v0.5.12'
+description: '2026-05-10'
+---
+
+## Bug Fixes
+
+- **`trellis update` 现在会把 hash-tracked 的 `.trellis/workflow.md` 作为完整运行时模板更新**。Updater 不再只合并 `[workflow-state:*]` block，因此 phase heading 和 `codex-inline` / `codex-sub-agent` 这类平台路由 marker 会一起刷新。修复 Codex 升级后 hook 脚本已更新、但 workflow 仍停在旧 `[Codex]` block 的问题。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
