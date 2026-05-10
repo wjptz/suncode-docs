@@ -8,12 +8,13 @@
 
 > Better Auth UI is the recommended solution for authentication interfaces in this stack. Use a recent stable release that supports SSR and CSS exports.
 
-| Package | Notes |
-|---------|-------|
+| Package                      | Notes                                             |
+| ---------------------------- | ------------------------------------------------- |
 | `@daveyplate/better-auth-ui` | v3.x API with SSR fixes, CSS export (recommended) |
-| `better-auth` | Backend authentication |
+| `better-auth`                | Backend authentication                            |
 
 **Why v3.x?**
+
 - v1.x has no CSS export (`"./css"` not exported error)
 - v3.x uses UPPERCASE view names (`SIGN_IN` not `sign-in`)
 - v3.x uses `AuthView` instead of deprecated `AuthCard`
@@ -42,11 +43,11 @@ This guide covers **Better Auth UI** (`@daveyplate/better-auth-ui`) for authenti
 **CRITICAL SSR Pattern:** Use `isMounted` to prevent hydration errors.
 
 ```tsx
-import { AuthUIProvider } from "@daveyplate/better-auth-ui";
-import "@daveyplate/better-auth-ui/css"; // Required CSS import
-import { authClient } from "@/lib/auth-client";
-import { useNavigate } from "react-router";
-import { useState, useEffect } from "react";
+import { AuthUIProvider } from '@daveyplate/better-auth-ui';
+import '@daveyplate/better-auth-ui/css'; // Required CSS import
+import { authClient } from '@/lib/auth-client';
+import { useNavigate } from 'react-router';
+import { useState, useEffect } from 'react';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   // SSR-safe: Only render auth UI after client hydration
@@ -72,21 +73,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }}
       // v3.x: Use UPPERCASE view names
       viewPaths={{
-        SIGN_IN: "login",
-        SIGN_UP: "register",
-        FORGOT_PASSWORD: "forgot-password",
-        RESET_PASSWORD: "reset-password",
-        SIGN_OUT: "logout",
+        SIGN_IN: 'login',
+        SIGN_UP: 'register',
+        FORGOT_PASSWORD: 'forgot-password',
+        RESET_PASSWORD: 'reset-password',
+        SIGN_OUT: 'logout',
       }}
       // Social providers configuration
       social={{
-        providers: ["google"],
+        providers: ['google'],
       }}
       // Image component for Cloudflare Workers (no Next.js Image)
       avatar={{
-        Image: ({ src, alt, ...props }) => (
-          <img src={src as string} alt={alt} {...props} />
-        ),
+        Image: ({ src, alt, ...props }) => <img src={src as string} alt={alt} {...props} />,
       }}
     >
       {children}
@@ -98,6 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 **Why `isMounted` Pattern?**
 
 Better Auth UI components use React hooks that fail during SSR:
+
 - `useContext` returns null during server render
 - `useSession` throws "Cannot read properties of null"
 - Components render differently between server and client
@@ -156,8 +156,8 @@ The `isMounted` pattern ensures auth UI only renders after client-side hydration
 
 ```tsx
 // app/routes/auth/login.tsx
-import { AuthView } from "@daveyplate/better-auth-ui";
-import { useState, useEffect } from "react";
+import { AuthView } from '@daveyplate/better-auth-ui';
+import { useState, useEffect } from 'react';
 
 export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -195,10 +195,10 @@ export default function LoginPage() {
 
 ```tsx
 // app/components/user-button.tsx
-import { UserButton as BetterAuthUserButton } from "@daveyplate/better-auth-ui";
-import { useSession } from "@daveyplate/better-auth-ui";
-import { Link } from "react-router";
-import { useState, useEffect } from "react";
+import { UserButton as BetterAuthUserButton } from '@daveyplate/better-auth-ui';
+import { useSession } from '@daveyplate/better-auth-ui';
+import { Link } from 'react-router';
+import { useState, useEffect } from 'react';
 
 export function UserButton() {
   const [isMounted, setIsMounted] = useState(false);
@@ -210,9 +210,7 @@ export function UserButton() {
 
   // SSR or loading: show placeholder
   if (!isMounted || isPending) {
-    return (
-      <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
-    );
+    return <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />;
   }
 
   // Not logged in: show sign in link
@@ -243,7 +241,7 @@ export function UserButton() {
 **IMPORTANT:** v3.x uses `view` prop with UPPERCASE values, not `pathname`.
 
 ```tsx
-import { AuthView } from "@daveyplate/better-auth-ui";
+import { AuthView } from '@daveyplate/better-auth-ui';
 
 // Sign In page - v3.x uses UPPERCASE
 function SignInPage() {
@@ -267,23 +265,20 @@ function ResetPasswordPage() {
 ```
 
 **v3.x View Names:**
-| v1.x (deprecated) | v3.x (current) |
-|-------------------|----------------|
-| `sign-in` | `SIGN_IN` |
-| `sign-up` | `SIGN_UP` |
+
+| v1.x (deprecated) | v3.x (current)    |
+| ----------------- | ----------------- |
+| `sign-in`         | `SIGN_IN`         |
+| `sign-up`         | `SIGN_UP`         |
 | `forgot-password` | `FORGOT_PASSWORD` |
-| `reset-password` | `RESET_PASSWORD` |
+| `reset-password`  | `RESET_PASSWORD`  |
 
 #### Protected Routes Pattern
 
 **REQUIRED:** Use the three-component pattern for protected routes:
 
 ```tsx
-import {
-  AuthLoading,
-  RedirectToSignIn,
-  SignedIn,
-} from "@daveyplate/better-auth-ui";
+import { AuthLoading, RedirectToSignIn, SignedIn } from '@daveyplate/better-auth-ui';
 
 function ProtectedPage() {
   return (
@@ -308,7 +303,7 @@ function ProtectedPage() {
 #### User Interface Components
 
 ```tsx
-import { UserButton, UserAvatar } from "@daveyplate/better-auth-ui";
+import { UserButton, UserAvatar } from '@daveyplate/better-auth-ui';
 
 // User dropdown menu with profile options
 function Header() {
@@ -332,7 +327,7 @@ import {
   AccountSettingsCards,
   SecuritySettingsCards,
   SettingsCards,
-} from "@daveyplate/better-auth-ui";
+} from '@daveyplate/better-auth-ui';
 
 // All account settings
 function SettingsPage() {
@@ -357,7 +352,7 @@ import {
   UpdateNameCard,
   ChangeEmailCard,
   ChangePasswordCard,
-} from "@daveyplate/better-auth-ui";
+} from '@daveyplate/better-auth-ui';
 
 // Compose your own settings layout
 function CustomSettings() {
@@ -429,26 +424,26 @@ Define additional fields for signup or settings:
 <AuthUIProvider
   additionalFields={{
     age: {
-      label: "Age",
-      placeholder: "Your age",
+      label: 'Age',
+      placeholder: 'Your age',
       required: true,
-      type: "number",
+      type: 'number',
       validate: (value) => {
         const age = parseInt(value);
-        if (age < 18) return "Must be 18 or older";
+        if (age < 18) return 'Must be 18 or older';
         return true;
       },
     },
     company: {
-      label: "Company",
-      placeholder: "Your company name",
+      label: 'Company',
+      placeholder: 'Your company name',
       required: false,
-      type: "text",
+      type: 'text',
     },
   }}
   // Show fields in account settings
   account={{
-    fields: ["age", "company"],
+    fields: ['age', 'company'],
   }}
 />
 ```
@@ -471,28 +466,24 @@ Define additional fields for signup or settings:
 **Route Configuration Example:**
 
 ```tsx
-import { createBrowserRouter } from "react-router-dom";
-import {
-  AuthView,
-  SignedIn,
-  RedirectToSignIn,
-} from "@daveyplate/better-auth-ui";
+import { createBrowserRouter } from 'react-router-dom';
+import { AuthView, SignedIn, RedirectToSignIn } from '@daveyplate/better-auth-ui';
 
 const router = createBrowserRouter([
   {
-    path: "/login",
-    element: <AuthView view="SIGN_IN" />,  // v3.x: UPPERCASE
+    path: '/login',
+    element: <AuthView view="SIGN_IN" />, // v3.x: UPPERCASE
   },
   {
-    path: "/register",
-    element: <AuthView view="SIGN_UP" />,  // v3.x: UPPERCASE
+    path: '/register',
+    element: <AuthView view="SIGN_UP" />, // v3.x: UPPERCASE
   },
   {
-    path: "/forgot-password",
-    element: <AuthView view="FORGOT_PASSWORD" />,  // v3.x: UPPERCASE
+    path: '/forgot-password',
+    element: <AuthView view="FORGOT_PASSWORD" />, // v3.x: UPPERCASE
   },
   {
-    path: "/dashboard",
+    path: '/dashboard',
     element: (
       <>
         <RedirectToSignIn />
@@ -510,15 +501,15 @@ const router = createBrowserRouter([
 ```tsx
 <AuthUIProvider
   viewPaths={{
-    SIGN_IN: "login",           // /login instead of /sign-in
-    SIGN_UP: "register",        // /register instead of /sign-up
-    FORGOT_PASSWORD: "forgot",  // /forgot instead of /forgot-password
+    SIGN_IN: 'login', // /login instead of /sign-in
+    SIGN_UP: 'register', // /register instead of /sign-up
+    FORGOT_PASSWORD: 'forgot', // /forgot instead of /forgot-password
   }}
   account={{
-    basePath: "/settings",      // Account settings base path
+    basePath: '/settings', // Account settings base path
     viewPaths: {
-      PROFILE: "profile",
-      SECURITY: "security",
+      PROFILE: 'profile',
+      SECURITY: 'security',
     },
   }}
 />
@@ -542,10 +533,10 @@ Since the frontend is bundled as static assets in Workers:
 
 ```tsx
 // lib/auth-client.ts
-import { createAuthClient } from "better-auth/client";
+import { createAuthClient } from 'better-auth/client';
 
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_API_URL || "/",
+  baseURL: import.meta.env.VITE_API_URL || '/',
 });
 ```
 
@@ -617,9 +608,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
         // ... other shadcn colors
       },
     },
@@ -677,7 +668,7 @@ return <AuthUIComponent />;
 
 ```tsx
 // In your root component or app.tsx
-import "@daveyplate/better-auth-ui/css";
+import '@daveyplate/better-auth-ui/css';
 ```
 
 #### UserButton Shows Broken Image
@@ -687,6 +678,7 @@ import "@daveyplate/better-auth-ui/css";
 **Cause:** SSR rendering issue or missing Image component override.
 
 **Solution:**
+
 1. Use `isMounted` pattern for UserButton
 2. Configure custom Image component:
 
@@ -778,10 +770,7 @@ Enable multi-tenant features:
 Use organization components:
 
 ```tsx
-import {
-  OrganizationSwitcher,
-  OrganizationSettingsCards,
-} from "@daveyplate/better-auth-ui";
+import { OrganizationSwitcher, OrganizationSettingsCards } from '@daveyplate/better-auth-ui';
 
 function AppHeader() {
   return (
@@ -806,7 +795,7 @@ function OrgSettingsPage() {
 Use the `useAuthenticate()` hook for custom logic:
 
 ```tsx
-import { useAuthenticate } from "@daveyplate/better-auth-ui";
+import { useAuthenticate } from '@daveyplate/better-auth-ui';
 
 function CustomComponent() {
   const { session, user, loading } = useAuthenticate();
@@ -821,7 +810,7 @@ function CustomComponent() {
 **Better Auth Client Hooks:**
 
 ```tsx
-import { authClient } from "@/lib/auth-client";
+import { authClient } from '@/lib/auth-client';
 
 function UserProfile() {
   const { data: session, isPending } = authClient.useSession();
@@ -944,7 +933,7 @@ localization={{
 **DO:** Import types from better-auth
 
 ```tsx
-import type { Session, User } from "better-auth/types";
+import type { Session, User } from 'better-auth/types';
 ```
 
 @@@/section:auth-best-practices

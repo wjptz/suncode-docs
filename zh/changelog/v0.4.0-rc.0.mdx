@@ -9,7 +9,7 @@ description: '2026-04-14'
 
 Vanilla 项目的 `additionalContext` 从 **~29 KB 降到 ~7 KB**，稳定在 Claude Code 的 ~20 KB 截断阈值以下。此前大多数非 trivial 项目的任务状态（ACTIVE TASKS、CURRENT TASK）会被静默丢失。感谢 @21nak 提供详尽的定位数据和两个 PR。
 
-- **#161 workflow.md 章节索引**：将 `workflow.md` 全文注入（~12 KB）替换为紧凑的 `## ` 标题索引。5 平台（含 copilot）全部覆盖。AI 按需读取完整文件。
+- **#161 workflow.md 章节索引**：将 `workflow.md` 全文注入（~12 KB）替换为紧凑的 `##` 标题索引。5 平台（含 copilot）全部覆盖。AI 按需读取完整文件。
 - **#160 移除 start.md 注入**：`<instructions>` 块之前预注入了 `start.md`（~11 KB），但 slash command 本身就是按需展开的——重复工作。4 平台移除（copilot 原本就没注入）。
 - **后续清理**：`<ready>` 文案不再引用 `<instructions>` 移除后不存在的 "Steps 1-3 / Step 4"。顺手清掉了 `claude_dir` / `codex_dir` / `iflow_dir` 三个失去使用者的 orphan 变量。
 
