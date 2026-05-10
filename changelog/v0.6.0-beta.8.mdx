@@ -1,0 +1,53 @@
+---
+title: 'v0.6.0-beta.8'
+description: '2026-05-10'
+---
+
+Adds task-creation consent gates and planning artifacts to the 0.6 beta workflow.
+
+## Enhancements
+
+### Task Triage Consent
+
+No-task turns now classify the request before creating any Trellis task.
+
+| Request type                     | Behavior                                                                                                         |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Simple conversation / small task | Ask only whether this turn should create a Trellis task; if not, skip Trellis for the turn.                      |
+| Complex task                     | Ask whether Trellis may create a task and enter planning. If declined, clarify scope or suggest a smaller split. |
+
+### Planning Artifacts
+
+`task.py create` now creates a default `prd.md`; complex planning uses `prd.md`,
+`design.md`, and `implement.md` before `task.py start`.
+
+| Artifact       | Purpose                                                                     |
+| -------------- | --------------------------------------------------------------------------- |
+| `prd.md`       | Requirements, constraints, acceptance criteria, out-of-scope.               |
+| `design.md`    | Complex task technical design: boundaries, data flow, contracts, tradeoffs. |
+| `implement.md` | Complex task execution plan: checklist, validation commands, review gates.  |
+
+### Context Loading
+
+Implement/check context order is now consistent across hook-push, pull-prelude, Pi
+extension, OpenCode plugin, and inline modes.
+
+```text
+jsonl entries -> prd.md -> design.md if present -> implement.md if present
+```
+
+`implement.jsonl` and `check.jsonl` remain spec/research manifests; they do not
+replace `implement.md`.
+
+### Codex Inline Mode
+
+Codex no-task breadcrumbs include `<trellis-bootstrap>` and `<codex-mode>`
+context. Inline mode means the main Codex session implements and checks directly;
+it does not dispatch implement/check sub-agents.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
