@@ -1,0 +1,21 @@
+---
+title: 'v0.6.0-beta.6'
+description: '2026-05-10'
+---
+
+Brings the `v0.5.11` stable fix into the 0.6 beta line.
+
+## Bug Fixes
+
+- **`add_session.py` / `task.py archive` no longer force-stage with `git add -f`.** When `.gitignore` excludes `.trellis/`, scripts print a warning and skip auto-commit. Reverts the auto-retry that shipped in 0.6.0-beta.5.
+
+## Enhancements
+
+- **New config: `session_auto_commit: true | false`** in `.trellis/config.yaml` (default `true`). Set `false` to skip auto stage + commit; journal / archive files still write to disk. Existing projects get a commented-out block appended on `trellis update` (via `configSectionsAdded`). Closes [#245](https://github.com/mindfold-ai/Trellis/issues/245).
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
