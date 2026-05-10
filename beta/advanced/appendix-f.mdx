@@ -217,13 +217,25 @@ Not as a built-in workflow yet. The current default is implement → check (post
 
 Yes. Several users have moved Trellis to long-form writing by treating prose like code: `prd.md` defines what the piece argues and what's out of scope; `.trellis/spec/` holds voice / structure / citation rules; `implement.jsonl` lists writing-agent context; `check.jsonl` lists editorial and fact-check rules; `journal-*.md` records decisions. Reported gains: 20-30% faster output for the same quality bar, mostly from removing the "remind the AI of the style guide" tax per session. Trellis won't help with creative spark — it helps with consistency and not re-explaining yourself.
 
+### Q28: How do I disable auto-commit when `.trellis/` is in `.gitignore`?
+
+When `.gitignore` excludes `.trellis/`, scripts respect it — they print a warning and skip `git add` / `git commit`. The journal and task-archive files still write to disk; they just don't enter git.
+
+To turn auto-commit off explicitly (regardless of `.gitignore`), set in `.trellis/config.yaml`:
+
+```yaml
+session_auto_commit: false
+```
+
+Default `true`. Accepts `true / false / yes / no / 1 / 0 / on / off`. Affects `add_session.py` (journal) and `task.py archive` (task archival).
+
 ## Team collaboration & cross-project
 
-### Q28: Will multiple developers using Trellis cause conflicts?
+### Q29: Will multiple developers using Trellis cause conflicts?
 
 Per-developer and per-session state is isolated (`workspace/{name}/`, `.developer`, `.runtime/sessions/<session-key>.json`). Shared state is `.trellis/spec/` and `.trellis/tasks/`; they go through PR review like any code. Use `--assignee` when creating a task to avoid collisions.
 
-### Q29: What in `.trellis/` should be tracked by git? What's ignored?
+### Q30: What in `.trellis/` should be tracked by git? What's ignored?
 
 Track everything by default. `.trellis/` is designed as a team-shared directory:
 
@@ -236,7 +248,7 @@ Already gitignored by `.trellis/.gitignore`: `.developer`, `.current-task`, `.ru
 
 If you put `.trellis/` itself in your project `.gitignore`, AI can still read it (filesystem works), but you lose the team coordination layer that is the whole point.
 
-### Q30: My teammates don't all use Trellis. Will my changes (especially `AGENTS.md`) cause problems for them?
+### Q31: My teammates don't all use Trellis. Will my changes (especially `AGENTS.md`) cause problems for them?
 
 The conflict surface is small. `AGENTS.md` is the only file Trellis writes that non-Trellis users typically also touch; Trellis writes a managed block delimited by `<!-- TRELLIS:START -->` and `<!-- TRELLIS:END -->` markers, so content outside the block is preserved.
 
@@ -246,7 +258,7 @@ If teammates don't want Trellis content at all:
 - Add `.trellis/`, `.codex/`, `.agents/`, `.claude/` etc. to your **local** `.git/info/exclude` (per-clone, not committed) to keep Trellis as your private layer.
 - Or commit `.trellis/spec/` only and gitignore the platform `.{name}/` directories at repo level.
 
-### Q31: Do I have to re-write specs from scratch for every new project? How do I reuse rules across projects?
+### Q32: Do I have to re-write specs from scratch for every new project? How do I reuse rules across projects?
 
 You don't. Maintain your team's shared rules as your own spec template repo, then pull them when starting new projects:
 
@@ -258,7 +270,7 @@ Supports GitHub / GitLab / Bitbucket / self-hosted GitLab (HTTPS / SSH). Coding 
 
 ## Customize & interop
 
-### Q32: Can I use other plugins / skills / MCPs (Superpowers, Context7, custom MCPs) alongside Trellis?
+### Q33: Can I use other plugins / skills / MCPs (Superpowers, Context7, custom MCPs) alongside Trellis?
 
 **MCP** — yes. MCPs are tools the model calls; they don't change Trellis's workflow injection.
 
@@ -268,7 +280,7 @@ Supports GitHub / GitLab / Bitbucket / self-hosted GitLab (HTTPS / SSH). Coding 
 
 If you really need them to coexist (e.g., you want to pull in one specific skill from Superpowers), see Q34 (how to customize via `trellis-meta`) — that skill rewrites Trellis's workflow so it doesn't fight with your other framework.
 
-### Q33: Can Trellis coexist with Superpowers / OpenSpec / OMO / similar frameworks?
+### Q34: Can Trellis coexist with Superpowers / OpenSpec / OMO / similar frameworks?
 
 Not recommended. These are all workflow frameworks (not just skill collections); each has its own injection mechanism, trigger rules, and phase definitions. Running two workflow frameworks in the same session means:
 
@@ -280,7 +292,7 @@ Not recommended. These are all workflow frameworks (not just skill collections);
 
 If you want one specific **skill** from another tool (not its whole workflow), see Q34 — use `trellis-meta` to fold that skill into Trellis's flow, but don't run two phase controllers in parallel.
 
-### Q34: How do I customize Trellis to match my team's habits?
+### Q35: How do I customize Trellis to match my team's habits?
 
 Use the `trellis-meta` skill. It's purpose-built for forking Trellis: remove or add phases (e.g., drop the check phase if it's slow locally, or add a PRD admission gate / system-test gate), change skill trigger conditions, edit sub-agent prompts, customize workflow-state text — all driven by the skill, which guides you through edits to `.trellis/workflow.md` and related templates.
 
@@ -292,7 +304,7 @@ npx skills add mindfold-ai/marketplace --skill trellis-meta
 
 More at [`docs.trytrellis.app/skills-market/trellis-meta`](https://docs.trytrellis.app/skills-market/trellis-meta). All edits are markdown — no Python or hook code involved.
 
-### Q35: Obsidian doesn't show my `.trellis/` directory
+### Q36: Obsidian doesn't show my `.trellis/` directory
 
 Obsidian hides directories starting with `.` by default. Two fixes. In Obsidian Settings → Files & Links, enable `Detect all file extensions` and `Show hidden files` if your version exposes the option. Otherwise symlink to a visible directory and point Obsidian there:
 
@@ -302,7 +314,7 @@ ln -s .trellis trellis-vault
 
 Separately, `MM-DD-<slug>/` task names truncate in Obsidian's file explorer.
 
-### Q36: Does Trellis support Chinese workflow / specs / journals?
+### Q37: Does Trellis support Chinese workflow / specs / journals?
 
 Yes — the content layer is language-agnostic. Specs, PRDs, journals, and `workflow.md` are plain Markdown; write them in any language and the AI reads whatever's there. Trellis CLI output and the default English templates are currently in English, but you can replace template content with Chinese after `trellis init` (or fork your own template repo, see Q31). Chinese localization for built-in skill prompts is partially shipped and on the roadmap. None of this affects the workflow logic.
 

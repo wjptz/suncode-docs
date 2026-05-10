@@ -217,13 +217,25 @@ trellis init -u your-name --claude --pi
 
 可以。已经有用户把 Trellis 搬到长文写作，把 prose 当代码处理：`prd.md` 定义这篇要论证什么、什么不写；`.trellis/spec/` 放语气 / 结构 / 引用格式规则；`implement.jsonl` 列写作 agent 需要的上下文；`check.jsonl` 列编辑 checklist 和事实校验规则；`journal-*.md` 记录决定了什么、删掉了什么。报告的提效幅度：同等质量下产出快 20-30%，主要省在"每次都得提醒 AI 风格指南"这一项。Trellis 帮不了创意火花，只帮一致性和"不用反复解释自己"。
 
+### Q28: `.trellis/` 在 `.gitignore` 里时，怎么关掉 auto-commit？
+
+`.gitignore` 排除 `.trellis/` 时脚本会尊重它 — 打印警告并跳过 `git add` / `git commit`。journal 和 task archive 文件仍写入磁盘，只是不进 git。
+
+要显式关掉 auto-commit（不管 `.gitignore`），在 `.trellis/config.yaml` 里设：
+
+```yaml
+session_auto_commit: false
+```
+
+默认 `true`，接受 `true / false / yes / no / 1 / 0 / on / off`。影响 `add_session.py`（journal）和 `task.py archive`（任务归档）。
+
 ## 团队协作与跨项目
 
-### Q28: 多人用 Trellis 会冲突吗？
+### Q29: 多人用 Trellis 会冲突吗？
 
 按开发者和会话隔离（`workspace/{name}/`、`.developer`、`.runtime/sessions/<session-key>.json`）。共享状态是 `.trellis/spec/` 和 `.trellis/tasks/`，走 PR review。建任务时用 `--assignee` 避免撞车。
 
-### Q29: `.trellis/` 哪些目录要 git 跟踪？哪些 ignore？
+### Q30: `.trellis/` 哪些目录要 git 跟踪？哪些 ignore？
 
 默认全部跟踪。`.trellis/` 设计就是团队共享目录：
 
@@ -236,7 +248,7 @@ trellis init -u your-name --claude --pi
 
 如果把整个 `.trellis/` 放进项目根的 `.gitignore`，AI 仍然能读（文件系统层面工作正常），但你失去 team coordination 这一层 —— 这层正是 Trellis 的核心价值。
 
-### Q30: 队友没有都装 Trellis，我的改动（尤其 `AGENTS.md`）会影响他们吗？
+### Q31: 队友没有都装 Trellis，我的改动（尤其 `AGENTS.md`）会影响他们吗？
 
 冲突面很小。`AGENTS.md` 是 Trellis 写入、且非 Trellis 用户也会改的唯一文件；Trellis 写的内容用 `<!-- TRELLIS:START -->` / `<!-- TRELLIS:END -->` marker 包起来，marker 外面的内容不动。
 
@@ -246,7 +258,7 @@ trellis init -u your-name --claude --pi
 - 把 `.trellis/`、`.codex/`、`.agents/`、`.claude/` 等加到**本地** `.git/info/exclude`（per-clone，不提交），把 Trellis 当成纯私人层。
 - 或者只 commit `.trellis/spec/`，仓库级 gitignore 平台 `.{name}/` 目录。
 
-### Q31: 新项目要从头沉淀 spec 吗？跨项目通用规则怎么复用？
+### Q32: 新项目要从头沉淀 spec 吗？跨项目通用规则怎么复用？
 
 不用从头写。把团队通用规则维护成你自己的 spec 模板仓库，新项目用 `trellis init -r <git-url>` 直接拉：
 
@@ -258,7 +270,7 @@ trellis init -r git@github.com:your-org/trellis-spec-template.git
 
 ## 定制与兼容
 
-### Q32: 同一会话能不能同时用其他 plugin / skill / MCP（Superpowers / Context7 / 自定义 MCP）？
+### Q33: 同一会话能不能同时用其他 plugin / skill / MCP（Superpowers / Context7 / 自定义 MCP）？
 
 **MCP** —— 可以。MCP 是模型工具，不会改 Trellis 的工作流注入。
 
@@ -268,7 +280,7 @@ trellis init -r git@github.com:your-org/trellis-spec-template.git
 
 如果实在想兼容（例如想从 Superpowers 拉一个特定 skill 进来），看 Q34（怎么定制 / `trellis-meta`），通过 `trellis-meta` skill 调整 Trellis 的工作流避开冲突。
 
-### Q33: Trellis 能和 Superpowers / OpenSpec / OMO 等其他框架共用吗？
+### Q34: Trellis 能和 Superpowers / OpenSpec / OMO 等其他框架共用吗？
 
 不推荐。这几个本质上都是工作流框架（不只是 skill 集合），各自有注入机制、触发规则、阶段定义。两套工作流框架在同一个会话里跑会出现：
 
@@ -280,7 +292,7 @@ trellis init -r git@github.com:your-org/trellis-spec-template.git
 
 实在想兼用其中某一个**具体的 skill**（不是整套工作流），见 Q34 —— 用 `trellis-meta` 把 Trellis 流程改造一下让它调用对方那个 skill，但不要让两套阶段控制系统并存。
 
-### Q34: 怎么把 Trellis 改成符合我们团队习惯的样子？
+### Q35: 怎么把 Trellis 改成符合我们团队习惯的样子？
 
 用 `trellis-meta` skill。它专门为二开 Trellis 而做：删 / 加 phase（比如本地嫌 check 慢直接去掉，或者加 PRD 准入门禁、系统测试门禁）、改 skill 触发条件、改 sub-agent prompt、定制 workflow-state 文案，全部通过 skill 引导你修改 `.trellis/workflow.md` 和相关模板。
 
@@ -292,7 +304,7 @@ npx skills add mindfold-ai/marketplace --skill trellis-meta
 
 更多见 [`docs.trytrellis.app/zh/skills-market/trellis-meta`](https://docs.trytrellis.app/zh/skills-market/trellis-meta)。所有改动都是 markdown，不用碰 Python 或 hook 代码。
 
-### Q35: Obsidian 看不到 `.trellis/` 目录怎么办？
+### Q36: Obsidian 看不到 `.trellis/` 目录怎么办？
 
 Obsidian 默认隐藏点开头目录。两种解法。Obsidian Settings → Files & Links，打开 `Detect all file extensions` 和 `Show hidden files`（部分版本不暴露这个选项）。否则建个可见的软链，把 vault 指过去：
 
@@ -302,7 +314,7 @@ ln -s .trellis trellis-vault
 
 另一个相关痛点：`MM-DD-<slug>/` 任务目录在 Obsidian 文件浏览器里会被截断。
 
-### Q36: Trellis 支持中文工作流 / 中文 spec / 中文 journal 吗？
+### Q37: Trellis 支持中文工作流 / 中文 spec / 中文 journal 吗？
 
 支持 —— 内容层是语言无关的。spec、PRD、journal、`workflow.md` 全是纯 Markdown，写中文还是英文都行，AI 看到什么读什么。Trellis CLI 输出和默认模板目前是英文，但 `trellis init` 之后可以替换模板内容为中文（或 fork 你自己的模板仓库，见 Q31）。内置 skill 的中文 prompt 部分已经支持，本地化在 roadmap 里。这些都不影响工作流逻辑。
 
