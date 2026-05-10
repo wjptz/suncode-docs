@@ -8,11 +8,21 @@ title: 'Appendix F: FAQ'
 
 ### Q1: I'm used to running `/trellis:start` at session boundaries — what now?
 
-Type `/trellis:continue` instead — it gets you the same thing.
+For a new request, just describe the work in natural language. Use
+`/trellis:continue` when an active task already exists and you want the AI to
+advance to the next workflow step.
 
-The context the old `/trellis:start` injected explicitly — current developer identity, git branch and status, active task, list of active tasks, `workflow.md` phase rules, spec index, recent journal summaries — is now injected automatically by the SessionStart hook on every new session (Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `features.hooks = true` and one-time `/hooks` approval; Codex < 0.129 uses the legacy `codex_hooks = true`). Just describe your task.
+The context the old `/trellis:start` injected explicitly — current developer
+identity, git branch and status, active task, list of active tasks,
+`workflow.md` phase index, spec index paths, recent journal summaries — is now
+delivered by each platform's startup path. Claude-style platforms use
+SessionStart hooks or extensions. Codex uses `AGENTS.md` plus the
+`UserPromptSubmit` breadcrumb; when no task is active, the breadcrumb can direct
+the AI to read `trellis-start` once.
 
-When you want to re-orient the AI mid-session or push it to the next workflow step, type `/trellis:continue`. It reads task state + `workflow.md` and decides what to do.
+When you want to re-orient the AI mid-session or push it to the next workflow
+step, type `/trellis:continue`. It reads task state, artifact presence, and
+`workflow.md`, then decides what to do.
 
 On platforms without a SessionStart hook (Kilo, Antigravity, Windsurf), still run `/trellis:start` or the platform's start workflow at session start.
 
@@ -110,9 +120,14 @@ See chapters 9–12 for guidance on picking the right primitive.
 
 ### Q12: What's the difference between `/trellis:start` and `/trellis:continue`?
 
-`/trellis:start` is for fresh sessions on a platform without auto-injection (Kilo / Antigravity / Windsurf). It loads the SessionStart context report explicitly. On platforms with the SessionStart hook, you don't need it.
+`/trellis:start` is for fresh sessions on a platform without automatic startup
+context (Kilo / Antigravity / Windsurf). It loads Trellis orientation
+explicitly. On platforms with a startup hook, extension, `AGENTS.md`, or
+prompt-hook bootstrap, you usually don't need it.
 
-`/trellis:continue` is for advancing the active task to the next workflow step. Use it at any phase boundary, or when you don't know what to do next — the AI reads task state + `workflow.md` and picks the next step.
+`/trellis:continue` is for advancing the active task to the next workflow step.
+Use it at any phase boundary, or when you don't know what to do next — the AI
+reads task state, artifact presence, and `workflow.md`, then picks the next step.
 
 Mental model: `start` opens a window onto the project; `continue` moves the cursor forward inside that window.
 
@@ -188,7 +203,7 @@ The three commits come from different layers: your own work commit (Phase 3.4); 
 
 Two pressure points:
 
-1. **Re-state the rule explicitly.** `Stop. We use Trellis. Run brainstorm and create a task first.` AI calibrates to the boundary you actually enforce, not the one you wished for.
+1. **Re-state the rule explicitly.** `Stop. We use Trellis. Classify the request and ask for task-creation consent before entering planning.` AI calibrates to the boundary you actually enforce, not the one you wished for.
 2. **Strengthen the workflow-state hook.** `inject-workflow-state.py` injects a per-turn breadcrumb based on current task status. If your team sees frequent skipping, fork `workflow.md` to add stricter `[workflow-state:no_task]` text that refuses Execute without an approved PRD.
 
 This is a known cross-model failure — Claude, GPT, DeepSeek all do it. The framework reduces it but doesn't eliminate it. Phase boundaries still need a human in the loop.

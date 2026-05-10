@@ -5,144 +5,99 @@ description: '用任务系统追踪工作'
 
 ## 任务是干什么的
 
-任务是带规划产物和上下文的持久工作项。它适合那些需要跨过对话压缩、
-工具重启、agent 交接或平台切换仍能继续推进的工作。
+任务是带上下文的工作项。每个任务知道：
 
-简单对话和小型 inline 改动不会自动创建 Trellis 任务。AI 会先判断当前
-turn 的大小，并在写入 `.trellis/tasks/` 前询问是否需要创建任务。
+- 你要做什么（PRD）
+- 哪些文件相关
+- 在哪个分支工作
+- 当前状态
 
-## 什么时候需要任务
-
-Trellis 使用三个实际层级：
-
-| 层级              | 适用情况                                                    | 确认规则                                                                                                       |
-| ----------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| 简单对话          | 问答、解释、查询、讨论，不改仓库                            | 默认不建任务。如果 AI 觉得任务可能有帮助，只问“本回合是否需要创建 Trellis task”。                              |
-| Inline 小任务     | 当前 turn 可以理解和验证的局部改动                          | AI 只问“本回合是否需要创建 Trellis task”。如果用户说不需要，本轮跳过 Trellis，并可以 inline 完成。             |
-| 完整 Trellis 任务 | 多文件改动、workflow/spec/platform 变化、模板生成、持久规划 | AI 说明为什么适合建任务，并询问是否可以创建 Trellis task 进入 planning。用户拒绝时，不应做大范围 inline 实现。 |
-
-更大的工作应该拆成多个相关 Trellis 任务，而不是塞进一个巨大的任务目录。
+切换任务时，AI 的上下文也切换。不会搞混你在做哪个功能。
 
 ## 任务结构
 
-任务在 `.trellis/tasks/` 下。每个任务是一个目录：
+任务在 `.trellis/tasks/`。每个任务是一个目录：
 
-```text
-.trellis/tasks/05-10-task-artifacts-taosu/
-├── task.json          # 元数据和状态
-├── prd.md             # 需求和验收标准
-├── design.md          # 可选：复杂任务的技术设计
-├── implement.md       # 可选：复杂任务的实施计划
-├── implement.jsonl    # 实现阶段的 spec/research manifest
-├── check.jsonl        # 复核阶段的 spec/research manifest
-└── research/          # 可选：持久调研记录
+```
+.trellis/tasks/01-31-user-auth-taosu/
+├── task.json           # 元数据
+├── prd.md              # 需求
+├── implement.jsonl     # implement agent 的上下文
+├── check.jsonl         # check agent 的上下文
+└── debug.jsonl         # debug agent 的上下文
 ```
 
-知道负责人时，目录名格式是 `MM-DD-slug-assignee`。
-
-轻量任务可以只有 `prd.md`。复杂任务在 `task.py start` 前必须有
-`prd.md`、`design.md`、`implement.md`。
+目录名格式：`MM-DD-简短描述-负责人`。
 
 ## 创建任务
 
-使用任务脚本：
+用任务脚本：
 
 ```bash
 python3 .trellis/scripts/task.py create "user-auth" --assignee taosu
 ```
 
-这个命令会创建任务目录，写入 `task.json`，并创建默认 `prd.md` 模板。
-支持 sub-agent 的环境也可能 seed `implement.jsonl` 和 `check.jsonl`。
-
-`task.py create` 不会创建 `design.md` 或 `implement.md`。AI 会在 planning
-阶段判断任务复杂度，需要时再写这两个文件。
-
-## 规划产物
+这会创建任务目录和默认文件。然后编辑 `prd.md` 写需求。
 
 ### prd.md
 
-`prd.md` 记录需求和验收目标。它应该说明要改什么、约束是什么、怎样判断
-完成。它不承载技术设计或执行 checklist。
+写你要做什么。需求和验收标准要具体。
 
 ```markdown
-# User Authentication
+# 用户认证
 
-## Goal
+## 目标
 
-Users can sign up and log in with email/password.
+用户可以用邮箱和密码注册、登录。
 
-## Requirements
+## 需求
 
-- Sign up with email, password, and display name
-- Email verification required before login
-- Login returns a JWT token
-- Token expires after 7 days
-- Password reset works through email
+- 用邮箱、密码、显示名注册
+- 登录前需要验证邮箱
+- 登录返回 JWT token
+- Token 7 天过期
+- 通过邮件重置密码
 
-## Acceptance Criteria
+## API 接口
 
-- Signup rejects duplicate emails
-- Unverified accounts cannot log in
-- Password reset tokens expire
+- POST /auth/signup
+- POST /auth/login
+- POST /auth/verify-email
+- POST /auth/forgot-password
+- POST /auth/reset-password
 
-## Out of Scope
+## 不在范围内
 
-- Social login
-- Two-factor authentication
+- 社交登录（Google、GitHub）
+- 两步验证
 ```
 
-### design.md
+### 上下文文件（JSONL）
 
-`design.md` 用在复杂任务。它解释技术形态：
-
-- 受影响模块和边界
-- 数据流和 contract
-- hook、workflow 或平台集成点
-- 兼容性和迁移影响
-- 取舍和回滚方式
-
-### implement.md
-
-`implement.md` 是复杂任务的执行计划，应该包含：
-
-- 有序实施 checklist
-- 验证命令
-- review gate
-- 回滚点
-- 已知顺序约束
-
-它不替代 `implement.jsonl`。Markdown 文件是计划；JSONL 文件是上下文加载
-使用的 spec/research manifest。
-
-## 上下文 manifest
-
-`implement.jsonl` 和 `check.jsonl` 告诉 agent 读取哪些稳定上下文文件。
-这里应该列 spec 和 research，不列即将修改的源文件。
+告诉 agent 该读哪些文件：
 
 ```jsonl
-{"file": ".trellis/spec/cli/backend/index.md", "reason": "CLI backend contract"}
-{"file": ".trellis/tasks/05-10-example/research/platforms.md", "reason": "Platform behavior research"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端编码规范"}
+{"file": ".trellis/spec/backend/api.md", "reason": "API 设计模式"}
+{"file": "src/routes/auth.ts", "reason": "认证路由实现"}
+{"file": "src/services/user.ts", "reason": "用户服务逻辑"}
 ```
 
-`implement.jsonl` 放实现阶段需要的上下文，`check.jsonl` 放 review 和验证
-需要的上下文。没有 sub-agent 边界的 inline 工作，可以直接读取相关文件，
-不一定需要整理 JSONL。
+不同 agent 可以有不同的上下文文件。按需编辑 `implement.jsonl`、`check.jsonl` 等。
 
 ## 开始做任务
 
-只有规划产物准备好后才设置当前任务：
+设置当前任务：
 
 ```bash
-python3 .trellis/scripts/task.py start 05-10-task-artifacts-taosu
+python3 .trellis/scripts/task.py start 01-31-user-auth-taosu
 ```
 
-轻量任务可以只需要 `prd.md`。复杂任务进入实现前需要完整 planning set：
+Hooks 用这个来注入正确的上下文。现在开 Claude Code 会话时，它知道：
 
-- `prd.md`
-- `design.md`
-- `implement.md`
-
-之后 hook 和 skill 会加载 active task，并让 AI 跟当前 workflow phase 对齐。
+- 读这个任务的 PRD
+- 加载 JSONL 文件里列的规范
+- 在任务的分支工作
 
 ## 管理任务
 
@@ -161,19 +116,26 @@ python3 .trellis/scripts/task.py finish
 归档已完成的任务：
 
 ```bash
-python3 .trellis/scripts/task.py archive 05-10-task-artifacts-taosu
+python3 .trellis/scripts/task.py archive 01-31-user-auth-taosu
 ```
 
-## 典型流程
+## 多个任务
 
-1. 判断当前 turn 大小；可能需要任务时先取得创建任务的确认。
-2. 用 `task.py create` 创建任务。
-3. 在 `prd.md` 写需求和验收标准。
-4. 复杂任务补充 `design.md` 和 `implement.md`。
-5. 有 sub-agent 或 review 上下文需要时，补充 spec/research manifest。
-6. 用 `task.py start` 开始任务。
-7. 实现、复核，并按需更新 spec。
-8. 提交工作改动，然后执行 finish-work 和 archive 记账。
+可以同时有多个进行中的任务。但同一时间只有一个是「当前」的。切换：
 
-任务系统把规划和上下文持久化到文件里，让下一次 AI 会话不依赖上一段聊天
-记录也能继续推进。
+```bash
+python3 .trellis/scripts/task.py start other-task-id
+```
+
+## 任务工作流
+
+典型流程：
+
+1. 创建任务：`task.py create`
+2. 编辑 `prd.md` 写需求
+3. 设置上下文文件（JSONL）
+4. 设为当前：`task.py start`
+5. 在 Claude Code 会话里工作
+6. 归档：`task.py archive <id>`
+
+任务系统把上下文组织好，让 AI 知道该关注什么。

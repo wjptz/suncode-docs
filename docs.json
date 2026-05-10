@@ -3,7 +3,7 @@
   "theme": "mint",
   "js": "/terminal-demo.js",
   "banner": {
-    "content": "📦 Reading **Beta** docs (0.6 track). Check your install: `trellis --version`. Install latest: `npm install -g @mindfoldhq/trellis@beta`. Switch to **Release** in the version dropdown ↘",
+    "content": "📦 **Beta** docs cover the 0.6 track. Check your install: `trellis --version`. Install latest beta: `npm install -g @mindfoldhq/trellis@beta`. Use the version dropdown to switch between **Beta** and **Release**.",
     "dismissible": true
   },
   "exclude": [

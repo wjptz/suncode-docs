@@ -9,8 +9,8 @@ Most teams do not need another command list. They need a way to keep project dec
 Each scenario below gives a starting prompt, the Trellis files to produce, the workflow to follow, and a concrete finish line. Pick the closest situation and adapt it into a task for your repo.
 
 <Note>
-  Trellis 0.5 is skill-first. Treat the prompts below as task inputs; Trellis routes the work
-  through the relevant skills for brainstorming, spec loading, checks, and knowledge capture. Use
+  Trellis is skill-first. Treat the prompts below as task inputs; Trellis routes the work through
+  the relevant skills for brainstorming, spec loading, checks, and knowledge capture. Use
   `/trellis:start` only when your platform needs a manual session entry point.
 </Note>
 
@@ -231,7 +231,7 @@ boundary, such as bulk CSV import, SSO provisioning, or role templates.
 
 ### 3.5 Workflow
 
-1. **User** describes the feature in natural language; answers clarifying questions and confirms scope as the brainstorm progresses → **AI** auto-triggers the trellis-brainstorm skill and runs a back-and-forth requirements discussion; during the conversation it creates the task (`task.py create`) and captures clarified Goal / In scope / Out of scope / Acceptance criteria into `prd.md` (Phase 1.1).
+1. **User** describes the feature in natural language; answers clarifying questions and confirms scope as planning progresses → **AI** classifies the request and asks for Trellis task creation. After the user agrees, AI loads `trellis-brainstorm`, inspects relevant code/docs before asking repo-answerable questions, creates the task (`task.py create`), and captures clarified Goal / In scope / Out of scope / Acceptance criteria into `prd.md` (Phase 1.1).
 2. **AI** configures `implement.jsonl` / `check.jsonl` with the specs the task touches (Phase 1.3).
 3. **User** types `/trellis:continue` → **AI** dispatches `trellis-implement` and builds the smallest end-to-end slice against the PRD (Phase 2.1).
 4. **User** types `/trellis:continue` → **AI** dispatches `trellis-check`, reviewing cross-layer contracts via `check.jsonl` (UI input, API validation, database writes, email side effects, permission-failure paths) and fixing issues in place (Phase 2.2).
@@ -258,7 +258,7 @@ the important billing paths.
 
 ### 4.3 Workflow
 
-1. **User** describes which module to refactor and which behaviors must not change in natural language; confirms the invariant list and extraction order during the brainstorm → **AI** auto-triggers the trellis-brainstorm skill and discusses current responsibilities, callers, side effects, and existing test coverage; creates the task (`task.py create`) along the way and records the discussion outcomes into `prd.md` (Phase 1.1).
+1. **User** describes which module to refactor and which behaviors must not change in natural language; confirms the invariant list and extraction order during planning → **AI** classifies the request and asks for Trellis task creation. After the user agrees, AI loads `trellis-brainstorm`, inspects current responsibilities, callers, side effects, and existing test coverage, creates the task (`task.py create`), and records the discussion outcomes into `prd.md` (Phase 1.1).
 2. **User** spells out the "behavior must not change" contracts directly in the PRD (see 4.4 Refactor invariants); AI may draft, user must hand-review.
 3. **AI** configures `implement.jsonl` (caller paths, existing tests, relevant specs) and `check.jsonl` (behavior contracts, reviewer concerns) → **User** confirms (Phase 1.3).
 4. **User** (or AI-assisted) adds or confirms characterization tests and gets the baseline green before any extraction.
@@ -302,7 +302,7 @@ convention, propose a spec update.
 
 ### 5.3 Workflow
 
-1. **User** describes the bug, the known reproduction path, and the expected behavior in natural language; works with AI to narrow down root-cause hypotheses during the brainstorm → **AI** auto-triggers the trellis-brainstorm skill and discusses reproduction conditions and likely root causes; creates the bug-fix task (`task.py create`) along the way and records reproduction steps, root-cause hypothesis, and regression-test requirement into `prd.md` (Phase 1.1).
+1. **User** describes the bug, the known reproduction path, and the expected behavior in natural language; works with AI to narrow down root-cause hypotheses during planning → **AI** classifies the request and asks for Trellis task creation. After the user agrees, AI loads `trellis-brainstorm`, inspects the reproduction context before asking repo-answerable questions, creates the bug-fix task (`task.py create`), and records reproduction steps, root-cause hypothesis, and regression-test requirement into `prd.md` (Phase 1.1).
 2. **AI** configures `check.jsonl` to reference the relevant specs and testing conventions → **User** confirms the check context covers the edges that matter (Phase 1.3).
 3. **User** types `/trellis:continue` → **AI** `trellis-implement` ships the smallest safe fix and adds the regression test before any broader cleanup (Phase 2.1).
 4. **User** types `/trellis:continue` and hand-reviews whether the patch actually addresses the reported behavior → **AI** `trellis-check` runs the tests; the regression test must pass with the patch and fail without it (Phase 2.2).
@@ -341,7 +341,7 @@ show the target spec file and a good/bad example.
 
 ### 6.3 Workflow
 
-1. **User** describes which PR feedback is worth capturing in natural language (pasting PR links or the comment list); groups the feedback with AI by engineering rule during the brainstorm → **AI** auto-triggers the trellis-brainstorm skill and discusses which review patterns deserve rule-level treatment; creates the spec-tightening task (`task.py create`) along the way and records the target review patterns, scope, and acceptance criteria into `prd.md` (Phase 1.1).
+1. **User** describes which PR feedback is worth capturing in natural language (pasting PR links or the comment list); groups the feedback with AI by engineering rule during planning → **AI** classifies the request and asks for Trellis task creation. After the user agrees, AI loads `trellis-brainstorm`, inspects the supplied feedback before asking repo-answerable questions, creates the spec-tightening task (`task.py create`), and records the target review patterns, scope, and acceptance criteria into `prd.md` (Phase 1.1).
 2. **User** collects repeated feedback from real PRs, groups it by engineering rule (one spec file per group), and pastes the grouping into the PRD.
 3. **User** types `/trellis:continue` → **AI** `trellis-update-spec` adds each short rule to the most relevant spec file with a good/bad code example → **User** reviews wording for accuracy.
 4. **AI** wires the updated specs into the next development task's `check.jsonl` so `trellis-check` can verify the rules catch issues.
@@ -371,7 +371,7 @@ setup, success metrics, and risks. Keep the first rollout small enough to comple
 | ----- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1     | Pilot one repo            | One real task completed with specs, checks, and journal. Two options for the spec starting point: pull a stack-matched spec pack from the [spec template marketplace](/start/install-and-first-task#official-marketplace), or use `cc-codex-spec-bootstrap` so CC + Codex draft first-pass specs from the codebase |
 | 2     | Capture repeated feedback | Three to five review patterns become specs                                                                                                                                                                                                                                                                         |
-| 3     | Standardize task workflow | Developers know when to use `/trellis:start`, `/trellis:continue`, and `/trellis:finish-work`                                                                                                                                                                                                                      |
+| 3     | Standardize task workflow | Developers know when to describe work directly, when `/trellis:continue` advances an active task, and when `/trellis:finish-work` archives after commits                                                                                                                                                           |
 | 4     | Add platform adapters     | Multiple AI tools consume the same `.trellis/` context                                                                                                                                                                                                                                                             |
 | 5     | Govern updates            | Spec and workflow changes are reviewed like code                                                                                                                                                                                                                                                                   |
 

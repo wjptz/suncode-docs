@@ -6,9 +6,9 @@ title: 'Custom Hooks'
 
 <Note>Hook support varies by platform and by event — see the per-event matrix below.</Note>
 
-- **`SessionStart` hook / extension** ships on Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent (and Codex with `features.hooks = true` in `~/.codex/config.toml`; Codex < 0.129 uses the legacy `codex_hooks = true`). Kiro's Agent Hooks are user-configured — Trellis does not install any out of the box.
+- **`SessionStart` hook / extension** ships on Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent. Codex relies on `AGENTS.md` plus the `UserPromptSubmit` hook; Kiro's Agent Hooks are user-configured — Trellis does not install any out of the box.
 - **`PreToolUse` / extension sub-agent context injection** ships on Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi Agent. The other hook-capable platforms rely on a pull-based prelude inside each sub-agent instead.
-- **`UserPromptSubmit` / workflow-state nudge** ships on the same platforms as `SessionStart`.
+- **`UserPromptSubmit` / workflow-state nudge** ships on the same platforms as `SessionStart`, plus Codex when hooks are enabled.
 - **Kilo, Antigravity, Windsurf** have no hook primitive at all; behavior is delivered via workflow files + skills.
 
 ### Hook types
@@ -20,7 +20,7 @@ title: 'Custom Hooks'
 | `PreToolUse`       | Before a tool invocation | Intercept, modify parameters, inject context |
 | `PostToolUse`      | After a tool invocation  | Log activity, trigger follow-up actions      |
 
-Claude Code, Cursor, CodeBuddy, and Droid share a Python-hook layout compatible with CC's event model (`settings.json` or `hooks.json` referencing Python scripts). OpenCode uses JS plugins (factory functions in `.opencode/plugins/`) with the same event semantics. Pi Agent uses `.pi/extensions/trellis/index.ts` instead of Python hook files. The rest of the hook-capable platforms (Codex, Gemini, Qoder, Copilot) run a `session-start.py` only — no `PreToolUse` — and configure it via a platform-native config file.
+Claude Code, Cursor, CodeBuddy, and Droid share a Python-hook layout compatible with CC's event model (`settings.json` or `hooks.json` referencing Python scripts). OpenCode uses JS plugins (factory functions in `.opencode/plugins/`) with the same event semantics. Pi Agent uses `.pi/extensions/trellis/index.ts` instead of Python hook files. Gemini, Qoder, and Copilot use hook/prompt files without `PreToolUse`. Codex installs the shared `UserPromptSubmit` workflow-state hook; its retained `session-start.py` is compatibility code, not the default model-visible startup path.
 
 ### `settings.json` configuration (Claude Code)
 
@@ -110,9 +110,10 @@ To customize per-turn wording, edit the `[workflow-state:STATUS]` block in `.tre
 **What it does**:
 
 - Intercepts Task tool calls.
-- Reads the JSONL matching the `subagent_type` (`implement.jsonl`, `check.jsonl`, `research.jsonl`).
+- Reads the JSONL matching the `subagent_type` (`implement.jsonl` or `check.jsonl`).
 - Reads all files referenced in the JSONL.
-- Assembles the sub-agent prompt (specs + requirements + original instructions).
+- Reads `prd.md`, `design.md` if present, and `implement.md` if present.
+- Assembles the sub-agent prompt (specs + task artifacts + original instructions).
 
 Design decisions:
 
@@ -125,7 +126,7 @@ Pi Agent does not load `.py` hook scripts. Trellis writes `.pi/extensions/trelli
 
 - session start context injection
 - workflow-state breadcrumb injection
-- sub-agent JSONL context injection
+- sub-agent JSONL and task artifact context injection
 
 It also passes `TRELLIS_CONTEXT_ID` into Bash commands so `task.py start/current/finish` can resolve the correct `.trellis/.runtime/sessions/<session-key>.json` file for the current Pi session.
 

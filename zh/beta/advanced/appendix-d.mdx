@@ -47,6 +47,7 @@ title: '附录 D：JSONL 配置格式参考'
 | ----------------- | ------------------- | ------------------------------------------------- |
 | `implement.jsonl` | `trellis-implement` | workflow + 相关 spec 索引 + 任务 `research/` 目录 |
 | `check.jsonl`     | `trellis-check`     | 质量相关 spec + finish-work / check 命令规范      |
-| `research.jsonl`  | `trellis-research`  | 调研参考文件（通常是 spec 或外部 doc 摘录）       |
+
+`trellis-research` 把可持久化的发现写进任务的 `research/` 目录。Trellis 不要求单独的默认 research manifest；调研上下文来自当前请求、已有 spec、任务历史，以及显式给出的调研指令。
 
 ---

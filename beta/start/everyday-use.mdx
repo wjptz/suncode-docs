@@ -13,7 +13,7 @@ Since 0.5.0, Trellis is **skill-first**: most capabilities are auto-trigger skil
 | **Command**   | `/trellis:start`       | Manual where no SessionStart hook / extension is available | Open a session, load context, classify work                                              |
 | **Command**   | `/trellis:finish-work` | Manual, after Phase 3.4 commits land                       | Archive task + record session in journal                                                 |
 | **Command**   | `/trellis:continue`    | Manual                                                     | Advance the current task to its next step — you don't memorize the workflow (see §1.2.3) |
-| **Skill**     | `trellis-brainstorm`   | Auto when user describes a feature / bug / ambiguous need  | Turn request into task + `prd.md`                                                        |
+| **Skill**     | `trellis-brainstorm`   | Planning after task-creation consent                       | Clarify requirements, inspect evidence, draft planning artifacts                         |
 | **Skill**     | `trellis-before-dev`   | Auto before touching code in a task                        | Read relevant spec before writing                                                        |
 | **Skill**     | `trellis-check`        | Auto after implementation; also via sub-agent              | Verify + self-fix loop                                                                   |
 | **Skill**     | `trellis-update-spec`  | Auto when a learning is worth capturing                    | Promote knowledge into `.trellis/spec/`                                                  |
@@ -39,13 +39,14 @@ What it does:
 
 Task classification the AI will apply:
 
-| Type             | Criteria                                             | Flow                             |
-| ---------------- | ---------------------------------------------------- | -------------------------------- |
-| Q&A              | Question about code / architecture                   | Answer directly                  |
-| Quick fix        | Typo / one-liner, under ~5 minutes                   | Edit directly                    |
-| Development task | Logic changes, new features, multi-file modification | Task workflow (brainstorm skill) |
+| Type                | Criteria                                                         | Flow                                                                                    |
+| ------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Simple conversation | Question, explanation, lookup, or discussion with no repo change | No task by default. If a task might help, ask only whether this turn should create one. |
+| Inline small task   | Contained edit that can be understood and verified in one turn   | Ask only whether this turn should create a task. If no, skip Trellis and work inline.   |
+| Full Trellis task   | Multi-file or durable planning work                              | Ask whether Trellis may create a task and enter planning.                               |
 
-When in doubt, use the task workflow; it's what ensures sub-agents get spec injection.
+If the user rejects task creation for complex work, the AI should clarify scope
+or suggest a smaller split instead of doing broad inline implementation.
 
 #### 1.2.2 `/trellis:finish-work`: Wrap up + archive
 
@@ -66,9 +67,9 @@ Final git log order: `<work commits from 3.4>` → `chore(task): archive ...` (o
 
 A typical task conversation:
 
-1. Describe the work in natural language → `trellis-brainstorm` auto-triggers → task is created and `prd.md` drafted.
-2. Once the PRD looks right, type `continue` → it knows the next step is to populate `implement.jsonl` / `check.jsonl` (the sub-agent context indexes).
-3. After you confirm the indexes, type `continue` → it spawns `trellis-implement` and `trellis-check` sub-agents.
+1. Describe the work in natural language → the AI classifies the request and asks for task-creation consent when Trellis is useful. After you agree, `trellis-brainstorm` creates the task and drafts `prd.md`.
+2. Once `prd.md` looks right, type `continue` → it decides whether the task is lightweight or needs `design.md` and `implement.md`.
+3. After planning artifacts are reviewed, type `continue` → it starts the task and moves into implement/check. Sub-agent mode also curates `implement.jsonl` / `check.jsonl`; inline mode reads artifacts/specs directly.
 4. When the sub-agents finish, type `continue` → it routes to `trellis-update-spec`, and finally `finish-work`.
 
 Previously you had to learn the workflow yourself and remember which slash command belonged to each phase. With `continue`, the whole workflow falls out of an ordinary conversation — type `continue` to move on, and Trellis keeps the phases straight on your behalf.
@@ -79,12 +80,13 @@ Skills run without an explicit command; the platform matches on the user's inten
 
 #### 1.3.1 `trellis-brainstorm`
 
-Turns a fuzzy user request into a concrete task:
+Turns an approved planning request into concrete artifacts:
 
-- Proposes task name and slug.
-- Drafts `prd.md` using the assumption / requirement / acceptance template.
-- Runs the `trellis-research` sub-agent in parallel when the request depends on investigation (existing code, external APIs, library docs).
-- Creates the task via `task.py create`.
+- Inspects code, tests, configs, docs, existing specs, and task history before asking questions.
+- Proposes a task name and slug, then creates the task via `task.py create` when needed.
+- Drafts and iterates `prd.md` with requirements and acceptance criteria.
+- Asks one question at a time, including the recommended answer.
+- For complex tasks, adds `design.md` and `implement.md` before implementation starts.
 
 #### 1.3.2 `trellis-before-dev`
 
@@ -120,7 +122,7 @@ Invoked after resolving a hard bug. Produces a 5-dimension analysis:
 
 ### 1.4 Sub-agents
 
-Sub-agents are isolated AI sub-processes with their own prompt and (platform-specific) their own tool / hook wiring. They receive spec context via JSONL files per task.
+Sub-agents are isolated AI sub-processes with their own prompt and (platform-specific) their own tool / hook wiring. Implementation and check agents receive stable spec/research context via JSONL files per task; research agents write findings into the task's `research/` directory.
 
 | Sub-agent           | Restriction            | When main session spawns it                          |
 | ------------------- | ---------------------- | ---------------------------------------------------- |
@@ -128,7 +130,7 @@ Sub-agents are isolated AI sub-processes with their own prompt and (platform-spe
 | `trellis-implement` | Writes code, no commit | Once requirements + plan exist, for the coding phase |
 | `trellis-check`     | Writes code (fixes)    | Verification phase; runs self-fix loop internally    |
 
-On Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent, these sub-agents get the right JSONL context (`implement.jsonl`, `check.jsonl`, `research.jsonl`) injected automatically before they start. Pi uses its extension rather than a Python hook. On the rest, the main session reads the JSONL files itself and passes the relevant content into sub-agent prompts.
+On Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent, implementation and check sub-agents get the right JSONL context (`implement.jsonl`, `check.jsonl`) injected automatically before they start. Pi uses its extension rather than a Python hook. On the rest, the main session reads the JSONL files itself and passes the relevant content into sub-agent prompts. Research agents write durable findings under the task's `research/` directory.
 
 ---
 
@@ -137,17 +139,18 @@ On Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent, these sub-agen
 ### 2.1 Task Lifecycle
 
 ```
-create → curate jsonl → start → implement/check → finish → archive
+create → plan artifacts → optional jsonl context → start → implement/check → finish → archive
 
-create:         task directory + task.json + seeded jsonl
-curate jsonl:   AI fills implement/check/research context
-start:          writes current task for this AI session/window
-implement/check: development and verification loop
-finish:         clears this AI session/window's current task
-archive:        moves completed task to archive/
+create:                task directory + task.json + default prd.md
+plan artifacts:        prd.md for every task; design.md + implement.md before complex work starts
+optional jsonl context: AI fills implement/check context when stable spec or research files must be injected
+start:                 marks the task in_progress for this AI session/window
+implement/check:       development and verification loop
+finish:                clears this AI session/window's current task
+archive:               moves completed task to archive/
 ```
 
-`task.py create` auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / Pi / etc.); agent-less platforms (Kilo / Antigravity / Windsurf) skip this and load specs via the `trellis-before-dev` skill in Phase 2.
+`task.py create` starts the task in `planning`, creates a default `prd.md`, and best-effort points the current AI session at the new task. It also auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / Pi / etc.); agent-less platforms (Kilo / Antigravity / Windsurf) skip this and load specs via the `trellis-before-dev` skill in Phase 2.
 
 ### 2.2 `task.py` Subcommands
 
@@ -162,14 +165,15 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
   --description "Implement JWT login")  # Description (optional)
 
 # Created directory: .trellis/tasks/02-27-user-login/
-# Created file: task.json
+# Created files: task.json, prd.md
+# May also create implement.jsonl + check.jsonl on sub-agent-capable platforms
 ```
 
 #### 2.2.2 Context Configuration
 
 ```bash
-# implement.jsonl + check.jsonl are already seeded by `task.py create`
-# on sub-agent-capable platforms. Each file starts with one self-describing
+# implement.jsonl + check.jsonl are seeded by `task.py create` on
+# sub-agent-capable platforms. Each file starts with one self-describing
 # `{"_example": "..."}` line you can leave in place or delete.
 
 # Curate entries — either edit the jsonl in your editor, or use add-context:
@@ -195,9 +199,9 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 ```
 
 <Note>
-  `research.jsonl` is managed separately (read by the `trellis-research` sub-agent). `task.py
-  add-context` only writes to `implement.jsonl` / `check.jsonl` — create / edit `research.jsonl` by
-  hand if you need custom research context.
+  `task.py add-context` only writes to `implement.jsonl` / `check.jsonl`. Research findings belong
+  in `{TASK_DIR}/research/*.md`; add those files to the implement/check manifests only when a later
+  sub-agent must read them before working.
 </Note>
 
 #### 2.2.3 Task Control
@@ -364,15 +368,15 @@ On agent-less platforms (Kilo / Antigravity / Windsurf), `task.py create` skips 
 #### 2.4.2 Adding Custom Context
 
 ```bash
-# Add existing code as reference (file)
+# Add implementation spec context
 ./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
-  "src/services/user.ts" "Existing user service patterns"
+  ".trellis/spec/cli/backend/script-conventions.md" "Script conventions for this task"
 
-# Add an entire directory (auto-reads all .md files)
+# Add research produced during planning
 ./.trellis/scripts/task.py add-context "$TASK_DIR" implement \
-  "src/services/" "Existing service patterns"
+  "$TASK_DIR/research/auth-library-comparison.md" "Library choice rationale"
 
-# Add custom check context
+# Add check context
 ./.trellis/scripts/task.py add-context "$TASK_DIR" check \
   ".trellis/spec/guides/cross-layer-thinking-guide.md" "Cross-layer verification"
 ```

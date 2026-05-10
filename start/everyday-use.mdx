@@ -28,12 +28,7 @@ The user-facing command set is deliberately small: `finish-work` and `continue` 
 
 #### 1.2.1 `/trellis:start`: Start a session
 
-Run this at the beginning of a session if your platform does not auto-inject
-context. On hook-capable or extension-capable platforms, a SessionStart hook,
-extension, or prompt hook handles orientation, so `start` is usually not
-installed as a user-facing command. Codex uses `AGENTS.md` plus a
-`UserPromptSubmit` breadcrumb; when no task is active, that breadcrumb may tell
-the AI to read `trellis-start` once.
+Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable or extension-capable platforms (Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `features.hooks = true` — legacy: `codex_hooks = true`), the SessionStart hook or extension does this automatically, so `start` is usually not installed as a user-facing command.
 
 What it does:
 
@@ -44,28 +39,22 @@ What it does:
 
 Task classification the AI will apply:
 
-| Type                | Criteria                                                         | Flow                                                                                    |
-| ------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Simple conversation | Question, explanation, lookup, or discussion with no repo change | No task by default. If a task might help, ask only whether this turn should create one. |
-| Inline small task   | Contained edit that can be understood and verified in one turn   | Ask only whether this turn should create a task. If no, skip Trellis and work inline.   |
-| Full Trellis task   | Multi-file or durable planning work                              | Ask whether Trellis may create a task and enter planning.                               |
+| Type             | Criteria                                             | Flow                             |
+| ---------------- | ---------------------------------------------------- | -------------------------------- |
+| Q&A              | Question about code / architecture                   | Answer directly                  |
+| Quick fix        | Typo / one-liner, under ~5 minutes                   | Edit directly                    |
+| Development task | Logic changes, new features, multi-file modification | Task workflow (brainstorm skill) |
 
-If the user rejects task creation for complex work, the AI should clarify scope
-or suggest a smaller split instead of doing broad inline implementation.
+When in doubt, use the task workflow; it's what ensures sub-agents get spec injection.
 
 #### 1.2.2 `/trellis:finish-work`: Wrap up + archive
 
-Prerequisite: code is already committed. The AI drives a batched commit step in
-workflow Phase 3.4 (see `.trellis/workflow.md`) where it drafts commits from this
-session's edits, learns the repo's commit-message style from `git log --oneline
--5`, presents the plan once for one-shot user confirmation, and runs
-`git commit` per batch. `/finish-work` itself focuses on archive + journal and
-stops if current-task work is still uncommitted.
+Prerequisite: code is already committed. The AI drives a batched commit step in workflow Phase 3.4 (see `.trellis/workflow.md`) where it drafts commits from this session's edits, learns the repo's commit-message style from `git log --oneline -5`, presents the plan once for one-shot user confirmation, and runs `git commit` per batch. `/finish-work` itself focuses on archive + journal and **refuses to run on a dirty working tree** to keep bookkeeping commits ordered after work commits.
 
 Steps:
 
 1. Run `get_context.py --mode record` to print active tasks, git status, and recent commits. Use this to spot completed-but-unarchived tasks beyond the current one and to grab work-commit hashes for Step 4.
-2. `git status --porcelain`, classifying current-task work separately from unrelated dirty paths and Trellis bookkeeping paths.
+2. `git status --porcelain`, excluding paths under `.trellis/workspace/` and `.trellis/tasks/` (managed by the script auto-commits). Bail out if anything else is dirty, redirecting the user back to Phase 3.4.
 3. Archive the active task with `task.py archive <name>` (produces a `chore(task): archive ...` commit). If Step 1 surfaced other completed tasks and the user confirmed cleanup, archive those too in the same round.
 4. Append a session entry with `add_session.py --title … --commit …` (produces a `chore: record journal` commit).
 
@@ -78,8 +67,8 @@ Final git log order: `<work commits from 3.4>` → `chore(task): archive ...` (o
 A typical task conversation:
 
 1. Describe the work in natural language → `trellis-brainstorm` auto-triggers → task is created and `prd.md` drafted.
-2. Once `prd.md` looks right, type `continue` → it decides whether the task is lightweight or needs `design.md` and `implement.md`.
-3. After planning artifacts are reviewed, type `continue` → it starts the task and moves into implement/check. Sub-agent mode also curates `implement.jsonl` / `check.jsonl`; inline mode reads artifacts/specs directly.
+2. Once the PRD looks right, type `continue` → it knows the next step is to populate `implement.jsonl` / `check.jsonl` (the sub-agent context indexes).
+3. After you confirm the indexes, type `continue` → it spawns `trellis-implement` and `trellis-check` sub-agents.
 4. When the sub-agents finish, type `continue` → it routes to `trellis-update-spec`, and finally `finish-work`.
 
 Previously you had to learn the workflow yourself and remember which slash command belonged to each phase. With `continue`, the whole workflow falls out of an ordinary conversation — type `continue` to move on, and Trellis keeps the phases straight on your behalf.
@@ -131,10 +120,7 @@ Invoked after resolving a hard bug. Produces a 5-dimension analysis:
 
 ### 1.4 Sub-agents
 
-Sub-agents are isolated AI sub-processes with their own prompt and
-(platform-specific) their own tool / hook wiring. Implement/check agents receive
-spec and research context through JSONL files, then read task artifacts in the
-shared order: `prd.md`, `design.md` if present, `implement.md` if present.
+Sub-agents are isolated AI sub-processes with their own prompt and (platform-specific) their own tool / hook wiring. They receive spec context via JSONL files per task.
 
 | Sub-agent           | Restriction            | When main session spawns it                          |
 | ------------------- | ---------------------- | ---------------------------------------------------- |
@@ -142,11 +128,7 @@ shared order: `prd.md`, `design.md` if present, `implement.md` if present.
 | `trellis-implement` | Writes code, no commit | Once requirements + plan exist, for the coding phase |
 | `trellis-check`     | Writes code (fixes)    | Verification phase; runs self-fix loop internally    |
 
-On Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent, implement/check
-sub-agents get the right JSONL entries and task artifacts injected automatically
-before they start. Pi uses its extension rather than a Python hook. On the rest,
-sub-agents use a pull-based prelude or the main session reads the artifacts
-inline, depending on platform and mode.
+On Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent, these sub-agents get the right JSONL context (`implement.jsonl`, `check.jsonl`, `research.jsonl`) injected automatically before they start. Pi uses its extension rather than a Python hook. On the rest, the main session reads the JSONL files itself and passes the relevant content into sub-agent prompts.
 
 ---
 
@@ -155,22 +137,17 @@ inline, depending on platform and mode.
 ### 2.1 Task Lifecycle
 
 ```
-classify → create → plan artifacts → optional jsonl → start → implement/check → finish → archive
+create → curate jsonl → start → implement/check → finish → archive
 
-classify:       AI asks for task-creation consent when needed
-create:         task directory + task.json + default prd.md
-plan artifacts: AI writes prd.md; complex tasks also get design.md + implement.md
-optional jsonl: AI fills implement/check spec/research manifests when useful
-start:          writes current task for this AI session/window and status=in_progress
+create:         task directory + task.json + seeded jsonl
+curate jsonl:   AI fills implement/check/research context
+start:          writes current task for this AI session/window
 implement/check: development and verification loop
 finish:         clears this AI session/window's current task
 archive:        moves completed task to archive/
 ```
 
-`task.py create` always creates the default `prd.md` template. It may also seed
-`implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed
-(Claude / Cursor / Codex / Kiro / Pi / etc.). It does not create `design.md` or
-`implement.md`; those are written during planning for complex tasks.
+`task.py create` auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / Pi / etc.); agent-less platforms (Kilo / Antigravity / Windsurf) skip this and load specs via the `trellis-before-dev` skill in Phase 2.
 
 ### 2.2 `task.py` Subcommands
 
@@ -185,7 +162,7 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
   --description "Implement JWT login")  # Description (optional)
 
 # Created directory: .trellis/tasks/02-27-user-login/
-# Created files: task.json, prd.md
+# Created file: task.json
 ```
 
 #### 2.2.2 Context Configuration
@@ -217,8 +194,11 @@ TASK_DIR=$(./.trellis/scripts/task.py create "Add user login" \
 ./.trellis/scripts/task.py list-context "$TASK_DIR"
 ```
 
-`task.py add-context` only writes to `implement.jsonl` / `check.jsonl`. Research
-findings belong under `$TASK_DIR/research/` as durable markdown files.
+<Note>
+  `research.jsonl` is managed separately (read by the `trellis-research` sub-agent). `task.py
+  add-context` only writes to `implement.jsonl` / `check.jsonl` — create / edit `research.jsonl` by
+  hand if you need custom research context.
+</Note>
 
 #### 2.2.3 Task Control
 

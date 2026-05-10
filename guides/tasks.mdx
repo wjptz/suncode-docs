@@ -5,47 +5,29 @@ description: 'Track work with the task system'
 
 ## What tasks are for
 
-Tasks are durable work items with their own planning artifacts and context.
-They are for work that should survive chat compaction, tool restarts, and
-handoff across agents or platforms.
+Tasks are work items with their own context. Each task knows:
 
-Simple conversation and small inline edits do not automatically create Trellis
-tasks. The AI first classifies the current turn and asks for task-creation
-consent before writing anything under `.trellis/tasks/`.
+- What you're building (PRD)
+- Which files are relevant
+- What branch to work on
+- Current status
 
-## When a task is needed
-
-Trellis uses three practical levels:
-
-| Level               | Use for                                                                                   | Consent rule                                                                                                                                              |
-| ------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Simple conversation | Questions, explanations, lookups, or discussion with no repo change                       | No task by default. If the AI thinks a task might help, it asks only whether this turn should create a Trellis task.                                      |
-| Inline small task   | A contained edit that can be understood and verified in the current turn                  | The AI asks only whether this turn should create a Trellis task. If you say no, it skips Trellis for this turn and may proceed inline.                    |
-| Full Trellis task   | Multi-file work, workflow/spec/platform changes, generated templates, or durable planning | The AI explains why a task is useful and asks whether it may create a Trellis task and enter planning. If you say no, it should not do broad inline work. |
-
-Large programs of work are split into related Trellis tasks instead of being
-forced into one giant task directory.
+When you switch tasks, the AI switches context. No confusion about which feature you're working on.
 
 ## Task structure
 
 Tasks live in `.trellis/tasks/`. Each task is a directory:
 
-```text
-.trellis/tasks/05-10-task-artifacts-taosu/
-├── task.json          # Metadata and status
-├── prd.md             # Requirements and acceptance criteria
-├── design.md          # Optional: technical design for complex tasks
-├── implement.md       # Optional: implementation plan for complex tasks
-├── implement.jsonl    # Spec/research manifest for implementation
-├── check.jsonl        # Spec/research manifest for review
-└── research/          # Optional durable investigation notes
+```
+.trellis/tasks/01-31-user-auth-taosu/
+├── task.json           # Metadata
+├── prd.md              # Requirements
+├── implement.jsonl     # Context for implement agent
+├── check.jsonl         # Context for check agent
+└── debug.jsonl         # Context for debug agent
 ```
 
-The directory name follows the pattern `MM-DD-slug-assignee` when an assignee is
-known.
-
-Lightweight tasks can have only `prd.md`. Complex tasks must have `prd.md`,
-`design.md`, and `implement.md` before `task.py start`.
+The directory name follows the pattern: `MM-DD-slug-assignee`.
 
 ## Creating a task
 
@@ -55,20 +37,11 @@ Use the task script:
 python3 .trellis/scripts/task.py create "user-auth" --assignee taosu
 ```
 
-This creates the task directory, writes `task.json`, and creates the default
-`prd.md` template. Sub-agent-capable setups may also seed `implement.jsonl` and
-`check.jsonl`.
-
-`task.py create` does not create `design.md` or `implement.md`. The AI writes
-those files during planning when the task is complex enough to need them.
-
-## Planning artifacts
+This creates the task directory with default files. Then edit `prd.md` to define requirements.
 
 ### prd.md
 
-`prd.md` records the product requirement and review target. It should say what
-must change, what constraints apply, and how the finished work will be accepted.
-It should not carry the technical design or execution checklist.
+Write what you're building. Be specific about requirements and acceptance criteria.
 
 ```markdown
 # User Authentication
@@ -79,79 +52,52 @@ Users can sign up and log in with email/password.
 
 ## Requirements
 
-- Sign up with email, password, and display name
+- Sign up with email, password, display name
 - Email verification required before login
-- Login returns a JWT token
+- Login returns JWT token
 - Token expires after 7 days
-- Password reset works through email
+- Password reset via email
 
-## Acceptance Criteria
+## API Endpoints
 
-- Signup rejects duplicate emails
-- Unverified accounts cannot log in
-- Password reset tokens expire
+- POST /auth/signup
+- POST /auth/login
+- POST /auth/verify-email
+- POST /auth/forgot-password
+- POST /auth/reset-password
 
-## Out of Scope
+## Out of scope
 
-- Social login
+- Social login (Google, GitHub)
 - Two-factor authentication
 ```
 
-### design.md
+### Context files (JSONL)
 
-`design.md` is for complex tasks. It explains the technical shape:
-
-- affected modules and boundaries
-- data flow and contracts
-- hook, workflow, or platform integration points
-- compatibility and migration concerns
-- tradeoffs and rollback shape
-
-### implement.md
-
-`implement.md` is the execution plan for complex tasks. It should contain:
-
-- ordered implementation checklist
-- validation commands
-- review gates
-- rollback points
-- known sequencing constraints
-
-It does not replace `implement.jsonl`. The markdown file is the plan; the JSONL
-file is the spec/research manifest used for context loading.
-
-## Context manifests
-
-`implement.jsonl` and `check.jsonl` tell agents which stable context files to
-read. They should list specs and research, not source files that are about to be
-edited.
+These tell agents which files to read:
 
 ```jsonl
-{"file": ".trellis/spec/cli/backend/index.md", "reason": "CLI backend contract"}
-{"file": ".trellis/tasks/05-10-example/research/platforms.md", "reason": "Platform behavior research"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend coding standards"}
+{"file": ".trellis/spec/backend/api.md", "reason": "API design patterns"}
+{"file": "src/routes/auth.ts", "reason": "Auth route implementation"}
+{"file": "src/services/user.ts", "reason": "User service logic"}
 ```
 
-Use `implement.jsonl` for implementation-writing context and `check.jsonl` for
-review and verification context. Inline-only work can rely on direct reading
-instead of curated JSONL when there is no sub-agent boundary.
+Different agents can have different context. Edit `implement.jsonl`, `check.jsonl`, etc. as needed.
 
 ## Working on a task
 
-Set the current task only after the planning artifacts are ready:
+Set the current task:
 
 ```bash
-python3 .trellis/scripts/task.py start 05-10-task-artifacts-taosu
+python3 .trellis/scripts/task.py start 01-31-user-auth-taosu
 ```
 
-For a lightweight task, `prd.md` can be enough. For a complex task, starting the
-task requires the full planning set:
+Hooks use this to inject the right context. Now when you start a Claude Code session, it knows:
 
-- `prd.md`
-- `design.md`
-- `implement.md`
-
-Hooks and skills then load the active task and keep the AI aligned with the
-current workflow phase.
+- Read the PRD from this task
+- Load specs listed in the JSONL files
+- Work on the task's branch
 
 ## Managing tasks
 
@@ -170,19 +116,26 @@ python3 .trellis/scripts/task.py finish
 Archive completed task:
 
 ```bash
-python3 .trellis/scripts/task.py archive 05-10-task-artifacts-taosu
+python3 .trellis/scripts/task.py archive 01-31-user-auth-taosu
 ```
 
-## Typical workflow
+## Multiple tasks
 
-1. Classify the turn and get task-creation consent when a task might be needed.
-2. Create the task with `task.py create`.
-3. Fill `prd.md` with requirements and acceptance criteria.
-4. For complex tasks, add `design.md` and `implement.md`.
-5. Add spec/research manifests when sub-agent or review context needs them.
-6. Start the task with `task.py start`.
-7. Implement, check, and update specs as needed.
-8. Commit the work, then run finish-work and archive bookkeeping.
+You can have multiple tasks in progress. Only one is "current" at a time. Switch with:
 
-The task system keeps durable planning and context in files so the next AI
-session can continue without depending on the previous chat transcript.
+```bash
+python3 .trellis/scripts/task.py start other-task-id
+```
+
+## Task workflow
+
+Typical flow:
+
+1. Create task: `task.py create`
+2. Edit `prd.md` with requirements
+3. Set up context files (JSONL)
+4. Set as current: `task.py start`
+5. Work in Claude Code sessions
+6. Archive when complete: `task.py archive <id>`
+
+The task system keeps context organized so the AI knows what to focus on.

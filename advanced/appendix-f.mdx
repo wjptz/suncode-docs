@@ -8,21 +8,11 @@ title: 'Appendix F: FAQ'
 
 ### Q1: I'm used to running `/trellis:start` at session boundaries — what now?
 
-For a new request, just describe the work in natural language. Use
-`/trellis:continue` when an active task already exists and you want the AI to
-advance to the next workflow step.
+Type `/trellis:continue` instead — it gets you the same thing.
 
-The context the old `/trellis:start` injected explicitly — current developer
-identity, git branch and status, active task, list of active tasks,
-`workflow.md` phase index, spec index paths, recent journal summaries — is now
-delivered by each platform's startup path. Claude-style platforms use
-SessionStart hooks or extensions. Codex uses `AGENTS.md` plus the
-`UserPromptSubmit` breadcrumb; when no task is active, the breadcrumb can direct
-the AI to read `trellis-start` once.
+The context the old `/trellis:start` injected explicitly — current developer identity, git branch and status, active task, list of active tasks, `workflow.md` phase rules, spec index, recent journal summaries — is now injected automatically by the SessionStart hook on every new session (Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `features.hooks = true` and one-time `/hooks` approval; Codex < 0.129 uses the legacy `codex_hooks = true`). Just describe your task.
 
-When you want to re-orient the AI mid-session or push it to the next workflow
-step, type `/trellis:continue`. It reads task state, artifact presence, and
-`workflow.md`, then decides what to do.
+When you want to re-orient the AI mid-session or push it to the next workflow step, type `/trellis:continue`. It reads task state + `workflow.md` and decides what to do.
 
 On platforms without a SessionStart hook (Kilo, Antigravity, Windsurf), still run `/trellis:start` or the platform's start workflow at session start.
 
@@ -120,14 +110,9 @@ See chapters 9–12 for guidance on picking the right primitive.
 
 ### Q12: What's the difference between `/trellis:start` and `/trellis:continue`?
 
-`/trellis:start` is for fresh sessions on a platform without automatic startup
-context (Kilo / Antigravity / Windsurf). It loads Trellis orientation
-explicitly. On platforms with a startup hook, extension, `AGENTS.md`, or
-prompt-hook bootstrap, you usually don't need it.
+`/trellis:start` is for fresh sessions on a platform without auto-injection (Kilo / Antigravity / Windsurf). It loads the SessionStart context report explicitly. On platforms with the SessionStart hook, you don't need it.
 
-`/trellis:continue` is for advancing the active task to the next workflow step.
-Use it at any phase boundary, or when you don't know what to do next — the AI
-reads task state, artifact presence, and `workflow.md`, then picks the next step.
+`/trellis:continue` is for advancing the active task to the next workflow step. Use it at any phase boundary, or when you don't know what to do next — the AI reads task state + `workflow.md` and picks the next step.
 
 Mental model: `start` opens a window onto the project; `continue` moves the cursor forward inside that window.
 

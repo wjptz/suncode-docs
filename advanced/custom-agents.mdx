@@ -10,11 +10,9 @@ Trellis ships three sub-agents (`trellis-implement`, `trellis-check`, `trellis-r
   Sub-agents ship on 11 of 14 configured platforms: Claude Code, Cursor, OpenCode, Codex, Kiro,
   Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent. The agent file format varies by platform
   (Markdown / TOML / JSON), and on platforms without a `PreToolUse` hook or extension equivalent the
-  sub-agents read their JSONL manifest plus `prd.md`, `design.md` if present, and `implement.md` if
-  present via a pull-based prelude instead of having that context injected. Codex can also run in
-  inline mode, where the main session reads the same artifacts through skills. Kilo, Antigravity,
-  and Windsurf do not expose a sub-agent primitive — the implement / check work runs inline in the
-  main session.
+  sub-agents read `implement.jsonl` / `check.jsonl` themselves via a pull-based prelude instead of
+  having it injected. Kilo, Antigravity, and Windsurf do not expose a sub-agent primitive — the
+  implement / check work runs inline in the main session.
 </Note>
 
 ### Sub-agent definition (Claude Code example)
@@ -161,13 +159,11 @@ pnpm test
 
 ### Context injection
 
-If you want your sub-agent to receive task and spec context the way the shipped
-ones do:
+If you want your sub-agent to receive spec context the way the shipped ones do:
 
 1. Accept a JSONL name convention (e.g. `test.jsonl`) in each task directory.
-2. Load the JSONL entries first, then `prd.md`, then `design.md` if present, then `implement.md` if present.
-3. On platforms with a `PreToolUse` (sub-agent) hook or extension equivalent — Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi Agent — edit `inject-subagent-context` or the Pi extension to handle the new sub-agent type.
-4. On platforms without that injection point (Codex, Kiro, Gemini, Qoder, Copilot), follow the pull-based prelude pattern the shipped sub-agents use: prepend a block at the top of the agent file telling the sub-agent to `Read` its JSONL and task artifacts before acting.
+2. On platforms with a `PreToolUse` (sub-agent) hook or extension equivalent — Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi Agent — edit `inject-subagent-context` or the Pi extension to handle the new sub-agent type.
+3. On platforms without that injection point (Codex, Kiro, Gemini, Qoder, Copilot), follow the "pull-based prelude" pattern the shipped sub-agents use: prepend a block at the top of the agent file telling the sub-agent to `Read` its own JSONL before acting.
 
 For a detailed walkthrough, see chapter 11 on hooks.
 
