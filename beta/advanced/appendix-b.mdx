@@ -44,6 +44,13 @@ Spawned by the main session via the platform's sub-agent / Task primitive.
 
 Available as real sub-agents on Claude Code, Cursor, OpenCode, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, and Pi Agent. Kilo, Antigravity, and Windsurf run the same work inline in the main session. Context is hook/extension-injected on Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent; the other sub-agent platforms use a pull-based prelude.
 
+### Global CLI Commands
+
+| Command           | Purpose                                              | Usage                                          |
+| ----------------- | ---------------------------------------------------- | ---------------------------------------------- |
+| `trellis upgrade` | Upgrade the globally installed Trellis CLI package   | `trellis upgrade [--tag <tag>]`                |
+| `trellis update`  | Sync the current project's Trellis files to this CLI | `trellis update [--dry-run] [--migrate] [...]` |
+
 ### `task.py` Subcommands
 
 | Subcommand        | Purpose                                                                                           | Usage                                                              |

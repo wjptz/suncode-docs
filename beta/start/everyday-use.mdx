@@ -12,7 +12,8 @@ Since 0.5.0, Trellis is **skill-first**: most capabilities are auto-trigger skil
 | ------------- | ---------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | **Command**   | `/trellis:start`       | Manual where no SessionStart hook / extension is available | Open a session, load context, classify work                                              |
 | **Command**   | `/trellis:finish-work` | Manual, after Phase 3.4 commits land                       | Archive task + record session in journal                                                 |
-| **Command**   | `/trellis:continue`    | Manual                                                     | Advance the current task to its next step — you don't memorize the workflow (see §1.2.3) |
+| **Command**   | `/trellis:continue`    | Manual                                                     | Advance the current task to its next step — you don't memorize the workflow (see §1.2.4) |
+| **CLI**       | `trellis upgrade`      | Manual, when the global CLI package is stale               | Upgrade the installed Trellis CLI package                                                |
 | **Skill**     | `trellis-brainstorm`   | Planning after task-creation consent                       | Clarify requirements, inspect evidence, draft planning artifacts                         |
 | **Skill**     | `trellis-before-dev`   | Auto before touching code in a task                        | Read relevant spec before writing                                                        |
 | **Skill**     | `trellis-check`        | Auto after implementation; also via sub-agent              | Verify + self-fix loop                                                                   |
@@ -26,7 +27,19 @@ The user-facing command set is deliberately small: `finish-work` and `continue` 
 
 ### 1.2 Commands
 
-#### 1.2.1 `/trellis:start`: Start a session
+#### 1.2.1 `trellis upgrade`: Upgrade the CLI package
+
+Use this when your globally installed Trellis CLI is behind the published package:
+
+```bash
+trellis upgrade              # follows your current channel: latest / beta / rc
+trellis upgrade --tag latest # explicitly install the latest stable release
+trellis upgrade --dry-run    # print the npm command without running it
+```
+
+`trellis upgrade` updates the global CLI package. It does not change files in the current project. After upgrading the CLI, run `trellis update` inside each Trellis project that needs its bundled workflow, hooks, skills, or platform files synced to the new CLI version.
+
+#### 1.2.2 `/trellis:start`: Start a session
 
 Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable or extension-capable platforms (Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `features.hooks = true` — legacy: `codex_hooks = true`), the SessionStart hook or extension does this automatically, so `start` is usually not installed as a user-facing command.
 
@@ -48,7 +61,7 @@ Task classification the AI will apply:
 If the user rejects task creation for complex work, the AI should clarify scope
 or suggest a smaller split instead of doing broad inline implementation.
 
-#### 1.2.2 `/trellis:finish-work`: Wrap up + archive
+#### 1.2.3 `/trellis:finish-work`: Wrap up + archive
 
 Prerequisite: code is already committed. The AI drives a batched commit step in workflow Phase 3.4 (see `.trellis/workflow.md`) where it drafts commits from this session's edits, learns the repo's commit-message style from `git log --oneline -5`, presents the plan once for one-shot user confirmation, and runs `git commit` per batch. `/finish-work` itself focuses on archive + journal and **refuses to run on a dirty working tree** to keep bookkeeping commits ordered after work commits.
 
@@ -61,7 +74,7 @@ Steps:
 
 Final git log order: `<work commits from 3.4>` → `chore(task): archive ...` (one or more) → `chore: record journal`. Spec sync (route a non-trivial learning to `trellis-update-spec`) belongs in workflow Phase 3.3 before commits, not in this skill.
 
-#### 1.2.3 `/trellis:continue`: Advance within the current task
+#### 1.2.4 `/trellis:continue`: Advance within the current task
 
 `continue` is a **within-task** continue — not a cross-task one. The AI picks up where the active task left off using its `task.json.status` plus the workflow-state breadcrumb the hook injects each turn, consults `workflow.md` to locate the current phase/step, and advances to the next one.
 

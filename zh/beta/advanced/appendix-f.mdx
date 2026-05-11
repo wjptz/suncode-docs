@@ -53,6 +53,14 @@ trellis init -u your-name
 
 ### Q5: 更新 Trellis 时怎么不丢自定义内容？
 
+先升级全局 CLI：
+
+```bash
+trellis upgrade
+```
+
+再同步项目文件：
+
 ```bash
 trellis update --dry-run   # 预演
 trellis update             # 应用
@@ -79,7 +87,7 @@ trellis update                       # 验证：应该提示 "Already up to date
 升级是两步，对应两个层面：
 
 ```bash
-npm install -g @mindfoldhq/trellis@beta     # 1. 升级 CLI 本身
+trellis upgrade                           # 1. 升级 CLI 本身
 trellis update --migrate                  # 2. 把项目同步到 CLI 当前版本
 ```
 

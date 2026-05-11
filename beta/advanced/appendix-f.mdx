@@ -56,6 +56,14 @@ trellis init -u your-name
 
 ### Q5: How do I update Trellis without losing my customizations?
 
+Upgrade the global CLI first:
+
+```bash
+trellis upgrade
+```
+
+Then sync the project files:
+
 ```bash
 trellis update --dry-run   # preview
 trellis update             # apply
@@ -82,7 +90,7 @@ Every update creates a timestamped backup at `.trellis/.backup-*` first; locally
 Upgrade is two steps for two layers:
 
 ```bash
-npm install -g @mindfoldhq/trellis@beta     # 1. upgrade the CLI itself
+trellis upgrade                           # 1. upgrade the CLI itself
 trellis update --migrate                  # 2. sync the project to the CLI's current version
 ```
 
