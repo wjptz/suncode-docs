@@ -1,0 +1,23 @@
+---
+title: 'v0.5.13'
+description: '2026-05-11'
+---
+
+## Bug Fixes
+
+- **OpenCode 现在按实际解析命令的 shell dialect 注入 `TRELLIS_CONTEXT_ID`**。Windows Git Bash / MSYS / Cygwin 会收到 `export ...`；Windows PowerShell 继续使用 `$env:...`。重复前缀检测也会识别 `env ... TRELLIS_CONTEXT_ID=...` 形式。
+- **Session context 现在能处理非 Git 的 Trellis 根目录**。Context 输出会说明 root 不是 Git repository，而不是报告假的 clean state；未配置 polyrepo 时会 fallback 到有界 child-repo discovery。
+- **OpenCode sub-agent context 与 main-session context 隔离**。`trellis-implement`、`trellis-check`、`trellis-research` child session 会跳过重复的 SessionStart / workflow-state 注入。Active task lookup 现在使用 session context、`Active task:` hint，或 single-session fallback。
+- **Hook timeout 默认值现在能覆盖较慢的 Windows Python cold start**。Hook-based 平台的 SessionStart 使用 30 秒，per-prompt workflow injection 使用 15 秒。
+- **Copilot SessionStart 不再打印过时 diagnostics**。Hook 移除 `Copilot currently ignores sessionStart hook output` system message，并保留 `hookSpecificOutput.additionalContext` 作为文档化 payload。
+
+## Internal
+
+- **Spec template 现在记录 shell-dialect-aware 的 `TRELLIS_CONTEXT_ID` prefix 规则**。Platform 和 cross-platform guide 会列出 OpenCode 在 Windows 上必须继续使用 `export ...` 的 POSIX-shell signal。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```

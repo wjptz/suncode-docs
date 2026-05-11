@@ -1,0 +1,23 @@
+---
+title: 'v0.5.13'
+description: '2026-05-11'
+---
+
+## Bug Fixes
+
+- **OpenCode now injects `TRELLIS_CONTEXT_ID` with the shell dialect that parses the command.** Windows Git Bash / MSYS / Cygwin sessions receive `export ...`; Windows PowerShell sessions keep `$env:...`. Duplicate-prefix detection also recognizes `env ... TRELLIS_CONTEXT_ID=...` forms.
+- **Session context now handles non-Git Trellis roots.** Context output says when the root is not a Git repository instead of reporting fake clean state, and falls back to bounded child-repo discovery for unconfigured polyrepo layouts.
+- **OpenCode sub-agent context is isolated from main-session context.** `trellis-implement`, `trellis-check`, and `trellis-research` child sessions skip duplicate SessionStart / workflow-state injection. Active task lookup now uses session context, `Active task:` hints, or a single-session fallback.
+- **Hook timeout defaults now survive slower Windows Python cold starts.** SessionStart hooks use 30 seconds, and per-prompt workflow injection uses 15 seconds across hook-based platforms.
+- **Copilot SessionStart no longer prints stale diagnostics.** The hook removes the `Copilot currently ignores sessionStart hook output` system message and keeps `hookSpecificOutput.additionalContext` as the documented payload.
+
+## Internal
+
+- **Spec templates document shell-dialect-aware `TRELLIS_CONTEXT_ID` prefixes.** Platform and cross-platform guides now name the OpenCode Windows POSIX-shell signals that must keep `export ...`.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
