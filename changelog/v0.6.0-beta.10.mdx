@@ -1,0 +1,53 @@
+---
+title: 'v0.6.0-beta.10'
+description: '2026-05-12'
+---
+
+Adds `trellis channel`, a CLI runtime for coordinating worker agents through a shared event log.
+
+## Enhancements
+
+### Trellis Channel
+
+`trellis channel` manages collaboration sessions, messages, worker processes, waits, cleanup, and one-shot runs.
+
+| Command                                                       | Behavior                                                                               |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `trellis channel create <name>`                               | Creates a channel session.                                                             |
+| `trellis channel send <name>`                                 | Writes a message event.                                                                |
+| `trellis channel wait <name>`                                 | Blocks until matching events arrive.                                                   |
+| `trellis channel spawn <name>`                                | Starts a Claude or Codex worker.                                                       |
+| `trellis channel run [name]`                                  | Creates an ephemeral channel, runs one worker, prints the final answer, and cleans up. |
+| `trellis channel list` / `messages` / `kill` / `rm` / `prune` | Inspect, terminate, remove, and clean channel state.                                   |
+
+### Channel adapters
+
+Claude and Codex worker output is normalized into channel events.
+
+| Adapter                                                | Source protocol             | Event output                           |
+| ------------------------------------------------------ | --------------------------- | -------------------------------------- |
+| `packages/cli/src/commands/channel/adapters/claude.ts` | Claude `stream-json`        | `message`, `progress`, `done`, `error` |
+| `packages/cli/src/commands/channel/adapters/codex.ts`  | Codex `app-server` JSON-RPC | `message`, `progress`, `done`, `error` |
+
+### Channel store
+
+Channel events are written to project-scoped JSONL logs with locked sequence assignment.
+
+| Path                                                   | Purpose                                                 |
+| ------------------------------------------------------ | ------------------------------------------------------- |
+| `~/.trellis/channels/<project>/<channel>/events.jsonl` | Channel event stream.                                   |
+| `packages/cli/src/commands/channel/store/events.ts`    | Append-only event writes and `seq` assignment.          |
+| `packages/cli/src/commands/channel/store/paths.ts`     | Project bucket selection and legacy channel relocation. |
+
+## Internal
+
+### Channel supervisor modules
+
+Channel runtime internals are split into adapter parsing, event storage, inbox polling, stdout pumping, and shutdown control under `packages/cli/src/commands/channel/`.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
