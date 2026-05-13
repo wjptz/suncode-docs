@@ -1,0 +1,44 @@
+---
+title: 'v0.6.0-beta.11'
+description: '2026-05-13'
+---
+
+## 修复
+
+### Task archive auto-commit
+
+`task.py archive` 现在只 stage 和归档相关的 task 路径。
+
+- `safe_archive_paths_to_add()` 将 staging 范围限定为被归档 task 的 source 路径、archive destination 路径，以及父子关系清理期间 `task.json` 被修改的子 task 目录。
+- `_auto_commit_archive()` 在把已 tracked 的 task 目录移动到 `.trellis/tasks/archive/<YYYY-MM>/` 后，用 `git rm -r --cached --ignore-unmatch` stage source 端删除。
+
+### Template manifest ownership
+
+`trellis init`、`trellis update` 和 `trellis uninstall` 不再把用户自有的平台运行时文件当作 Trellis 模板。
+
+- `initializeHashes()` 从 `startRecordingWrites()` 输出中跟踪 platform/root 文件，不再扫描 `.codex/`、`.claude/` 和其他平台目录。
+- `pruneOrphanManifestKeys()` 在 `update` 和 `uninstall` 规划前，从 `.trellis/.template-hashes.json` 移除 stale orphan entries。
+- `trellis init` 和 `trellis uninstall` 拒绝在 `$HOME` 运行，除非设置 `TRELLIS_ALLOW_HOMEDIR=1`。
+
+### Windows hook encoding
+
+Hook templates 在 Windows 上强制 stdin、stdout 和 stderr 使用 UTF-8。
+
+- `hooks.json` 用 `python -X utf8` 运行 Codex `inject-workflow-state.py`。
+- `shared-hooks/inject-workflow-state.py`、`shared-hooks/session-start.py`、`codex/hooks/session-start.py` 和 `copilot/hooks/session-start.py` 将 streams 重新配置为 UTF-8，并用 replacement errors 处理异常字符。
+
+## 内部变化
+
+### Manifest continuity
+
+beta 分支现在包含 `trellis update` 需要的 stable patch manifests。
+
+- `packages/cli/src/migrations/manifests/0.5.14.json`
+- `packages/cli/src/migrations/manifests/0.5.15.json`
+
+## 升级方式
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```

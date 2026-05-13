@@ -1,0 +1,44 @@
+---
+title: 'v0.6.0-beta.11'
+description: '2026-05-13'
+---
+
+## Bug Fixes
+
+### Task archive auto-commit
+
+`task.py archive` now stages only archive-related task paths.
+
+- `safe_archive_paths_to_add()` scopes staging to the archived task source path, archive destination path, and child task dirs whose `task.json` was edited during parent cleanup.
+- `_auto_commit_archive()` stages source-side deletes with `git rm -r --cached --ignore-unmatch` after moving a tracked task dir to `.trellis/tasks/archive/<YYYY-MM>/`.
+
+### Template manifest ownership
+
+`trellis init`, `trellis update`, and `trellis uninstall` no longer treat user-owned platform runtime files as Trellis templates.
+
+- `initializeHashes()` tracks platform/root files from `startRecordingWrites()` output instead of walking `.codex/`, `.claude/`, and other platform dirs.
+- `pruneOrphanManifestKeys()` removes stale orphan entries from `.trellis/.template-hashes.json` before `update` and `uninstall`.
+- `trellis init` and `trellis uninstall` refuse to run in `$HOME` unless `TRELLIS_ALLOW_HOMEDIR=1`.
+
+### Windows hook encoding
+
+Hook templates force UTF-8 on Windows for stdin, stdout, and stderr.
+
+- `hooks.json` runs Codex `inject-workflow-state.py` with `python -X utf8`.
+- `shared-hooks/inject-workflow-state.py`, `shared-hooks/session-start.py`, `codex/hooks/session-start.py`, and `copilot/hooks/session-start.py` reconfigure streams to UTF-8 with replacement errors.
+
+## Internal
+
+### Manifest continuity
+
+The beta branch includes the stable patch manifests needed by `trellis update`.
+
+- `packages/cli/src/migrations/manifests/0.5.14.json`
+- `packages/cli/src/migrations/manifests/0.5.15.json`
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
