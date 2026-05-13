@@ -123,6 +123,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "changelog/v0.6.0-beta.12",
                       "changelog/v0.5.15",
                       "changelog/v0.6.0-beta.11",
                       "changelog/v0.5.14",
@@ -324,6 +325,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "changelog/v0.6.0-beta.12",
                       "changelog/v0.5.15",
                       "changelog/v0.6.0-beta.11",
                       "changelog/v0.5.14",
@@ -531,6 +533,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "zh/changelog/v0.6.0-beta.12",
                       "zh/changelog/v0.5.15",
                       "zh/changelog/v0.6.0-beta.11",
                       "zh/changelog/v0.5.14",
@@ -732,6 +735,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "zh/changelog/v0.6.0-beta.12",
                       "zh/changelog/v0.5.15",
                       "zh/changelog/v0.6.0-beta.11",
                       "zh/changelog/v0.5.14",
@@ -859,7 +863,7 @@
     "links": [
       {
         "label": "Changelog",
-        "href": "/changelog/v0.6.0-beta.11"
+        "href": "/changelog/v0.6.0-beta.12"
       },
       {
         "label": "Tech Blog",
