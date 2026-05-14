@@ -1,0 +1,62 @@
+---
+title: 'v0.6.0-beta.15'
+description: '2026-05-14'
+---
+
+## Enhancements
+
+### Core mem API
+
+`tl mem` retrieval logic is now available from `@mindfoldhq/trellis-core/mem`.
+
+- Package: `@mindfoldhq/trellis-core/mem`
+- APIs: `listMemSessions`, `searchMemSessions`, `readMemContext`, `extractMemDialogue`, `listMemProjects`
+- Adapters: `packages/core/src/mem/adapters/claude.ts`, `packages/core/src/mem/adapters/codex.ts`, `packages/core/src/mem/adapters/opencode.ts`
+- CLI wrapper: `packages/cli/src/commands/mem.ts`
+
+### Forum channel commands
+
+Forum channels now expose thread-style discussion commands and context entries.
+
+- Create: `trellis channel create <name> --type forum`
+- Threads: `trellis channel post`, `trellis channel forum`, `trellis channel thread`
+- Context: `trellis channel context add`, `trellis channel context delete`, `trellis channel context list`
+- Reducers: `reduceThreads`, `reduceChannelMetadata`
+
+### Channel worker runtime APIs
+
+Channel worker lifecycle and subscription primitives are now exported from `@mindfoldhq/trellis-core/channel`.
+
+- Workers: `listWorkers`, `watchWorkers`, `probeWorkerRuntime`, `reconcileWorkerLiveness`
+- Runtime: `spawnWorker`, `requestInterrupt`, `interruptWorker`
+- Streams: `readChannelEvents({ afterSeq, beforeSeq, limit })`, `watchChannels`
+- CLI flags: `trellis channel spawn --inbox-policy`, `trellis channel send --delivery-mode`
+
+## Bug Fixes
+
+### Codex channel turns
+
+Codex channel workers now record completed answers before `done` and serialize non-interrupt turns.
+
+- Parser: `packages/cli/src/commands/channel/adapters/codex.ts`
+- Supervisor: `packages/cli/src/commands/channel/supervisor/inbox.ts`
+- Events: `turn_started`, `turn_finished`, `interrupt_requested`, `interrupted`
+- Behavior: normal messages wait for the active turn; `--tag interrupt` aborts the active turn and starts the new one.
+
+### Worker registry projection
+
+Worker state now separates turn completion from worker termination.
+
+- Reducer: `packages/core/src/channel/internal/store/worker-state.ts`
+- Turn-level events: `done`, `error`
+- Terminal events: `killed`, synthesized exit events, supervisor errors
+- Watch fallback: `packages/core/src/channel/internal/store/watch.ts`, `packages/cli/src/commands/channel/store/watch.ts`
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+No file migration is required.
