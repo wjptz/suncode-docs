@@ -1,0 +1,35 @@
+---
+title: 'v0.6.0-beta.16'
+description: '2026-05-15'
+---
+
+## Enhancements
+
+### Parent / child task trees
+
+Workflow guidance now documents when to use parent tasks and independently verifiable child tasks.
+
+- Workflow: `.trellis/workflow.md`
+- Step detail: `get_context.py --mode phase --step 1.1`
+- Breadcrumbs: `[workflow-state:planning]`, `[workflow-state:planning-inline]`
+- Skills: `trellis-brainstorm`, `trellis-meta`
+
+## Bug Fixes
+
+### Trellis check agents
+
+Check agents now review task artifacts before checking code against specs.
+
+- Required artifact: `prd.md`
+- Optional artifacts: `design.md`, `implement.md`
+- Platforms: Claude Code, Cursor, OpenCode, Gemini, Kiro, Qoder, CodeBuddy, Droid, Pi
+- Pi agents: `trellis-implement.md`, `trellis-check.md`
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+No file migration is required.
