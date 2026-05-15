@@ -1,0 +1,24 @@
+---
+title: 'v0.5.16'
+description: '2026-05-15'
+---
+
+## 修复
+
+### Cursor sessionStart hook
+
+Cursor `sessionStart` 输出现在符合 Cursor 的 top-level context schema。
+
+- Output field: `additional_context`
+- Shared format retained: `hookSpecificOutput.additionalContext`
+- Removed unsupported Cursor hook: `beforeSubmitPrompt`
+- Removed copied Cursor file: `.cursor/hooks/inject-workflow-state.py`
+
+## 升级方式
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+无需文件迁移。
