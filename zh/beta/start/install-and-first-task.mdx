@@ -250,7 +250,7 @@ First, ask for the missing product and tech-stack decisions. Then create a small
 
 1. 项目初始化后运行 `trellis init`。它会在 `.trellis/spec/` 写入默认 spec 模板（约 17 份占位文件，分 `backend/`、`frontend/`、`guides` 三层，覆盖 directory structure、error handling、logging、component guidelines、cross-layer thinking 等规则），并创建 `00-bootstrap-guidelines` 任务。
 2. 在 bootstrap 任务里跟 AI 讨论产品需求和项目技术栈，让 AI 先拿到足够上下文再动手。
-3. 可选：安装 marketplace bundle 内置的 `trellis-spec-bootstarp`，让 AI 从真实代码生成第一版 specs。安装命令：`npx skills add mindfold-ai/marketplace --skill trellis-spec-bootstarp`。
+3. 可选：使用 Trellis 内置安装的 `trellis-spec-bootstarp`，让 AI 从真实代码生成第一版 specs。不需要再从 marketplace 单独下载。
 4. 优先填写 `trellis init` 生成的默认 specs，按当前已经知道的内容来写，不要预先设计整个项目。
 5. 人工 review 生成的 spec 质量。
 6. 建一个能跑通端到端的最小任务。

@@ -245,7 +245,7 @@ Workflow:
 
 1. After project initialization, run `trellis init`. It writes default spec templates under `.trellis/spec/` (about 17 placeholder files across `backend/`, `frontend/`, and `guides`, covering directory structure, error handling, logging, component guidelines, cross-layer thinking, and similar rules), and creates the `00-bootstrap-guidelines` task.
 2. Use the bootstrap task to discuss product requirements and the project tech stack with AI, so the AI has enough context before writing code.
-3. Optional: install the bundled marketplace skill `trellis-spec-bootstarp` so AI can draft first-pass specs from the real codebase. Install with `npx skills add mindfold-ai/marketplace --skill trellis-spec-bootstarp`.
+3. Optional: use the bundled `trellis-spec-bootstarp` skill so AI can draft first-pass specs from the real codebase. It is installed with Trellis, so there is no extra marketplace download step.
 4. Fill the default specs produced by `trellis init` first, based on what you know now. Do not design the entire project upfront.
 5. Review the generated spec quality by hand.
 6. Create the smallest task that can run end to end.

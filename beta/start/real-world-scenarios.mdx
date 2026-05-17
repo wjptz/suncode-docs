@@ -52,7 +52,7 @@ the minimum specs needed for frontend structure, API shape, error handling, and 
 
 1. Run `trellis init` once the project is initialized — it writes around 17 default spec templates under `.trellis/spec/`, split into `backend/` / `frontend/` / `guides/` (directory structure, error handling, logging, component and hook guidelines, cross-layer thinking, etc.), and auto-creates a `00-bootstrap-guidelines` task.
 2. Inside the bootstrap task, walk the AI through the product requirements and tech stack so it has full context before doing anything else.
-3. Optional: install `trellis-spec-bootstarp` (a bundled marketplace skill that drafts first-pass specs from the real codebase), plus any other skills that match the stack. Install with `npx skills add mindfold-ai/marketplace --skill trellis-spec-bootstarp`.
+3. Optional: use the bundled `trellis-spec-bootstarp` skill to draft first-pass specs from the real codebase, plus any other skills that match the stack. Trellis installs this bundled skill automatically.
 4. Fill in the default spec templates produced by `trellis init`, focusing on what the current work needs; do not pre-design the whole project.
 5. Review the generated specs by hand for quality.
 6. Create one task for the smallest useful vertical slice.
@@ -88,7 +88,7 @@ for patterns supported by current code examples.
 
 1. Run `trellis init` — it writes the default spec templates and auto-creates a `00-bootstrap-guidelines` task that drives the rest of this scenario.
 2. Inside the bootstrap task, walk the AI through the project context and have it scan the repo to extract actual patterns (API routes, auth checks, logging, tests, frontend forms, etc.), filling those findings into the default spec templates.
-3. Optional: install `trellis-spec-bootstarp` (a bundled marketplace skill that drafts first-pass specs from the real codebase) and review the output by hand. Install with `npx skills add mindfold-ai/marketplace --skill trellis-spec-bootstarp`.
+3. Optional: use the bundled `trellis-spec-bootstarp` skill to draft first-pass specs from the real codebase, then review the output by hand. Trellis installs this bundled skill automatically.
 4. Ask the AI to cite file paths for every convention it writes.
 5. Review the specs like code. Delete rules that cannot be traced to real examples.
 6. Pick one pilot feature or bug fix.
