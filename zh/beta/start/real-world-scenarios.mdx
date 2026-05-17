@@ -50,7 +50,7 @@ the minimum specs needed for frontend structure, API shape, error handling, and 
 
 1. 项目初始化后运行 `trellis init`，会在 `.trellis/spec/` 写入默认 spec 模板（约 17 份占位文件，分 backend / frontend / guides 三层，覆盖 directory-structure、error-handling、logging、component-guidelines、cross-layer-thinking-guide 等），并自动生成 `00-bootstrap-guidelines` 引导任务。
 2. 在 bootstrap 任务里跟 AI 讨论产品需求和项目技术栈，让 AI 拿到足够的上下文再动手。
-3. 可选：安装 `cc-codex-spec-bootstrap`（marketplace 提供，CC + Codex 协同从真实代码生成第一版 spec），其它对当前技术栈有用的 skills 一起接入。安装命令：`npx skills add mindfold-ai/marketplace --skill cc-codex-spec-bootstrap`。
+3. 可选：安装 `trellis-spec-bootstarp`（marketplace bundle 内置，用真实代码生成第一版 spec），其它对当前技术栈有用的 skills 一起接入。安装命令：`npx skills add mindfold-ai/marketplace --skill trellis-spec-bootstarp`。
 4. 优先填充 `trellis init` 生成的默认 spec 模板，按当前用得到的内容来写，不要预先设计整个项目。
 5. 人工 review 生成的 spec 质量。
 6. 建一个能跑通端到端的最小任务。
@@ -86,7 +86,7 @@ for patterns supported by current code examples.
 
 1. 运行 `trellis init`，会写入默认 spec 模板并自动生成 `00-bootstrap-guidelines` 引导任务。
 2. 在 bootstrap 任务里跟 AI 讨论项目情况，让 AI 扫描仓库提取真实模式（API routes、auth checks、logging、tests、frontend forms 等），把内容填进默认 spec 模板。
-3. 可选：安装 `cc-codex-spec-bootstrap`（marketplace 提供）让 CC + Codex 从真实代码自动生成第一版 spec，再人工 review。安装命令：`npx skills add mindfold-ai/marketplace --skill cc-codex-spec-bootstrap`。
+3. 可选：安装 `trellis-spec-bootstarp`（marketplace bundle 内置）让 AI 从真实代码生成第一版 spec，再人工 review。安装命令：`npx skills add mindfold-ai/marketplace --skill trellis-spec-bootstarp`。
 4. 要求 AI 为每条规范引用具体文件路径。
 5. 像 Review 代码一样 Review specs，删掉不能追溯到真实例子的规则。
 6. 选一个试点 feature 或 bugfix。
@@ -360,13 +360,13 @@ setup, success metrics, and risks. Keep the first rollout small enough to comple
 
 ### 7.3 推广阶段
 
-| 阶段 | 目标             | 退出标准                                                                                                                                                                                                                                        |
-| ---- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | 试点一个仓库     | 用 specs、checks、journal 完成一个真实任务。spec 起点两个选项：从 [spec template marketplace](/zh/start/install-and-first-task#官方-marketplace) 拉一个匹配技术栈的 spec 包；或用 `cc-codex-spec-bootstrap` 让 CC + Codex 从代码生成第一版 spec |
-| 2    | 捕获重复反馈     | 三到五条 Review 模式被沉淀进 specs                                                                                                                                                                                                              |
-| 3    | 标准化任务工作流 | 开发者熟悉什么时候直接描述工作、什么时候用 `/trellis:continue` 推进 active task，以及什么时候在 commit 后用 `/trellis:finish-work` 归档                                                                                                         |
-| 4    | 增加平台适配     | 多个 AI 工具消费同一套 `.trellis/` 上下文                                                                                                                                                                                                       |
-| 5    | 治理更新         | spec 和 workflow 变更都像代码一样被 Review                                                                                                                                                                                                      |
+| 阶段 | 目标             | 退出标准                                                                                                                                                                                                                                   |
+| ---- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | 试点一个仓库     | 用 specs、checks、journal 完成一个真实任务。spec 起点两个选项：从 [spec template marketplace](/zh/start/install-and-first-task#官方-marketplace) 拉一个匹配技术栈的 spec 包；或用 `trellis-spec-bootstarp` 让 AI 从真实代码生成第一版 spec |
+| 2    | 捕获重复反馈     | 三到五条 Review 模式被沉淀进 specs                                                                                                                                                                                                         |
+| 3    | 标准化任务工作流 | 开发者熟悉什么时候直接描述工作、什么时候用 `/trellis:continue` 推进 active task，以及什么时候在 commit 后用 `/trellis:finish-work` 归档                                                                                                    |
+| 4    | 增加平台适配     | 多个 AI 工具消费同一套 `.trellis/` 上下文                                                                                                                                                                                                  |
+| 5    | 治理更新         | spec 和 workflow 变更都像代码一样被 Review                                                                                                                                                                                                 |
 
 ### 7.4 成功指标
 

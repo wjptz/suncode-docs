@@ -27,6 +27,15 @@ Channel worker routing 不再在 send、wait、run 和 provider adapter internal
 - Kept routing on channel events, worker inbox policy, and explicit `to`
 - Added interrupt-specific adapter encoding in `interrupt.ts` and supervisor inbox flow
 
+### Trellis spec bootstrap skill
+
+Marketplace beta bundle 现在包含 `trellis-spec-bootstarp`，用于让 AI 从真实代码库引导生成 `.trellis/spec/`。
+
+- 替代旧的 `cc-codex-spec-bootstrap` marketplace 条目
+- 适合在 `trellis init` 后，把默认 spec 模板填成项目专属内容
+- 安装命令：`npx skills add mindfold-ai/marketplace --skill trellis-spec-bootstarp`
+- beta 和 release 文档都会讲这条流程，方便 release bundle 补上对应 skill 后直接复用
+
 ## Bug Fixes
 
 ### Task archive auto-commit

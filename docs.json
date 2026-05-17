@@ -75,7 +75,7 @@
                     "pages": [
                       "skills-market/index",
                       "skills-market/trellis-meta",
-                      "skills-market/cc-codex-spec-bootstrap",
+                      "skills-market/trellis-spec-bootstarp",
                       "skills-market/frontend-fullchain-optimization",
                       "skills-market/mem-recall"
                     ]
@@ -284,7 +284,7 @@
                     "pages": [
                       "skills-market/index",
                       "skills-market/trellis-meta",
-                      "skills-market/cc-codex-spec-bootstrap",
+                      "skills-market/trellis-spec-bootstarp",
                       "skills-market/frontend-fullchain-optimization",
                       "skills-market/mem-recall"
                     ]
@@ -499,7 +499,7 @@
                     "pages": [
                       "zh/skills-market/index",
                       "zh/skills-market/trellis-meta",
-                      "zh/skills-market/cc-codex-spec-bootstrap",
+                      "zh/skills-market/trellis-spec-bootstarp",
                       "zh/skills-market/frontend-fullchain-optimization",
                       "zh/skills-market/mem-recall"
                     ]
@@ -708,7 +708,7 @@
                     "pages": [
                       "zh/skills-market/index",
                       "zh/skills-market/trellis-meta",
-                      "zh/skills-market/cc-codex-spec-bootstrap",
+                      "zh/skills-market/trellis-spec-bootstarp",
                       "zh/skills-market/frontend-fullchain-optimization",
                       "zh/skills-market/mem-recall"
                     ]

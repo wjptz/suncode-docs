@@ -227,6 +227,30 @@ The AI follows the workflow: reads `workflow.md`, runs `get_context.py`, reads s
   </Tab>
 </Tabs>
 
+### Example: Starting a New Project from Scratch
+
+This is the first Trellis loop for a new product, service, SDK, package, or internal tool.
+
+Real situation: you are starting a B2B dashboard with login, team management, billing, and analytics. AI can help move fast, but each session should not reinvent the directory structure, API style, component pattern, and testing rules.
+
+Starting prompt:
+
+```text
+I am starting a new B2B dashboard from scratch. Help me set up Trellis for the first week of work.
+
+First, ask for the missing product and tech-stack decisions. Then create a small first task and the minimum specs needed for frontend structure, API shape, error handling, and test strategy.
+```
+
+Workflow:
+
+1. After project initialization, run `trellis init`. It writes default spec templates under `.trellis/spec/` (about 17 placeholder files across `backend/`, `frontend/`, and `guides`, covering directory structure, error handling, logging, component guidelines, cross-layer thinking, and similar rules), and creates the `00-bootstrap-guidelines` task.
+2. Use the bootstrap task to discuss product requirements and the project tech stack with AI, so the AI has enough context before writing code.
+3. Optional: install the bundled marketplace skill `trellis-spec-bootstarp` so AI can draft first-pass specs from the real codebase. Install with `npx skills add mindfold-ai/marketplace --skill trellis-spec-bootstarp`.
+4. Fill the default specs produced by `trellis init` first, based on what you know now. Do not design the entire project upfront.
+5. Review the generated spec quality by hand.
+6. Create the smallest task that can run end to end.
+7. Continue with `/trellis:continue`; Trellis will move the task through check, update-spec, commit, and finish.
+
 ### AI Creates the Task and Develops
 
 You say: "Add user login feature". The AI walks the three phases from `workflow.md`:
