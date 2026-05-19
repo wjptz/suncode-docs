@@ -1,0 +1,50 @@
+---
+title: 'v0.5.18'
+description: '2026-05-19'
+---
+
+## Bug Fixes
+
+### Archived task create collisions
+
+`task.py create` 现在会拒绝已经存在于 `.trellis/tasks/archive/**` 的 slug。
+
+- 创建新的 active task directory 前先检查 archived task directories
+- 打印造成冲突的 archived path
+- 如果确实要创建新 task，会提示用户换一个新 slug
+
+### Workflow-state tool routing
+
+`[workflow-state:in_progress]` 现在会区分 sub-agent type 和 skill。
+
+- `trellis-implement` 和 `trellis-research` 只代表 sub-agent types
+- `trellis-update-spec` 是 skill
+- `trellis-check` 两种形态都有；代码变更后的 verification 应优先使用 Agent form
+- 避免 agent 误调用不存在的 `trellis-implement` / `trellis-research` skills
+
+### Codex multi_agent_v2 timeout bounds
+
+`.codex/config.toml` 现在会把 `multi_agent_v2` 的 wait timeout 写成 Codex CLI 0.131+ 可接受的完整边界配置。
+
+```toml
+[features.multi_agent_v2]
+enabled = true
+max_concurrent_threads_per_session = 6
+min_wait_timeout_ms = 480000
+default_wait_timeout_ms = 480000
+max_wait_timeout_ms = 3600000
+```
+
+- 修复 Codex 启动失败：`default_wait_timeout_ms must be at least min_wait_timeout_ms`
+- Trellis 默认 wait 仍然是 8 分钟
+- 显式保留 1 小时上限
+- 覆盖新的 `trellis init`，也覆盖 `trellis update` 的模板刷新
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+不需要运行 migration command。

@@ -1,0 +1,50 @@
+---
+title: 'v0.5.18'
+description: '2026-05-19'
+---
+
+## Bug Fixes
+
+### Archived task create collisions
+
+`task.py create` now rejects a slug that already exists in `.trellis/tasks/archive/**`.
+
+- Checks archived task directories before creating a new active task directory
+- Prints the archived path that caused the collision
+- Tells the user to choose a new slug for an intentional new task
+
+### Workflow-state tool routing
+
+`[workflow-state:in_progress]` now distinguishes sub-agent types from skills.
+
+- `trellis-implement` and `trellis-research` are sub-agent types only
+- `trellis-update-spec` is a skill
+- `trellis-check` exists as both; verification after code changes should prefer the Agent form
+- Prevents agents from trying to call missing `trellis-implement` / `trellis-research` skills
+
+### Codex multi_agent_v2 timeout bounds
+
+`.codex/config.toml` now emits the `multi_agent_v2` wait timeout values as a valid bounds set for Codex CLI 0.131+.
+
+```toml
+[features.multi_agent_v2]
+enabled = true
+max_concurrent_threads_per_session = 6
+min_wait_timeout_ms = 480000
+default_wait_timeout_ms = 480000
+max_wait_timeout_ms = 3600000
+```
+
+- Fixes Codex startup failure: `default_wait_timeout_ms must be at least min_wait_timeout_ms`
+- Keeps the Trellis default wait at 8 minutes
+- Keeps the explicit upper clamp at 1 hour
+- Covers fresh `trellis init` and template refresh through `trellis update`
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+No migration command is required.
