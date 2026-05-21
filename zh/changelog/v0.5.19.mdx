@@ -1,0 +1,26 @@
+---
+title: 'v0.5.19'
+description: '2026-05-21'
+---
+
+## Bug Fixes
+
+### Codex config.toml multi_agent_v2 block removed
+
+`trellis init` / `trellis update` 不再向生成的 `.codex/config.toml` 写入 `[features.multi_agent_v2]` block。
+
+- Template source: `packages/cli/src/templates/codex/config.toml`
+- Removed fields: `enabled`、`max_concurrent_threads_per_session`、`min_wait_timeout_ms`、`default_wait_timeout_ms`、`max_wait_timeout_ms`
+
+v0.5.18 写入了结构化的 `multi_agent_v2` table。Codex CLI 在 `0.130` 到 `0.131` 之间改了 `features` 的 deserialization：结构化的 table 形式只有 `0.131+` 接受。在 `0.130` 及更早版本上——包括 Codex desktop app 内置的 Codex CLI——会以 `data did not match any variant of untagged enum FeatureToml in features.multi_agent_v2` 失败,并中止整个 config 加载,导致 Codex 无法启动。改为使用 Codex 自身对 `multi_agent_v2` 的默认值;如有需要,可在 user-level 的 `~/.codex/config.toml` 里自行调整。
+
+运行 `trellis update` 即可重新生成不含该 block 的 `.codex/config.toml`。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+不需要运行 migration command。
