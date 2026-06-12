@@ -1,0 +1,93 @@
+---
+title: 'v0.6.0-beta.23'
+description: '2026-06-08'
+---
+
+## Enhancements
+
+### Channel runtime agent definitions auto-dispatched
+
+`trellis init` and `trellis update` now ship `.trellis/agents/{check,implement}.md`, the bundled definitions that `trellis channel spawn --agent <name>` loads at runtime.
+
+- Templates: `packages/cli/src/templates/trellis/agents/{implement,check}.md`
+- Dispatched by: `createWorkflowStructure` in `packages/cli/src/configurators/workflow.ts`
+- Refreshed by: `getAllAgents()` in `packages/cli/src/templates/trellis/index.ts`, threaded through `collectTemplateFiles` in `packages/cli/src/commands/update.ts`
+
+Previously, switching to a channel-driven workflow (`trellis workflow --template channel-driven-subagent-dispatch`) and then running `trellis channel spawn --agent check` failed at runtime with `Agent 'check' not found` because no command shipped these files. They are platform-agnostic and are dispatched on every init regardless of `--workflow` or `--<platform>` selection. The standard hash/conflict flow in `trellis update` backfills missing entries for projects that installed before the bundled definitions existed (#323).
+
+### Registry-backed `.trellis/spec` refresh through `trellis update`
+
+`trellis init --template <id>` now persists the spec source and template id into `.trellis/config.yaml` under a new `registry.spec` block. `trellis update` reads that block, downloads the configured spec registry into a temp directory, and feeds it through the existing hash / conflict / "modified by you" flow so registry-backed spec templates stay current alongside the standard CLI templates.
+
+- New utility: `packages/cli/src/utils/registry-config.ts`
+- `init.ts` and `update.ts` extended to write / read the persisted registry config
+- Supports direct spec registries and marketplace-style registries, including SSH and self-hosted Git sources
+
+Closes #315.
+
+### Reasonix (DeepSeek-Reasonix) platform support
+
+Adds Reasonix as the 15th supported AI coding tool, available via `trellis init --reasonix`. Reasonix stores skills as `.reasonix/skills/<name>/SKILL.md` with YAML frontmatter; slash commands are platform-built-in, so no separate `commands/` directory is generated.
+
+- New configurator: `packages/cli/src/configurators/reasonix.ts`
+- New template module: `packages/cli/src/templates/reasonix/`
+- New CLI flag: `--reasonix`
+- `{{CMD_REF:start}}` resolves to `/skill trellis-start` for Reasonix via the new `/skill trellis-` `cmdRefPrefix`
+
+Subagent skills (`trellis-implement`, `trellis-check`) ship with `runAs: subagent` frontmatter so Reasonix spawns them as isolated subagent loops rather than inline slash skills. Closes #301.
+
+### `trellis-session-insight` bundled skill
+
+A new bundled skill at `packages/cli/src/templates/common/bundled-skills/trellis-session-insight/` teaches the AI when to reach for the `trellis mem` CLI (past-solution recall, decision retrieval, cross-session continuation, familiar-bug debugging, self-pattern spotting, finish-work retrospective) and intentionally does **not** prescribe a fixed write-back file.
+
+What to do with what `mem` returns — quote inline in the answer, update a `prd.md` / `design.md`, append to task notes, internalize, or hand off to `trellis-update-spec` — is judged in the moment by the AI. References:
+
+- `references/cli-quick-reference.md` — full `trellis mem` flag reference.
+- `references/triggering-patterns.md` — verbatim English and Chinese user phrasings calibrated for each intent.
+
+Auto-dispatched on every supported platform on `trellis init` and `trellis update` via the existing `getBundledSkillTemplates()` directory scan.
+
+### Workflow template missing-agent warning
+
+`trellis workflow --template <id>` (and `trellis init --workflow <id>`) now prints a non-blocking stderr warning when the resolved `workflow.md` references `.trellis/agents/<name>.md` files that are missing on disk. Detection lives in `packages/cli/src/utils/agent-refs.ts` and looks for both `--agent <name>` flag forms and literal `.trellis/agents/<name>.md` path references in the workflow body. The warning points the user at `trellis update` to backfill the bundled set and never aborts the workflow switch.
+
+## Bug Fixes
+
+### Bundled skill rename: `trellis-spec-bootstarp` → `trellis-spec-bootstrap`
+
+The bundled spec-bootstrap skill shipped under a typoed directory name. The fix renames both the source template and the per-platform installed directories.
+
+- Renamed source: `packages/cli/src/templates/common/bundled-skills/trellis-spec-bootstarp/` → `trellis-spec-bootstrap/`
+- Inner `name:` frontmatter field corrected.
+- Test references updated.
+
+For users who already installed the typoed directory, this release ships a `rename-dir` migration in the 0.6.0-beta.23 manifest that renames the installed directory across 13 platform skill roots:
+
+| Platform                    | Skill root           |
+| --------------------------- | -------------------- |
+| Claude Code                 | `.claude/skills/`    |
+| Cursor                      | `.cursor/skills/`    |
+| OpenCode                    | `.opencode/skills/`  |
+| Codex + Gemini CLI (shared) | `.agents/skills/`    |
+| Kiro                        | `.kiro/skills/`      |
+| Qoder                       | `.qoder/skills/`     |
+| CodeBuddy                   | `.codebuddy/skills/` |
+| GitHub Copilot              | `.github/skills/`    |
+| Droid                       | `.factory/skills/`   |
+| Pi Agent                    | `.pi/skills/`        |
+| Antigravity                 | `.agent/skills/`     |
+| Windsurf                    | `.windsurf/skills/`  |
+| Kilo                        | `.kilocode/skills/`  |
+
+Run `trellis update --migrate` to apply. Missing roots are silently skipped.
+
+Historical migration manifests `src/migrations/manifests/0.5.17.json` and `src/migrations/manifests/0.6.0-beta.18.json` keep the typoed text intentionally — they describe what actually shipped to users on those versions and stay grep-able for anyone investigating an old install. Closes #296.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update --migrate
+```
+
+`--migrate` is recommended for this release because of the `rename-dir` migrations above. Plain `trellis update` still installs the new `.trellis/agents/*.md` runtime files and the `trellis-session-insight` bundled skill, but leaves the existing `trellis-spec-bootstarp/` directories in place.

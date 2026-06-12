@@ -1,0 +1,120 @@
+---
+title: 'v0.6.0-rc.0'
+description: '2026-06-08'
+---
+
+The first release candidate for v0.6.0. The feature surface is now frozen; the v0.6.0 cycle moves from beta into stabilization. Feature requests open on the tracker (`#193`, `#318`, `#320`, `#325`, `#326`, etc.) are deferred to v0.7 or later. Bug-only patches will land as further `0.6.0-rc.*` cuts.
+
+This changelog summarizes what the v0.6 line delivered across 23 beta releases plus the single fix made between `0.6.0-beta.23` and `0.6.0-rc.0`.
+
+## Enhancements
+
+### `trellis mem` — cross-session memory feedstock
+
+A local CLI that indexes Claude Code and Codex conversation logs already on disk and exposes them through `list`, `search`, `context`, `extract`, and `projects` subcommands. `extract --phase brainstorm|implement|all` slices a session at `task.py create` / `task.py start` boundaries so an AI can recover the planning window of any prior task. Reusable retrieval and phase logic live in `@mindfoldhq/trellis-core/mem`; nothing is uploaded.
+
+Shipped progressively from `v0.6.0-beta.15` (core + CLI), with adapters and phase slicing maturing through `beta.18`.
+
+### `trellis-session-insight` bundled skill
+
+A capability skill that teaches the AI when to reach for `trellis mem` (past-solution recall, decision retrieval, cross-session continuation, familiar-bug debugging, self-pattern spotting, finish-work retrospective) and intentionally does _not_ prescribe a fixed write-back file. What to do with what `mem` returns is judged in the moment by the AI based on the live conversation.
+
+- Source: `packages/cli/src/templates/common/bundled-skills/trellis-session-insight/`
+- Auto-dispatched to every supported platform on `trellis init` and `trellis update`
+
+Shipped in `v0.6.0-beta.23`.
+
+### Channel runtime — multi-agent collaboration
+
+`trellis channel` ships a worker-supervisor primitive for coordinating multiple AI processes:
+
+- `channel create | send | wait | spawn | run | list | messages | kill | rm | prune` subcommands
+- Claude stream-json and Codex app-server adapters that translate provider output into channel `message` / `progress` / `done` / `error` events
+- Forum and thread channels with `--type forum|threads` and `channel context|title|thread rename`
+- `--scope project|global` resolution across every channel command
+- Project-scoped channel logs under `~/.trellis/channels/<project>/<channel>/events.jsonl` with locked sequence assignment
+- Default OOM guard: `channel.worker_guard.idle_timeout` (5m) and `channel.worker_guard.max_live_workers` (6); both configurable per-spawn or via `.trellis/config.yaml`
+- Reusable worker runtime APIs in `@mindfoldhq/trellis-core/channel`: `readWorkerInbox()`, `watchWorkerInbox()`, `WorkerInboxError`
+- Durable `idempotencyKey` on `sendMessage` / `postThread` so retries return the original JSONL event
+
+Shipped progressively across `v0.6.0-beta.10` through `beta.19`.
+
+### Channel runtime agent definitions auto-dispatched
+
+`trellis init` and `trellis update` now ship `.trellis/agents/{check,implement}.md`, the bundled definitions that `trellis channel spawn --agent <name>` loads at runtime. `trellis workflow --template <id>` prints a non-blocking stderr warning when the resolved workflow references missing `.trellis/agents/<name>.md` files. Detection lives in `packages/cli/src/utils/agent-refs.ts`.
+
+Shipped in `v0.6.0-beta.23` (closes `#323`).
+
+### Registry-backed `.trellis/spec` refresh through `trellis update`
+
+`trellis init --template <id>` persists the spec source and template id into `.trellis/config.yaml` under a new `registry.spec` block. `trellis update` reads that block, downloads the configured spec registry into a temp directory, and feeds it through the existing hash / conflict / "modified by you" flow. Supports direct spec registries and marketplace-style registries, including SSH and self-hosted Git sources.
+
+Shipped in `v0.6.0-beta.23` (closes `#315`).
+
+### Reasonix (DeepSeek-Reasonix) platform support
+
+Reasonix is the 15th supported AI coding tool, available via `trellis init --reasonix`. Subagent skills (`trellis-implement`, `trellis-check`) carry `runAs: subagent` frontmatter so Reasonix spawns them as isolated subagent loops.
+
+Shipped in `v0.6.0-beta.23` (closes `#301`).
+
+### Pi Agent — native `trellis_subagent` extension
+
+The Pi extension now exposes `trellis_subagent` with native progress cards, `single` / `parallel` / `chain` dispatch modes, throttled live updates, and Trellis-agent validation.
+
+Shipped in `v0.6.0-beta.19` (closes `#286`, `#290`).
+
+### `@mindfoldhq/trellis-core` SDK package
+
+A second published package, `@mindfoldhq/trellis-core`, exposes the reusable channel, task, and mem domain primitives behind the CLI for Node consumers. Both packages share one git tag, one npm dist-tag, and one version at every release.
+
+Shipped in `v0.6.0-beta.13`.
+
+### `trellis upgrade` command
+
+Wraps `npm install -g @mindfoldhq/trellis@<channel>` with channel-aware defaults (`latest`, `beta`, `rc`), explicit `--tag` and `--dry-run` flags. Replaces the long-form `npm install -g …` snippets that previously appeared in session-start hints.
+
+Shipped in `v0.6.0-beta.9`.
+
+### `trellis-spec-bootstrap` bundled skill
+
+A built-in bundled skill that helps an AI bootstrap `.trellis/spec/` from the real codebase with source-backed references for repository analysis, spec task planning, spec writing, and MCP setup. Auto-installed on every supported platform.
+
+Shipped in `v0.6.0-beta.18` (renamed from the historical typo `trellis-spec-bootstarp` in `v0.6.0-beta.23`; see `#296`).
+
+### Configurable hooks via `.trellis/config.yaml`
+
+Project-level configuration now drives hook behavior:
+
+| Knob                                                                    | Controls                                                                                                            |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `session_commit_message` / `max_journal_lines` / `session_auto_commit`  | journal auto-commit shape                                                                                           |
+| `hooks.after_create` / `after_start` / `after_finish` / `after_archive` | user shell commands run after each task lifecycle event                                                             |
+| `channel.worker_guard.idle_timeout` / `max_live_workers`                | channel worker OOM protection                                                                                       |
+| `codex.dispatch_mode: inline \| sub-agent`                              | whether the main Codex agent edits code directly or routes through `trellis-implement` / `trellis-check` sub-agents |
+
+## Bug Fixes
+
+### `trellis-implement` / `trellis-check` no longer silent-skip when Exa MCP is absent
+
+The bundled `trellis-implement` and `trellis-check` agent definitions declared `mcp__exa__web_search_exa` and `mcp__exa__get_code_context_exa` as explicit tools. Claude Code's `tools:` parser silently skips agent registration when an explicit MCP tool name fails to resolve, so users without the Exa MCP server installed had every Trellis sub-agent disappear from the dispatch list — the main agent ended up implementing work itself rather than delegating.
+
+Fix:
+
+- `trellis-implement` and `trellis-check` drop both `mcp__exa__*` entries. These agents do not need external web search; the tools list shrinks to `Read, Write, Edit, Bash, Glob, Grep`.
+- `trellis-research` folds the previous `mcp__exa__*` + `mcp__chrome-devtools__*` entries into a single `mcp__*` wildcard. Claude Code resolves wildcards lazily (no silent-skip when nothing matches), so this opts research into any MCP the user has configured without locking the source template to a specific provider.
+- The Copilot transformer (`mapLegacyToolToCopilot` in `packages/cli/src/configurators/shared.ts`) gets a matching case for `mcp__*` that emits the full set of supported Copilot MCP equivalents.
+
+OpenCode agent files use a different permission mapping syntax (`mcp__exa__*: allow`) that does not silent-skip the agent, so they are intentionally left unchanged.
+
+Closes `#302`.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@rc
+trellis update
+```
+
+If you are coming from `0.6.0-beta.22` or earlier, run `trellis update --migrate` to also pick up the `rename-dir` migration that moves installed `trellis-spec-bootstarp/` skill directories to `trellis-spec-bootstrap/` across the 13 platform skill roots.
+
+The next release on this line will be `0.6.0-rc.1` (bug-only) unless a feature regression forces a return to beta. v0.6.0 GA tracks RC stability.

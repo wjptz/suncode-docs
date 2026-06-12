@@ -1,0 +1,85 @@
+---
+title: 'v0.6.0-beta.19'
+description: '2026-05-19'
+---
+
+## Enhancements
+
+### Pi trellis_subagent extension
+
+Pi extension 现在通过 `trellis_subagent` 暴露 Trellis sub-agent dispatch，并使用原生进度卡片展示运行状态。
+
+- Tool name: `trellis_subagent`，避免和社区 `subagent` packages 冲突
+- Dispatch modes: `single`、`parallel`、`chain`
+- Live UI: 通过 `renderResult` 更新原生进度卡片，并用 `THROTTLE_MS` 节流
+- Detail view: `Alt+O` 展开和折叠最新 sub-agent 卡片
+- Safety: `isTrellisAgent()` 会在启动 child Pi process 前拒绝非 Trellis agent 名称
+- Resource control: bounded stdout/stderr buffers 防止 child output 无限制增长
+
+## Bug Fixes
+
+### Channel durable idempotency
+
+`@mindfoldhq/trellis-core` 的 channel 写入现在支持 `sendMessage` 和 `postThread` 的 durable idempotency keys。
+
+- New option: `idempotencyKey`
+- Replay behavior: 相同 key 的重复写入会返回原始 JSONL event
+- Strict delivery: replay 不会重复写入 `undeliverable` events
+- Validation: 空 key 会被拒绝，跨 event kind 复用 key 会报错
+
+### Archived task create collisions
+
+`task.py create` 现在会拒绝已经存在于 `.trellis/tasks/archive/**` 的 slug。
+
+- 创建新的 active task directory 前先检查 archived task directories
+- 打印造成冲突的 archived path
+- 如果确实要创建新 task，会提示用户换一个新 slug
+
+### Workflow-state tool routing
+
+`[workflow-state:in_progress]` 现在会区分 sub-agent type 和 skill。
+
+- `trellis-implement` 和 `trellis-research` 只代表 sub-agent types
+- `trellis-update-spec` 是 skill
+- `trellis-check` 两种形态都有；代码变更后的 verification 应优先使用 Agent form
+- 避免 agent 误调用不存在的 `trellis-implement` / `trellis-research` skills
+
+### Codex multi_agent_v2 timeout bounds
+
+`.codex/config.toml` 现在会把 `multi_agent_v2` 的 wait timeout 写成 Codex CLI 0.131+ 可接受的完整边界配置。
+
+**Codex 版本要求：** 这份完整 timeout bounds 配置需要 Codex CLI `0.131.0` 或更新版本。Codex CLI `0.128.0` 到 `0.130.x` 只认识早期的 `enabled`、`max_concurrent_threads_per_session` 和 `min_wait_timeout_ms` 字段；这些版本遇到 `default_wait_timeout_ms` 或 `max_wait_timeout_ms` 会在启动时解析配置失败。
+
+```toml
+[features.multi_agent_v2]
+enabled = true
+max_concurrent_threads_per_session = 6
+min_wait_timeout_ms = 480000
+default_wait_timeout_ms = 480000
+max_wait_timeout_ms = 3600000
+```
+
+- 修复 Codex 启动失败：`default_wait_timeout_ms must be at least min_wait_timeout_ms`
+- `default_wait_timeout_ms` 和 `max_wait_timeout_ms` 需要 Codex CLI `0.131.0+`
+- Trellis 默认 wait 仍然是 8 分钟
+- 显式保留 1 小时上限
+- 覆盖新的 `trellis init`，也覆盖 `trellis update` 的模板刷新
+
+## Internal
+
+### Release manifest continuity
+
+源码树现在包含已经发布过的 `0.5.17` migration manifest。
+
+- 恢复 `packages/cli/src/migrations/manifests/0.5.17.json`
+- 让 beta release 的 `check-manifest-continuity.js` 保持通过
+- 保留相邻版本 `trellis update` 链路校验
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+不需要运行 migration command。

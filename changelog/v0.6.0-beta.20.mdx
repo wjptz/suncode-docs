@@ -1,0 +1,34 @@
+---
+title: 'v0.6.0-beta.20'
+description: '2026-05-19'
+---
+
+## Bug Fixes
+
+### Trellis spec bootstrap skill
+
+`trellis-spec-bootstarp` is now included in the CLI package templates.
+
+- Template source: `packages/cli/src/templates/common/bundled-skills/trellis-spec-bootstarp/`
+- Packed path: `dist/templates/common/bundled-skills/trellis-spec-bootstarp/`
+- Install path: platform skill roots such as `.claude/skills/`, `.agents/skills/`, `.pi/skills/`
+- Update tracking: `.trellis/.template-hashes.json` includes the bundled skill reference files
+
+Fresh `trellis init` and `trellis update` now install the built-in spec bootstrap skill without a separate marketplace download.
+
+### Codex multi_agent_v2 version note
+
+The v0.6.0-beta.19 changelog now states the Codex CLI version requirement for the full timeout-bounds config.
+
+- Required Codex CLI version: `0.131.0+`
+- Affected fields: `default_wait_timeout_ms`, `max_wait_timeout_ms`
+- Older Codex CLI versions `0.128.0` through `0.130.x` only support the earlier `enabled`, `max_concurrent_threads_per_session`, and `min_wait_timeout_ms` fields
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+No migration command is required.

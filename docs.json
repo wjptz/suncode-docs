@@ -3,7 +3,7 @@
   "theme": "mint",
   "js": "/terminal-demo.js",
   "banner": {
-    "content": "📦 **Beta** docs cover the 0.6 track. Check your install: `trellis --version`. Install latest beta: `npm install -g @mindfoldhq/trellis@beta`. Use the version dropdown to switch between **Beta** and **Release**.",
+    "content": "📦 **RC** docs cover the 0.6 track. Check your install: `trellis --version`. Install latest rc: `npm install -g @mindfoldhq/trellis@rc`. Use the version dropdown to switch between **RC** and **Release**.",
     "dismissible": true
   },
   "exclude": [
@@ -28,38 +28,38 @@
         "language": "en",
         "versions": [
           {
-            "version": "Beta",
+            "version": "RC",
             "default": true,
             "groups": [
               {
                 "group": "Start Here",
                 "pages": [
-                  "beta/index",
-                  "beta/start/install-and-first-task",
-                  "beta/start/how-it-works",
-                  "beta/start/everyday-use",
-                  "beta/start/real-world-scenarios"
+                  "rc/index",
+                  "rc/start/install-and-first-task",
+                  "rc/start/how-it-works",
+                  "rc/start/everyday-use",
+                  "rc/start/real-world-scenarios"
                 ]
               },
               {
                 "group": "Advanced",
                 "pages": [
-                  "beta/advanced/architecture",
-                  "beta/advanced/roadmap",
-                  "beta/advanced/custom-workflow",
-                  "beta/advanced/custom-commands",
-                  "beta/advanced/custom-agents",
-                  "beta/advanced/custom-hooks",
-                  "beta/advanced/custom-skills",
-                  "beta/advanced/custom-spec-template-marketplace",
-                  "beta/advanced/configuration",
-                  "beta/advanced/multi-platform",
-                  "beta/advanced/appendix-a",
-                  "beta/advanced/appendix-b",
-                  "beta/advanced/appendix-c",
-                  "beta/advanced/appendix-d",
-                  "beta/advanced/appendix-f",
-                  "beta/advanced/resources"
+                  "rc/advanced/architecture",
+                  "rc/advanced/roadmap",
+                  "rc/advanced/custom-workflow",
+                  "rc/advanced/custom-commands",
+                  "rc/advanced/custom-agents",
+                  "rc/advanced/custom-hooks",
+                  "rc/advanced/custom-skills",
+                  "rc/advanced/custom-spec-template-marketplace",
+                  "rc/advanced/configuration",
+                  "rc/advanced/multi-platform",
+                  "rc/advanced/appendix-a",
+                  "rc/advanced/appendix-b",
+                  "rc/advanced/appendix-c",
+                  "rc/advanced/appendix-d",
+                  "rc/advanced/appendix-f",
+                  "rc/advanced/resources"
                 ]
               },
               {
@@ -123,10 +123,16 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "changelog/v0.6.0-rc.0",
+                      "changelog/v0.6.0-beta.23",
+                      "changelog/v0.6.0-beta.22",
                       "changelog/v0.5.19",
-                      "changelog/v0.6.0-beta.18",
+                      "changelog/v0.6.0-beta.21",
+                      "changelog/v0.6.0-beta.20",
                       "changelog/v0.5.18",
+                      "changelog/v0.6.0-beta.19",
                       "changelog/v0.5.17",
+                      "changelog/v0.6.0-beta.18",
                       "changelog/v0.5.16",
                       "changelog/v0.6.0-beta.17",
                       "changelog/v0.6.0-beta.16",
@@ -146,7 +152,6 @@
                       "changelog/v0.5.11",
                       "changelog/v0.5.10",
                       "changelog/v0.6.0-beta.6",
-
                       "changelog/v0.6.0-beta.5",
                       "changelog/v0.6.0-beta.4",
                       "changelog/v0.6.0-beta.3",
@@ -335,10 +340,16 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "changelog/v0.6.0-rc.0",
+                      "changelog/v0.6.0-beta.23",
+                      "changelog/v0.6.0-beta.22",
                       "changelog/v0.5.19",
-                      "changelog/v0.6.0-beta.18",
+                      "changelog/v0.6.0-beta.21",
+                      "changelog/v0.6.0-beta.20",
                       "changelog/v0.5.18",
+                      "changelog/v0.6.0-beta.19",
                       "changelog/v0.5.17",
+                      "changelog/v0.6.0-beta.18",
                       "changelog/v0.5.16",
                       "changelog/v0.6.0-beta.17",
                       "changelog/v0.6.0-beta.16",
@@ -358,7 +369,6 @@
                       "changelog/v0.5.11",
                       "changelog/v0.5.10",
                       "changelog/v0.6.0-beta.6",
-
                       "changelog/v0.6.0-beta.5",
                       "changelog/v0.6.0-beta.4",
                       "changelog/v0.6.0-beta.3",
@@ -458,38 +468,38 @@
         "language": "zh",
         "versions": [
           {
-            "version": "Beta",
+            "version": "RC",
             "default": true,
             "groups": [
               {
                 "group": "开始使用",
                 "pages": [
-                  "zh/beta/index",
-                  "zh/beta/start/install-and-first-task",
-                  "zh/beta/start/how-it-works",
-                  "zh/beta/start/everyday-use",
-                  "zh/beta/start/real-world-scenarios"
+                  "zh/rc/index",
+                  "zh/rc/start/install-and-first-task",
+                  "zh/rc/start/how-it-works",
+                  "zh/rc/start/everyday-use",
+                  "zh/rc/start/real-world-scenarios"
                 ]
               },
               {
                 "group": "进阶",
                 "pages": [
-                  "zh/beta/advanced/architecture",
-                  "zh/beta/advanced/roadmap",
-                  "zh/beta/advanced/custom-workflow",
-                  "zh/beta/advanced/custom-commands",
-                  "zh/beta/advanced/custom-agents",
-                  "zh/beta/advanced/custom-hooks",
-                  "zh/beta/advanced/custom-skills",
-                  "zh/beta/advanced/custom-spec-template-marketplace",
-                  "zh/beta/advanced/configuration",
-                  "zh/beta/advanced/multi-platform",
-                  "zh/beta/advanced/appendix-a",
-                  "zh/beta/advanced/appendix-b",
-                  "zh/beta/advanced/appendix-c",
-                  "zh/beta/advanced/appendix-d",
-                  "zh/beta/advanced/appendix-f",
-                  "zh/beta/advanced/resources"
+                  "zh/rc/advanced/architecture",
+                  "zh/rc/advanced/roadmap",
+                  "zh/rc/advanced/custom-workflow",
+                  "zh/rc/advanced/custom-commands",
+                  "zh/rc/advanced/custom-agents",
+                  "zh/rc/advanced/custom-hooks",
+                  "zh/rc/advanced/custom-skills",
+                  "zh/rc/advanced/custom-spec-template-marketplace",
+                  "zh/rc/advanced/configuration",
+                  "zh/rc/advanced/multi-platform",
+                  "zh/rc/advanced/appendix-a",
+                  "zh/rc/advanced/appendix-b",
+                  "zh/rc/advanced/appendix-c",
+                  "zh/rc/advanced/appendix-d",
+                  "zh/rc/advanced/appendix-f",
+                  "zh/rc/advanced/resources"
                 ]
               },
               {
@@ -553,10 +563,16 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "zh/changelog/v0.6.0-rc.0",
+                      "zh/changelog/v0.6.0-beta.23",
+                      "zh/changelog/v0.6.0-beta.22",
                       "zh/changelog/v0.5.19",
-                      "zh/changelog/v0.6.0-beta.18",
+                      "zh/changelog/v0.6.0-beta.21",
+                      "zh/changelog/v0.6.0-beta.20",
                       "zh/changelog/v0.5.18",
+                      "zh/changelog/v0.6.0-beta.19",
                       "zh/changelog/v0.5.17",
+                      "zh/changelog/v0.6.0-beta.18",
                       "zh/changelog/v0.5.16",
                       "zh/changelog/v0.6.0-beta.17",
                       "zh/changelog/v0.6.0-beta.16",
@@ -576,7 +592,6 @@
                       "zh/changelog/v0.5.11",
                       "zh/changelog/v0.5.10",
                       "zh/changelog/v0.6.0-beta.6",
-
                       "zh/changelog/v0.6.0-beta.5",
                       "zh/changelog/v0.6.0-beta.4",
                       "zh/changelog/v0.6.0-beta.3",
@@ -765,10 +780,16 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "zh/changelog/v0.6.0-rc.0",
+                      "zh/changelog/v0.6.0-beta.23",
+                      "zh/changelog/v0.6.0-beta.22",
                       "zh/changelog/v0.5.19",
-                      "zh/changelog/v0.6.0-beta.18",
+                      "zh/changelog/v0.6.0-beta.21",
+                      "zh/changelog/v0.6.0-beta.20",
                       "zh/changelog/v0.5.18",
+                      "zh/changelog/v0.6.0-beta.19",
                       "zh/changelog/v0.5.17",
+                      "zh/changelog/v0.6.0-beta.18",
                       "zh/changelog/v0.5.16",
                       "zh/changelog/v0.6.0-beta.17",
                       "zh/changelog/v0.6.0-beta.16",
@@ -788,7 +809,6 @@
                       "zh/changelog/v0.5.11",
                       "zh/changelog/v0.5.10",
                       "zh/changelog/v0.6.0-beta.6",
-
                       "zh/changelog/v0.6.0-beta.5",
                       "zh/changelog/v0.6.0-beta.4",
                       "zh/changelog/v0.6.0-beta.3",
@@ -903,7 +923,7 @@
     "links": [
       {
         "label": "Changelog",
-        "href": "/changelog/v0.5.19"
+        "href": "/changelog/v0.6.0-beta.22"
       },
       {
         "label": "Tech Blog",

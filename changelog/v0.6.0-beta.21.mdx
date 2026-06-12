@@ -1,0 +1,26 @@
+---
+title: 'v0.6.0-beta.21'
+description: '2026-05-21'
+---
+
+## Bug Fixes
+
+### Codex config.toml multi_agent_v2 block removed
+
+`trellis init` / `trellis update` no longer write a `[features.multi_agent_v2]` block to the generated `.codex/config.toml`.
+
+- Template source: `packages/cli/src/templates/codex/config.toml`
+- Removed fields: `enabled`, `max_concurrent_threads_per_session`, `min_wait_timeout_ms`, `default_wait_timeout_ms`, `max_wait_timeout_ms`
+
+Codex CLI changed `features` deserialization between `0.130` and `0.131`. The structured table form is only accepted by `0.131+`. On `0.130` and earlier — including the Codex CLI bundled in the Codex desktop app — it fails with `data did not match any variant of untagged enum FeatureToml in features.multi_agent_v2` and aborts the entire config load, blocking Codex from starting. Codex's own default for `multi_agent_v2` is used instead; tune it in your user-level `~/.codex/config.toml` if needed.
+
+Run `trellis update` to regenerate `.codex/config.toml` without the block.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+No migration command is required.

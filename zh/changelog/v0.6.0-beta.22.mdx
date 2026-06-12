@@ -1,0 +1,36 @@
+---
+title: 'v0.6.0-beta.22'
+description: '2026-06-01'
+---
+
+## Bug Fixes
+
+### Codex sub-agent toml：重复的 pull-based prelude 已移除
+
+生成的 `.codex/agents/trellis-check.toml` 和 `trellis-implement.toml` 里，"Required: Load Trellis Context First" prelude 出现了**两次**。
+
+- Template source: `packages/cli/src/templates/codex/agents/trellis-check.toml`、`trellis-implement.toml`
+- Generated output: `.codex/agents/trellis-check.toml`、`trellis-implement.toml`
+
+Class-2 平台（Codex / Copilot / Gemini / Qoder）无法通过 hook 给 sub-agent 注入任务上下文，因此加载上下文的 prelude 由 configurator（`injectPullBasedPreludeToml`）注入。这两个 Codex toml 源模板里还残留着一份早于注入机制的内联 prelude，注入时又补了一份，于是每个生成的 agent 都带了两遍。Markdown 类的 class-2 模板（gemini / cursor 等）本来就没有内联 prelude，不受影响。
+
+现已删除内联副本，让注入机制成为唯一来源。新增回归测试，断言 prelude 在所有 class-2 平台中只出现一次。
+
+运行 `trellis update` 即可重新生成不含重复内容的 `.codex/agents/`。
+
+### 补回 beta 分支上丢失的 0.5.19 迁移清单
+
+`0.6.0-beta` 分支缺少 `src/migrations/manifests/0.5.19.json`。
+
+- 从 `main` 字节一致地恢复，与已发布的 `0.5.19` release 所附带的 manifest 相同。
+
+已发布的 `0.5.19` npm release 在本分支上没有对应的本地 manifest，这会让 manifest 连续性检查失败，并导致停留在 `0.5.19` 的用户无法正常 `trellis update`。补回后升级链保持完整。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+不需要运行 migration command。

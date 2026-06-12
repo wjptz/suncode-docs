@@ -25,7 +25,7 @@ AI 会读 task 状态、artifact presence 和 `workflow.md` 决定下一步。
 
 ### Q2: 怎么把已有项目迁到 Trellis？
 
-1. `npm install -g @mindfoldhq/trellis@beta`
+1. `npm install -g @mindfoldhq/trellis@rc`
 2. 项目根下 `trellis init -u your-name`（自动建 bootstrap 任务）。
 3. 打开已配置 Trellis 的 AI 会话；如果平台没有自动会话注入，就运行对应 start workflow。brainstorm skill 会帮你填初始 spec。
 4. 按团队约定手动补充核心 spec。
@@ -43,7 +43,7 @@ AI 会读 task 状态、artifact presence 和 `workflow.md` 决定下一步。
 ```bash
 # 1. 装 Node.js 18+ 和 Python 3.9+
 # 2. 装 Trellis
-npm install -g @mindfoldhq/trellis@beta
+npm install -g @mindfoldhq/trellis@rc
 # 3. 初始化
 cd your-project
 trellis init -u your-name

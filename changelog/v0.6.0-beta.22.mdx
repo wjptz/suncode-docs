@@ -1,0 +1,36 @@
+---
+title: 'v0.6.0-beta.22'
+description: '2026-06-01'
+---
+
+## Bug Fixes
+
+### Codex sub-agent toml: duplicated pull-based prelude removed
+
+The generated `.codex/agents/trellis-check.toml` and `trellis-implement.toml` contained the "Required: Load Trellis Context First" prelude **twice**.
+
+- Template source: `packages/cli/src/templates/codex/agents/trellis-check.toml`, `trellis-implement.toml`
+- Generated output: `.codex/agents/trellis-check.toml`, `trellis-implement.toml`
+
+Class-2 platforms (Codex / Copilot / Gemini / Qoder) cannot inject sub-agent task context via hook, so the context-loading prelude is added by the configurator (`injectPullBasedPreludeToml`). The two Codex toml source templates still carried an inline copy of that prelude that predated the injector. The injector then prepended a second copy, so each generated agent shipped the block twice. The markdown class-2 templates (gemini / cursor / etc.) were already prelude-free and unaffected.
+
+The inline copies are removed so the injector is the single source. A regression test now asserts the prelude appears exactly once across all class-2 platforms.
+
+Run `trellis update` to regenerate `.codex/agents/` without the duplication.
+
+### Restore 0.5.19 migration manifest on the beta branch
+
+`src/migrations/manifests/0.5.19.json` was missing on the `0.6.0-beta` branch.
+
+- Restored from `main`, byte-identical to the manifest shipped with the published `0.5.19` release.
+
+The published `0.5.19` npm release had no local manifest on this branch, which broke the manifest-continuity guard and would break `trellis update` for users on `0.5.19`. Restoring it keeps the upgrade chain intact.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@beta
+trellis update
+```
+
+No migration command is required.
