@@ -7,8 +7,8 @@ title: 'Install & First Task'
 ### Installation
 
 ```bash
-# Global install
-npm install -g @mindfoldhq/trellis
+# Global install (beta channel)
+npm install -g @mindfoldhq/trellis@latest
 
 # Navigate to your project directory
 cd your-project
@@ -81,25 +81,29 @@ Beyond these 14 configured platforms, any AI coding agent that reads the `.agent
 
 ### Basic Flow
 
-Describe what you want to do; AI follows `workflow.md` through Plan → Execute → Finish. If the current flow looks done, run `/trellis:continue`.
+Describe what you want to do. The AI first classifies the turn. Simple
+conversation and small inline tasks do not automatically create Trellis tasks;
+the AI asks whether this turn should create a task. Complex work gets a separate
+consent question before Trellis creates a task and enters planning.
 
 ```text
 # 1. Describe what you want
 "Add user login feature"
 
-# 2. AI runs Plan → Execute → Finish per workflow.md
+# 2. AI classifies the turn and asks for task-creation consent when needed
 
-# 3. You test + commit, then
+# 3. If this is a Trellis task, AI runs Plan → Execute → Finish per workflow.md
+
+# 4. After the work commit exists
 /trellis:finish-work
 ```
 
 <Note>
-  Agent-capable platforms (Claude Code, OpenCode, Cursor, Gemini, Qoder, CodeBuddy, Copilot, Droid,
-  Pi Agent, and Codex with `features.hooks` enabled — legacy: `codex_hooks`) load workflow and
-  context automatically via a SessionStart hook or extension on every new session — they don't ship
-  `/trellis:start` as a slash command, so open a fresh session if you need a reload. Only agent-less
-  platforms (Kilo, Antigravity, Windsurf) ship `/trellis:start` (or `/start.md`) as an explicit
-  entry point.
+  Agent-capable platforms load Trellis context through a mix of SessionStart hooks, prompt hooks,
+  extensions, agent files, and skills. Codex is different from Claude-style platforms: it relies on
+  `AGENTS.md` plus the `UserPromptSubmit` hook, and the no-task breadcrumb can tell the AI to read
+  `trellis-start`. Only agent-less platforms (Kilo, Antigravity, Windsurf) ship `/trellis:start` (or
+  `/start.md`) as an explicit entry point.
 </Note>
 
 ### Directory Structure
@@ -134,10 +138,11 @@ your-project/
 │   │   ├── {MM-DD-task-name}/         #   Active tasks
 │   │   │   ├── task.json              #     Task metadata
 │   │   │   ├── prd.md                 #     Requirements document
-│   │   │   ├── info.md                #     Technical design (optional)
-│   │   │   ├── implement.jsonl        #     Context for trellis-implement
-│   │   │   ├── check.jsonl            #     Context for trellis-check
-│   │   │   └── research.jsonl         #     Context for trellis-research
+│   │   │   ├── design.md              #     Technical design for complex tasks
+│   │   │   ├── implement.md           #     Implementation plan for complex tasks
+│   │   │   ├── implement.jsonl        #     Spec/research manifest for implementation
+│   │   │   ├── check.jsonl            #     Spec/research manifest for review
+│   │   │   └── research/              #     Durable investigation notes
 │   │   └── archive/                   #   Archived tasks
 │   │       └── {YYYY-MM}/
 │   │
@@ -189,15 +194,20 @@ your-project/
 
 <Tabs>
   <Tab title="General">
-  Open the terminal. The SessionStart hook fires automatically, so Trellis context is already in the AI's context:
+  Open the terminal. On hook-backed platforms, the compact SessionStart payload gives the AI enough
+  Trellis context to route the next turn:
 
-- `workflow.md` TOC + Phase 1/2/3 step-level details
+- compact Phase Index from `workflow.md`
 - Identity, git status, active task list
-- Spec indexes
+- Spec index paths
+- task artifact context order
 
 **Just describe your task.**
 
-If you suspect auto-injection didn't run or you want to reload context, just open a new session — the SessionStart hook re-runs `workflow.md` + `get_context.py` and asks **"What would you like to work on?"**. These platforms don't expose `/trellis:start` as a slash command (the hook already owns `start`), so don't go looking for it.
+If you suspect auto-injection didn't run or you want to reload context, open a
+new session or ask the AI to read the `trellis-start` skill once. These
+platforms usually do not expose `/trellis:start` as a slash command because the
+startup path already handles orientation.
 
   </Tab>
   <Tab title="Codex">
@@ -210,7 +220,10 @@ hooks = true   # Codex 0.129+. Older versions: `codex_hooks = true`.
 
 Codex 0.129+ also gates each installed hook behind a one-time `/hooks` TUI review. Open Codex once, run `/hooks`, and approve the Trellis `UserPromptSubmit` hook. Until you do, the workflow breadcrumb won't auto-inject; Trellis includes a fallback that directs the AI to read the `trellis-start` skill manually so the workflow still runs, just less smoothly.
 
-After that it's the same as the Class-1 tab: open the terminal, the SessionStart hook injects Trellis context automatically, describe your task directly.
+After that, describe your task directly. Codex reads `AGENTS.md` automatically,
+and the `UserPromptSubmit` hook injects the current workflow-state breadcrumb.
+When there is no active task, that breadcrumb may include a `<trellis-bootstrap>`
+reminder telling the AI to read `trellis-start` once.
 
   </Tab>
   <Tab title="Kiro">
@@ -253,35 +266,41 @@ Workflow:
 
 ### AI Creates the Task and Develops
 
-You say: "Add user login feature". The AI walks the three phases from `workflow.md`:
+You say: "Add user login feature". The AI first decides this is complex enough
+for a Trellis task and asks whether it may create a task and enter planning. If
+you agree, it walks the three phases from `workflow.md`:
 
 ```text
 Phase 1 — Plan (interactive)
- 1.0 task.py create creates the task directory (.trellis/tasks/MM-DD-user-login/)
+ 1.0 task.py create creates the task directory and default prd.md
  1.1 AI activates the trellis-brainstorm skill and walks through the requirement
      one question at a time, iterating prd.md
- 1.2 When research is needed, AI spawns the trellis-research sub-agent; findings
-     land in research/
- 1.3 AI curates implement.jsonl / check.jsonl (seeded on create) with the
-     spec + research files Phase 2 sub-agents will need — spec/research
-     paths only, not code paths
- 1.4 task.py start writes this task into the current session runtime
+ 1.2 For complex tasks, AI writes design.md and implement.md before implementation
+ 1.3 When research is needed, findings land in research/
+ 1.4 Sub-agent mode curates implement.jsonl / check.jsonl with spec + research
+     paths only, not source paths
+ 1.5 After review, task.py start flips status to in_progress
 
 Phase 2 — Execute
- 2.1 AI spawns the trellis-implement sub-agent (class-1 hook auto-injects
-     implement.jsonl) → writes the code per prd.md, no git commit
- 2.2 AI spawns the trellis-check sub-agent (hook auto-injects check.jsonl)
-     → reviews diff vs specs + runs lint / typecheck / test, self-fixing
+ 2.1 AI implements against prd.md, design.md if present, implement.md if present,
+     and relevant specs. Depending on platform/mode, this may be a sub-agent
+     or inline main-session work.
+ 2.2 AI runs trellis-check → reviews diff vs artifacts + specs and runs
+     lint / typecheck / test, self-fixing when possible
 
 Phase 3 — Finish
  3.1 AI activates the trellis-check skill for final verification
  3.2 (on demand) AI activates the trellis-break-loop skill for debug retrospective
  3.3 AI activates the trellis-update-spec skill and writes new learnings to
      .trellis/spec/
- 3.4 AI reminds you to run /trellis:finish-work
+ 3.4 AI proposes the work commit plan, commits approved batches, then runs
+     /trellis:finish-work for archive and journal bookkeeping
 ```
 
-**When AI stalls or is skipping ahead**: run `/trellis:continue`. AI uses the active task's status plus the per-turn workflow-state breadcrumb and, per `workflow.md`, figures out the next step (before-dev / check / update-spec, etc.) and continues.
+**When AI stalls or is skipping ahead**: run `/trellis:continue`. AI uses the
+active task's status, artifact presence, and the per-turn workflow-state
+breadcrumb to figure out the next step, then loads the relevant workflow detail
+before continuing.
 
 ### Finishing the Session
 

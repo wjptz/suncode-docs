@@ -28,13 +28,14 @@ The per-turn `<workflow-state>` block is what nudges the AI at each message base
 ## Phase Index
 
 [workflow-state:no_task]
-No active task. If the user describes multi-step work, load trellis-brainstorm skill…
+No active task. First classify the current turn and ask for task-creation consent before creating any Trellis task.
 [/workflow-state:no_task]
 
 ### Phase 1: Plan
 
 [workflow-state:planning]
-Complete prd.md via trellis-brainstorm skill; then run task.py start.
+Load trellis-brainstorm; stay in planning.
+Lightweight: prd.md can be enough. Complex: finish prd.md, design.md, and implement.md; ask for review before task.py start.
 [/workflow-state:planning]
 
 ### Phase 2: Execute
@@ -56,7 +57,7 @@ Rules:
 - Tag `STATUS` matches `task.json.status`. Defaults: `planning` / `in_progress` / `completed`, plus `no_task` when no task is active.
 - Hyphens and underscores are both allowed in the tag (`blocked` / `in-review` / `needs_qa` etc.).
 - If a status has no matching tag block, the hook emits the generic line `Refer to workflow.md for current step.` and the AI falls back to reading the workflow contract directly. Delete blocks you don't need.
-- `task.py create` now sets the active-task pointer alongside writing `status=planning`, so the `[workflow-state:planning]` block fires from the very next turn — during brainstorm and JSONL curation, not just after `task.py start`.
+- `task.py create` sets the active-task pointer alongside writing `status=planning`, so the `[workflow-state:planning]` block fires from the very next turn — during brainstorm and planning artifact work, not just after `task.py start`.
 - Keep each block short (~200 bytes). This is injected every turn; bloat means the AI pays attention cost on every message.
 
 ### Adding a custom workflow state

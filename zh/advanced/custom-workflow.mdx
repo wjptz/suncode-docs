@@ -28,13 +28,14 @@ title: '定制 Workflow'
 ## Phase Index
 
 [workflow-state:no_task]
-No active task. If the user describes multi-step work, load trellis-brainstorm skill…
+No active task. First classify the current turn and ask for task-creation consent before creating any Trellis task.
 [/workflow-state:no_task]
 
 ### Phase 1: Plan
 
 [workflow-state:planning]
-Complete prd.md via trellis-brainstorm skill; then run task.py start.
+Load trellis-brainstorm; stay in planning.
+Lightweight: prd.md can be enough. Complex: finish prd.md, design.md, and implement.md; ask for review before task.py start.
 [/workflow-state:planning]
 
 ### Phase 2: Execute
@@ -56,7 +57,7 @@ User commits changes; then run task.py archive.
 - 标签 `STATUS` 对应 `task.json.status`。默认：`planning` / `in_progress` / `completed`，没活跃任务时走 `no_task`。
 - 标签名短横线和下划线都支持（`blocked` / `in-review` / `needs_qa` 等）。
 - 某个状态没有匹配标签块时，hook 输出固定一行 `Refer to workflow.md for current step.`，AI 自己回去读 workflow 契约。用不到的块可以删。
-- `task.py create` 现在在写 `status=planning` 的同时也设置当前 session 的 active-task pointer，所以 `[workflow-state:planning]` 从下一轮就开始生效——brainstorm 和 JSONL curation 阶段就能看到，不必等到 `task.py start`。
+- `task.py create` 在写 `status=planning` 的同时也设置当前 session 的 active-task pointer，所以 `[workflow-state:planning]` 从下一轮就开始生效——brainstorm 和 planning artifact 阶段就能看到，不必等到 `task.py start`。
 - 每个块保持简短（≈200 字节）。这是每轮都注入的，写长了 AI 每条消息都要付注意力代价。
 
 ### 加一个自定义状态

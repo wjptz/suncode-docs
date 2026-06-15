@@ -4,16 +4,16 @@ title: '定制 Skill'
 
 ## 定制 Skill
 
-Skill 是 Trellis 0.5 的主要扩展点。原生带有的大部分工作流（brainstorm、before-dev、check、update-spec、break-loop）都以 auto-trigger skill 的形式交付。本章说明如何添加自己的 skill。
+Skill 是 Trellis 的主要扩展点。原生带有的大部分工作流（brainstorm、before-dev、check、update-spec、break-loop）都以 auto-trigger skill 的形式交付。本章说明如何添加自己的 skill。
 
 ### Command vs. Sub-agent vs. Skill
 
-|                  | Command                       | Sub-agent                            | Skill                                    |
-| ---------------- | ----------------------------- | ------------------------------------ | ---------------------------------------- |
-| **用途**         | 用户显式入口                  | 有自己角色的隔离子进程               | 可复用的工作流模块                       |
-| **触发**         | `/trellis:xxx`                | 通过 Task 工具 spawn                 | 平台根据用户意图自动匹配                 |
-| **粒度**         | 会话边界                      | 角色级                               | 能力或阶段级                             |
-| **跨平台**       | 每平台一份文件                | 每平台一份文件                       | 每平台一个文件夹（结构一致）             |
+|            | Command        | Sub-agent              | Skill                        |
+| ---------- | -------------- | ---------------------- | ---------------------------- |
+| **用途**   | 用户显式入口   | 有自己角色的隔离子进程 | 可复用的工作流模块           |
+| **触发**   | `/trellis:xxx` | 通过 Task 工具 spawn   | 平台根据用户意图自动匹配     |
+| **粒度**   | 会话边界       | 角色级                 | 能力或阶段级                 |
+| **跨平台** | 每平台一份文件 | 每平台一份文件         | 每平台一个文件夹（结构一致） |
 
 AI 应该基于上下文自动触发时用 skill；由用户决定时用 command；需要隔离 prompt 和约束时用 sub-agent。
 
@@ -49,22 +49,22 @@ skill 被触发时 AI 要遵循的指令。
 
 Skill 在全部 14 个配置平台上都可用，位置按平台不同：
 
-| 平台        | 位置                                     |
-| ----------- | ---------------------------------------- |
-| Claude Code | `.claude/skills/{name}/SKILL.md`         |
-| Cursor      | `.cursor/skills/{name}/SKILL.md`         |
-| OpenCode    | `.opencode/skills/{name}/SKILL.md`       |
+| 平台        | 位置                                                                             |
+| ----------- | -------------------------------------------------------------------------------- |
+| Claude Code | `.claude/skills/{name}/SKILL.md`                                                 |
+| Cursor      | `.cursor/skills/{name}/SKILL.md`                                                 |
+| OpenCode    | `.opencode/skills/{name}/SKILL.md`                                               |
 | Codex       | `.codex/skills/{name}/SKILL.md`（同时拷一份到 `.agents/skills/` 给跨平台生态用） |
-| Kiro        | `.kiro/skills/{name}/SKILL.md`           |
-| Gemini CLI  | `.gemini/skills/{name}/SKILL.md`         |
-| Qoder       | `.qoder/skills/{name}/SKILL.md`          |
-| CodeBuddy   | `.codebuddy/skills/{name}/SKILL.md`      |
-| Copilot     | `.github/skills/{name}/SKILL.md`         |
-| Droid       | `.factory/skills/{name}/SKILL.md`        |
-| Pi Agent    | `.pi/skills/{name}/SKILL.md`             |
-| Kilo        | `.kilocode/skills/{name}/SKILL.md`       |
-| Antigravity | `.agent/skills/{name}/SKILL.md`          |
-| Windsurf    | `.windsurf/skills/{name}/SKILL.md`       |
+| Kiro        | `.kiro/skills/{name}/SKILL.md`                                                   |
+| Gemini CLI  | `.gemini/skills/{name}/SKILL.md`                                                 |
+| Qoder       | `.qoder/skills/{name}/SKILL.md`                                                  |
+| CodeBuddy   | `.codebuddy/skills/{name}/SKILL.md`                                              |
+| Copilot     | `.github/skills/{name}/SKILL.md`                                                 |
+| Droid       | `.factory/skills/{name}/SKILL.md`                                                |
+| Pi Agent    | `.pi/skills/{name}/SKILL.md`                                                     |
+| Kilo        | `.kilocode/skills/{name}/SKILL.md`                                               |
+| Antigravity | `.agent/skills/{name}/SKILL.md`                                                  |
+| Windsurf    | `.windsurf/skills/{name}/SKILL.md`                                               |
 
 `.agents/skills/{name}/SKILL.md`（[agentskills.io](https://agentskills.io) 跨平台共享层）由 Codex 的 configurator 写入，可被 Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等读该标准的 agent 直接消费。
 

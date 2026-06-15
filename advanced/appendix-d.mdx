@@ -43,10 +43,11 @@ For directory entries, the hook reads all `.md` files in the directory, up to 20
 
 ### JSONL files used by each sub-agent
 
-| File              | Sub-agent           | Typical content                                                        |
-| ----------------- | ------------------- | ---------------------------------------------------------------------- |
-| `implement.jsonl` | `trellis-implement` | workflow + relevant spec indexes + task `research/` dir                |
-| `check.jsonl`     | `trellis-check`     | quality-related specs + finish-work / check command specs              |
-| `research.jsonl`  | `trellis-research`  | reference material for investigations (specs or external doc excerpts) |
+| File              | Sub-agent           | Typical content                                           |
+| ----------------- | ------------------- | --------------------------------------------------------- |
+| `implement.jsonl` | `trellis-implement` | workflow + relevant spec indexes + task `research/` dir   |
+| `check.jsonl`     | `trellis-check`     | quality-related specs + finish-work / check command specs |
+
+`trellis-research` writes durable findings into the task's `research/` directory. Trellis does not require a separate default research manifest; investigation context comes from the current request, existing specs, task history, and any explicit research instructions.
 
 ---
