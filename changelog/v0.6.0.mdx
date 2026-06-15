@@ -173,6 +173,14 @@ Existing projects receive commented-out blocks via `configSectionsAdded` on `tre
 
 ## Bundled skills
 
+### `trellis-channel`
+
+New bundled capability skill that teaches the AI when to reach for `trellis channel` — multi-agent collaboration, spawned workers, cross-agent review, progress inspection, forum/thread boards, and channel log debugging. SKILL.md plus five reference files (workflows, forum, workers, progress-debugging, command-reference). Auto-dispatched on every supported platform via `getBundledSkillTemplates()` directory scan.
+
+### `trellis-meta`
+
+Rewritten for v0.6 architecture. SKILL.md preamble now covers the channel runtime, `trellis mem`, and dual-package SDK; description triggers cover bundled-skill auto-dispatch. New `references/local-architecture/multi-agent-channel.md` and `references/local-architecture/bundled-skills.md` explain channel-vs-other primitives, where state lives, `.trellis/config.yaml channel.*` knobs, and bundled vs project-local ownership / override convention. `platform-files/platform-map.md` adds the Reasonix row (15th platform) and Pi native `trellis_subagent` annotation; `customize-local/change-skills-or-commands.md` expands the platform path table from 6 to 13 platforms and documents anti-collision rules for all four bundled skills.
+
 ### `trellis-spec-bootstrap`
 
 Platform-neutral bundled skill at `templates/common/bundled-skills/trellis-spec-bootstrap/` provides source-backed references for repository analysis, spec task planning, spec writing, and MCP setup. Auto-installed across all platforms on `trellis init` / `trellis update`, replacing the older `cc-codex-spec-bootstrap` marketplace entry. The beta.23 `rename-dir` migration renames already-installed typoed directories across `.claude/skills/`, `.cursor/skills/`, `.opencode/skills/`, `.agents/skills/`, `.kiro/skills/`, `.qoder/skills/`, `.codebuddy/skills/`, `.github/skills/`, `.factory/skills/`, `.pi/skills/`, `.agent/skills/`, `.windsurf/skills/`, `.kilocode/skills/`. Closes `#296`.

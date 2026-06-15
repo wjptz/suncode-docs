@@ -206,6 +206,14 @@ Check agent 之前可能没看 PRD / design / implement 就照 spec 盖章。现
 
 ## 内置 skills
 
+### `trellis-channel`
+
+新增内置 capability skill，教 AI 何时调用 `trellis channel` —— 多 agent 协作、live worker dispatch、跨 agent review、进度巡检、forum / thread 板、channel 日志排障。SKILL.md 加 5 个 reference 文件（workflows、forum、workers、progress-debugging、command-reference）。通过 `getBundledSkillTemplates()` 目录扫描自动下发到所有支持平台。
+
+### `trellis-meta`
+
+按 v0.6 架构重写。SKILL.md 前言新增 channel runtime、`trellis mem`、双包 SDK 三块；description 触发短语覆盖 bundled-skill 自动下发流程。新增 `references/local-architecture/multi-agent-channel.md` 与 `references/local-architecture/bundled-skills.md`，说明 channel 与其他原语的取舍、状态去向、`.trellis/config.yaml channel.*` 旋钮、bundled vs project-local 归属与覆盖约定。`platform-files/platform-map.md` 新增 Reasonix 行（第 15 个平台）与 Pi 原生 `trellis_subagent` 标注；`customize-local/change-skills-or-commands.md` 把平台路径表从 6 平台扩到 13 平台，列出四个内置 skill 的反碰撞规则。
+
 ### `trellis-spec-bootstrap`
 
 `trellis init` 之后默认 spec 模板需要项目特定内容；之前用户得自己找并装 marketplace skill 来从真实代码库 bootstrap `.trellis/spec/`（关闭 #296）。新增平台无关内置 skill 在 `templates/common/bundled-skills/trellis-spec-bootstrap/`，提供仓库分析、spec 任务规划、spec 撰写、MCP 设置的源代码索引。`trellis init` / `trellis update` 在所有平台自动安装，替代旧的 `cc-codex-spec-bootstrap` marketplace 入口。beta.23 的 `rename-dir` migration 把已装的拼错目录（`trellis-spec-bootstarp`）跨 13 个平台 skill 根（`.claude/skills/`、`.cursor/skills/`、`.opencode/skills/`、`.agents/skills/`、`.kiro/skills/`、`.qoder/skills/`、`.codebuddy/skills/`、`.github/skills/`、`.factory/skills/`、`.pi/skills/`、`.agent/skills/`、`.windsurf/skills/`、`.kilocode/skills/`）改名到位。
