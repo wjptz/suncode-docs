@@ -1,0 +1,29 @@
+---
+title: 'v0.6.2'
+description: '2026-06-17'
+---
+
+承接 v0.6.1 workflow 简化的仅文档修复。跑 `trellis update` 刷新 `/continue` 命令。不需要 `--migrate`。
+
+## Bug Fixes
+
+### `/continue` 路由指向已删除的 Phase 3.1
+
+`/continue` 命令的 resume-routing 表里，`status=in_progress` + check 通过仍然指向 [v0.6.1](/zh/changelog/v0.6.1) 删掉的 Phase **3.1**。现在改为路由到 **3.3**（spec update）→ **3.4**（commit），对齐简化后的 workflow。
+
+v0.6.1 的清理改了 `workflow.md`、三个 marketplace workflow 变体、内置 `trellis-meta` skill、Copilot `finish-work` prompt——但漏了 `commands/continue.md`，因为它的路由用的是裸数字语法（`→ **3.1**`），`Phase 3.1` 的 grep 没匹配到。
+
+## Internal
+
+### Sync 矩阵针对此类遗漏加固
+
+`.trellis/spec/docs-site/docs/sync-on-change.md` 的 Trigger 1（Phase Structure Changes）现在列出了所有携带 step-routing 引用的模板内文件（`continue.md`、`trellis-meta` change-workflow 引用、Copilot prompt、marketplace 变体），并补了裸数字 grep pattern。以后删除/重编号某个 step 时会审计所有路由点，不只是 `workflow.md`。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+不需要 `--migrate`。源码零改动，只是模板刷新。
