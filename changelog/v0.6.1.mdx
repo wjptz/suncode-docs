@@ -1,0 +1,46 @@
+---
+title: 'v0.6.1'
+description: '2026-06-17'
+---
+
+Docs-only refactor. Run `trellis update` to refresh `.trellis/workflow.md`, the bundled `trellis-meta` skill, the three marketplace workflow variants, and (for Copilot users) the `finish-work` prompt. No `--migrate` required; no breaking change.
+
+## Refactor
+
+### `workflow.md` — Phase 3.1 removed
+
+Phase 3.1 `Quality verification` was structurally identical to the last iteration of Phase 2.2 `Quality check` — both load the `trellis-check` skill and run spec compliance + lint / type-check / tests + cross-layer consistency. Removed as redundant.
+
+Its two unique value points are folded into existing steps:
+
+- **Full-scope final check** → Phase 2.2 gains a "Final pass (before Phase 3.4 commit)" paragraph: the last 2.2 of a task must list all affected packages via `python3 ./.trellis/scripts/get_context.py --mode packages` and walk each package's spec index Quality Check section, not just check the latest implement chunk.
+- **Spec-sync trigger** → Phase 3.4 gains a "Spec-sync preamble" at the top: before drafting commits, ask whether non-obvious knowledge surfaced in this task should land in `.trellis/spec/` via Phase 3.3 first.
+
+Step numbering kept stable (3.1 is left as a numbered gap; 3.2 / 3.3 / 3.4 / 3.5 unchanged) so external references in docs, tutorials, and spec do not break.
+
+### `workflow.md` — 1.3 `Configure context` label normalized
+
+Phase Index entry for `1.3 Configure context` previously carried `[conditional · once]`, a single-use label that no other step used. The step body itself said `[required · once]`. Normalized both to `[required · once]` with an explicit `sub-agent-dispatch-platforms-only; inline platforms skip` annotation matching the platform list already in the line.
+
+### Marketplace workflow variants synced
+
+The three marketplace workflow variants (`native`, `tdd`, `channel-driven-subagent-dispatch`) received the same Phase 3.1 removal + 1.3 label fix + 2.2 final-pass paragraph + 3.4 spec-sync preamble. Selectable via `trellis init --workflow <variant>` or `trellis workflow`.
+
+### Bundled `trellis-meta` skill — `change-workflow.md`
+
+Status transition example in the resume-at table updated from `Phase 3.1 (verify quality + spec update)` to `Phase 3.3 (spec update) → 3.4 (commit)`, matching the new numbering.
+
+### Copilot prompt — `finish-work.prompt.md`
+
+The Phase 3 ASCII flow at the top of the `/finish-work` prompt updated to remove `3.1 Quality verification` and add a one-line note that `3.1 was folded into 2.2 + 3.4`.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+No `--migrate` is required. No source code changed; this is a template refresh.
+
+Users on any `0.6.x` install run `trellis update` to pick up the workflow refresh. Users on `0.5.x` should first follow the [v0.6.0](/changelog/v0.6.0) upgrade path (`trellis update --migrate`), then run `trellis update` again to land on 0.6.1.

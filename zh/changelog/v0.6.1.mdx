@@ -1,0 +1,46 @@
+---
+title: 'v0.6.1'
+description: '2026-06-17'
+---
+
+仅文档重构。跑 `trellis update` 刷新 `.trellis/workflow.md`、内置 `trellis-meta` skill、三个 marketplace workflow 变体，以及（Copilot 用户的）`finish-work` prompt。不需要 `--migrate`，不破坏行为。
+
+## Refactor
+
+### `workflow.md` — Phase 3.1 删除
+
+Phase 3.1 `Quality verification` 跟 Phase 2.2 `Quality check` 的最后一次循环在结构上完全相同——都加载 `trellis-check` skill 跑 spec 合规 + lint / type-check / tests + 跨层一致性。冗余，删除。
+
+它原有的两个独有价值点折叠进现有步骤：
+
+- **末次 full-scope check** → Phase 2.2 新增 "Final pass (before Phase 3.4 commit)" 段落：任务的最后一次 2.2 必须用 `python3 ./.trellis/scripts/get_context.py --mode packages` 列出全部受影响 package，逐个走 spec index 的 Quality Check 段，不能只查最近一段 implement 的局部。
+- **Spec sync 触发** → Phase 3.4 顶部新增 "Spec-sync preamble"：起草 commit 前，先问本次任务里有没有修了 bug 或学到非显然知识需要先经 Phase 3.3 沉淀进 `.trellis/spec/`。
+
+步骤编号保留稳定（3.1 留作编号空洞；3.2 / 3.3 / 3.4 / 3.5 不变），以免破坏文档、教程、spec 中的外部引用。
+
+### `workflow.md` — 1.3 `Configure context` 标签标准化
+
+Phase Index 里 `1.3 Configure context` 之前用了 `[conditional · once]`，这个标签 14 步里只此一处用过。步骤本体本身又写的是 `[required · once]`。两处统一为 `[required · once]`，并在 platform 列表后补一行 `sub-agent-dispatch-platforms-only; inline platforms skip` 说明含义。
+
+### Marketplace workflow 变体同步
+
+三个 marketplace workflow 变体（`native`、`tdd`、`channel-driven-subagent-dispatch`）同步应用 Phase 3.1 删除 + 1.3 标签修正 + 2.2 final-pass 段 + 3.4 spec-sync preamble。通过 `trellis init --workflow <variant>` 或 `trellis workflow` 选择。
+
+### 内置 `trellis-meta` skill — `change-workflow.md`
+
+resume-at 表里的 status 转换示例从 `Phase 3.1 (verify quality + spec update)` 改为 `Phase 3.3 (spec update) → 3.4 (commit)`，对齐新编号。
+
+### Copilot prompt — `finish-work.prompt.md`
+
+`/finish-work` prompt 顶部 Phase 3 ASCII 流程图删掉 `3.1 Quality verification`，新增一行说明 `3.1 已折叠进 2.2 + 3.4`。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+不需要 `--migrate`。源码零改动，只是模板刷新。
+
+任何 `0.6.x` 用户跑 `trellis update` 即可拿到 workflow 刷新。`0.5.x` 用户应先按 [v0.6.0](/zh/changelog/v0.6.0) 升级路径走 `trellis update --migrate`，然后再跑一次 `trellis update` 进到 0.6.1。
