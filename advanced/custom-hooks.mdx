@@ -77,7 +77,9 @@ Notes:
 - `$CLAUDE_PROJECT_DIR`: expanded by Claude Code to the project root.
 - `timeout`: seconds; if exceeded, the hook is skipped.
 
-Trellis does not install a Claude Code `statusLine` by default. New installs do not create `.claude/hooks/statusline.py` or add `statusLine` to `.claude/settings.json`. Existing projects that already have a `statusLine` keep it during update. If your project needs a custom status line, add a local Claude Code `statusLine` command manually; Trellis does not manage that file.
+Trellis does not install a Claude Code `statusLine` by default. New installs do not create `.claude/hooks/statusline.py` or add `statusLine` to `.claude/settings.json`, and `trellis update` never adds one to an opted-out project. Existing projects that already have a `statusLine` keep it during update.
+
+To opt in, run `trellis init --with-statusline` (interactive non-`-y` init also asks once, default no). This installs `.claude/hooks/statusline.py` and adds the `statusLine` command to `.claude/settings.json`. The status line shows the active task, plus rate-limit reset countdowns and width-adaptive layout. It is Claude-Code-only and stays off unless you pass the flag, so it can never silently override a global `statusLine` config.
 
 ### Shipped hooks
 
