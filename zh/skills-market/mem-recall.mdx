@@ -3,7 +3,7 @@ title: 'mem-recall'
 description: '通过 trellis mem 跨平台回看 AI 历史对话'
 ---
 
-mem-recall 让 AI 在用户提到过往对话时自动调用 `trellis mem`，从本地 Claude Code、Codex、OpenCode 的会话记录里检索内容，并用 session-id + 原话引用作答。
+mem-recall 让 AI 在用户提到过往对话时自动调用 `trellis mem`，从本地 Claude Code、Codex、OpenCode、Pi 的会话记录里检索内容，并用 session-id + 原话引用作答。
 
 触发短语包括：`上次`、`之前`、`我跟 Claude 聊过`、`what did I tell ... last week`、`我之前在哪个项目讨论过` 等指向过往对话的表述。
 
@@ -14,7 +14,7 @@ mem-recall 让 AI 在用户提到过往对话时自动调用 `trellis mem`，从
 | 工具                                                                    | 用途                    | 必需     |
 | ----------------------------------------------------------------------- | ----------------------- | -------- |
 | [Trellis CLI](https://github.com/mindfold-ai/Trellis) **0.6.0-beta.0+** | 提供 `trellis mem` 命令 | 必需     |
-| Claude Code、Codex CLI、OpenCode                                        | 历史会话来源            | 至少一个 |
+| Claude Code、Codex CLI、OpenCode、Pi                                    | 历史会话来源            | 至少一个 |
 
 ```bash
 npm install -g @mindfoldhq/trellis@beta
@@ -88,6 +88,7 @@ trellis mem context <session-id> --grep <关键词> --turns 3 --around 1
 | Claude Code | `~/.claude/projects/<sanitized-cwd>/*.jsonl`                 |
 | Codex       | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`               |
 | OpenCode    | `~/.local/share/opencode/storage/{session,message,part}/...` |
+| Pi          | `~/.pi/agent/sessions/<encoded-cwd>/<timestamp>_<id>.jsonl`  |
 
 ## 不适用场景
 
