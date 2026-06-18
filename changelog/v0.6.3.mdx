@@ -1,0 +1,96 @@
+---
+title: 'v0.6.3'
+description: '2026-06-18'
+---
+
+This release bundles five enhancements — ZCode platform support, an opt-in `--with-statusline` status bar, a Pi session adapter for `trellis mem`, reasoning frameworks for the brainstorm/break-loop skills, and the Windsurf → Devin platform rename — plus two fixes (#300, #303). Run `trellis update` to refresh templates. Only the Windsurf → Devin rename needs `trellis update --migrate`, and only if you previously initialized with `--windsurf`.
+
+## Enhancements
+
+### ZCode platform support (`--zcode`)
+
+Added ZCode (智谱 / Z.ai) as a pull-based, agent-capable platform (no hooks). `trellis init --zcode` writes three output paths:
+
+| Target        | Path                       | Contents                                                     |
+| ------------- | -------------------------- | ------------------------------------------------------------ |
+| Shared skills | `.agents/skills/`          | byte-identical with Codex/Gemini                             |
+| Commands      | `.zcode/commands/trellis/` | invoked as `/trellis:<name>`                                 |
+| Sub-agents    | `.zcode/cli/agents/`       | `trellis-implement`, `trellis-check` with pull-based prelude |
+
+Registry entry `AI_TOOLS.zcode`: `configDir: ".zcode"`, `cliFlag: "zcode"`, `extraManagedPaths: [".zcode/cli/agents", ".zcode/commands"]`, `agentCapable: true`, `hasHooks: false`, `executorAI: "Bash scripts or Agent calls"`. Configurator `configureZcode` / `collectZcodeTemplates` in `src/configurators/zcode.ts`; templates under `src/templates/zcode/`.
+
+### trellis init --with-statusline (Claude Code statusLine)
+
+`trellis init --with-statusline` installs an opt-in Trellis status bar for Claude Code (off by default). When the flag is omitted and Claude Code is selected, `init` prompts interactively (`default: false`; skipped under `-y`).
+
+Writes two artifacts, Claude Code only:
+
+| Artifact                               | Content                                                                              |
+| -------------------------------------- | ------------------------------------------------------------------------------------ |
+| `.claude/hooks/statusline.py`          | Status hook: model · ctx% · branch · duration · developer · task count · rate limits |
+| `.claude/settings.json` → `statusLine` | `{ "type": "command", "command": "{{PYTHON_CMD}} .claude/hooks/statusline.py" }`     |
+
+The hook is not part of `collectTemplates` or shared-hooks, so `trellis update` never force-installs it on opted-out projects nor removes it from opted-in ones. The flag-off path leaves `settings.json` byte-identical.
+
+### Pi session mem adapter
+
+`trellis mem` now reads persisted Pi Agent sessions. New adapter `packages/core/src/mem/adapters/pi.ts` exports `piListSessions`, `piExtractDialogue`, `piSearch`, `collectPiTurnsAndEvents`. `MemSourceKind` in `mem/types.ts` adds `"pi"`; `--platform claude|codex|opencode|pi|all` is now accepted.
+
+Session discovery:
+
+- Default store `~/.pi/agent/sessions/--<encoded-cwd>--/<timestamp>_<id>.jsonl`, via `piProjectDirFromCwd` / `piSessionRoots`.
+- Custom dirs from `PI_CODING_AGENT_DIR`, `PI_CODING_AGENT_SESSION_DIR`, or `settings.json` `sessionDir`.
+
+Extraction follows the active branch (`id`/`parentId` leaf walk) and applies Pi compaction rules via `firstKeptEntryId`. Pi joins Claude/Codex with native phase-boundary detection in `sliceMemPhase`; `bash`/`shell` tool calls feed `task.py` events.
+
+### Devin platform (renamed from Windsurf)
+
+Cognition renamed Windsurf to Devin Desktop (2026-06-02 OTA) and moved its config dir from `.windsurf/` to `.devin/` (identical subpaths: `workflows/`, `skills/`). Trellis follows the rename.
+
+- `trellis init --devin` writes `.devin/workflows/` + `.devin/skills/`; the platform shows as **Devin** and `--platform devin` is passed to scripts (#325).
+- `--windsurf` remains a **deprecated alias** for `--devin` for one version. Passing it prints a deprecation notice and behaves like `--devin`.
+- `TRELLIS_PLATFORM=windsurf` and a leftover `.windsurf/workflows/` directory are still detected as Devin for back-compat.
+
+### Thinking frameworks in brainstorm + break-loop skills
+
+Two reasoning frameworks are embedded in the shared workflow skills (`packages/cli/src/templates/common/skills/`), so every platform picks them up on `trellis update`:
+
+| Skill        | Framework                 | When it applies                                                                                                                       |
+| ------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `brainstorm` | First Principles Analysis | requirement discovery — decompose to fundamental truths, challenge assumptions, build up the minimum viable solution                  |
+| `break-loop` | Bayesian Reasoning        | repeated debugging — set hypothesis priors, update beliefs by evidence strength, seek discriminating evidence before committing a fix |
+
+Hardcoded "5 skills" comments across the configurators, `shared.ts`, and `update.ts` are replaced with count-free wording (#335).
+
+## Bug Fixes
+
+### trellis mem --cwd Claude session filter on Windows
+
+`trellis mem` returned 0 Claude sessions when filtering by `--cwd` on Windows. `claudeProjectDirFromCwd` (`packages/core/src/mem/internal/paths.ts`) only replaced `/` and `_` with `-`, so Windows cwds with backslashes, drive colons, and dots derived a project-dir name that did not exist under `~/.claude/projects/`. The sanitization regex now covers all separators: `/[/\\:_.]/g`. In `claudeListSessions` (`packages/core/src/mem/adapters/claude.ts`), the `--cwd` fast path now falls back to scanning every project dir when the derived dir is missing; the per-session `sameProject(cwd, f.cwd)` check still scopes results, so the filter never silently returns 0. Fixes #300.
+
+### .trellis auto-commit staging scope
+
+Scoped `.trellis/` auto-commit staging so it no longer sweeps unrelated task/workspace files into commits (#303). Previously a wide `tasks_dir.iterdir()` scan staged every active task dir, bundling dirty parallel-window task dirs into the session commit.
+
+- `safe_commit.py`: `safe_trellis_paths_to_add()` gained a `task_name` param. When passed, it stages only `.trellis/tasks/<task_name>/` (and its archive location) — no `iterdir()` over all tasks. Omitting `task_name` keeps the legacy wide scan for backward compat.
+- `add_session.py`: `_auto_commit_workspace()` resolves the current task via `get_current_task()` and passes `task_name`. When unresolvable (0 or >=2 parallel sessions), it stages only journal/index and skips every task dir under `tasks/`.
+- `release.js`: the pre-release `git add -A` now also excludes `':!.trellis'` (alongside `':!docs-site'`, `':!marketplace'`).
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+Only the Windsurf → Devin rename needs `--migrate`:
+
+<Note>
+If you initialized Trellis with `--windsurf`, run `trellis update --migrate` to apply the `rename-dir` migrations that move:
+
+- `.windsurf/workflows/` → `.devin/workflows/`
+- `.windsurf/skills/` → `.devin/skills/`
+
+The migration is idempotent: projects without a `.windsurf/` directory are silently skipped. `--windsurf` still works as a deprecated alias for `--devin` this release.
+
+</Note>

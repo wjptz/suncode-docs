@@ -1,0 +1,96 @@
+---
+title: 'v0.6.3'
+description: '2026-06-18'
+---
+
+本次发布捆绑了五项增强——ZCode 平台支持、可选的 `--with-statusline` 状态栏、面向 `trellis mem` 的 Pi 会话适配器、brainstorm/break-loop 技能的推理框架，以及 Windsurf → Devin 平台重命名——外加两项修复（#300、#303）。运行 `trellis update` 刷新模板。只有 Windsurf → Devin 重命名需要 `trellis update --migrate`，且仅当你此前用 `--windsurf` 初始化过时才需要。
+
+## Enhancements
+
+### ZCode 平台支持（`--zcode`）
+
+新增 ZCode（智谱 / Z.ai），为基于拉取（pull-based）、支持 agent 但无 hooks 的平台。`trellis init --zcode` 写入三个输出路径：
+
+| 目标        | 路径                       | 内容                                                        |
+| ----------- | -------------------------- | ----------------------------------------------------------- |
+| 共享 skills | `.agents/skills/`          | 与 Codex/Gemini 逐字节一致                                  |
+| Commands    | `.zcode/commands/trellis/` | 以 `/trellis:<name>` 调用                                   |
+| Sub-agents  | `.zcode/cli/agents/`       | `trellis-implement`、`trellis-check`，带 pull-based prelude |
+
+注册项 `AI_TOOLS.zcode`：`configDir: ".zcode"`、`cliFlag: "zcode"`、`extraManagedPaths: [".zcode/cli/agents", ".zcode/commands"]`、`agentCapable: true`、`hasHooks: false`、`executorAI: "Bash scripts or Agent calls"`。配置器 `configureZcode` / `collectZcodeTemplates` 位于 `src/configurators/zcode.ts`；模板位于 `src/templates/zcode/`。
+
+### trellis init --with-statusline (Claude Code statusLine)
+
+`trellis init --with-statusline` 为 Claude Code 安装可选的 Trellis 状态栏（默认关闭）。未传该 flag 且选中了 Claude Code 时，`init` 会交互式询问（`default: false`；`-y` 模式下跳过）。
+
+仅对 Claude Code 写入两项产物：
+
+| 产物                                   | 内容                                                                              |
+| -------------------------------------- | --------------------------------------------------------------------------------- |
+| `.claude/hooks/statusline.py`          | 状态钩子：model · ctx% · branch · duration · developer · task count · rate limits |
+| `.claude/settings.json` → `statusLine` | `{ "type": "command", "command": "{{PYTHON_CMD}} .claude/hooks/statusline.py" }`  |
+
+该钩子不在 `collectTemplates` 与 shared-hooks 中，因此 `trellis update` 既不会在未选用的项目上强制安装，也不会从已选用的项目中移除。flag 关闭路径保持 `settings.json` 逐字节一致。
+
+### Pi session mem adapter
+
+`trellis mem` 现在可读取已持久化的 Pi Agent 会话。新增 adapter `packages/core/src/mem/adapters/pi.ts`，导出 `piListSessions`、`piExtractDialogue`、`piSearch`、`collectPiTurnsAndEvents`。`mem/types.ts` 中的 `MemSourceKind` 新增 `"pi"`；`--platform claude|codex|opencode|pi|all` 现已接受。
+
+会话发现：
+
+- 默认存储 `~/.pi/agent/sessions/--<encoded-cwd>--/<timestamp>_<id>.jsonl`，经由 `piProjectDirFromCwd` / `piSessionRoots`。
+- 自定义目录来自 `PI_CODING_AGENT_DIR`、`PI_CODING_AGENT_SESSION_DIR` 或 `settings.json` 的 `sessionDir`。
+
+提取沿活跃分支（按 `id`/`parentId` 从叶节点回溯），并通过 `firstKeptEntryId` 套用 Pi 的 compaction 规则。Pi 与 Claude/Codex 一样在 `sliceMemPhase` 中具备原生 phase 边界识别；`bash`/`shell` 工具调用产出 `task.py` 事件。
+
+### Devin 平台（由 Windsurf 重命名）
+
+Cognition 已将 Windsurf 更名为 Devin Desktop（2026-06-02 OTA 更新），并将配置目录从 `.windsurf/` 迁移到 `.devin/`（子路径不变：`workflows/`、`skills/`）。Trellis 同步该重命名。
+
+- `trellis init --devin` 写入 `.devin/workflows/` + `.devin/skills/`；平台显示为 **Devin**，脚本接收 `--platform devin`（#325）。
+- `--windsurf` 作为 `--devin` 的**弃用别名**保留一个版本。传入时打印弃用提示，行为等同 `--devin`。
+- 为向后兼容，`TRELLIS_PLATFORM=windsurf` 及残留的 `.windsurf/workflows/` 目录仍被识别为 Devin。
+
+### brainstorm 与 break-loop 技能内置思维框架
+
+两个推理框架已内嵌进共享工作流技能（`packages/cli/src/templates/common/skills/`），所有平台在 `trellis update` 后即可获得：
+
+| 技能         | 框架                      | 适用场景                                                                     |
+| ------------ | ------------------------- | ---------------------------------------------------------------------------- |
+| `brainstorm` | First Principles Analysis | 需求发现——拆解到基本事实、挑战假设、自底向上构建最小可行方案                 |
+| `break-loop` | Bayesian Reasoning        | 反复调试——为假设设定先验、按证据强度更新信念、在确定修复前寻找有区分度的证据 |
+
+配置器、`shared.ts`、`update.ts` 中硬编码的“5 个技能”注释改为 count-free 措辞（#335）。
+
+## Bug Fixes
+
+### trellis mem --cwd Claude 会话过滤（Windows）
+
+在 Windows 上用 `--cwd` 过滤时，`trellis mem` 返回 0 个 Claude 会话。`claudeProjectDirFromCwd`（`packages/core/src/mem/internal/paths.ts`）此前仅把 `/` 和 `_` 替换为 `-`，因此含反斜杠、盘符冒号和点号的 Windows cwd 推导出的项目目录名在 `~/.claude/projects/` 下并不存在。现清洗正则覆盖全部分隔符：`/[/\\:_.]/g`。在 `claudeListSessions`（`packages/core/src/mem/adapters/claude.ts`）中，`--cwd` 快路径在推导目录缺失时回退为扫描全部项目目录；逐会话的 `sameProject(cwd, f.cwd)` 检查仍会限定结果，因此过滤不会再静默返回 0。修复 #300。
+
+### .trellis 自动提交暂存范围
+
+收窄了 `.trellis/` 自动提交的暂存范围，使其不再把无关的 task/workspace 文件扫进提交（#303）。此前的宽范围 `tasks_dir.iterdir()` 扫描会暂存每个活跃 task 目录，把并行窗口里有改动的 task 目录一并卷进 session 提交。
+
+- `safe_commit.py`：`safe_trellis_paths_to_add()` 新增 `task_name` 参数。传入时仅暂存 `.trellis/tasks/<task_name>/`（及其归档位置）——不再对所有 task 执行 `iterdir()`。不传 `task_name` 时保留旧的宽范围扫描以向后兼容。
+- `add_session.py`：`_auto_commit_workspace()` 通过 `get_current_task()` 解析当前 task 并传入 `task_name`。无法解析时（0 个或 >=2 个并行 session），仅暂存 journal/index，并跳过 `tasks/` 下的每个 task 目录。
+- `release.js`：发版前的 `git add -A` 现在额外排除 `':!.trellis'`（与 `':!docs-site'`、`':!marketplace'` 一起）。
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+只有 Windsurf → Devin 重命名需要 `--migrate`：
+
+<Note>
+若你曾用 `--windsurf` 初始化 Trellis，请运行 `trellis update --migrate` 应用 `rename-dir` 迁移，将：
+
+- `.windsurf/workflows/` → `.devin/workflows/`
+- `.windsurf/skills/` → `.devin/skills/`
+
+迁移是幂等的：没有 `.windsurf/` 目录的项目会被静默跳过。本次发布中 `--windsurf` 仍作为 `--devin` 的弃用别名可用。
+
+</Note>
