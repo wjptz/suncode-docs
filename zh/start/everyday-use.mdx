@@ -178,7 +178,7 @@ finish：                清除当前 AI 会话/窗口的任务
 archive：               把完成任务移动到 archive/
 ```
 
-`task.py create` 会让任务从 `planning` 开始，创建默认 `prd.md`，并尽力把当前 AI session 指向新任务。它也会在检测到 sub-agent 平台（Claude / Cursor / Codex / Kiro / Pi 等）时 seed 出 `implement.jsonl` + `check.jsonl`；agent-less 平台（Kilo / Antigravity / Windsurf）跳过 seed，改由 Phase 2 的 `trellis-before-dev` skill 加载 spec。
+`task.py create` 会让任务从 `planning` 开始，创建默认 `prd.md`，并尽力把当前 AI session 指向新任务。它也会在检测到 sub-agent 平台（Claude / Cursor / Codex / Kiro / Pi 等）时 seed 出 `implement.jsonl` + `check.jsonl`；agent-less 平台（Kilo / Antigravity / Devin）跳过 seed，改由 Phase 2 的 `trellis-before-dev` skill 加载 spec。
 
 ### 2.2 `task.py` 子命令
 
@@ -390,7 +390,7 @@ task.py archive    →  status: "completed" + 移到 archive/
 - 代码文件（`src/**`、`packages/**/*.ts` 等）——代码在 Phase 2 实现时读，不在这里预注册
 - 即将要改的文件——同上
 
-agent-less 平台（Kilo / Antigravity / Windsurf）上 `task.py create` 不 seed，改由 Phase 2.1 的 `trellis-before-dev` skill 加载 spec。
+agent-less 平台（Kilo / Antigravity / Devin）上 `task.py create` 不 seed，改由 Phase 2.1 的 `trellis-before-dev` skill 加载 spec。
 
 #### 2.4.2 添加自定义上下文
 

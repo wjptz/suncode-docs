@@ -4,7 +4,7 @@ title: '多平台与团队配置'
 
 ## 多平台与团队配置
 
-Trellis 支持 16 个平台（Claude Code、Cursor、OpenCode、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Windsurf、Qoder、CodeBuddy、GitHub Copilot、Droid、Pi Agent、Reasonix、ZCode），以及任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）。`.trellis/` 核心跨平台一致；差异在于**各平台如何交付 hook、extension、skill、sub-agent、command**。
+Trellis 支持 16 个平台（Claude Code、Cursor、OpenCode、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Devin（原 Windsurf）、Qoder、CodeBuddy、GitHub Copilot、Droid、Pi Agent、Reasonix、ZCode），以及任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）。`.trellis/` 核心跨平台一致；差异在于**各平台如何交付 hook、extension、skill、sub-agent、command**。
 
 ### 加入已初始化的 Trellis 项目
 
@@ -52,7 +52,7 @@ Trellis 支持 16 个平台（Claude Code、Cursor、OpenCode、Codex、Kiro、K
 `continue`；`start` 由 SessionStart hook 自动注入。Pi Agent 走 extension，不走 Python hook 文件，
 但行为一致：会话上下文、Bash 环境变量传递、sub-agent context 注入都在 agent 动作前完成。
 
-`.kilocode/`、`.agent/`（Antigravity）、`.windsurf/` 只有 workflow 和 skill，没有 sub-agent 也没有 hook。`.agents/skills/` 在所有平台都会写一份，作为跨平台共享层。
+`.kilocode/`、`.agent/`（Antigravity）、`.devin/` 只有 workflow 和 skill，没有 sub-agent 也没有 hook。`.agents/skills/` 在所有平台都会写一份，作为跨平台共享层。
 
 ### Claude Code
 
@@ -238,7 +238,7 @@ Trellis 还原生带有上面能力矩阵之外几个平台的配置器：
 
 - **Kilo**（`--kilo`）：写 `.kilocode/workflows/`（命令：`start`、`finish-work`）和 `.kilocode/skills/trellis-{name}/SKILL.md`（5 个 trellis skill）。没有 hook 集成。
 - **Antigravity**（`--antigravity`）：写 Antigravity 原生的 workflow 文件（3 个命令）。
-- **Windsurf**（`--windsurf`）：写 Windsurf 原生的 command 和 rule 文件。
+- **Devin**（`--devin`，原 Windsurf）：写 Devin 原生的 workflow 和 skill 文件。旧的 `--windsurf` flag 仍作为已废弃的别名可用。
 
 除了 16 个已配置平台，Trellis 还能被任何遵循 `.agents/skills/` 约定（[agentskills.io](https://agentskills.io) 规范）的 AI 编码 agent 直接使用。Codex 的 skill 就写在这个目录下，这些文件也能被该生态的其他 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）直接读取。这些平台上你通过 `.trellis/` 核心加上各自 agent 读取的 prelude 文件来管理 Trellis。
 

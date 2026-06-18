@@ -182,7 +182,7 @@ finish:                clears this AI session/window's current task
 archive:               moves completed task to archive/
 ```
 
-`task.py create` starts the task in `planning`, creates a default `prd.md`, and best-effort points the current AI session at the new task. It also auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / Pi / etc.); agent-less platforms (Kilo / Antigravity / Windsurf) skip this and load specs via the `trellis-before-dev` skill in Phase 2.
+`task.py create` starts the task in `planning`, creates a default `prd.md`, and best-effort points the current AI session at the new task. It also auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / Pi / etc.); agent-less platforms (Kilo / Antigravity / Devin) skip this and load specs via the `trellis-before-dev` skill in Phase 2.
 
 ### 2.2 `task.py` Subcommands
 
@@ -395,7 +395,7 @@ This line is a fill-in hint for the AI. It has no `file` field, so every downstr
 - Code files (`src/**`, `packages/**/*.ts`, etc.) — those are read by the sub-agent during implementation, not pre-registered here
 - Files you're about to modify — same reason
 
-On agent-less platforms (Kilo / Antigravity / Windsurf), `task.py create` skips seeding. Those platforms load specs via the `trellis-before-dev` skill in Phase 2.1 instead.
+On agent-less platforms (Kilo / Antigravity / Devin), `task.py create` skips seeding. Those platforms load specs via the `trellis-before-dev` skill in Phase 2.1 instead.
 
 #### 2.4.2 Adding Custom Context
 

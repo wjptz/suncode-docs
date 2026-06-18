@@ -606,6 +606,10 @@
       "destination": "/advanced/resources"
     },
     {
+      "source": "/ai-tools/windsurf",
+      "destination": "/ai-tools/devin"
+    },
+    {
       "source": "/zh/guide/ch01-what-is-trellis",
       "destination": "/zh"
     },
@@ -688,6 +692,10 @@
     {
       "source": "/zh/guide/resources",
       "destination": "/zh/advanced/resources"
+    },
+    {
+      "source": "/zh/ai-tools/windsurf",
+      "destination": "/zh/ai-tools/devin"
     },
     {
       "source": "/release/guide/ch01-what-is-trellis",

@@ -4,7 +4,7 @@ title: 'Custom Slash Commands'
 
 ## Custom Slash Commands
 
-Trellis ships a deliberately small set of slash commands. On agent-capable platforms (Claude Code, OpenCode, Cursor, Codex, Pi Agent, etc.), only `finish-work` and `continue` are installed. `start` is usually not user-facing because startup context is loaded through a SessionStart hook, extension, `AGENTS.md`, or prompt-hook bootstrap at the top of the session. Agent-less platforms (Kilo, Antigravity, Windsurf) have no hook, so `start` is shipped there as a slash command. Everything else that used to be a command has moved to auto-trigger skills (see [Custom Skills](./custom-skills)). Add your own slash command when you have a specific entry point you want the user to invoke on demand.
+Trellis ships a deliberately small set of slash commands. On agent-capable platforms (Claude Code, OpenCode, Cursor, Codex, Pi Agent, etc.), only `finish-work` and `continue` are installed. `start` is usually not user-facing because startup context is loaded through a SessionStart hook, extension, `AGENTS.md`, or prompt-hook bootstrap at the top of the session. Agent-less platforms (Kilo, Antigravity, Devin) have no hook, so `start` is shipped there as a slash command. Everything else that used to be a command has moved to auto-trigger skills (see [Custom Skills](./custom-skills)). Add your own slash command when you have a specific entry point you want the user to invoke on demand.
 
 ### Command File Format and Location
 
@@ -29,11 +29,11 @@ Command files are Markdown; Gemini uses TOML (with a `prompt = """..."""` field)
 
 **Workflow files** — platforms without a dedicated slash-command primitive; the user runs a "workflow" by name.
 
-| Platform    | Location                                | Invoked as                        |
-| ----------- | --------------------------------------- | --------------------------------- |
-| Kilo        | `.kilocode/workflows/{name}.md`         | `/{name}.md` (Kilo's workflow UI) |
-| Antigravity | `.agent/workflows/{name}.md`            | opened from `.agent/workflows/`   |
-| Windsurf    | `.windsurf/workflows/trellis-{name}.md` | `/trellis-{name}`                 |
+| Platform    | Location                             | Invoked as                        |
+| ----------- | ------------------------------------ | --------------------------------- |
+| Kilo        | `.kilocode/workflows/{name}.md`      | `/{name}.md` (Kilo's workflow UI) |
+| Antigravity | `.agent/workflows/{name}.md`         | opened from `.agent/workflows/`   |
+| Devin       | `.devin/workflows/trellis-{name}.md` | `/trellis-{name}`                 |
 
 **Skill-only** — platforms that do not expose a slash-command primitive at all; `start` / `finish-work` / `continue` are shipped as auto-trigger skills.
 

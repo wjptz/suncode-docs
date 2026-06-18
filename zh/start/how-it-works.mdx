@@ -37,7 +37,7 @@ title: 'How It Works'
 | Codex                                                                  | `AGENTS.md` 自动加载。Trellis 安装 `UserPromptSubmit` hook；no-task turn 可注入 `<trellis-bootstrap>` 提醒读取 `trellis-start`。 |
 | Copilot                                                                | 当前 Copilot host 里 SessionStart 输出主要用于诊断；模型可见上下文依赖 prompt hook 和 skill 文件。                               |
 | Kiro                                                                   | Trellis 内容通过 `.kiro/` 下的 skill 和 agent 文件交付；默认没有 Trellis SessionStart hook。                                     |
-| Kilo、Antigravity、Windsurf                                            | 主会话显式读取 workflow 或 skill 入口。                                                                                          |
+| Kilo、Antigravity、Devin                                               | 主会话显式读取 workflow 或 skill 入口。                                                                                          |
 
 这一步结束后，AI 应该知道 Trellis 上下文在哪里。具体 phase 细节通过
 workflow-state breadcrumb、skill 或 `get_context.py` 按需加载。
@@ -181,7 +181,7 @@ update、commit planning 和 finish-work routing。
 | ---------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Hook-push sub-agent    | Claude Code、Cursor、OpenCode、CodeBuddy、Droid、Pi | Sub-agent 启动前，hook 注入 JSONL 条目，然后注入 `prd.md`、存在时的 `design.md`、存在时的 `implement.md`。       |
 | Pull-prelude sub-agent | Codex、Copilot、Gemini CLI、Qoder、Kiro             | Sub-agent 定义要求 agent 读取 active task、JSONL 条目、`prd.md`、存在时的 `design.md`、存在时的 `implement.md`。 |
-| 主会话 skill 流程      | Codex inline、Kilo、Antigravity、Windsurf           | 主会话加载 Trellis skill，并 inline 读取 `prd.md`、可选 artifact 和相关 spec。                                   |
+| 主会话 skill 流程      | Codex inline、Kilo、Antigravity、Devin              | 主会话加载 Trellis skill，并 inline 读取 `prd.md`、可选 artifact 和相关 spec。                                   |
 
 统一上下文顺序是：
 

@@ -9,7 +9,7 @@ title: '定制 Hook'
 - **`SessionStart` hook / extension** 在 Claude Code、Cursor、OpenCode、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi Agent 上原生启用。Codex 依赖 `AGENTS.md` 加 `UserPromptSubmit` hook；Kiro 的 Agent Hook 是用户自己配的，Trellis 不原生带任何。
 - **`PreToolUse` / extension sub-agent 上下文注入** 在 Claude Code、Cursor、OpenCode、CodeBuddy、Droid、Pi Agent 原生启用。其他 hook 可用平台通过 sub-agent 内部的 pull-based prelude 替代。
 - **`UserPromptSubmit` / 工作流状态提示** 平台范围与 `SessionStart` 相同，另加启用 hooks 后的 Codex。
-- **Kilo、Antigravity、Windsurf** 完全没有 hook 原语，行为通过 workflow 文件 + skill 交付。
+- **Kilo、Antigravity、Devin** 完全没有 hook 原语，行为通过 workflow 文件 + skill 交付。
 
 ### Hook 类型
 

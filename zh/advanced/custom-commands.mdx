@@ -4,7 +4,7 @@ title: '定制 Slash 命令'
 
 ## 定制 Slash 命令
 
-Trellis 原生带的 slash 命令留得很少。Agent-capable 平台（Claude Code、OpenCode、Cursor、Codex、Pi Agent 等）只发 `finish-work` 和 `continue`；`start` 通常不作为用户可见命令，因为会话启动上下文会通过 SessionStart hook、extension、`AGENTS.md` 或 prompt-hook bootstrap 在开会话时加载。agent-less 平台（Kilo、Antigravity、Windsurf）没有 hook，`start` 才会作为 slash 命令发出来。过去的其他命令全部迁成 auto-trigger skill（见[定制 Skill](./custom-skills)）。自己加 slash 命令的时机：有一个明确想让用户显式调用的入口。
+Trellis 原生带的 slash 命令留得很少。Agent-capable 平台（Claude Code、OpenCode、Cursor、Codex、Pi Agent 等）只发 `finish-work` 和 `continue`；`start` 通常不作为用户可见命令，因为会话启动上下文会通过 SessionStart hook、extension、`AGENTS.md` 或 prompt-hook bootstrap 在开会话时加载。agent-less 平台（Kilo、Antigravity、Devin）没有 hook，`start` 才会作为 slash 命令发出来。过去的其他命令全部迁成 auto-trigger skill（见[定制 Skill](./custom-skills)）。自己加 slash 命令的时机：有一个明确想让用户显式调用的入口。
 
 ### 命令文件格式和位置
 
@@ -29,11 +29,11 @@ Trellis 原生带的 slash 命令留得很少。Agent-capable 平台（Claude Co
 
 **Workflow 文件**——没有独立 slash 命令原语的平台，用户按名字跑 workflow。
 
-| 平台        | 位置                                    | 调用方式                              |
-| ----------- | --------------------------------------- | ------------------------------------- |
-| Kilo        | `.kilocode/workflows/{name}.md`         | `/{name}.md`（Kilo 的 workflow 入口） |
-| Antigravity | `.agent/workflows/{name}.md`            | 从 `.agent/workflows/` 打开           |
-| Windsurf    | `.windsurf/workflows/trellis-{name}.md` | `/trellis-{name}`                     |
+| 平台        | 位置                                 | 调用方式                              |
+| ----------- | ------------------------------------ | ------------------------------------- |
+| Kilo        | `.kilocode/workflows/{name}.md`      | `/{name}.md`（Kilo 的 workflow 入口） |
+| Antigravity | `.agent/workflows/{name}.md`         | 从 `.agent/workflows/` 打开           |
+| Devin       | `.devin/workflows/trellis-{name}.md` | `/trellis-{name}`                     |
 
 **Skill-only**——完全没有 slash 命令原语的平台，`start` / `finish-work` / `continue` 全都做成 auto-trigger skill。
 

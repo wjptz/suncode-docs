@@ -31,7 +31,7 @@ trellis init -u your-name --pi
 
 `your-name` 会成为你的开发者身份，在 `.trellis/workspace/your-name/` 创建个人工作区。
 
-支持的 flag：`--claude`、`--cursor`、`--opencode`、`--codex`、`--kiro`、`--gemini`、`--qoder`、`--codebuddy`、`--copilot`、`--droid`、`--pi`、`--antigravity`、`--windsurf`、`--kilo`、`--reasonix`、`--zcode`。
+支持的 flag：`--claude`、`--cursor`、`--opencode`、`--codex`、`--kiro`、`--gemini`、`--qoder`、`--codebuddy`、`--copilot`、`--droid`、`--pi`、`--antigravity`、`--devin`（别名：`--windsurf`，已废弃）、`--kilo`、`--reasonix`、`--zcode`。
 
 除了这 16 个已配置平台，任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）也能直接消费 Trellis：Codex 的 skill 就写在这个目录下，这些文件能被该生态的其他 agent 直接读取。
 
@@ -54,7 +54,7 @@ trellis init -u your-name --pi
 | **Pi Agent**    | `.pi/prompts/`、`skills/`、`agents/`、`extensions/trellis/`、`settings.json` |
 | **Kilo**        | `.kilocode/workflows/`、`skills/`                                            |
 | **Antigravity** | `.agent/workflows/`、`skills/`                                               |
-| **Windsurf**    | `.windsurf/workflows/`、`skills/`                                            |
+| **Devin**       | `.devin/workflows/`、`skills/`                                               |
 
 `.agents/skills/` 是一份跨平台共享层（[agentskills.io](https://agentskills.io) 规范），`trellis init` 会把所有 skill 都写一份到这里，供 Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等遵循 `.agents/skills/` 规范的 agent 直接读取。
 
@@ -97,8 +97,8 @@ trellis init -u your-name --pi
 <Note>
   Agent-capable 平台通过 SessionStart hook、prompt hook、extension、agent 文件和 skill 的组合加载
   Trellis 上下文。Codex 和 Claude-style 平台不同：它依赖 `AGENTS.md` 加 `UserPromptSubmit` hook，
-  no-task breadcrumb 会提示 AI 读取 `trellis-start`。只有 Kilo / Antigravity / Windsurf 这类
-  agent-less 平台会发 `/trellis:start`（或 `/start.md`）作为显式入口。
+  no-task breadcrumb 会提示 AI 读取 `trellis-start`。只有 Kilo / Antigravity / Devin 这类 agent-less
+  平台会发 `/trellis:start`（或 `/start.md`）作为显式入口。
 </Note>
 
 ### 目录结构
@@ -221,11 +221,11 @@ hook 会注入当前 workflow-state breadcrumb。没有 active task 时，这段
   <Tab title="Kiro">
   Kiro 默认通过 `.kiro/` 下的 agent / skill 文件交付 Trellis 内容。Kiro 的 Agent Hook 是用户自己配置的（文件保存触发、构建成功触发等），Trellis 不原生带任何 Agent Hook wiring。直接描述任务，Kiro 按 skill 匹配进入 brainstorm 流程；需要完整上下文报告时跑 `@trellis:start`。
   </Tab>
-  <Tab title="Kilo / Antigravity / Windsurf">
+  <Tab title="Kilo / Antigravity / Devin">
   这三个平台只有 workflow + skill，没有 hook 和 sub-agent。入口：
   - Kilo：`/start.md`
   - Antigravity：打开 `.agent/workflows/start.md`
-  - Windsurf：`/trellis-start`
+  - Devin：`/trellis-start`
 
 AI 执行 workflow 里写的步骤：读 workflow.md、跑 `get_context.py`、读 spec 索引、询问你想做什么。后续的 implement / check 阶段会在主会话里内联跑，而不是 spawn sub-agent。
 

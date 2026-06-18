@@ -18,14 +18,14 @@ Trellis 是 **Team-level Agent Harness with built-in LLM wiki**。
 
 Trellis 把 AI coding 当成工作流和知识管理问题，而不是一次聊天。
 
-| 理念               | 实现规则                                                                                                                                        |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| 显式记录工作流状态 | Task `status` 和 `[workflow-state:STATUS]` block 告诉主会话当前在哪个阶段。                                                                     |
-| 把持久知识放进文件 | 需求、spec、research、journal 存在 `.trellis/` 下，不只存在对话历史里。                                                                         |
-| 按职责拆分工作     | 调研、实现、验收分别走不同 agent 或 skill，取决于平台能力。                                                                                     |
-| 控制上下文范围     | JSONL 只列当前任务需要的 spec/research 文件，不把整个仓库塞进上下文。                                                                           |
-| 保留 review 边界   | Implement/check agent 产出干净 diff；主会话提出 commit 计划；`/trellis:finish-work` 只归档和写 journal。                                        |
-| 支持团队和多工具   | 同一套 `.trellis/` 模型适配 Claude Code、Cursor、Codex、OpenCode、Kiro、Gemini、Qoder、Copilot、Droid、Pi、Kilo、Antigravity、Windsurf 等工具。 |
+| 理念               | 实现规则                                                                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 显式记录工作流状态 | Task `status` 和 `[workflow-state:STATUS]` block 告诉主会话当前在哪个阶段。                                                                  |
+| 把持久知识放进文件 | 需求、spec、research、journal 存在 `.trellis/` 下，不只存在对话历史里。                                                                      |
+| 按职责拆分工作     | 调研、实现、验收分别走不同 agent 或 skill，取决于平台能力。                                                                                  |
+| 控制上下文范围     | JSONL 只列当前任务需要的 spec/research 文件，不把整个仓库塞进上下文。                                                                        |
+| 保留 review 边界   | Implement/check agent 产出干净 diff；主会话提出 commit 计划；`/trellis:finish-work` 只归档和写 journal。                                     |
+| 支持团队和多工具   | 同一套 `.trellis/` 模型适配 Claude Code、Cursor、Codex、OpenCode、Kiro、Gemini、Qoder、Copilot、Droid、Pi、Kilo、Antigravity、Devin 等工具。 |
 
 ## Feature 全景
 
@@ -206,7 +206,7 @@ Trellis 使用每个平台可用的原语。真实项目以本地生成文件为
 | Hook + pull-prelude sub-agent | Gemini CLI、Qoder、Copilot                          | Hook                                                          | Hook                                           | Sub-agent 启动后自己读取 JSONL 条目和 task artifacts。                           |
 | Codex                         | Codex                                               | `AGENTS.md`；`UserPromptSubmit` 可注入 no-task bootstrap 提醒 | 开启后有可选 hook（0.129+ 还需 `/hooks` 审批） | Inline 模式通过 skill 读 artifact；sub-agent 模式用 pull-based prelude。         |
 | Kiro                          | Kiro                                                | `.kiro/` 下的 skill 文件                                      | 默认没有 Trellis 每轮 hook                     | Agent / skill 文件读取 Trellis 上下文。                                          |
-| 主会话 workflow / skill       | Kilo、Antigravity、Windsurf                         | 手动 workflow 或 skill 入口                                   | 默认没有 Trellis 每轮 hook                     | 主会话内联读取 spec 和 task 文件。                                               |
+| 主会话 workflow / skill       | Kilo、Antigravity、Devin                            | 手动 workflow 或 skill 入口                                   | 默认没有 Trellis 每轮 hook                     | 主会话内联读取 spec 和 task 文件。                                               |
 
 如果本地 settings 文件跟这张表不一致，以本地 settings 为准。Trellis 项目本来就允许定制。
 

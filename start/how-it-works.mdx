@@ -39,7 +39,7 @@ The delivery path depends on the platform:
 | Codex                                                                  | `AGENTS.md` loads automatically. Trellis installs a `UserPromptSubmit` hook; on no-task turns it can inject a `<trellis-bootstrap>` reminder to read `trellis-start`. |
 | Copilot                                                                | SessionStart output is diagnostic-only in current Copilot hosts. Trellis relies on prompt hooks and skill files for model-visible context.                            |
 | Kiro                                                                   | Trellis content is delivered through `.kiro/` skills and agent files; there is no Trellis SessionStart hook by default.                                               |
-| Kilo, Antigravity, Windsurf                                            | The main session reads a workflow or skill entry explicitly.                                                                                                          |
+| Kilo, Antigravity, Devin                                               | The main session reads a workflow or skill entry explicitly.                                                                                                          |
 
 After this step, the AI should know where Trellis context lives. Detailed phase
 instructions are loaded on demand through workflow-state breadcrumbs, skills, or
@@ -190,7 +190,7 @@ context gets into the actor doing the work.
 | ----------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Hook-push sub-agent     | Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi | A hook injects JSONL entries, then `prd.md`, `design.md` if present, and `implement.md` if present before the sub-agent starts.                   |
 | Pull-prelude sub-agent  | Codex, Copilot, Gemini CLI, Qoder, Kiro             | The sub-agent definition tells the agent to read the active task, JSONL entries, `prd.md`, `design.md` if present, and `implement.md` if present. |
-| Main-session skill flow | Codex inline, Kilo, Antigravity, Windsurf           | The main session loads Trellis skills and reads `prd.md`, optional artifacts, and relevant specs inline.                                          |
+| Main-session skill flow | Codex inline, Kilo, Antigravity, Devin              | The main session loads Trellis skills and reads `prd.md`, optional artifacts, and relevant specs inline.                                          |
 
 The shared context order is:
 

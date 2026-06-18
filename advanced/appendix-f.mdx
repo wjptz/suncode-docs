@@ -24,7 +24,7 @@ When you want to re-orient the AI mid-session or push it to the next workflow
 step, type `/trellis:continue`. It reads task state, artifact presence, and
 `workflow.md`, then decides what to do.
 
-On platforms without a SessionStart hook (Kilo, Antigravity, Windsurf), still run `/trellis:start` or the platform's start workflow at session start.
+On platforms without a SessionStart hook (Kilo, Antigravity, Devin), still run `/trellis:start` or the platform's start workflow at session start.
 
 ### Q2: How do I migrate an existing project to Trellis?
 
@@ -132,7 +132,7 @@ See chapters 9–12 for guidance on picking the right primitive.
 ### Q12: What's the difference between `/trellis:start` and `/trellis:continue`?
 
 `/trellis:start` is for fresh sessions on a platform without automatic startup
-context (Kilo / Antigravity / Windsurf). It loads Trellis orientation
+context (Kilo / Antigravity / Devin). It loads Trellis orientation
 explicitly. On platforms with a startup hook, extension, `AGENTS.md`, or
 prompt-hook bootstrap, you usually don't need it.
 

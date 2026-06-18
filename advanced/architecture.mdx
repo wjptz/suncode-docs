@@ -18,14 +18,14 @@ This document maps that idea to the current Trellis feature set, the modules tha
 
 Trellis treats AI coding as a workflow and knowledge-management problem, not a single chat session.
 
-| Principle                        | Implementation rule                                                                                                                                                       |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Make workflow state explicit     | Task `status` and `[workflow-state:STATUS]` blocks tell the main session what phase it is in.                                                                             |
-| Store durable knowledge in files | Requirements, specs, research, and journals live under `.trellis/`, not only in conversation history.                                                                     |
-| Split work by responsibility     | Research, implementation, and checking use separate agents or skills depending on platform capability.                                                                    |
-| Keep context scoped              | JSONL manifests list the spec/research files needed for the current task instead of dumping the whole repo.                                                               |
-| Preserve the review boundary     | Implement/check agents produce a clean diff; the main session proposes commits, and `/trellis:finish-work` only archives and journals.                                    |
-| Support teams and tool diversity | The same `.trellis/` model is adapted into Claude Code, Cursor, Codex, OpenCode, Kiro, Gemini, Qoder, Copilot, Droid, Pi, Kilo, Antigravity, Windsurf, and related tools. |
+| Principle                        | Implementation rule                                                                                                                                                    |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Make workflow state explicit     | Task `status` and `[workflow-state:STATUS]` blocks tell the main session what phase it is in.                                                                          |
+| Store durable knowledge in files | Requirements, specs, research, and journals live under `.trellis/`, not only in conversation history.                                                                  |
+| Split work by responsibility     | Research, implementation, and checking use separate agents or skills depending on platform capability.                                                                 |
+| Keep context scoped              | JSONL manifests list the spec/research files needed for the current task instead of dumping the whole repo.                                                            |
+| Preserve the review boundary     | Implement/check agents produce a clean diff; the main session proposes commits, and `/trellis:finish-work` only archives and journals.                                 |
+| Support teams and tool diversity | The same `.trellis/` model is adapted into Claude Code, Cursor, Codex, OpenCode, Kiro, Gemini, Qoder, Copilot, Droid, Pi, Kilo, Antigravity, Devin, and related tools. |
 
 ## Feature overview
 
@@ -206,7 +206,7 @@ Trellis uses each platform's available primitives. The generated project files a
 | Hook + pull-prelude sub-agent | Gemini CLI, Qoder, Copilot                          | Hook                                                                    | Hook                                                              | Sub-agent reads JSONL entries and task artifacts itself on startup.                          |
 | Codex                         | Codex                                               | `AGENTS.md`; `UserPromptSubmit` can inject a no-task bootstrap reminder | Optional hook when enabled (0.129+ also requires `/hooks` review) | Inline mode reads artifacts through skills; sub-agent mode uses pull-based preludes.         |
 | Kiro                          | Kiro                                                | Skill files under `.kiro/`                                              | No Trellis per-turn hook by default                               | Agent/skill files read Trellis context.                                                      |
-| Main-session workflow/skill   | Kilo, Antigravity, Windsurf                         | Manual workflow or skill entry                                          | No Trellis per-turn hook by default                               | Main session reads specs and task files inline.                                              |
+| Main-session workflow/skill   | Kilo, Antigravity, Devin                            | Manual workflow or skill entry                                          | No Trellis per-turn hook by default                               | Main session reads specs and task files inline.                                              |
 
 If the local settings file disagrees with this table, follow the local settings file. Trellis projects are intentionally customizable.
 

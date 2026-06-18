@@ -12,7 +12,7 @@ Trellis 原生带有 3 个 sub-agent（`trellis-implement`、`trellis-check`、`
   JSON；没有 sub-agent `PreToolUse` hook 或 extension 等价机制的平台，sub-agent 自己通过 pull-based
   prelude 读取自己的 JSONL manifest、`prd.md`、存在时的 `design.md`、存在时的 `implement.md`，不靠
   hook 注入。Codex 也可以跑 inline 模式，此时主会话通过 skill 读取同一批
-  artifact。Kilo、Antigravity、Windsurf 没有 sub-agent 原语——implement / check 在主会话里内联完成。
+  artifact。Kilo、Antigravity、Devin 没有 sub-agent 原语——implement / check 在主会话里内联完成。
 </Note>
 
 ### Sub-agent 定义（Claude Code 示例）
