@@ -59,7 +59,8 @@ trellis init -u your-name
 Upgrade the global CLI first:
 
 ```bash
-trellis upgrade
+trellis upgrade                              # CLI 0.6.0+
+npm install -g @mindfoldhq/trellis@latest    # CLI 0.5.x or older (no `upgrade` command yet)
 ```
 
 Then sync the project files:
@@ -90,11 +91,13 @@ Every update creates a timestamped backup at `.trellis/.backup-*` first; locally
 Upgrade is two steps for two layers:
 
 ```bash
-trellis upgrade                           # 1. upgrade the CLI itself
+trellis upgrade                           # 1. upgrade the CLI itself (CLI 0.6.0+)
 trellis update --migrate                  # 2. sync the project to the CLI's current version
 ```
 
 `trellis update` only brings the project up to the CLI's version. If the CLI is still 0.4.0, the project can only reach 0.4.0. Bump the global CLI to `@latest` first, then run `trellis update --migrate`.
+
+If your CLI predates 0.6.0 the `trellis upgrade` command does not exist — do step 1 with `npm install -g @mindfoldhq/trellis@latest` instead, then `trellis upgrade` works for later bumps.
 
 ## Core concepts
 

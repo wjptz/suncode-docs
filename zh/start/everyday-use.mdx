@@ -24,7 +24,20 @@ title: '命令、任务与规范'
 
 ### 1.2 命令
 
-#### 1.2.1 `trellis upgrade`：升级 CLI package
+#### 1.2.1 三个版本：`upgrade` vs `update`
+
+Trellis 同时追踪三个独立的版本。搞清楚谁是谁，就理解了为什么升级是两步：
+
+1. **已发布版** — npm 上的最新版本
+2. **本地 CLI** — 你全局安装的 `trellis` 命令
+3. **项目版** — 你 repo 里 `.trellis/` 的模板版本
+
+- `trellis upgrade` 把 **② → ①**（升级全局 CLI 本体）
+- `trellis update` 把 **③ → ②**（把当前项目同步到本地 CLI 的版本）
+
+所以完整升级 = 先 `trellis upgrade`（CLI）再 `trellis update`（项目）。`trellis update` 最多只能把项目抬到本地 CLI 的版本——CLI 自己旧了，得先升 CLI。
+
+#### 1.2.2 `trellis upgrade`：升级 CLI package
 
 全局安装的 Trellis CLI 落后于已发布版本时使用：
 
@@ -34,9 +47,15 @@ trellis upgrade --tag latest # 显式安装最新稳定版
 trellis upgrade --dry-run    # 只打印 npm 命令，不实际执行
 ```
 
+<Note>
+  `trellis upgrade` 是 CLI 0.6.0 才加的命令。如果你装的 CLI 是 0.5.x
+  或更早，这个命令还不存在——直接用 `npm install -g @mindfoldhq/trellis@latest` 升级本地
+  CLI，之后每次升级就能用 `trellis upgrade` 了。
+</Note>
+
 `trellis upgrade` 升级的是全局 CLI package，不会改当前项目里的文件。CLI 升级后，如果某个 Trellis 项目需要同步新的 workflow、hook、skill 或平台文件，再在该项目里运行 `trellis update`。
 
-#### 1.2.2 `/trellis:start`：开启会话
+#### 1.2.3 `/trellis:start`：开启会话
 
 如果平台不自动注入上下文就手动跑一下。Hook 或 extension 可用的平台（Claude Code、Cursor、OpenCode、Gemini、Qoder、CodeBuddy、Copilot、Droid、Pi Agent，以及开了 `features.hooks = true` 的 Codex —— 旧版用 `codex_hooks = true`）有 SessionStart hook 或 extension，打开终端就自动执行，所以通常不会安装用户可见的 `start` 命令。
 
@@ -57,7 +76,7 @@ AI 做的任务分类：
 
 用户拒绝复杂任务建 task 时，AI 应该澄清范围或建议拆小，而不是做大范围 inline 实现。
 
-#### 1.2.3 `/trellis:continue`：当前任务内推进下一步
+#### 1.2.4 `/trellis:continue`：当前任务内推进下一步
 
 `continue` 是**单个任务内**的 continue，不是跨任务的 continue。AI 根据当前 task 的 `task.json.status` 和每轮 hook 注入的 workflow-state breadcrumb，对照 `workflow.md` 判断当前在哪个 phase/step，然后推进到下一步。
 
@@ -70,7 +89,7 @@ AI 做的任务分类：
 
 以前你得自己学 workflow、记住每个阶段该调哪个 slash command 让 AI 干对应的事；现在一路自然对话 + `continue`，几乎零学习成本就能跑完整个 trellis 工作流。
 
-#### 1.2.4 `/trellis:finish-work`：收尾 + 归档
+#### 1.2.5 `/trellis:finish-work`：收尾 + 归档
 
 前提：代码已经 commit。AI 在 workflow Phase 3.4（见 `.trellis/workflow.md`）里主导批量 commit —— 起草本次 session 改动的 commit 计划、参考 `git log --oneline -5` 学习 repo 的 commit message 风格、一次性展示计划让用户 confirm、确认后逐批 `git commit`。`/finish-work` 自身只做 archive + journal，**工作区还有未提交代码改动时拒绝执行**，保证 bookkeeping commit 永远在 work commit 之后。
 

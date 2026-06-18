@@ -27,7 +27,20 @@ The user-facing command set is deliberately small: `finish-work` and `continue` 
 
 ### 1.2 Commands
 
-#### 1.2.1 `trellis upgrade`: Upgrade the CLI package
+#### 1.2.1 Three versions: `upgrade` vs `update`
+
+Trellis tracks three separate versions. Knowing which is which explains why upgrading is two steps:
+
+1. **Published** — the latest version on npm
+2. **Local CLI** — your globally installed `trellis` binary
+3. **Project** — the `.trellis/` templates inside your repo
+
+- `trellis upgrade` raises **② → ①** (upgrades the global CLI itself)
+- `trellis update` raises **③ → ②** (syncs the current project to your local CLI's version)
+
+So a full upgrade is `trellis upgrade` (CLI) then `trellis update` (project). `trellis update` can only raise the project as far as your local CLI — if the CLI is stale, upgrade it first.
+
+#### 1.2.2 `trellis upgrade`: Upgrade the CLI package
 
 Use this when your globally installed Trellis CLI is behind the published package:
 
@@ -37,9 +50,15 @@ trellis upgrade --tag latest # explicitly install the latest stable release
 trellis upgrade --dry-run    # print the npm command without running it
 ```
 
+<Note>
+  `trellis upgrade` was added in CLI 0.6.0. If your installed CLI is 0.5.x or older the command does
+  not exist yet — raise the local CLI directly with `npm install -g @mindfoldhq/trellis@latest`,
+  then `trellis upgrade` is available for every future bump.
+</Note>
+
 `trellis upgrade` updates the global CLI package. It does not change files in the current project. After upgrading the CLI, run `trellis update` inside each Trellis project that needs its bundled workflow, hooks, skills, or platform files synced to the new CLI version.
 
-#### 1.2.2 `/trellis:start`: Start a session
+#### 1.2.3 `/trellis:start`: Start a session
 
 Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable or extension-capable platforms (Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `features.hooks = true` — legacy: `codex_hooks = true`), the SessionStart hook or extension does this automatically, so `start` is usually not installed as a user-facing command.
 
@@ -61,7 +80,7 @@ Task classification the AI will apply:
 If the user rejects task creation for complex work, the AI should clarify scope
 or suggest a smaller split instead of doing broad inline implementation.
 
-#### 1.2.3 `/trellis:finish-work`: Wrap up + archive
+#### 1.2.4 `/trellis:finish-work`: Wrap up + archive
 
 Prerequisite: code is already committed. The AI drives a batched commit step in workflow Phase 3.4 (see `.trellis/workflow.md`) where it drafts commits from this session's edits, learns the repo's commit-message style from `git log --oneline -5`, presents the plan once for one-shot user confirmation, and runs `git commit` per batch. `/finish-work` itself focuses on archive + journal and **refuses to run on a dirty working tree** to keep bookkeeping commits ordered after work commits.
 
@@ -74,7 +93,7 @@ Steps:
 
 Final git log order: `<work commits from 3.4>` → `chore(task): archive ...` (one or more) → `chore: record journal`. Spec sync (route a non-trivial learning to `trellis-update-spec`) belongs in workflow Phase 3.3 before commits, not in this skill.
 
-#### 1.2.4 `/trellis:continue`: Advance within the current task
+#### 1.2.5 `/trellis:continue`: Advance within the current task
 
 `continue` is a **within-task** continue — not a cross-task one. The AI picks up where the active task left off using its `task.json.status` plus the workflow-state breadcrumb the hook injects each turn, consults `workflow.md` to locate the current phase/step, and advances to the next one.
 

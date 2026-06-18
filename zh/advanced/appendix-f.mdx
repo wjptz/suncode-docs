@@ -56,7 +56,8 @@ trellis init -u your-name
 先升级全局 CLI：
 
 ```bash
-trellis upgrade
+trellis upgrade                              # CLI 0.6.0+
+npm install -g @mindfoldhq/trellis@latest    # CLI 0.5.x 或更早（还没有 upgrade 命令）
 ```
 
 再同步项目文件：
@@ -87,11 +88,13 @@ trellis update                       # 验证：应该提示 "Already up to date
 升级是两步，对应两个层面：
 
 ```bash
-trellis upgrade                           # 1. 升级 CLI 本身
+trellis upgrade                           # 1. 升级 CLI 本身（CLI 0.6.0+）
 trellis update --migrate                  # 2. 把项目同步到 CLI 当前版本
 ```
 
 `trellis update` 只把项目升到当前 CLI 版本。如果 CLI 自己还是 0.4.0，那项目最多也只能到 0.4.0。先把全局 CLI 升到 `@latest`，再跑 `trellis update --migrate`。
+
+如果你的 CLI 早于 0.6.0，`trellis upgrade` 命令还不存在——第 1 步改用 `npm install -g @mindfoldhq/trellis@latest`，之后的升级就能用 `trellis upgrade` 了。
 
 ## 核心概念
 
