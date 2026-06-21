@@ -47,9 +47,10 @@ After that, on platforms with a SessionStart hook or extension, opening a new se
 
 Legend: ✅ Trellis wires the config and the platform executes it · ⚡ Partial
 (Codex uses `AGENTS.md` plus `UserPromptSubmit`; workflow breadcrumbs require
-`features.hooks = true` and a one-time `/hooks` review on 0.129+. Kiro's Agent
-Hooks are user-configured, not auto-executed) · ❌ the platform does not expose
-this event · — the platform has no command primitive; start / finish-work /
+`features.hooks = true` and a one-time `/hooks` review on 0.129+. Kiro ships a
+per-turn `userPromptSubmit` hook on the `trellis` agent, but the user must
+activate that agent — `chat.defaultAgent trellis` or `/agent swap`) · ❌ the
+platform does not expose this event · — the platform has no command primitive; start / finish-work /
 continue are delivered as skills instead. Qoder uses `/trellis-{name}` (hyphen,
 not colon) via its native Custom Commands for `finish-work` / `continue`; `start`
 is covered by its SessionStart hook. Pi Agent uses an extension rather than
@@ -139,11 +140,22 @@ trellis init -u your-name --kiro
 
 Layout:
 
-- `.kiro/steering/trellis.md`: Trellis prelude, loaded every session
-- `.kiro/prompts/trellis-*.md`: prompt-style commands
-- `.kiro/skills/*/SKILL.md`: auto-trigger skills (Kiro matches by description/YAML)
+- `.kiro/agents/trellis.json`: main Trellis agent — per-turn `userPromptSubmit` hook + session-start `agentSpawn` hook + `.trellis/workflow.md` as an always-loaded resource
+- `.kiro/agents/trellis-{implement,check,research}.json`: sub-agents (`agentSpawn` injects task context)
+- `.kiro/hooks/*.py` + `.kiro/hooks/trellis-workflow-state.kiro.hook`: the per-turn workflow-state injector (CLI agent hook + IDE `.kiro.hook`)
+- `.kiro/skills/*/SKILL.md`: auto-trigger skills
 
-Kiro's Agent Hooks can auto-run Trellis skills on file save or build success, but that's user-configured; Trellis doesn't install any Kiro Agent Hook out of the box.
+**Enable it (required — otherwise the workflow won't activate):**
+
+- **Kiro CLI**: make `trellis` the active agent so its hooks fire — `kiro-cli settings chat.defaultAgent trellis` (persists) or `/agent swap trellis` (per session). Kiro otherwise runs the built-in `kiro_default` agent.
+- **Kiro IDE**: the `.kiro/hooks/trellis-workflow-state.kiro.hook` (a `promptSubmit` hook) ships enabled; confirm it's on/trusted in Kiro's Agent Hooks UI.
+
+<Note>
+  The per-turn injection prints plain text that Kiro adds to the conversation context, per Kiro's
+  official hooks docs. The exact stdout-to-context behavior (and whether the IDE `runCommand` action
+  injects stdout) is pending verification on real Kiro hardware; if it doesn't, the fallback is a
+  static steering nudge.
+</Note>
 
 ### Gemini CLI
 

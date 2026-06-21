@@ -46,7 +46,7 @@ Trellis 支持 16 个平台（Claude Code、Cursor、OpenCode、Codex、Kiro、K
 
 图例：✅ Trellis 写入配置并由平台执行 · ⚡ 部分支持（Codex 使用 `AGENTS.md` 加
 `UserPromptSubmit`；workflow breadcrumb 需要 `features.hooks = true`，0.129+
-还要走一次 `/hooks` 审批；Kiro 的 Agent Hook 需用户自行 wiring） · ❌ 平台不暴露这个事件 ·
+还要走一次 `/hooks` 审批；Kiro 在 `trellis` agent 上带了每回合 `userPromptSubmit` hook，但用户需激活该 agent —— `chat.defaultAgent trellis` 或 `/agent swap`） · ❌ 平台不暴露这个事件 ·
 — 该平台没有命令原语，start / finish-work / continue 作为 skill 交付。Qoder 用的是
 `/trellis-{name}`（连字符，不是冒号），通过原生 Custom Commands 交付 `finish-work` /
 `continue`；`start` 由 SessionStart hook 自动注入。Pi Agent 走 extension，不走 Python hook 文件，
@@ -134,11 +134,21 @@ trellis init -u your-name --kiro
 
 布局：
 
-- `.kiro/steering/trellis.md`：Trellis prelude，每个 session 加载
-- `.kiro/prompts/trellis-*.md`：prompt 式命令
-- `.kiro/skills/*/SKILL.md`：auto-trigger skill（Kiro 按 description/YAML 匹配）
+- `.kiro/agents/trellis.json`：主 Trellis agent —— 每回合 `userPromptSubmit` hook + 开场 `agentSpawn` hook + 把 `.trellis/workflow.md` 作为常驻 resource
+- `.kiro/agents/trellis-{implement,check,research}.json`：子代理（`agentSpawn` 注入任务上下文）
+- `.kiro/hooks/*.py` + `.kiro/hooks/trellis-workflow-state.kiro.hook`：每回合 workflow-state 注入器（CLI agent hook + IDE `.kiro.hook`）
+- `.kiro/skills/*/SKILL.md`：auto-trigger skill
 
-Kiro 的 Agent Hook 可以在文件保存或构建成功时自动跑 Trellis skill，但这是用户自己配的；Trellis 不原生带任何 Kiro Agent Hook。
+**启用（必做，否则工作流不会激活）：**
+
+- **Kiro CLI**：把 `trellis` 设为当前 agent，它的 hook 才会触发 —— `kiro-cli settings chat.defaultAgent trellis`（持久）或 `/agent swap trellis`（按 session）。否则 Kiro 跑内置 `kiro_default`。
+- **Kiro IDE**：`.kiro/hooks/trellis-workflow-state.kiro.hook`（一个 `promptSubmit` hook）默认 enabled；在 Kiro 的 Agent Hooks 界面确认它已开启/信任。
+
+<Note>
+  每回合注入打印纯文本，Kiro 会把它加入对话上下文（依 Kiro 官方 hooks
+  文档）。stdout→上下文的确切行为（以及 IDE `runCommand` 是否注入 stdout）待 Kiro
+  真机验证；若不生效，退化为静态 steering 提示。
+</Note>
 
 ### Gemini CLI
 
