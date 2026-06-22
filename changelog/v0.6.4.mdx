@@ -1,0 +1,55 @@
+---
+title: 'v0.6.4'
+description: '2026-06-22'
+---
+
+Patch release with two independent bug fixes: Kiro's main session now activates the workflow deterministically, and four `agentCapable && !hasHooks` platforms (Codex, ZCode, OpenCode, Reasonix) finally emit `trellis-start`. Run `trellis update` to refresh. No `--migrate` required.
+
+## Bug Fixes
+
+### `trellis-start` missing on `agentCapable && !hasHooks` platforms
+
+`filterCommands(ctx)` in `packages/cli/src/configurators/shared.ts` stripped `start` whenever `ctx.agentCapable` was true. The premise — that an agent-capable platform always has a SessionStart-style hook to inject opening context — does not hold for **Codex, ZCode, OpenCode, Reasonix**, which lack such a hook. Result: users had no way to load workflow context (no `/trellis:start` slash command, no `trellis-start` skill).
+
+The fix narrows the condition to `agentCapable && hasHooks`. The standard `resolveAllAsSkillsNeutral` / `resolveCommands` paths now emit `trellis-start` naturally on all four platforms.
+
+Codex's one-off `resolveCodexTrellisStartSkill` helper (introduced in 0.5.5 as a manual patch) is deleted along with its two call sites in `configurators/codex.ts` and `configurators/index.ts`. Codex output is byte-identical with the helper-written version (same template `common/commands/start.md`, same resolver, same wrapper), so `trellis update` will not flag user-modified.
+
+Triggered by external user report: `trellis init --zcode` produced neither `/trellis:start` nor `trellis-start`.
+
+### `workflow.md` platform-matrix missing ZCode and Reasonix
+
+13 edit points in `packages/cli/src/templates/trellis/workflow.md`:
+
+- **B1 / B3 / B5 / B7 / B12** (Active Task Routing, Phase 1.2 Research, Phase 1.3 Configure context, Phase 1.5 Completion criteria, Phase 2.2 Quality check) — `ZCode, Reasonix` added to the sub-agent dispatch platform lists.
+- **B9** (Phase 2.1 implement, class-2 pull-based) — `[codex-sub-agent]` → `[codex-sub-agent, ZCode, Reasonix]`. Both platforms need the `Active task:` prefix the codex-sub-agent block already mandates.
+- **Line 186** — prose enumeration in the Phase Index section gains `, ZCode, Reasonix`.
+- **B8 unchanged** — its body claims "platform hook/plugin auto-handles", which is false for pull-based platforms. ZCode and Reasonix are deliberately excluded.
+
+### Kiro main-session workflow injection
+
+Pre-0.6.4 Kiro projects had no deterministic Trellis activation. The three sub-agent JSONs registered `agentSpawn` hooks, but the main session had no hook of its own, so the workflow never kicked in.
+
+The "Kiro supports only `agentSpawn`" assumption that drove the original wiring was wrong. Kiro CLI exposes `userPromptSubmit` and `agentSpawn`; the IDE has file-based `.kiro.hook` (`promptSubmit`). 0.6.4 wires both:
+
+- **`.kiro/agents/trellis.json`** (new main agent): `userPromptSubmit` → `inject-workflow-state.py`, `agentSpawn` → `session-start.py`, `workflow.md` declared as an always-loaded resource.
+- **`.kiro/hooks/trellis-workflow-state.kiro.hook`** (new IDE hook): `promptSubmit` → `runCommand`.
+- **`inject-workflow-state.py` + `session-start.py`** add an isolated `platform == "kiro"` branch that prints plain stdout (Kiro adds it to context; no `hookSpecificOutput` envelope). Detected via `KIRO_PROJECT_DIR` env or `.kiro` script path. Other platforms byte-unchanged (isolation test added).
+- **`SHARED_HOOKS_BY_PLATFORM.kiro`** gains `session-start.py` + `inject-workflow-state.py`.
+
+The three sub-agents (`trellis-{implement,check,research}.json`) keep their `agentSpawn → inject-subagent-context.py` wiring unchanged.
+
+The plain-stdout-to-context contract and the IDE `runCommand` stdout injection follow Kiro's official docs; real-machine verification is pending. Fallback for users hitting issues: `askAgent` + static steering.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+No `--migrate` required.
+
+- **Kiro** users: `update` writes the new main-session agent (`.kiro/agents/trellis.json`), the IDE hook (`.kiro/hooks/trellis-workflow-state.kiro.hook`), and the shared hook scripts.
+- **ZCode / OpenCode / Reasonix** users: `update` writes the previously missing `trellis-start` skill / `/trellis:start` slash command.
+- **Codex** users: no observable change. The trellis-start skill is now produced via the standard path instead of the helper, but the file bytes are identical.
