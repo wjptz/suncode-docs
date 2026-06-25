@@ -21,6 +21,8 @@ Trellis 现在把 Trae IDE 作为一等平台支持。
 
 Trae 主会话通过 shared hooks 获取启动上下文和每轮 workflow context。Sub-agent context 走 class-2 pull-based prelude，因为 Trae 目前没有 Trellis 可用的 sub-agent prompt mutation surface。
 
+内置 workflow 现在会把 Trae implement dispatch 放到 class-2 pull-based block，而不是 hook auto-handles block。这样 workflow 文案与 Trae 生成的 pull-based sub-agent definitions 保持一致。
+
 ### Pi Agent 启动上下文
 
 Pi Agent 的 `session_start` 事件是 notify-only，不能直接注入 model-visible context。0.6.5 把启动 payload 移到每个 Trellis context key 的第一次 `before_agent_start`。

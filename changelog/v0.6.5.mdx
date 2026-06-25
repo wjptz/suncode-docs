@@ -21,6 +21,8 @@ Trellis now supports Trae IDE as a first-class platform.
 
 Trae uses shared hooks for main-session startup and per-turn workflow context. Sub-agent context uses the class-2 pull-based prelude because Trae does not expose a Trellis-supported sub-agent prompt mutation surface.
 
+The bundled workflow now routes Trae implement dispatch through the class-2 pull-based block, not the hook auto-handles block. This keeps the generated workflow aligned with Trae's pull-based sub-agent definitions.
+
 ### Pi Agent startup context
 
 Pi Agent's `session_start` event is notify-only, so it cannot inject model-visible context by itself. 0.6.5 moves the startup payload to the first `before_agent_start` event for each Trellis context key.
