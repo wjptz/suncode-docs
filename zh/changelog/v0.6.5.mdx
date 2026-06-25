@@ -43,6 +43,8 @@ Channel session 启动前会把 Windows npm `.cmd` shim 解析到可 spawn 的 e
 
 共享 Python hooks 在 stdin 为空时不再阻塞。
 
+ZCode command fallbacks 现在保留在 `.zcode/commands/trellis/`，不再写入共享的 `.agents/skills/` 目录。这样 Codex + ZCode 组合安装后，`trellis update --dry-run` 不会立刻报告 template drift。
+
 Trellis 同时加强了任务 readiness：
 
 - `workflow.md` 要求先整理好 `implement.jsonl` / `check.jsonl` context，再进入实现。

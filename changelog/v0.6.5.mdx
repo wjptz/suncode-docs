@@ -43,6 +43,8 @@ Channel session spawning now resolves Windows npm `.cmd` shims to a spawnable ex
 
 Shared Python hooks no longer block when stdin is empty.
 
+ZCode command fallbacks now stay under `.zcode/commands/trellis/` instead of the shared `.agents/skills/` directory. This prevents Codex + ZCode combined installs from reporting immediate template drift on `trellis update --dry-run`.
+
 Trellis also tightens task readiness:
 
 - `workflow.md` requires curated `implement.jsonl` / `check.jsonl` context before starting implementation.
