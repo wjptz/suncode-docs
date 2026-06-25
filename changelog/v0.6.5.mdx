@@ -1,0 +1,64 @@
+---
+title: 'v0.6.5'
+description: '2026-06-25'
+---
+
+Patch release with Trae IDE support, reliable Pi Agent startup context, Pi sub-agent tool configuration fixes, and runtime reliability improvements for Windows channel sessions, hooks, and task planning gates. Run `trellis update` to refresh existing projects. No `--migrate` required.
+
+## Highlights
+
+### Trae IDE platform support
+
+Trellis now supports Trae IDE as a first-class platform.
+
+`trellis init --trae` writes:
+
+- `.trae/commands/trellis-*.md` slash commands with frontmatter
+- `.trae/skills/` workflow skills and bundled skills
+- `.trae/agents/` Trellis implement/check/research agents
+- `.trae/hooks/` shared Python hooks
+- `.trae/hooks.json` for `SessionStart` and `UserPromptSubmit`
+
+Trae uses shared hooks for main-session startup and per-turn workflow context. Sub-agent context uses the class-2 pull-based prelude because Trae does not expose a Trellis-supported sub-agent prompt mutation surface.
+
+### Pi Agent startup context
+
+Pi Agent's `session_start` event is notify-only, so it cannot inject model-visible context by itself. 0.6.5 moves the startup payload to the first `before_agent_start` event for each Trellis context key.
+
+New Pi sessions now receive compact Trellis startup context in `systemPrompt`: workflow state, session overview, active-task status, the compact workflow index, and the first-reply notice. `.pi/prompts/trellis-start.md` remains as a manual fallback.
+
+### Pi sub-agent tools
+
+Generated `.pi/agents/trellis-*.md` files can declare `tools` frontmatter for `trellis_subagent`. Tool names are normalized to lowercase, and the unused `PI_TOOL_ALLOWLIST` path is removed so Pi receives the tool names it expects.
+
+## Reliability Fixes
+
+### Windows channel sessions
+
+Channel session spawning now resolves Windows npm `.cmd` shims to a spawnable executable path before launch. This fixes failures where the supervisor tried to spawn a non-existent `.exe` path.
+
+### Hooks and planning gates
+
+Shared Python hooks no longer block when stdin is empty.
+
+Trellis also tightens task readiness:
+
+- `workflow.md` requires curated `implement.jsonl` / `check.jsonl` context before starting implementation.
+- `brainstorm` requires lossless PRD convergence before planning continues, so updated requirements are not dropped during iterative task shaping.
+
+## Internal
+
+CI now runs on marketplace submodule pointer changes, and the marketplace workflow mirror has been synced for Trae support.
+
+## Upgrade
+
+```bash
+npm install -g @mindfoldhq/trellis@latest
+trellis update
+```
+
+No `--migrate` required.
+
+- **Trae** users: run `trellis init --trae` in projects that do not yet have `.trae/`; run `trellis update` in existing Trellis projects.
+- **Pi** users: run `trellis update` to receive the generated start prompt and extension startup-context updates.
+- **Windows channel** users: install the latest CLI before starting new channel sessions.

@@ -118,6 +118,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "changelog/v0.6.5",
                       "changelog/v0.6.4",
                       "changelog/v0.6.3",
                       "changelog/v0.6.2",
@@ -346,6 +347,7 @@
                     "group": "Changelog",
                     "expanded": false,
                     "pages": [
+                      "zh/changelog/v0.6.5",
                       "zh/changelog/v0.6.4",
                       "zh/changelog/v0.6.3",
                       "zh/changelog/v0.6.2",
@@ -495,7 +497,7 @@
     "links": [
       {
         "label": "Changelog",
-        "href": "/changelog/v0.6.4"
+        "href": "/changelog/v0.6.5"
       },
       {
         "label": "Tech Blog",
