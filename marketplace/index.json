@@ -26,12 +26,12 @@
       "tags": ["cloudflare", "workers", "hono", "drizzle", "turso", "react", "typescript"]
     },
     {
-      "id": "trellis-meta",
+      "id": "suncode-meta",
       "type": "skill",
-      "name": "Trellis Meta Skill",
-      "description": "Meta-skill for understanding and customizing Trellis workflows",
+      "name": "Suncode Meta Skill",
+      "description": "Meta-skill for understanding and customizing Suncode workflows",
       "path": "marketplace/skills/trellis-meta",
-      "tags": ["trellis", "meta", "workflow", "customization"]
+      "tags": ["suncode", "meta", "workflow", "customization"]
     }
   ]
 }

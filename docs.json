@@ -3,7 +3,7 @@
   "theme": "mint",
   "js": "/terminal-demo.js",
   "exclude": [
-    ".trellis/**",
+    ".suncode/**",
     "AGENTS.md",
     "marketplace/skills/**",
     "marketplace/agents/**",
@@ -11,7 +11,7 @@
     "marketplace/specs/**",
     "marketplace/README.md"
   ],
-  "name": "Trellis Doc",
+  "name": "Suncode Docs",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -483,7 +483,7 @@
       "anchors": [
         {
           "anchor": "GitHub",
-          "href": "https://github.com/mindfold-ai/Trellis",
+          "href": "https://github.com/wjptz/suncode",
           "icon": "github"
         }
       ]
@@ -507,11 +507,11 @@
     "primary": {
       "type": "button",
       "label": "GitHub",
-      "href": "https://github.com/mindfold-ai/Trellis"
+      "href": "https://github.com/wjptz/suncode"
     }
   },
   "repository": {
-    "url": "https://github.com/mindfold-ai/docs",
+    "url": "https://github.com/wjptz/suncode-docs",
     "deployBranch": "main"
   },
   "contextual": {
@@ -523,7 +523,7 @@
   "footer": {
     "socials": {
       "x": "https://x.com/_kleinhe",
-      "github": "https://github.com/mindfold-ai/Trellis"
+      "github": "https://github.com/wjptz/suncode"
     }
   },
   "redirects": [

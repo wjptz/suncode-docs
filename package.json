@@ -1,7 +1,7 @@
 {
-  "name": "trellis-docs",
+  "name": "suncode-docs",
   "version": "1.0.0",
-  "description": "Trellis Documentation Website - Built with Mintlify",
+  "description": "Suncode Documentation Website - Built with Mintlify",
   "private": true,
   "scripts": {
     "dev": "mintlify dev",
@@ -30,11 +30,11 @@
     ]
   },
   "keywords": [
-    "trellis",
+    "suncode",
     "documentation",
     "mintlify"
   ],
-  "author": "Mindfold",
+  "author": "wjptz",
   "license": "MIT",
   "devDependencies": {
     "@commitlint/cli": "^20.4.0",

@@ -1,4 +1,4 @@
-# Trellis doc
+# Suncode docs
 
 # Mintlify Starter Kit
 
