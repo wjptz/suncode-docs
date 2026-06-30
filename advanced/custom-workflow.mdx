@@ -4,7 +4,7 @@ title: 'Customizing the Workflow'
 
 ## Customizing the Workflow
 
-`/.trellis/workflow.md` defines how Trellis runs development. Phase definitions, skill routing, per-turn reminders, and the `task.py` command catalog all live in this one file. Forking the workflow means editing one markdown file — no Python, no hook code, no re-releasing Trellis.
+`/.suncode/workflow.md` defines how Suncode runs development. Phase definitions, skill routing, per-turn reminders, and the `task.py` command catalog all live in this one file. Forking the workflow means editing one markdown file — no Python, no hook code, no re-releasing Suncode.
 
 Before 0.5, workflow behavior was scattered across three places: hook Python scripts, configurator TypeScript, and command markdown. Keeping them in sync while forking was painful. 0.5 collapses the three into `workflow.md`.
 
@@ -13,7 +13,7 @@ Before 0.5, workflow behavior was scattered across three places: hook Python scr
 | Section in `workflow.md`                                | Who reads it                                           | Effect                                                                                   |
 | ------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
 | `## Phase Index` + `## Phase 1/2/3`                     | AI at session start (via `SessionStart` hook)          | Defines the three-phase flow and the step-by-step how-to inside each phase               |
-| `### Skill Routing`                                     | AI at session start                                    | Maps user intent → which skill to load (e.g. "wants new feature" → `trellis-brainstorm`) |
+| `### Skill Routing`                                     | AI at session start                                    | Maps user intent → which skill to load (e.g. "wants new feature" → `suncode-brainstorm`) |
 | `### DO NOT skip skills`                                | AI at session start                                    | Inlines the common excuses for skipping skills and the reasons why they're wrong         |
 | `[workflow-state:STATUS]` blocks under `## Phase Index` | `inject-workflow-state.py` on every `UserPromptSubmit` | Per-turn reminder shown as `<workflow-state>…</workflow-state>` based on task status     |
 | `### Task System` (task.py command list)                | AI at session start                                    | Reference for the 16 `task.py` subcommands grouped by purpose                            |
@@ -28,13 +28,13 @@ The per-turn `<workflow-state>` block is what nudges the AI at each message base
 ## Phase Index
 
 [workflow-state:no_task]
-No active task. First classify the current turn and ask for task-creation consent before creating any Trellis task.
+No active task. First classify the current turn and ask for task-creation consent before creating any Suncode task.
 [/workflow-state:no_task]
 
 ### Phase 1: Plan
 
 [workflow-state:planning]
-Load trellis-brainstorm; stay in planning.
+Load suncode-brainstorm; stay in planning.
 Lightweight: prd.md can be enough. Complex: finish prd.md, design.md, and implement.md; ask for review before task.py start.
 [/workflow-state:planning]
 
@@ -67,7 +67,7 @@ Want a `blocked` state that nudges the AI to escalate instead of guessing?
 ```markdown
 [workflow-state:blocked]
 Task is blocked waiting on external input. Don't start new implementation —
-surface the blocker to the user or spawn `trellis-research` if more investigation helps.
+surface the blocker to the user or spawn `suncode-research` if more investigation helps.
 [/workflow-state:blocked]
 ```
 
@@ -89,17 +89,17 @@ The table under `### Skill Routing` is what the AI consults when deciding whethe
 ```markdown
 | User intent                               | Skill               |
 | ----------------------------------------- | ------------------- |
-| Wants a new feature / requirement unclear | trellis-brainstorm  |
-| About to write code / start implementing  | trellis-before-dev  |
-| Finished writing / want to verify         | trellis-check       |
-| Stuck / fixed same bug several times      | trellis-break-loop  |
-| Spec needs update                         | trellis-update-spec |
+| Wants a new feature / requirement unclear | suncode-brainstorm  |
+| About to write code / start implementing  | suncode-before-dev  |
+| Finished writing / want to verify         | suncode-check       |
+| Stuck / fixed same bug several times      | suncode-break-loop  |
+| Spec needs update                         | suncode-update-spec |
 ```
 
 Add a row for a custom skill you shipped (see [Custom Skills](./custom-skills)):
 
 ```markdown
-| User wants a test plan before writing code | trellis-test-plan |
+| User wants a test plan before writing code | suncode-test-plan |
 ```
 
 No code change needed — next session, the AI reads the updated table and routes correctly.

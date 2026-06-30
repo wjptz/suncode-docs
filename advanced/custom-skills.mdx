@@ -4,14 +4,14 @@ title: 'Custom Skills'
 
 ## Custom Skills
 
-Skills are the primary extension point in Trellis. Most of the shipped workflow (brainstorm, before-dev, check, update-spec, break-loop) is delivered as auto-trigger skills. This chapter explains how to add your own.
+Skills are the primary extension point in Suncode. Most of the shipped workflow (brainstorm, before-dev, check, update-spec, break-loop) is delivered as auto-trigger skills. This chapter explains how to add your own.
 
 ### Commands vs. sub-agents vs. skills
 
 |                    | Command                   | Sub-agent                       | Skill                                    |
 | ------------------ | ------------------------- | ------------------------------- | ---------------------------------------- |
 | **Purpose**        | Explicit user entry point | Isolated sub-process for a role | Reusable workflow module                 |
-| **Trigger**        | `/trellis:xxx`            | Spawned via Task tool           | Platform auto-matches on user intent     |
+| **Trigger**        | `/suncode:xxx`            | Spawned via Task tool           | Platform auto-matches on user intent     |
 | **Granularity**    | Session boundary          | Role-level                      | Capability or phase level                |
 | **Cross-platform** | One file per platform     | One file per platform           | One folder per platform (same structure) |
 
@@ -47,7 +47,7 @@ Instructions the AI follows when this skill is triggered.
 3. Report the result in this format: ...
 ```
 
-Skills ship on all 14 configured platforms — the location differs per platform:
+Skills ship on all 16 configured platforms — the location differs per platform:
 
 | Platform    | Location                                                                                              |
 | ----------- | ----------------------------------------------------------------------------------------------------- |
@@ -134,8 +134,8 @@ To distribute a skill across projects:
 
 1. Put the canonical `SKILL.md` under `packages/cli/src/templates/common/skills/{name}/SKILL.md` (if contributing upstream) or publish it as its own npm package.
 2. Add a configurator step per platform that copies or adapts the skill into that platform's layout.
-3. Version the skill alongside the Trellis release so migrations stay consistent.
+3. Version the skill alongside the Suncode release so migrations stay consistent.
 
-External skills: if you want to pull in a community skill, fetch the folder into the right platform directory and commit it. Trellis doesn't currently ship an automated installer for external skills.
+External skills: if you want to pull in a community skill, fetch the folder into the right platform directory and commit it. Suncode doesn't currently ship an automated installer for external skills.
 
 ---

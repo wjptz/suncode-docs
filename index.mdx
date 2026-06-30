@@ -25,20 +25,20 @@ Supported platforms: Claude Code, Cursor, OpenCode, Codex, Kiro, Kilo, Gemini CL
 | Cross-session memory  | None                              | None                             | None                      | **Workspace journal persistence**                                                             |
 | Workflow enforcement  | None                              | None                             | None                      | **Auto-trigger skills + check sub-agent verify loop**                                         |
 | Team sharing          | Single user                       | Single user                      | Shareable but no standard | **Git-versioned Spec library**                                                                |
-| Platform support      | Cursor only                       | Claude Code only                 | Per platform              | **14 configured platforms + shared skill ecosystem**                                          |
+| Platform support      | Cursor only                       | Claude Code only                 | Per platform              | **16 configured platforms + shared skill ecosystem**                                          |
 
 ### Core Concepts at a Glance
 
-| Concept       | Description                                                                                                       | Location                                 |
-| ------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| **Spec**      | Your coding standards, written in Markdown. AI reads specs before writing code                                    | Suncode project files                    |
-| **Workspace** | Each developer's session logs, letting AI remember what was done last time                                        | Suncode project files                    |
-| **Task**      | A work unit containing requirements docs and context configuration                                                | Suncode project files                    |
-| **Skill**     | Auto-triggered workflow modules: brainstorm, before-dev, check, update-spec, break-loop                           | platform-specific skills dir             |
-| **Sub-agent** | Specialized AI sub-process for research, implementation, and checking                                             | platform-specific agents dir             |
-| **Command**   | Explicit session entries: `finish-work`, `continue`, and manual `start` where needed                              | platform-specific commands dir           |
-| **Hook**      | Auto-triggered scripts that inject context at session start, sub-agent launch, etc. (platforms with hook support) | `.claude/hooks/`, etc.                   |
-| **Journal**   | Session log files recording what was done in each development session                                             | Suncode project files                    |
+| Concept       | Description                                                                                                       | Location                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| **Spec**      | Your coding standards, written in Markdown. AI reads specs before writing code                                    | Suncode project files          |
+| **Workspace** | Each developer's session logs, letting AI remember what was done last time                                        | Suncode project files          |
+| **Task**      | A work unit containing requirements docs and context configuration                                                | Suncode project files          |
+| **Skill**     | Auto-triggered workflow modules: brainstorm, before-dev, check, update-spec, break-loop                           | platform-specific skills dir   |
+| **Sub-agent** | Specialized AI sub-process for research, implementation, and checking                                             | platform-specific agents dir   |
+| **Command**   | Explicit session entries: `finish-work`, `continue`, and manual `start` where needed                              | platform-specific commands dir |
+| **Hook**      | Auto-triggered scripts that inject context at session start, sub-agent launch, etc. (platforms with hook support) | `.claude/hooks/`, etc.         |
+| **Journal**   | Session log files recording what was done in each development session                                             | Suncode project files          |
 
 ---
 

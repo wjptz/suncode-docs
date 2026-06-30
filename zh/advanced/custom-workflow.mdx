@@ -4,7 +4,7 @@ title: '定制 Workflow'
 
 ## 定制 Workflow
 
-`.trellis/workflow.md` 定义 Trellis 的开发流程：Phase 定义、skill 路由、每轮提醒、`task.py` 命令参考都在这一个文件里。Fork 工作流 = 改一个 markdown 文件，不用动 Python、不用改 hook、不用重发包。
+`.suncode/workflow.md` 定义 Suncode 的开发流程：Phase 定义、skill 路由、每轮提醒、`task.py` 命令参考都在这一个文件里。Fork 工作流 = 改一个 markdown 文件，不用动 Python、不用改 hook、不用重发包。
 
 0.5 之前，工作流行为分散在三处：hook Python 脚本、configurator TypeScript、命令 markdown；想 fork 一份"自己的工作流"得同时改三处才能自洽。0.5 把这三处收敛到 `workflow.md` 一个文件。
 
@@ -13,7 +13,7 @@ title: '定制 Workflow'
 | `workflow.md` 里的段落                             | 谁来读                                                    | 效果                                                                                 |
 | -------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | `## Phase Index` + `## Phase 1/2/3`                | AI 在会话开始时读（通过 `SessionStart` hook）             | 定义三阶段流程和每个阶段的 step 级 how-to                                            |
-| `### Skill Routing`                                | AI 在会话开始时读                                         | 把用户意图映射到要加载的 skill（例如"想做新功能"→ `trellis-brainstorm`）             |
+| `### Skill Routing`                                | AI 在会话开始时读                                         | 把用户意图映射到要加载的 skill（例如"想做新功能"→ `suncode-brainstorm`）             |
 | `### DO NOT skip skills`                           | AI 在会话开始时读                                         | 列出 AI 想跳过 skill 时常见的借口以及为什么不对                                      |
 | `## Phase Index` 下的 `[workflow-state:STATUS]` 块 | `inject-workflow-state.py` 在每次 `UserPromptSubmit` 触发 | 每轮用 `<workflow-state>…</workflow-state>` 注入一段面包屑，内容按当前任务 status 变 |
 | `### Task System`（task.py 命令表）                | AI 在会话开始时读                                         | 16 个 `task.py` 子命令按用途分组的参考                                               |
@@ -28,13 +28,13 @@ title: '定制 Workflow'
 ## Phase Index
 
 [workflow-state:no_task]
-No active task. First classify the current turn and ask for task-creation consent before creating any Trellis task.
+No active task. First classify the current turn and ask for task-creation consent before creating any Suncode task.
 [/workflow-state:no_task]
 
 ### Phase 1: Plan
 
 [workflow-state:planning]
-Load trellis-brainstorm; stay in planning.
+Load suncode-brainstorm; stay in planning.
 Lightweight: prd.md can be enough. Complex: finish prd.md, design.md, and implement.md; ask for review before task.py start.
 [/workflow-state:planning]
 
@@ -67,7 +67,7 @@ User commits changes; then run task.py archive.
 ```markdown
 [workflow-state:blocked]
 Task is blocked waiting on external input. Don't start new implementation —
-surface the blocker to the user or spawn `trellis-research` if more investigation helps.
+surface the blocker to the user or spawn `suncode-research` if more investigation helps.
 [/workflow-state:blocked]
 ```
 
@@ -89,17 +89,17 @@ jq '.status = "blocked"' "$TASK_DIR/task.json" > "$TASK_DIR/task.json.tmp" && mv
 ```markdown
 | User intent                               | Skill               |
 | ----------------------------------------- | ------------------- |
-| Wants a new feature / requirement unclear | trellis-brainstorm  |
-| About to write code / start implementing  | trellis-before-dev  |
-| Finished writing / want to verify         | trellis-check       |
-| Stuck / fixed same bug several times      | trellis-break-loop  |
-| Spec needs update                         | trellis-update-spec |
+| Wants a new feature / requirement unclear | suncode-brainstorm  |
+| About to write code / start implementing  | suncode-before-dev  |
+| Finished writing / want to verify         | suncode-check       |
+| Stuck / fixed same bug several times      | suncode-break-loop  |
+| Spec needs update                         | suncode-update-spec |
 ```
 
 自己写了个 skill（见[定制 Skill](./custom-skills)），在这里加一行就够：
 
 ```markdown
-| 写代码前想先要一份测试计划 | trellis-test-plan |
+| 写代码前想先要一份测试计划 | suncode-test-plan |
 ```
 
 不用改代码——下一个会话，AI 读到更新后的表就会按新路由选 skill。

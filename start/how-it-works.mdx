@@ -2,7 +2,7 @@
 title: 'How It Works'
 ---
 
-This page walks through the normal Trellis flow from a fresh AI session to an
+This page walks through the normal Suncode flow from a fresh AI session to an
 archived task. It focuses on runtime behavior: which files are read, which files
 are written, which hooks run, and where platform behavior differs.
 
@@ -11,11 +11,11 @@ are written, which hooks run, and where platform behavior differs.
 
 ## 1. A session opens
 
-A Trellis project is a repository with `.trellis/` plus one or more platform
+A Suncode project is a repository with `.suncode/` plus one or more platform
 directories such as `.claude/`, `.codex/`, `.cursor/`, `.opencode/`, `.kiro/`,
 or `.pi/`.
 
-On platforms with a SessionStart path, Trellis injects a compact startup
+On platforms with a SessionStart path, Suncode injects a compact startup
 payload. It is an index and state report, not a full dump of every workflow,
 spec, or task artifact.
 
@@ -23,25 +23,25 @@ Typical startup context includes:
 
 | Context             | Source                                                                                                                  |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Developer identity  | `.trellis/.developer`                                                                                                   |
+| Developer identity  | `.suncode/.developer`                                                                                                   |
 | Git state           | current branch, dirty files, recent commits                                                                             |
-| Active task pointer | `.trellis/.runtime/sessions/<session-key>.json`, with a single-session fallback when exactly one runtime session exists |
-| Active task list    | `.trellis/tasks/*/task.json`                                                                                            |
-| Workflow index      | compact Phase Index from `.trellis/workflow.md`                                                                         |
-| Spec index paths    | `.trellis/spec/**/index.md` paths                                                                                       |
-| Workspace memory    | `.trellis/workspace/<developer>/index.md` and recent journal notes                                                      |
+| Active task pointer | `.suncode/.runtime/sessions/<session-key>.json`, with a single-session fallback when exactly one runtime session exists |
+| Active task list    | `.suncode/tasks/*/task.json`                                                                                            |
+| Workflow index      | compact Phase Index from `.suncode/workflow.md`                                                                         |
+| Spec index paths    | `.suncode/spec/**/index.md` paths                                                                                       |
+| Workspace memory    | `.suncode/workspace/<developer>/index.md` and recent journal notes                                                      |
 
 The delivery path depends on the platform:
 
 | Platform group                                                         | Startup behavior                                                                                                                                                      |
 | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Droid, Pi | A SessionStart hook, plugin, or extension injects compact startup context automatically.                                                                              |
-| Codex                                                                  | `AGENTS.md` loads automatically. Trellis installs a `UserPromptSubmit` hook; on no-task turns it can inject a `<trellis-bootstrap>` reminder to read `trellis-start`. |
-| Copilot                                                                | SessionStart output is diagnostic-only in current Copilot hosts. Trellis relies on prompt hooks and skill files for model-visible context.                            |
-| Kiro                                                                   | Trellis content is delivered through `.kiro/` skills and agent files; there is no Trellis SessionStart hook by default.                                               |
+| Codex                                                                  | `AGENTS.md` loads automatically. Suncode installs a `UserPromptSubmit` hook; on no-task turns it can inject a `<suncode-bootstrap>` reminder to read `suncode-start`. |
+| Copilot                                                                | SessionStart output is diagnostic-only in current Copilot hosts. Suncode relies on prompt hooks and skill files for model-visible context.                            |
+| Kiro                                                                   | Suncode content is delivered through `.kiro/` skills and agent files; there is no Suncode SessionStart hook by default.                                               |
 | Kilo, Antigravity, Devin                                               | The main session reads a workflow or skill entry explicitly.                                                                                                          |
 
-After this step, the AI should know where Trellis context lives. Detailed phase
+After this step, the AI should know where Suncode context lives. Detailed phase
 instructions are loaded on demand through workflow-state breadcrumbs, skills, or
 `get_context.py`.
 
@@ -55,14 +55,14 @@ The hook resolves the active task for the current session:
 
 ```text
 cwd
-  -> find .trellis/
+  -> find .suncode/
   -> resolve session key
-  -> read .trellis/.runtime/sessions/<session-key>.json
-  -> read .trellis/tasks/<task>/task.json
+  -> read .suncode/.runtime/sessions/<session-key>.json
+  -> read .suncode/tasks/<task>/task.json
   -> read task.json.status
 ```
 
-Then it parses `.trellis/workflow.md` for the matching block:
+Then it parses `.suncode/workflow.md` for the matching block:
 
 ```text
 [workflow-state:STATUS]
@@ -72,29 +72,29 @@ Then it parses `.trellis/workflow.md` for the matching block:
 
 The block body is wrapped in `<workflow-state>...</workflow-state>` and injected
 into the current turn. SessionStart workflow summaries use the
-`<trellis-workflow>` tag.
+`<suncode-workflow>` tag.
 
 Important details:
 
-- The hook is parser-only. Breadcrumb wording lives in `.trellis/workflow.md`.
+- The hook is parser-only. Breadcrumb wording lives in `.suncode/workflow.md`.
 - Python and JavaScript hooks do not carry duplicated fallback dictionaries.
 - If no active task exists, the pseudo-status is `no_task`.
 - If a matching block is missing, the hook emits `Refer to workflow.md for current step.`
 - Codex also receives a `<codex-mode>` banner when `codex.dispatch_mode` changes implementation routing.
 
-Changing workflow-state behavior starts with `.trellis/workflow.md`, not the
+Changing workflow-state behavior starts with `.suncode/workflow.md`, not the
 hook script.
 
-## 3. Trellis triages the current turn
+## 3. Suncode triages the current turn
 
 When there is no active task, the AI first classifies the current turn and asks
-for task-creation consent before creating anything under `.trellis/tasks/`.
+for task-creation consent before creating anything under `.suncode/tasks/`.
 
 | Route               | When it applies                                                                    | What the AI asks                                                                                                                                          |
 | ------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Simple conversation | No repo writes; simple Q&A, explanation, lookup, or discussion                     | No task by default. If a task might help, ask only whether this turn should create a Trellis task.                                                        |
-| Inline small task   | A small contained edit that can be understood and verified in the current turn     | Ask only whether this turn should create a Trellis task. If the user says no, skip Trellis for this turn and continue inline.                             |
-| Full Trellis task   | Multi-file work, workflow/spec/platform changes, template generation, durable plan | Explain why a task is useful and ask whether Trellis may create a task and enter planning. If the user says no, clarify scope or suggest a smaller split. |
+| Simple conversation | No repo writes; simple Q&A, explanation, lookup, or discussion                     | No task by default. If a task might help, ask only whether this turn should create a Suncode task.                                                        |
+| Inline small task   | A small contained edit that can be understood and verified in the current turn     | Ask only whether this turn should create a Suncode task. If the user says no, skip Suncode for this turn and continue inline.                             |
+| Full Suncode task   | Multi-file work, workflow/spec/platform changes, template generation, durable plan | Explain why a task is useful and ask whether Suncode may create a task and enter planning. If the user says no, clarify scope or suggest a smaller split. |
 
 User consent to create a task is not consent to start implementation. Starting
 implementation has a separate planning review gate.
@@ -104,13 +104,13 @@ implementation has a separate planning review gate.
 When the user consents, the main session creates a task:
 
 ```bash
-python3 ./.trellis/scripts/task.py create "<title>" --slug <name>
+python3 ./.suncode/scripts/task.py create "<title>" --slug <name>
 ```
 
 This command writes a task directory:
 
 ```text
-.trellis/tasks/<MM-DD-name>/
+.suncode/tasks/<MM-DD-name>/
 ├── task.json
 ├── prd.md
 ├── implement.jsonl
@@ -152,8 +152,8 @@ Lightweight tasks can be PRD-only. Complex tasks need `prd.md`, `design.md`, and
 implementation or review.
 
 ```jsonl
-{"file": ".trellis/spec/docs-site/docs/style-guide.md", "reason": "Docs writing style"}
-{"file": ".trellis/tasks/04-30-example/research/platforms.md", "reason": "Platform behavior research"}
+{"file": ".suncode/spec/docs-site/docs/style-guide.md", "reason": "Docs writing style"}
+{"file": ".suncode/tasks/04-30-example/research/platforms.md", "reason": "Platform behavior research"}
 ```
 
 Rules:
@@ -169,10 +169,10 @@ needed artifacts and specs.
 
 ## 7. Activation enters implementation
 
-After artifact review, Trellis activates the task:
+After artifact review, Suncode activates the task:
 
 ```bash
-python3 ./.trellis/scripts/task.py start <task-dir>
+python3 ./.suncode/scripts/task.py start <task-dir>
 ```
 
 This changes `task.json.status` from `planning` to `in_progress`.
@@ -190,7 +190,7 @@ context gets into the actor doing the work.
 | ----------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Hook-push sub-agent     | Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi | A hook injects JSONL entries, then `prd.md`, `design.md` if present, and `implement.md` if present before the sub-agent starts.                   |
 | Pull-prelude sub-agent  | Codex, Copilot, Gemini CLI, Qoder, Kiro             | The sub-agent definition tells the agent to read the active task, JSONL entries, `prd.md`, `design.md` if present, and `implement.md` if present. |
-| Main-session skill flow | Codex inline, Kilo, Antigravity, Devin              | The main session loads Trellis skills and reads `prd.md`, optional artifacts, and relevant specs inline.                                          |
+| Main-session skill flow | Codex inline, Kilo, Antigravity, Devin              | The main session loads Suncode skills and reads `prd.md`, optional artifacts, and relevant specs inline.                                          |
 
 The shared context order is:
 
@@ -203,11 +203,11 @@ Codex can run in two modes:
 | Mode        | Meaning                                                                                                                                   |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `inline`    | The main session implements and checks directly; it does not dispatch implement/check sub-agents.                                         |
-| `sub-agent` | Implement/check work defaults to Trellis sub-agents; the main session still coordinates, clarifies, updates specs, commits, and finishes. |
+| `sub-agent` | Implement/check work defaults to Suncode sub-agents; the main session still coordinates, clarifies, updates specs, commits, and finishes. |
 
 ## 9. Check reviews and self-fixes
 
-After implementation, Trellis runs `trellis-check`.
+After implementation, Suncode runs `suncode-check`.
 
 The check path reads:
 
@@ -219,25 +219,25 @@ The check path reads:
 - the changed files
 - local test, lint, type-check, or format commands
 
-The goal is not only to report issues. `trellis-check` is allowed to fix
+The goal is not only to report issues. `suncode-check` is allowed to fix
 findings directly, then rerun checks.
 
 ## 10. Finish updates durable knowledge
 
 After checks pass, the main session performs final verification and loads
-`trellis-update-spec`.
+`suncode-update-spec`.
 
 This step asks whether the task taught a reusable rule. If yes, the rule is
-written into `.trellis/spec/` so future tasks can load it through JSONL or direct
+written into `.suncode/spec/` so future tasks can load it through JSONL or direct
 skill context.
 
-Task-local facts stay in `.trellis/tasks/<task>/`; stable team rules move to
-`.trellis/spec/`.
+Task-local facts stay in `.suncode/tasks/<task>/`; stable team rules move to
+`.suncode/spec/`.
 
 ## 11. The main session drives the work commit
 
 The commit boundary is separate from implementation and separate from
-`/trellis:finish-work`.
+`/suncode:finish-work`.
 
 In Phase 3.4, the main session:
 
@@ -254,15 +254,15 @@ For docs-site changes, there is often a submodule boundary:
 2. Return to the parent repository.
 3. Commit the updated `docs-site` submodule pointer.
 
-## 12. `/trellis:finish-work` archives and journals
+## 12. `/suncode:finish-work` archives and journals
 
-Only after the work commit exists should `/trellis:finish-work` run.
+Only after the work commit exists should `/suncode:finish-work` run.
 
-`/trellis:finish-work` does bookkeeping:
+`/suncode:finish-work` does bookkeeping:
 
 - classifies dirty paths and stops if current-task work is still uncommitted
-- archives the task under `.trellis/tasks/archive/YYYY-MM/`
-- appends the session summary to `.trellis/workspace/<developer>/journal-N.md`
+- archives the task under `.suncode/tasks/archive/YYYY-MM/`
+- appends the session summary to `.suncode/workspace/<developer>/journal-N.md`
 - updates workspace indexes
 
 It is not the command that commits feature code.
@@ -273,9 +273,9 @@ After the flow completes, durable state lives in files:
 
 | Stored in                         | What survives                                                                                  |
 | --------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `.trellis/tasks/<task>/`          | PRD, design, implementation plan, research, context manifests, metadata, and archived history. |
-| `.trellis/spec/`                  | Team conventions and reusable lessons.                                                         |
-| `.trellis/workspace/<developer>/` | Developer journals and cross-session notes.                                                    |
+| `.suncode/tasks/<task>/`          | PRD, design, implementation plan, research, context manifests, metadata, and archived history. |
+| `.suncode/spec/`                  | Team conventions and reusable lessons.                                                         |
+| `.suncode/workspace/<developer>/` | Developer journals and cross-session notes.                                                    |
 | Git commits                       | Reviewable units of code, docs, spec, archive, and journal changes.                            |
 
 The next AI session reads the repository state again. It does not need the

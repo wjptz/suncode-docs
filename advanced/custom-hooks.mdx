@@ -6,7 +6,7 @@ title: 'Custom Hooks'
 
 <Note>Hook support varies by platform and by event — see the per-event matrix below.</Note>
 
-- **`SessionStart` hook / extension** ships on Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent. Codex relies on `AGENTS.md` plus the `UserPromptSubmit` hook; Kiro's Agent Hooks are user-configured — Trellis does not install any out of the box.
+- **`SessionStart` hook / extension** ships on Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent. Codex relies on `AGENTS.md` plus the `UserPromptSubmit` hook; Kiro's Agent Hooks are user-configured — Suncode does not install any out of the box.
 - **`PreToolUse` / extension sub-agent context injection** ships on Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi Agent. The other hook-capable platforms rely on a pull-based prelude inside each sub-agent instead.
 - **`UserPromptSubmit` / workflow-state nudge** ships on the same platforms as `SessionStart`, plus Codex when hooks are enabled.
 - **Kilo, Antigravity, Devin** have no hook primitive at all; behavior is delivered via workflow files + skills.
@@ -20,7 +20,7 @@ title: 'Custom Hooks'
 | `PreToolUse`       | Before a tool invocation | Intercept, modify parameters, inject context |
 | `PostToolUse`      | After a tool invocation  | Log activity, trigger follow-up actions      |
 
-Claude Code, Cursor, CodeBuddy, and Droid share a Python-hook layout compatible with CC's event model (`settings.json` or `hooks.json` referencing Python scripts). OpenCode uses JS plugins (factory functions in `.opencode/plugins/`) with the same event semantics. Pi Agent uses `.pi/extensions/trellis/index.ts` instead of Python hook files. Gemini, Qoder, and Copilot use hook/prompt files without `PreToolUse`. Codex installs the shared `UserPromptSubmit` workflow-state hook; its retained `session-start.py` is compatibility code, not the default model-visible startup path.
+Claude Code, Cursor, CodeBuddy, and Droid share a Python-hook layout compatible with CC's event model (`settings.json` or `hooks.json` referencing Python scripts). OpenCode uses JS plugins (factory functions in `.opencode/plugins/`) with the same event semantics. Pi Agent uses `.pi/extensions/suncode/index.ts` instead of Python hook files. Gemini, Qoder, and Copilot use hook/prompt files without `PreToolUse`. Codex installs the shared `UserPromptSubmit` workflow-state hook; its retained `session-start.py` is compatibility code, not the default model-visible startup path.
 
 ### `settings.json` configuration (Claude Code)
 
@@ -77,9 +77,9 @@ Notes:
 - `$CLAUDE_PROJECT_DIR`: expanded by Claude Code to the project root.
 - `timeout`: seconds; if exceeded, the hook is skipped.
 
-Trellis does not install a Claude Code `statusLine` by default. New installs do not create `.claude/hooks/statusline.py` or add `statusLine` to `.claude/settings.json`, and `trellis update` never adds one to an opted-out project. Existing projects that already have a `statusLine` keep it during update.
+Suncode does not install a Claude Code `statusLine` by default. New installs do not create `.claude/hooks/statusline.py` or add `statusLine` to `.claude/settings.json`, and `suncode update` never adds one to an opted-out project. Existing projects that already have a `statusLine` keep it during update.
 
-To opt in, run `trellis init --with-statusline` (interactive non-`-y` init also asks once, default no). This installs `.claude/hooks/statusline.py` and adds the `statusLine` command to `.claude/settings.json`. The status line shows the active task, plus rate-limit reset countdowns and width-adaptive layout. It is Claude-Code-only and stays off unless you pass the flag, so it can never silently override a global `statusLine` config.
+To opt in, run `suncode init --with-statusline` (interactive non-`-y` init also asks once, default no). This installs `.claude/hooks/statusline.py` and adds the `statusLine` command to `.claude/settings.json`. The status line shows the active task, plus rate-limit reset countdowns and width-adaptive layout. It is Claude-Code-only and stays off unless you pass the flag, so it can never silently override a global `statusLine` config.
 
 ### Shipped hooks
 
@@ -89,9 +89,9 @@ To opt in, run `trellis init --with-statusline` (interactive non-`-y` init also 
 
 **What it does**:
 
-- Reads `.trellis/.developer` for developer identity.
-- Reads `.trellis/workflow.md` for the workflow contract.
-- Reads `.trellis/workspace/{name}/index.md` for session history.
+- Reads `.suncode/.developer` for developer identity.
+- Reads `.suncode/workflow.md` for the workflow contract.
+- Reads `.suncode/workspace/{name}/index.md` for session history.
 - Reads `git log` for recent commits.
 - Reads active tasks.
 
@@ -101,9 +101,9 @@ To opt in, run `trellis init --with-statusline` (interactive non-`-y` init also 
 
 **Trigger**: `UserPromptSubmit`.
 
-**What it does**: parses `[workflow-state:STATUS]` blocks from `.trellis/workflow.md` and emits the body matching the active task's `status` as a `<workflow-state>` preamble for the turn. Parser-only — the hook does not embed any fallback body text. When the active task's status has no matching block, the hook emits the generic line `Refer to workflow.md for current step.` so the AI re-reads the workflow contract.
+**What it does**: parses `[workflow-state:STATUS]` blocks from `.suncode/workflow.md` and emits the body matching the active task's `status` as a `<workflow-state>` preamble for the turn. Parser-only — the hook does not embed any fallback body text. When the active task's status has no matching block, the hook emits the generic line `Refer to workflow.md for current step.` so the AI re-reads the workflow contract.
 
-To customize per-turn wording, edit the `[workflow-state:STATUS]` block in `.trellis/workflow.md`. No script change required.
+To customize per-turn wording, edit the `[workflow-state:STATUS]` block in `.suncode/workflow.md`. No script change required.
 
 #### `inject-subagent-context.py`: spec injection engine
 
@@ -120,17 +120,17 @@ To customize per-turn wording, edit the `[workflow-state:STATUS]` block in `.tre
 Design decisions:
 
 - Each sub-agent receives its full context at launch; there is no resume.
-- Only `trellis-*` sub-agents are hooked; custom sub-agents must opt in by editing this file or using their own injection.
+- Only `suncode-*` sub-agents are hooked; custom sub-agents must opt in by editing this file or using their own injection.
 
 #### Pi extension: equivalent hook behavior
 
-Pi Agent does not load `.py` hook scripts. Trellis writes `.pi/extensions/trellis/index.ts`, which implements the same three behaviors in extension form:
+Pi Agent does not load `.py` hook scripts. Suncode writes `.pi/extensions/suncode/index.ts`, which implements the same three behaviors in extension form:
 
 - session start context injection
 - workflow-state breadcrumb injection
 - sub-agent JSONL and task artifact context injection
 
-It also passes `TRELLIS_CONTEXT_ID` into Bash commands so `task.py start/current/finish` can resolve the correct `.trellis/.runtime/sessions/<session-key>.json` file for the current Pi session.
+It also passes `SUNCODE_CONTEXT_ID` into Bash commands so `task.py start/current/finish` can resolve the correct `.suncode/.runtime/sessions/<session-key>.json` file for the current Pi session.
 
 ### Writing a custom hook
 
@@ -143,7 +143,7 @@ Hooks receive JSON input on stdin and emit JSON results on stdout.
   "hook_event_name": "PreToolUse",
   "tool_name": "Task",
   "tool_input": {
-    "subagent_type": "trellis-implement",
+    "subagent_type": "suncode-implement",
     "prompt": "..."
   },
   "cwd": "/path/to/project"
@@ -158,7 +158,7 @@ Hooks receive JSON input on stdin and emit JSON results on stdout.
     "hookEventName": "PreToolUse",
     "permissionDecision": "allow",
     "updatedInput": {
-      "subagent_type": "trellis-implement",
+      "subagent_type": "suncode-implement",
       "prompt": "modified prompt..."
     }
   }

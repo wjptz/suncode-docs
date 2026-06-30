@@ -14,19 +14,19 @@ title: 'Appendix A: Key File Paths Quick Reference'
 
 | File                                            | Description                           | Read on                           |
 | ----------------------------------------------- | ------------------------------------- | --------------------------------- |
-| `.trellis/workflow.md`                          | Development workflow contract         | Every session start               |
-| `.trellis/config.yaml`                          | Packages, update.skip, task hooks     | Init and updates                  |
-| `.trellis/.version`                             | Current Trellis version               | Updates                           |
-| `.trellis/.template-hashes.json`                | Template file hashes                  | Updates                           |
-| `.trellis/.developer`                           | Developer identity                    | Every session                     |
-| `.trellis/.runtime/sessions/<session-key>.json` | Active task for one AI session/window | Continue, hooks, sub-agent launch |
+| `.suncode/workflow.md`                          | Development workflow contract         | Every session start               |
+| `.suncode/config.yaml`                          | Packages, update.skip, task hooks     | Init and updates                  |
+| `.suncode/.version`                             | Current Suncode version               | Updates                           |
+| `.suncode/.template-hashes.json`                | Template file hashes                  | Updates                           |
+| `.suncode/.developer`                           | Developer identity                    | Every session                     |
+| `.suncode/.runtime/sessions/<session-key>.json` | Active task for one AI session/window | Continue, hooks, sub-agent launch |
 
 ### Shipped commands (Claude Code)
 
 | File                                      | Invoked as             |
 | ----------------------------------------- | ---------------------- |
-| `.claude/commands/trellis/finish-work.md` | `/trellis:finish-work` |
-| `.claude/commands/trellis/continue.md`    | `/trellis:continue`    |
+| `.claude/commands/suncode/finish-work.md` | `/suncode:finish-work` |
+| `.claude/commands/suncode/continue.md`    | `/suncode:continue`    |
 
 On platforms where SessionStart is automatic, `start` is not installed as a user-facing command. Agent-less platforms still ship a manual start workflow.
 
@@ -34,19 +34,19 @@ On platforms where SessionStart is automatic, `start` is not installed as a user
 
 | File                                  | Sub-agent           | Role                         |
 | ------------------------------------- | ------------------- | ---------------------------- |
-| `.claude/agents/trellis-implement.md` | `trellis-implement` | Writes code, no `git commit` |
-| `.claude/agents/trellis-check.md`     | `trellis-check`     | Verify + self-fix            |
-| `.claude/agents/trellis-research.md`  | `trellis-research`  | Read-only codebase search    |
+| `.claude/agents/suncode-implement.md` | `suncode-implement` | Writes code, no `git commit` |
+| `.claude/agents/suncode-check.md`     | `suncode-check`     | Verify + self-fix            |
+| `.claude/agents/suncode-research.md`  | `suncode-research`  | Read-only codebase search    |
 
 ### Shipped skills (Claude Code)
 
 | File                                          | Skill                 | Triggers when…                           |
 | --------------------------------------------- | --------------------- | ---------------------------------------- |
-| `.claude/skills/trellis-brainstorm/SKILL.md`  | `trellis-brainstorm`  | User describes a feature / bug / request |
-| `.claude/skills/trellis-before-dev/SKILL.md`  | `trellis-before-dev`  | About to write code in an active task    |
-| `.claude/skills/trellis-check/SKILL.md`       | `trellis-check`       | Implementation finished                  |
-| `.claude/skills/trellis-update-spec/SKILL.md` | `trellis-update-spec` | Worth capturing a learning               |
-| `.claude/skills/trellis-break-loop/SKILL.md`  | `trellis-break-loop`  | A tricky bug was just resolved           |
+| `.claude/skills/suncode-brainstorm/SKILL.md`  | `suncode-brainstorm`  | User describes a feature / bug / request |
+| `.claude/skills/suncode-before-dev/SKILL.md`  | `suncode-before-dev`  | About to write code in an active task    |
+| `.claude/skills/suncode-check/SKILL.md`       | `suncode-check`       | Implementation finished                  |
+| `.claude/skills/suncode-update-spec/SKILL.md` | `suncode-update-spec` | Worth capturing a learning               |
+| `.claude/skills/suncode-break-loop/SKILL.md`  | `suncode-break-loop`  | A tricky bug was just resolved           |
 
 ### Hook scripts (Claude Code)
 
@@ -60,16 +60,16 @@ On platforms where SessionStart is automatic, `start` is not installed as a user
 
 Each platform writes into its own directory (see chapter 13 for the full layout):
 
-- `.cursor/commands/`, `.cursor/skills/`, `.cursor/agents/`, `.cursor/hooks/`, `.cursor/hooks.json`, `.cursor/rules/trellis.mdc`
-- `.opencode/commands/trellis/`, `.opencode/agents/`, `.opencode/skills/`, `.opencode/plugins/`
+- `.cursor/commands/`, `.cursor/skills/`, `.cursor/agents/`, `.cursor/hooks/`, `.cursor/hooks.json`, `.cursor/rules/suncode.mdc`
+- `.opencode/commands/suncode/`, `.opencode/agents/`, `.opencode/skills/`, `.opencode/plugins/`
 - `.codex/prompts/`, `.codex/skills/`, `.codex/agents/` (TOML), `.codex/hooks/`, `AGENTS.md`
 - `.kiro/steering/`, `.kiro/prompts/`, `.kiro/skills/`, `.kiro/agents/`
-- `.gemini/commands/trellis/` (TOML), `.gemini/skills/`, `.gemini/agents/`, `.gemini/hooks/`
+- `.gemini/commands/suncode/` (TOML), `.gemini/skills/`, `.gemini/agents/`, `.gemini/hooks/`
 - `.qoder/commands/`, `.qoder/skills/`, `.qoder/agents/`, `.qoder/hooks/`
-- `.codebuddy/commands/trellis/`, `.codebuddy/skills/`, `.codebuddy/agents/`, `.codebuddy/hooks/`
-- `.factory/commands/trellis/`, `.factory/droids/`, `.factory/skills/`, `.factory/hooks/`
+- `.codebuddy/commands/suncode/`, `.codebuddy/skills/`, `.codebuddy/agents/`, `.codebuddy/hooks/`
+- `.factory/commands/suncode/`, `.factory/droids/`, `.factory/skills/`, `.factory/hooks/`
 - `.github/copilot-instructions.md`, `.github/prompts/`, `.github/skills/`, `.github/agents/`, `.github/copilot/hooks/`
-- `.pi/prompts/`, `.pi/skills/`, `.pi/agents/`, `.pi/extensions/trellis/`, `.pi/settings.json`
+- `.pi/prompts/`, `.pi/skills/`, `.pi/agents/`, `.pi/extensions/suncode/`, `.pi/settings.json`
 - `.kilocode/workflows/`, `.kilocode/skills/`
 - `.agent/workflows/`, `.agent/skills/` (Antigravity)
 - `.devin/workflows/`, `.devin/skills/`
@@ -79,11 +79,11 @@ Each platform writes into its own directory (see chapter 13 for the full layout)
 
 | Script                                 | Function                   |
 | -------------------------------------- | -------------------------- |
-| `.trellis/scripts/task.py`             | Task management            |
-| `.trellis/scripts/get_context.py`      | Session context            |
-| `.trellis/scripts/add_session.py`      | Record session             |
-| `.trellis/scripts/create_bootstrap.py` | First-time spec bootstrap  |
-| `.trellis/scripts/get_developer.py`    | Developer identity utility |
-| `.trellis/scripts/init_developer.py`   | Developer initialization   |
+| `.suncode/scripts/task.py`             | Task management            |
+| `.suncode/scripts/get_context.py`      | Session context            |
+| `.suncode/scripts/add_session.py`      | Record session             |
+| `.suncode/scripts/create_bootstrap.py` | First-time spec bootstrap  |
+| `.suncode/scripts/get_developer.py`    | Developer identity utility |
+| `.suncode/scripts/init_developer.py`   | Developer initialization   |
 
 ---

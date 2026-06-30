@@ -5,7 +5,7 @@
 #
 # What it does:
 #   1. git mv beta → rc (and zh/beta → zh/rc)
-#   2. Bulk text replace inside rc/* content: @mindfoldhq/trellis@beta → @rc, `@beta` → `@rc`
+#   2. Bulk text replace inside rc/* content: @wjptz/suncode@beta → @rc, `@beta` → `@rc`
 #
 # What you still do manually after:
 #   1. Edit docs.json: rename the "Beta" version label → "RC"
@@ -27,7 +27,7 @@ git mv beta rc
 # Bulk text scrub @beta → @rc inside rc/ (use POSIX sed; -i.bak for portability)
 find rc zh/rc -type f \( -name "*.mdx" -o -name "*.md" \) \
   -exec sed -i.bak \
-    -e 's|@mindfoldhq/trellis@beta|@mindfoldhq/trellis@rc|g' \
+    -e 's|@wjptz/suncode@beta|@wjptz/suncode@rc|g' \
     -e 's|`@beta`|`@rc`|g' \
     {} +
 find rc zh/rc -type f -name "*.bak" -delete

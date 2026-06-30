@@ -4,10 +4,10 @@ title: 'Custom Sub-agents'
 
 ## Custom Sub-agents
 
-Trellis ships three sub-agents (`trellis-implement`, `trellis-check`, `trellis-research`). You can modify them or add your own. This chapter walks through the Claude Code format as the main example, then lists the frontmatter differences on other platforms.
+Suncode ships three sub-agents (`suncode-implement`, `suncode-check`, `suncode-research`). You can modify them or add your own. This chapter walks through the Claude Code format as the main example, then lists the frontmatter differences on other platforms.
 
 <Note>
-  Sub-agents ship on 11 of 14 configured platforms: Claude Code, Cursor, OpenCode, Codex, Kiro,
+  Sub-agents ship on 11 of 16 configured platforms: Claude Code, Cursor, OpenCode, Codex, Kiro,
   Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent. The agent file format varies by platform
   (Markdown / TOML / JSON), and on platforms without a `PreToolUse` hook or extension equivalent the
   sub-agents read their JSONL manifest plus `prd.md`, `design.md` if present, and `implement.md` if
@@ -68,7 +68,7 @@ Pi sub-agent definitions live under `.pi/agents/{name}.md`. They use Markdown wi
 
 ```markdown
 ---
-name: trellis-review
+name: suncode-review
 description: |
   Reviews the current diff and reports correctness issues.
 tools: Read, Write, Edit, Bash, Glob, Grep
@@ -78,12 +78,12 @@ fallbackModels:
   - openai/gpt-5-mini
 ---
 
-# trellis-review
+# suncode-review
 
-Review the current diff against the active Trellis task and project specs.
+Review the current diff against the active Suncode task and project specs.
 ```
 
-The Pi extension reads this frontmatter before it launches the child Pi process. It starts nested agents in text/no-session mode, forwards the current Trellis context id, and maps run config to Pi CLI args:
+The Pi extension reads this frontmatter before it launches the child Pi process. It starts nested agents in text/no-session mode, forwards the current Suncode context id, and maps run config to Pi CLI args:
 
 | Config               | Child Pi args                                                               |
 | -------------------- | --------------------------------------------------------------------------- |
@@ -91,19 +91,19 @@ The Pi extension reads this frontmatter before it launches the child Pi process.
 | `model` only         | `--model <model>`                                                           |
 | `thinking` only      | `--thinking <level>`                                                        |
 
-Per-call `model` / `thinking` passed to the Pi `subagent` tool overrides frontmatter for that one child run. `fallbackModels` / `fallback_models` is parsed for pi-subagents-compatible files, but Trellis does not pass it to Pi CLI because Pi has no documented stable fallback-model flag.
+Per-call `model` / `thinking` passed to the Pi `subagent` tool overrides frontmatter for that one child run. `fallbackModels` / `fallback_models` is parsed for pi-subagents-compatible files, but Suncode does not pass it to Pi CLI because Pi has no documented stable fallback-model flag.
 
-For custom context injection, use a task-local JSONL file convention and extend `.pi/extensions/trellis/index.ts` to handle the new sub-agent name. Pi Agent does not load Python hook scripts.
+For custom context injection, use a task-local JSONL file convention and extend `.pi/extensions/suncode/index.ts` to handle the new sub-agent name. Pi Agent does not load Python hook scripts.
 
-If you author a sub-agent that should work on multiple platforms, put the canonical Claude-Code version in `packages/cli/src/templates/claude/agents/` and add platform adapters in `packages/cli/src/configurators/` that translate the frontmatter into each platform's native syntax. Trellis already does this for the shipped `trellis-implement` / `trellis-check` / `trellis-research`.
+If you author a sub-agent that should work on multiple platforms, put the canonical Claude-Code version in `packages/cli/src/templates/claude/agents/` and add platform adapters in `packages/cli/src/configurators/` that translate the frontmatter into each platform's native syntax. Suncode already does this for the shipped `suncode-implement` / `suncode-check` / `suncode-research`.
 
 ### Modifying a shipped sub-agent
 
-Example: add a timeout and a stricter tool budget to `trellis-check`.
+Example: add a timeout and a stricter tool budget to `suncode-check`.
 
 ```markdown
 ---
-name: trellis-check
+name: suncode-check
 description: |
   Code quality check expert. Reviews diffs against specs, runs lint/typecheck/test, self-fixes.
 tools: Read, Write, Edit, Bash, Glob, Grep
@@ -111,23 +111,23 @@ timeout: 600000
 ---
 ```
 
-If you plan to roll this out across your team, put the change in `.trellis/spec/backend/` (or wherever your convention lives) instead of the agent definition, so the sub-agent's behavior changes through spec injection rather than a fork.
+If you plan to roll this out across your team, put the change in `.suncode/spec/backend/` (or wherever your convention lives) instead of the agent definition, so the sub-agent's behavior changes through spec injection rather than a fork.
 
 ### Creating a new sub-agent
 
-Example: a `trellis-test` sub-agent that writes tests for the current diff.
+Example: a `suncode-test` sub-agent that writes tests for the current diff.
 
 ````markdown
 ---
-name: trellis-test
+name: suncode-test
 description: |
   Writes comprehensive tests for the current diff. Runs them and reports pass/fail.
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
-# trellis-test
+# suncode-test
 
-You are the trellis-test sub-agent in the Trellis workflow.
+You are the suncode-test sub-agent in the Suncode workflow.
 
 ## Responsibilities
 

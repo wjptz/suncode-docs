@@ -4,26 +4,26 @@ title: '定制 Slash 命令'
 
 ## 定制 Slash 命令
 
-Trellis 原生带的 slash 命令留得很少。Agent-capable 平台（Claude Code、OpenCode、Cursor、Codex、Pi Agent 等）只发 `finish-work` 和 `continue`；`start` 通常不作为用户可见命令，因为会话启动上下文会通过 SessionStart hook、extension、`AGENTS.md` 或 prompt-hook bootstrap 在开会话时加载。agent-less 平台（Kilo、Antigravity、Devin）没有 hook，`start` 才会作为 slash 命令发出来。过去的其他命令全部迁成 auto-trigger skill（见[定制 Skill](./custom-skills)）。自己加 slash 命令的时机：有一个明确想让用户显式调用的入口。
+Suncode 原生带的 slash 命令留得很少。Agent-capable 平台（Claude Code、OpenCode、Cursor、Codex、Pi Agent 等）只发 `finish-work` 和 `continue`；`start` 通常不作为用户可见命令，因为会话启动上下文会通过 SessionStart hook、extension、`AGENTS.md` 或 prompt-hook bootstrap 在开会话时加载。agent-less 平台（Kilo、Antigravity、Devin）没有 hook，`start` 才会作为 slash 命令发出来。过去的其他命令全部迁成 auto-trigger skill（见[定制 Skill](./custom-skills)）。自己加 slash 命令的时机：有一个明确想让用户显式调用的入口。
 
 ### 命令文件格式和位置
 
 14 个平台按交付形态分三组：
 
-**显式 slash 命令**——用户输入 `/trellis:<name>`，平台把命令文件内容注入为 prompt。
+**显式 slash 命令**——用户输入 `/suncode:<name>`，平台把命令文件内容注入为 prompt。
 
 | 平台        | 位置                                                                              | 调用方式          |
 | ----------- | --------------------------------------------------------------------------------- | ----------------- |
-| Claude Code | `.claude/commands/trellis/{name}.md`                                              | `/trellis:{name}` |
-| Cursor      | `.cursor/commands/trellis-{name}.md`                                              | `/trellis-{name}` |
-| OpenCode    | `.opencode/commands/trellis/{name}.md`                                            | `/trellis:{name}` |
-| Codex       | `.codex/prompts/trellis-{name}.md`                                                | `/trellis-{name}` |
-| Gemini CLI  | `.gemini/commands/trellis/{name}.toml`                                            | `/trellis:{name}` |
-| Qoder       | `.qoder/commands/trellis-{name}.md`（YAML frontmatter 含 `name` + `description`） | `/trellis-{name}` |
-| CodeBuddy   | `.codebuddy/commands/trellis/{name}.md`                                           | `/trellis:{name}` |
-| Droid       | `.factory/commands/trellis/{name}.md`                                             | `/trellis:{name}` |
-| Pi Agent    | `.pi/prompts/trellis-{name}.md`                                                   | `/trellis-{name}` |
-| Copilot     | `.github/prompts/trellis-{name}.prompt.md`                                        | prompt 文件选择器 |
+| Claude Code | `.claude/commands/suncode/{name}.md`                                              | `/suncode:{name}` |
+| Cursor      | `.cursor/commands/suncode-{name}.md`                                              | `/suncode-{name}` |
+| OpenCode    | `.opencode/commands/suncode/{name}.md`                                            | `/suncode:{name}` |
+| Codex       | `.codex/prompts/suncode-{name}.md`                                                | `/suncode-{name}` |
+| Gemini CLI  | `.gemini/commands/suncode/{name}.toml`                                            | `/suncode:{name}` |
+| Qoder       | `.qoder/commands/suncode-{name}.md`（YAML frontmatter 含 `name` + `description`） | `/suncode-{name}` |
+| CodeBuddy   | `.codebuddy/commands/suncode/{name}.md`                                           | `/suncode:{name}` |
+| Droid       | `.factory/commands/suncode/{name}.md`                                             | `/suncode:{name}` |
+| Pi Agent    | `.pi/prompts/suncode-{name}.md`                                                   | `/suncode-{name}` |
+| Copilot     | `.github/prompts/suncode-{name}.prompt.md`                                        | prompt 文件选择器 |
 
 命令文件是 Markdown；Gemini 用 TOML（`prompt = """..."""` 字段）。
 
@@ -33,13 +33,13 @@ Trellis 原生带的 slash 命令留得很少。Agent-capable 平台（Claude Co
 | ----------- | ------------------------------------ | ------------------------------------- |
 | Kilo        | `.kilocode/workflows/{name}.md`      | `/{name}.md`（Kilo 的 workflow 入口） |
 | Antigravity | `.agent/workflows/{name}.md`         | 从 `.agent/workflows/` 打开           |
-| Devin       | `.devin/workflows/trellis-{name}.md` | `/trellis-{name}`                     |
+| Devin       | `.devin/workflows/suncode-{name}.md` | `/suncode-{name}`                     |
 
 **Skill-only**——完全没有 slash 命令原语的平台，`start` / `finish-work` / `continue` 全都做成 auto-trigger skill。
 
 | 平台 | 命令在哪里                             | 调用方式                           |
 | ---- | -------------------------------------- | ---------------------------------- |
-| Kiro | `.kiro/skills/trellis-{name}/SKILL.md` | skill 匹配（或 `@trellis:{name}`） |
+| Kiro | `.kiro/skills/suncode-{name}/SKILL.md` | skill 匹配（或 `@suncode:{name}`） |
 
 ### 什么时候用命令，什么时候用 skill
 
@@ -71,7 +71,7 @@ Trellis 原生带的 slash 命令留得很少。Agent-capable 平台（Claude Co
 ## 读取上下文
 
 ```bash
-cat .trellis/spec/relevant-spec.md
+cat .suncode/spec/relevant-spec.md
 ```
 
 ## 分析
@@ -83,9 +83,9 @@ cat .trellis/spec/relevant-spec.md
 输出格式和字段。
 ````
 
-### 示例：`/trellis:deploy-check` 命令
+### 示例：`/suncode:deploy-check` 命令
 
-`.claude/commands/trellis/deploy-check.md`：
+`.claude/commands/suncode/deploy-check.md`：
 
 ````markdown
 # Deploy Check
@@ -114,6 +114,6 @@ cat .env.production
 输出部署就绪报告。
 ````
 
-要在其他平台发布同一命令，就在上面对应的位置放一份平行文件。如果想让 Trellis 把这个命令作为 update 流程的一部分分发，就把规范版本放在 `packages/cli/src/templates/common/commands/` 下，并在 `packages/cli/src/configurators/` 添加各平台适配。
+要在其他平台发布同一命令，就在上面对应的位置放一份平行文件。如果想让 Suncode 把这个命令作为 update 流程的一部分分发，就把规范版本放在 `packages/cli/src/templates/common/commands/` 下，并在 `packages/cli/src/configurators/` 添加各平台适配。
 
 ---

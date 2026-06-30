@@ -4,7 +4,7 @@ title: '附录 C：task.json Schema 参考'
 
 ## 附录 C：`task.json` Schema 参考
 
-对齐 `.trellis/scripts/common/task_store.py` 里 `task.py create` 当前写出的结构：
+对齐 `.suncode/scripts/common/task_store.py` 里 `task.py create` 当前写出的结构：
 
 ```json
 {
@@ -35,10 +35,10 @@ title: '附录 C：task.json Schema 参考'
 }
 ```
 
-字段顺序与 `.trellis/scripts/common/task_store.py` 里 `task_data` 一致——`task.py` 就按这个顺序写入。
+字段顺序与 `.suncode/scripts/common/task_store.py` 里 `task_data` 一致——`task.py` 就按这个顺序写入。
 
 <Note>
-  `worktree_path` / `commit` / `pr_url` 是 schema 占位字段，创建时写 null 之后没有 Trellis
+  `worktree_path` / `commit` / `pr_url` 是 schema 占位字段，创建时写 null 之后没有 Suncode
   脚本再动它们。想记 commit hash 或 PR URL 请用 `meta: {}` 自定义键，或写个 `after_archive` hook
   自己回写。
 </Note>

@@ -4,14 +4,14 @@ title: '定制 Skill'
 
 ## 定制 Skill
 
-Skill 是 Trellis 的主要扩展点。原生带有的大部分工作流（brainstorm、before-dev、check、update-spec、break-loop）都以 auto-trigger skill 的形式交付。本章说明如何添加自己的 skill。
+Skill 是 Suncode 的主要扩展点。原生带有的大部分工作流（brainstorm、before-dev、check、update-spec、break-loop）都以 auto-trigger skill 的形式交付。本章说明如何添加自己的 skill。
 
 ### Command vs. Sub-agent vs. Skill
 
 |            | Command        | Sub-agent              | Skill                        |
 | ---------- | -------------- | ---------------------- | ---------------------------- |
 | **用途**   | 用户显式入口   | 有自己角色的隔离子进程 | 可复用的工作流模块           |
-| **触发**   | `/trellis:xxx` | 通过 Task 工具 spawn   | 平台根据用户意图自动匹配     |
+| **触发**   | `/suncode:xxx` | 通过 Task 工具 spawn   | 平台根据用户意图自动匹配     |
 | **粒度**   | 会话边界       | 角色级                 | 能力或阶段级                 |
 | **跨平台** | 每平台一份文件 | 每平台一份文件         | 每平台一个文件夹（结构一致） |
 
@@ -134,8 +134,8 @@ description: |
 
 1. 把规范版 `SKILL.md` 放在 `packages/cli/src/templates/common/skills/{name}/SKILL.md`（想上游贡献的话），或以单独 npm 包发布。
 2. 在每个平台的 configurator 里加一步，把 skill 拷贝或适配进该平台的布局。
-3. Skill 随 Trellis 发布版本一起进化，保证 migration 一致。
+3. Skill 随 Suncode 发布版本一起进化，保证 migration 一致。
 
-外部 skill：想引入社区 skill，把文件夹拉进对应平台目录并 commit。Trellis 目前没有原生的外部 skill 安装器。
+外部 skill：想引入社区 skill，把文件夹拉进对应平台目录并 commit。Suncode 目前没有原生的外部 skill 安装器。
 
 ---

@@ -4,7 +4,7 @@ title: 'Appendix C: task.json Schema Reference'
 
 ## Appendix C: `task.json` Schema Reference
 
-Matches `task.py create` in `.trellis/scripts/common/task_store.py`:
+Matches `task.py create` in `.suncode/scripts/common/task_store.py`:
 
 ```json
 {
@@ -35,11 +35,11 @@ Matches `task.py create` in `.trellis/scripts/common/task_store.py`:
 }
 ```
 
-Field order above matches `.trellis/scripts/common/task_store.py` verbatim — `task.py` writes them in this order.
+Field order above matches `.suncode/scripts/common/task_store.py` verbatim — `task.py` writes them in this order.
 
 <Note>
   `worktree_path` / `commit` / `pr_url` are schema placeholders — written as null on create, and no
-  Trellis script updates them afterward. Store commit hashes / PR URLs under `meta: {}` as custom
+  Suncode script updates them afterward. Store commit hashes / PR URLs under `meta: {}` as custom
   keys, or write them back from an `after_archive` hook.
 </Note>
 

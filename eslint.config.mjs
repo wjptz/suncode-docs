@@ -14,7 +14,7 @@ const NODE_GLOBALS = {
 export default [
   js.configs.recommended,
   {
-    ignores: ['node_modules/', '.mintlify/', '.trellis/'],
+    ignores: ['node_modules/', '.mintlify/', '.suncode/'],
   },
   {
     files: ['**/*.{js,mjs,cjs}'],

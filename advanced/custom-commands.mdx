@@ -4,26 +4,26 @@ title: 'Custom Slash Commands'
 
 ## Custom Slash Commands
 
-Trellis ships a deliberately small set of slash commands. On agent-capable platforms (Claude Code, OpenCode, Cursor, Codex, Pi Agent, etc.), only `finish-work` and `continue` are installed. `start` is usually not user-facing because startup context is loaded through a SessionStart hook, extension, `AGENTS.md`, or prompt-hook bootstrap at the top of the session. Agent-less platforms (Kilo, Antigravity, Devin) have no hook, so `start` is shipped there as a slash command. Everything else that used to be a command has moved to auto-trigger skills (see [Custom Skills](./custom-skills)). Add your own slash command when you have a specific entry point you want the user to invoke on demand.
+Suncode ships a deliberately small set of slash commands. On agent-capable platforms (Claude Code, OpenCode, Cursor, Codex, Pi Agent, etc.), only `finish-work` and `continue` are installed. `start` is usually not user-facing because startup context is loaded through a SessionStart hook, extension, `AGENTS.md`, or prompt-hook bootstrap at the top of the session. Agent-less platforms (Kilo, Antigravity, Devin) have no hook, so `start` is shipped there as a slash command. Everything else that used to be a command has moved to auto-trigger skills (see [Custom Skills](./custom-skills)). Add your own slash command when you have a specific entry point you want the user to invoke on demand.
 
 ### Command File Format and Location
 
-Trellis groups the 14 configured platforms into three delivery models:
+Suncode groups the 16 configured platforms into three delivery models:
 
-**Explicit slash commands** — the user types `/trellis:<name>`; the platform injects the command file's content as a prompt.
+**Explicit slash commands** — the user types `/suncode:<name>`; the platform injects the command file's content as a prompt.
 
 | Platform    | Location                                                                           | Invoked as         |
 | ----------- | ---------------------------------------------------------------------------------- | ------------------ |
-| Claude Code | `.claude/commands/trellis/{name}.md`                                               | `/trellis:{name}`  |
-| Cursor      | `.cursor/commands/trellis-{name}.md`                                               | `/trellis-{name}`  |
-| OpenCode    | `.opencode/commands/trellis/{name}.md`                                             | `/trellis:{name}`  |
-| Codex       | `.codex/prompts/trellis-{name}.md`                                                 | `/trellis-{name}`  |
-| Gemini CLI  | `.gemini/commands/trellis/{name}.toml`                                             | `/trellis:{name}`  |
-| Qoder       | `.qoder/commands/trellis-{name}.md` (with `name` + `description` YAML frontmatter) | `/trellis-{name}`  |
-| CodeBuddy   | `.codebuddy/commands/trellis/{name}.md`                                            | `/trellis:{name}`  |
-| Droid       | `.factory/commands/trellis/{name}.md`                                              | `/trellis:{name}`  |
-| Pi Agent    | `.pi/prompts/trellis-{name}.md`                                                    | `/trellis-{name}`  |
-| Copilot     | `.github/prompts/trellis-{name}.prompt.md`                                         | prompt-file picker |
+| Claude Code | `.claude/commands/suncode/{name}.md`                                               | `/suncode:{name}`  |
+| Cursor      | `.cursor/commands/suncode-{name}.md`                                               | `/suncode-{name}`  |
+| OpenCode    | `.opencode/commands/suncode/{name}.md`                                             | `/suncode:{name}`  |
+| Codex       | `.codex/prompts/suncode-{name}.md`                                                 | `/suncode-{name}`  |
+| Gemini CLI  | `.gemini/commands/suncode/{name}.toml`                                             | `/suncode:{name}`  |
+| Qoder       | `.qoder/commands/suncode-{name}.md` (with `name` + `description` YAML frontmatter) | `/suncode-{name}`  |
+| CodeBuddy   | `.codebuddy/commands/suncode/{name}.md`                                            | `/suncode:{name}`  |
+| Droid       | `.factory/commands/suncode/{name}.md`                                              | `/suncode:{name}`  |
+| Pi Agent    | `.pi/prompts/suncode-{name}.md`                                                    | `/suncode-{name}`  |
+| Copilot     | `.github/prompts/suncode-{name}.prompt.md`                                         | prompt-file picker |
 
 Command files are Markdown; Gemini uses TOML (with a `prompt = """..."""` field).
 
@@ -33,13 +33,13 @@ Command files are Markdown; Gemini uses TOML (with a `prompt = """..."""` field)
 | ----------- | ------------------------------------ | --------------------------------- |
 | Kilo        | `.kilocode/workflows/{name}.md`      | `/{name}.md` (Kilo's workflow UI) |
 | Antigravity | `.agent/workflows/{name}.md`         | opened from `.agent/workflows/`   |
-| Devin       | `.devin/workflows/trellis-{name}.md` | `/trellis-{name}`                 |
+| Devin       | `.devin/workflows/suncode-{name}.md` | `/suncode-{name}`                 |
 
 **Skill-only** — platforms that do not expose a slash-command primitive at all; `start` / `finish-work` / `continue` are shipped as auto-trigger skills.
 
 | Platform | `start` / `finish-work` / `continue` as… | Invoked as                         |
 | -------- | ---------------------------------------- | ---------------------------------- |
-| Kiro     | `.kiro/skills/trellis-{name}/SKILL.md`   | skill match (or `@trellis:{name}`) |
+| Kiro     | `.kiro/skills/suncode-{name}/SKILL.md`   | skill match (or `@suncode:{name}`) |
 
 ### When to use a command vs. a skill
 
@@ -71,7 +71,7 @@ Brief description of what this command does.
 ## Read context
 
 ```bash
-cat .trellis/spec/relevant-spec.md
+cat .suncode/spec/relevant-spec.md
 ```
 
 ## Analyze
@@ -83,9 +83,9 @@ Describe what to analyze and against which rules.
 Output format and fields.
 ````
 
-### Example: a `/trellis:deploy-check` command
+### Example: a `/suncode:deploy-check` command
 
-`.claude/commands/trellis/deploy-check.md`:
+`.claude/commands/suncode/deploy-check.md`:
 
 ````markdown
 # Deploy Check
@@ -114,6 +114,6 @@ Check these items:
 Output a deployment readiness report.
 ````
 
-To ship the same command on other platforms, create parallel files in the platform-specific locations from the table above. If you want Trellis to distribute the command as part of its update flow, place a canonical copy under `packages/cli/src/templates/common/commands/` and add platform adapters in `packages/cli/src/configurators/`.
+To ship the same command on other platforms, create parallel files in the platform-specific locations from the table above. If you want Suncode to distribute the command as part of its update flow, place a canonical copy under `packages/cli/src/templates/common/commands/` and add platform adapters in `packages/cli/src/configurators/`.
 
 ---
