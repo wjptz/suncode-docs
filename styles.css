@@ -88,7 +88,7 @@ pre.cjk-diagram b {
   opacity: 0.5;
   filter: blur(64px);
   pointer-events: none;
-  background: radial-gradient(at 50% 0%, rgba(6, 182, 212, 0.1), transparent 70%);
+  background: radial-gradient(at 50% 0%, rgba(244, 63, 94, 0.1), transparent 70%);
 }
 
 /* ── Terminal window ── */
@@ -123,7 +123,7 @@ pre.cjk-diagram b {
   background: #febc2e;
 }
 .td-dot-g {
-  background: #28c840;
+  background: #6366f1;
 }
 
 .td-body {
@@ -160,21 +160,21 @@ pre.cjk-diagram b {
   }
 }
 
-/* ── User input lines — visually distinct with teal left border ── */
+/* ── User input lines — visually distinct with rose left border ── */
 .td-line-user {
   margin: 6px -8px 0;
   padding: 2px 8px 2px calc(8px - 2px);
   color: #fff;
-  border-left: 2px solid rgba(20, 184, 166, 0.45);
-  background: rgba(6, 182, 212, 0.08);
+  border-left: 2px solid rgba(244, 63, 94, 0.45);
+  background: rgba(244, 63, 94, 0.08);
   border-radius: 4px;
 }
 .td-line-user .td-prompt {
-  color: #34d399;
+  color: #f97316;
   font-weight: bold;
 }
 .td-line-user .td-cmd {
-  color: #67e8f9; /* cyan-300, stands out for slash commands */
+  color: #fdba74; /* orange-300, stands out for slash commands */
 }
 
 /* ── AI output lines ── */
@@ -182,7 +182,7 @@ pre.cjk-diagram b {
   color: #d4d4d4;
 }
 .td-line-ai .td-bullet {
-  color: #34d399;
+  color: #fb7185;
 }
 
 /* ── Sub-result lines (indented └) ── */
@@ -196,17 +196,17 @@ pre.cjk-diagram b {
 
 /* ── Tool call styling (Bash, etc.) ── */
 .td-tool-name {
-  color: #34d399;
+  color: #f97316;
   font-weight: 500;
 }
 .td-tool-args {
   color: #a3a3a3;
 }
 .td-link {
-  color: #38bdf8;
+  color: #fb7185;
 }
 .td-success {
-  color: #34d399;
+  color: #f97316;
 }
 .td-dim {
   color: #737373;
@@ -218,9 +218,9 @@ pre.cjk-diagram b {
   padding-left: 4px;
 }
 .td-agent-icon {
-  color: #38bdf8;
+  color: #f97316;
   font-size: 10px;
-} /* sky-400, matches accent */
+} /* orange-500, matches accent */
 .td-agent-name {
   color: #fff;
   font-weight: 700;
@@ -243,8 +243,8 @@ pre.cjk-diagram b {
 .td-highlight {
   margin: 0 -8px;
   padding: 0 8px 0 calc(8px - 2px);
-  border-left: 2px solid rgba(20, 184, 166, 0.45);
-  background: rgba(6, 182, 212, 0.12);
+  border-left: 2px solid rgba(244, 63, 94, 0.45);
+  background: rgba(244, 63, 94, 0.12);
   border-radius: 4px;
 }
 
@@ -368,7 +368,7 @@ pre.cjk-diagram b {
   height: 1px;
   transform: translateY(-50%) scaleX(0);
   transform-origin: left;
-  background: rgba(20, 184, 166, 0.45);
+  background: rgba(244, 63, 94, 0.45);
   animation: tdFill 28.3s ease-out 0.5s forwards;
 }
 /* Keyframes synced to phase starts (total 29.0s):
@@ -409,7 +409,7 @@ pre.cjk-diagram b {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(20, 184, 166, 0.5);
+  background: rgba(244, 63, 94, 0.5);
   border: none;
   padding: 0;
   cursor: pointer;
@@ -422,7 +422,7 @@ pre.cjk-diagram b {
 }
 .td-step-dot:hover {
   transform: scale(1.75);
-  background: rgba(34, 211, 238, 0.65);
+  background: rgba(251, 146, 60, 0.7);
 }
 @keyframes tdDotIn {
   to {
@@ -461,25 +461,25 @@ pre.cjk-diagram b {
 @keyframes tdDotGlow {
   to {
     transform: scale(1.5);
-    background: #06b6d4;
-    box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+    background: #e11d48;
+    box-shadow: 0 0 12px rgba(244, 63, 94, 0.32);
   }
 }
 
 /* Manual mode dot states (set by JS on click) */
 .td-dot-done {
   opacity: 1 !important;
-  background: rgba(20, 184, 166, 0.5);
+  background: rgba(244, 63, 94, 0.5);
 }
 .td-dot-current {
   opacity: 1 !important;
   transform: scale(1.5);
-  background: #06b6d4;
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+  background: #e11d48;
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.32);
 }
 .td-dot-future {
   opacity: 1 !important;
-  background: rgba(20, 184, 166, 0.25);
+  background: rgba(244, 63, 94, 0.25);
 }
 
 /* ── Descriptions (below timeline, stacked) ── */
@@ -498,12 +498,12 @@ pre.cjk-diagram b {
 .td-desc-title {
   font-size: 15px;
   font-weight: 600;
-  color: #0f766e;
-  margin: 0; /* teal-700 */
+  color: #be123c;
+  margin: 0; /* rose-700 */
 }
 .dark .td-desc-title {
-  color: #5eead4;
-} /* teal-300 in dark mode */
+  color: #fb7185;
+} /* rose-400 in dark mode */
 .td-desc-text {
   font-size: 14px;
   line-height: 1.7;

@@ -1,13 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "maple",
+  "theme": "luma",
   "js": "/terminal-demo.js",
   "exclude": [".suncode/**", "AGENTS.md"],
   "name": "Suncode Docs",
   "colors": {
-    "primary": "#0F766E",
-    "light": "#06B6D4",
-    "dark": "#2563EB"
+    "primary": "#E11D48",
+    "light": "#F97316",
+    "dark": "#6366F1"
   },
   "appearance": {
     "default": "system"

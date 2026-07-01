@@ -6,9 +6,9 @@ description: 'Learn how Suncode reads .suncode/config.yaml, which keys matter, a
 
 ## Configure `.suncode/config.yaml`
 
-`.suncode/config.yaml` is the project-level configuration file for Suncode runtime behavior. It controls session journal commits, task lifecycle hooks, package mapping, and Codex dispatch mode.
+`.suncode/config.yaml` is the project-level configuration file for Suncode runtime behavior. It controls session journal commits, task lifecycle hooks, optional Hub team collaboration, package mapping, and Codex dispatch mode.
 
-Track this file with the repo. Treat it as shared team configuration, not as a place for per-machine identity or secrets. Per-machine identity belongs in `.suncode/.developer`; credentials should stay in environment variables or your normal secret manager.
+Track this file with the repo. Treat it as shared team configuration, not as a place for per-machine identity or secrets. Per-machine identity belongs in `.suncode/.developer`. Hub sign-in is managed by `suncode hub login`; do not put Hub credentials in `.suncode/config.yaml`.
 
 ## Edit safely
 
@@ -25,7 +25,7 @@ session_auto_commit: false
 When a key is absent, Suncode uses its built-in default. Keep indentation consistent for nested blocks such as `hooks`, `packages`, and `codex`.
 
 <Warning>
-  Hook commands live in tracked project configuration. Do not put tokens, API keys, or
+  Hook commands live in tracked project configuration. Do not put credentials, secrets, or
   machine-specific absolute paths in `.suncode/config.yaml`.
 </Warning>
 
@@ -37,6 +37,7 @@ When a key is absent, Suncode uses its built-in default. Keep indentation consis
 | `max_journal_lines`      | `2000`                    | Maximum lines per journal file before Suncode rotates to the next journal file.                                   |
 | `session_auto_commit`    | `true`                    | Whether `add_session.py` and `task.py archive` auto-stage and auto-commit Suncode journal / task archive changes. |
 | `hooks`                  | unset                     | Shell commands that run after task lifecycle events.                                                              |
+| `hub`                    | disabled                  | Optional team collaboration block for binding local Suncode tasks to Suncode Hub work.                            |
 | `packages`               | unset                     | Package declarations for monorepos, submodules, and polyrepo-style directories.                                   |
 | `default_package`        | unset                     | Fallback package when a command or task does not specify one.                                                     |
 | `update.skip`            | unset                     | Legacy update exclusion list that `suncode update` still honors during normal updates.                            |
@@ -82,6 +83,49 @@ hooks:
 ```
 
 Supported events are `after_create`, `after_start`, `after_finish`, and `after_archive`. Hook failures print a warning but do not block the main task operation.
+
+### Hub team collaboration
+
+`hub` enables optional team collaboration for projects connected to Suncode Hub. It is disabled by default. Local-only Suncode projects do not contact Hub and do not need Hub sign-in.
+
+Use `suncode hub init` when possible; it writes the project block and the matching user-level default configuration for you.
+
+```yaml
+hub:
+  enabled: true
+  mode: team
+  projectId: your-project-id
+  developerId: null
+  apiBaseUrl: null
+  startReviewPolicy: confirm
+  sync:
+    afterCreate: true
+    afterStart: true
+    afterFinish: false
+    afterArchive: true
+```
+
+| Key                     | Meaning                                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `hub.enabled`           | `true` opts this project into Hub team mode. Any other value keeps the project local.    |
+| `hub.mode`              | Current supported value is `team`.                                                       |
+| `hub.projectId`         | Team-provided project identifier used to bind local tasks to the right Hub project.      |
+| `hub.developerId`       | Optional override. Leave `null` to use the signed-in Hub identity or local developer ID. |
+| `hub.apiBaseUrl`        | Optional project override. Leave `null` to use the user-level Hub default.               |
+| `hub.startReviewPolicy` | `confirm`, `block`, or `bypass` for start-review gating on Hub tasks.                    |
+| `hub.sync.afterCreate`  | Sync task creation to Hub when a Hub-bound task is created.                              |
+| `hub.sync.afterStart`   | Sync structured subtasks and start state when a Hub-bound task starts.                   |
+| `hub.sync.afterFinish`  | Reserved for teams that want a finish hook before archive. Default is `false`.           |
+| `hub.sync.afterArchive` | Submit completion state when a Hub-bound task is archived.                               |
+
+Hub sign-in is separate from project configuration:
+
+```bash
+suncode hub login
+suncode hub state
+```
+
+Never store Hub credentials or private machine-specific values in `.suncode/config.yaml`. If `hub.enabled` is `true`, run `suncode hub state` to confirm the project is configured and signed in before starting Hub-specific work.
 
 ### Packages and default package
 
