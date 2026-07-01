@@ -1,0 +1,88 @@
+---
+title: '团队 Hub'
+description: '使用 Suncode Hub 管理共享需求、任务绑定和安全的团队协作流程。'
+icon: 'network'
+---
+
+Suncode 默认可以完全本地运行。团队 Hub 是一层协作能力，用来把共享需求、任务归属、评审状态和 agent 行为提示连接起来，让多人和多个 agent 面对同一份工作状态。
+
+<Note>Suncode Hub 是可选能力。如果当前项目没有接入 Hub，继续使用普通本地 Suncode 工作流即可。</Note>
+
+## 什么时候用 Hub
+
+<CardGroup cols={2}>
+  <Card title="使用 Hub" icon="users">
+    团队有共享需求队列，并希望本地 Suncode task 和团队工作项保持绑定。
+  </Card>
+  <Card title="保持本地" icon="laptop">
+    你在做私人实验、一次性维护，或不需要进入团队协作视图的工作。
+  </Card>
+</CardGroup>
+
+当不止一个人或 agent 需要看到同一份工作状态时，Hub 最有价值。个人任务、快速修复和项目内探索仍然更适合直接走本地 Suncode。
+
+## 设置 Hub
+
+在项目根目录运行：
+
+```bash
+suncode hub init
+suncode hub login
+suncode hub state
+```
+
+`suncode hub init` 会引导你填写团队提供的 Hub 位置和项目 ID。`suncode hub login` 会让这台机器登录团队工作区。`suncode hub state` 用来确认当前项目是否已配置、已登录、可连接，并且是否可以开始处理 Hub 工作。
+
+<Tip>开始团队任务前先运行 `suncode hub state`。这是判断该走 Hub 流程还是本地流程的最快方式。</Tip>
+
+## 从 Hub 开始工作
+
+配置完成后，把可处理的团队工作拉到本地 Suncode 工作区：
+
+```bash
+suncode hub pull
+```
+
+拉取后的工作会变成本地 Suncode task，并带有 Hub 绑定信息。之后 agent 仍然按你熟悉的 Suncode 阶段执行：规划、实现、检查和收尾。
+
+## Agent 如何使用 Hub 状态
+
+支持 Suncode 的 agent 会在会话中看到一段紧凑的 Hub 状态摘要。Agent 用它来选择安全路径：
+
+| Hub 状态           | Agent 行为                                    |
+| ------------------ | --------------------------------------------- |
+| Hub 关闭或未配置   | 使用普通本地 Suncode 工作流。                 |
+| 需要登录           | 提醒你先运行 `suncode hub login`。            |
+| Hub 当前不可连接   | 不启动 Hub 专用动作；继续本地工作或稍后重试。 |
+| 有可处理团队工作   | 建议拉取或选择 Hub 工作项。                   |
+| 当前任务是本地任务 | 不对这个任务运行 Hub 提交或状态同步动作。     |
+| 当前任务已绑定 Hub | 让本地进度和团队 Hub 工作项保持一致。         |
+
+这条护栏很重要：普通本地任务和 Hub 绑定任务在文件树里可能很像。Hub 状态摘要能让 agent 在同步任何内容之前先判断当前任务类型。
+
+## 安全使用边界
+
+Hub 文档和对话只保留在工作流层面：
+
+| 应该做                                                      | 避免做                                               |
+| ----------------------------------------------------------- | ---------------------------------------------------- |
+| 使用 `suncode hub init`、`login`、`state`、`pull`、`logout` | 把内部服务细节、凭据或敏感值贴进 prompt              |
+| 在团队内部私下共享项目 ID 和 Hub 位置                       | 把团队专用 Hub 配置写进公开文档或公开示例            |
+| 团队任务动作前先看 `hub state`                              | 对普通本地任务运行 Hub 提交或状态同步动作            |
+| 私人工作继续使用本地 Suncode task                           | 因为项目配置了 Hub，就把所有 task 都当作团队同步任务 |
+
+## 常见情况
+
+| 情况                   | 处理方式                                                            |
+| ---------------------- | ------------------------------------------------------------------- |
+| Hub 没有启用           | 继续使用本地 Suncode；如果团队使用 Hub，再运行 `suncode hub init`。 |
+| 还没有登录             | 运行 `suncode hub login`，然后再运行 `suncode hub state`。          |
+| Hub 当前不可连接       | 非团队工作可以继续本地推进；团队工作等服务恢复后再处理。            |
+| 有可处理团队工作       | 运行 `suncode hub pull`，选择你要接的工作项。                       |
+| 当前任务显示为本地任务 | 除非明确把它绑定到团队工作，否则按本地任务完成。                    |
+
+## 下一步
+
+- 第一次使用 Suncode：从[安装与第一个任务](/zh/start/install-and-first-task)开始。
+- 想理解本地工作流模型：阅读[工作原理](/zh/start/how-it-works)。
+- 需要日常命令和 skill 说明：查看[日常使用](/zh/start/everyday-use)。

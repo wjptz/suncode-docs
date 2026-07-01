@@ -1,0 +1,96 @@
+---
+title: 'Team Hub'
+description: 'Use Suncode Hub for shared requirements, task binding, and safe team workflow handoff.'
+icon: 'network'
+---
+
+Suncode works locally by default. Team Hub adds a shared coordination layer for teams that want requirements, task ownership, review state, and agent guidance to stay connected across machines.
+
+<Note>
+  Suncode Hub is optional. If your project is not connected to Hub, keep using the normal local
+  Suncode workflow.
+</Note>
+
+## When to use Hub
+
+<CardGroup cols={2}>
+  <Card title="Use Hub" icon="users">
+    Your team keeps a shared queue of requirements and wants local Suncode tasks to stay linked to
+    that queue.
+  </Card>
+  <Card title="Stay local" icon="laptop">
+    You are doing private experiments, one-off maintenance, or work that should not be tracked by
+    the team workspace.
+  </Card>
+</CardGroup>
+
+Hub is most useful when more than one person or agent needs to see the same work state. Local Suncode is still the better default for personal tasks, quick fixes, and project-specific exploration.
+
+## Set up Hub
+
+Run the setup flow from the project root:
+
+```bash
+suncode hub init
+suncode hub login
+suncode hub state
+```
+
+`suncode hub init` guides you through the team Hub location and project ID your team provides. `suncode hub login` signs this machine into that team workspace. `suncode hub state` confirms whether the project is configured, signed in, reachable, and ready for Hub work.
+
+<Tip>
+  Run `suncode hub state` before starting team work. It is the quickest way to tell whether Hub is
+  ready or whether you should stay in the local workflow.
+</Tip>
+
+## Start from Hub work
+
+After setup, pull available team work into your local Suncode workspace:
+
+```bash
+suncode hub pull
+```
+
+The pulled work becomes a normal Suncode task with Hub binding metadata. From there, the agent can plan, implement, check, and finish using the same Suncode phases you already use locally.
+
+## How the agent uses Hub state
+
+Suncode injects a compact Hub status summary into supported agent sessions. The agent uses that summary to choose the safe path:
+
+| Hub state                    | Agent behavior                                                        |
+| ---------------------------- | --------------------------------------------------------------------- |
+| Hub is off or not configured | Use the normal local Suncode workflow.                                |
+| Sign-in is required          | Ask you to run `suncode hub login` before using Hub-specific actions. |
+| Hub is not reachable         | Do not start Hub-specific actions; continue locally or retry later.   |
+| Team work is available       | Suggest pulling or selecting Hub work.                                |
+| Current task is local-only   | Do not run Hub submission or status-sync commands for that task.      |
+| Current task is Hub-bound    | Keep local task progress aligned with the shared Hub work item.       |
+
+This guardrail matters because a local task and a Hub-bound task can look similar in the file tree. The Hub state summary tells the agent which kind of task it is handling before it tries to sync anything.
+
+## Safe usage boundaries
+
+Keep Hub documentation and conversations at the workflow level:
+
+| Do                                                         | Avoid                                                                        |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Use `suncode hub init`, `login`, `state`, `pull`, `logout` | Pasting internal service details, credentials, or secret values into prompts |
+| Share the project ID and team Hub location privately       | Publishing team-only Hub configuration in public docs or examples            |
+| Use `hub state` before team task actions                   | Running Hub submission or status-sync actions on ordinary local tasks        |
+| Keep local Suncode tasks for private work                  | Treating every task as team-synced just because Hub is configured            |
+
+## Common situations
+
+| Situation                         | What to do                                                                |
+| --------------------------------- | ------------------------------------------------------------------------- |
+| Hub is not enabled                | Keep using local Suncode, or run `suncode hub init` if the team uses Hub. |
+| Sign-in is missing                | Run `suncode hub login`, then `suncode hub state`.                        |
+| Hub cannot be reached             | Continue locally for non-team work, or retry when the service is back.    |
+| There is available team work      | Run `suncode hub pull` and choose the work item you want to take.         |
+| Your current task says local-only | Finish it locally unless you explicitly bind it to team work.             |
+
+## Next steps
+
+- New to Suncode? Start with [Install and First Task](/start/install-and-first-task).
+- Want the local workflow model? Read [How It Works](/start/how-it-works).
+- Need daily commands and skill behavior? See [Everyday Use](/start/everyday-use).
