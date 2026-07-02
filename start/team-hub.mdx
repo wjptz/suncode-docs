@@ -53,6 +53,18 @@ suncode hub pull
 
 The pulled work becomes a normal Suncode task with Hub binding metadata. From there, the agent can plan, implement, check, and finish using the same Suncode phases you already use locally.
 
+## Review Hub-bound tasks
+
+Projects can opt into a task-centered review round without enabling a full branch/merge workflow:
+
+```bash
+suncode hub review --task current
+```
+
+When `hub.review.enabled` is true, Suncode creates the next local review round, captures the current diff, calls the configured provider, writes `reviews/round-NNN/review.json` plus a concise `result.md` report, uploads review artifacts through Hub, and syncs the task status. The first supported provider is Engineer, configured with `hub.review.provider: engineer`. The provider transcript is kept in `raw-output.md` only when `hub.review.engineer.saveRawOutput` is true.
+
+By default, `hub.review.required` is `false`: review results sync to Hub but do not block `suncode hub submit-completion`. Teams that require approval before completion can set `hub.review.required: true`; then completion is blocked until the latest approved review still matches the current diff.
+
 ## How the agent uses Hub state
 
 Suncode injects a compact Hub status summary into supported agent sessions. The agent uses that summary to choose the safe path:

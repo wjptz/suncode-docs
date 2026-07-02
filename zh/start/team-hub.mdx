@@ -45,6 +45,18 @@ suncode hub pull
 
 拉取后的工作会变成本地 Suncode task，并带有 Hub 绑定信息。之后 agent 仍然按你熟悉的 Suncode 阶段执行：规划、实现、检查和收尾。
 
+## Review Hub 绑定任务
+
+项目可以启用以 task 为中心的 review 轮次，不需要先启用完整的分支/合并模式：
+
+```bash
+suncode hub review --task current
+```
+
+当 `hub.review.enabled` 为 `true` 时，Suncode 会创建下一轮本地 review，采集当前 diff，调用配置的 provider，写入 `reviews/round-NNN/review.json` 和简洁的 `result.md` 报告，通过 Hub 上传 review artifacts，并同步 task 状态。第一版支持的 provider 是 Engineer，对应配置是 `hub.review.provider: engineer`。只有 `hub.review.engineer.saveRawOutput` 为 true 时，provider 原始执行输出才会保存在 `raw-output.md`。
+
+默认 `hub.review.required` 是 `false`：review 结果会同步到 Hub，但不会阻塞 `suncode hub submit-completion`。如果团队要求完成前必须审核通过，可以设为 `hub.review.required: true`；此时 completion 会要求最新 approved review 仍然匹配当前 diff。
+
 ## Agent 如何使用 Hub 状态
 
 支持 Suncode 的 agent 会在会话中看到一段紧凑的 Hub 状态摘要。Agent 用它来选择安全路径：
