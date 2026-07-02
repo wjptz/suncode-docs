@@ -24,16 +24,16 @@ suncode init -u your-name
 
 # 显式：配置一个或多个平台
 suncode init -u your-name --claude
-suncode init -u your-name --claude --cursor --opencode
+suncode init -u your-name --claude --cursor --opencode --engineer
 suncode init -u your-name --codex --gemini
 suncode init -u your-name --pi
 ```
 
 `your-name` 会成为你的开发者身份，在 `.suncode/workspace/your-name/` 创建个人工作区。
 
-支持的 flag：`--claude`、`--cursor`、`--opencode`、`--codex`、`--kiro`、`--gemini`、`--qoder`、`--codebuddy`、`--copilot`、`--droid`、`--pi`、`--antigravity`、`--devin`（别名：`--windsurf`，已废弃）、`--kilo`、`--reasonix`、`--zcode`。
+支持的 flag：`--claude`、`--cursor`、`--opencode`、`--engineer`、`--codex`、`--kiro`、`--gemini`、`--qoder`、`--codebuddy`、`--copilot`、`--droid`、`--pi`、`--antigravity`、`--devin`（别名：`--windsurf`，已废弃）、`--kilo`、`--reasonix`、`--zcode`、`--trae`。
 
-除了这 16 个已配置平台，任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）也能直接消费 Suncode：Codex 的 skill 就写在这个目录下，这些文件能被该生态的其他 agent 直接读取。
+除了这 18 个已配置平台，任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）也能直接消费 Suncode：Codex 的 skill 就写在这个目录下，这些文件能被该生态的其他 agent 直接读取。
 
 ### 平台配置
 
@@ -44,9 +44,10 @@ suncode init -u your-name --pi
 | **Claude Code** | `.claude/commands/suncode/`、`agents/`、`skills/`、`hooks/`                  |
 | **Cursor**      | `.cursor/commands/`、`agents/`、`skills/`、`hooks/`                          |
 | **OpenCode**    | `.opencode/commands/suncode/`、`agents/`、`skills/`、`plugins/`              |
+| **Engineer**    | `.engineer/commands/suncode/`、`agents/`、`skills/`、`plugins/`              |
 | **Codex**       | `.codex/agents/`、`skills/`、`hooks/` + 仓库根 `AGENTS.md`                   |
 | **Kiro**        | `.kiro/agents/`、`skills/`、`hooks/`                                         |
-| **Gemini CLI**  | `.gemini/commands/suncode/`、`agents/`、`skills/`、`hooks/`                  |
+| **Gemini CLI**  | `.gemini/commands/suncode/`、`agents/`、`hooks/` + `.agents/skills/`         |
 | **Qoder**       | `.qoder/commands/`、`agents/`、`skills/`、`hooks/`                           |
 | **CodeBuddy**   | `.codebuddy/commands/suncode/`、`agents/`、`skills/`、`hooks/`               |
 | **Copilot**     | `.github/copilot/`、`prompts/`、`agents/`、`skills/`、`hooks/`               |
@@ -55,8 +56,11 @@ suncode init -u your-name --pi
 | **Kilo**        | `.kilocode/workflows/`、`skills/`                                            |
 | **Antigravity** | `.agent/workflows/`、`skills/`                                               |
 | **Devin**       | `.devin/workflows/`、`skills/`                                               |
+| **Reasonix**    | `.reasonix/skills/`                                                          |
+| **ZCode**       | `.zcode/commands/suncode/`、`cli/agents/` + `.agents/skills/`                |
+| **Trae**        | `.trae/commands/`、`skills/`、`agents/`、`hooks/`、`hooks.json`              |
 
-`.agents/skills/` 是一份跨平台共享层（[agentskills.io](https://agentskills.io) 规范），`suncode init` 会把所有 skill 都写一份到这里，供 Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等遵循 `.agents/skills/` 规范的 agent 直接读取。
+`.agents/skills/` 是一份跨平台共享层（[agentskills.io](https://agentskills.io) 规范）。Codex、Gemini CLI、ZCode 会把 Suncode skill 写到这里；Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等遵循 `.agents/skills/` 规范的 agent 可在该层存在时直接读取。
 
 ### init 场景对照
 
@@ -97,8 +101,9 @@ suncode init -u your-name --pi
 <Note>
   Agent-capable 平台通过 SessionStart hook、prompt hook、extension、agent 文件和 skill 的组合加载
   Suncode 上下文。Codex 和 Claude-style 平台不同：它依赖 `AGENTS.md` 加 `UserPromptSubmit` hook，
-  no-task breadcrumb 会提示 AI 读取 `suncode-start`。只有 Kilo / Antigravity / Devin 这类 agent-less
-  平台会发 `/suncode:start`（或 `/start.md`）作为显式入口。
+  no-task breadcrumb 会提示 AI 读取 `suncode-start`。Kilo / Antigravity / Devin 这类 agent-less
+  平台会发 `/suncode:start`（或 `/start.md`）作为显式入口；OpenCode 和 Engineer 也会发
+  `/suncode:start` 作为 fallback，正常启动路径仍由 JS plugin 处理。
 </Note>
 
 ### 目录结构
@@ -171,6 +176,7 @@ your-project/
 │
 ├── .cursor/           # Cursor：commands/ + rules/
 ├── .opencode/         # OpenCode：commands/suncode/、agents/、skills/、plugins/
+├── .engineer/         # Engineer：OpenCode-compatible commands、agents、skills、plugins
 ├── .codex/            # Codex：prompts/、skills/ + 仓库根 AGENTS.md
 ├── .kiro/             # Kiro：steering/、prompts/、skills/
 ├── .gemini/           # Gemini CLI：commands/suncode/

@@ -12,8 +12,8 @@ are written, which hooks run, and where platform behavior differs.
 ## 1. A session opens
 
 A Suncode project is a repository with `.suncode/` plus one or more platform
-directories such as `.claude/`, `.codex/`, `.cursor/`, `.opencode/`, `.kiro/`,
-or `.pi/`.
+directories such as `.claude/`, `.codex/`, `.cursor/`, `.opencode/`,
+`.engineer/`, `.kiro/`, or `.pi/`.
 
 On platforms with a SessionStart path, Suncode injects a compact startup
 payload. It is an index and state report, not a full dump of every workflow,
@@ -33,13 +33,13 @@ Typical startup context includes:
 
 The delivery path depends on the platform:
 
-| Platform group                                                         | Startup behavior                                                                                                                                                      |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Claude Code, Cursor, OpenCode, Gemini CLI, Qoder, CodeBuddy, Droid, Pi | A SessionStart hook, plugin, or extension injects compact startup context automatically.                                                                              |
-| Codex                                                                  | `AGENTS.md` loads automatically. Suncode installs a `UserPromptSubmit` hook; on no-task turns it can inject a `<suncode-bootstrap>` reminder to read `suncode-start`. |
-| Copilot                                                                | SessionStart output is diagnostic-only in current Copilot hosts. Suncode relies on prompt hooks and skill files for model-visible context.                            |
-| Kiro                                                                   | Suncode content is delivered through `.kiro/` skills and agent files; there is no Suncode SessionStart hook by default.                                               |
-| Kilo, Antigravity, Devin                                               | The main session reads a workflow or skill entry explicitly.                                                                                                          |
+| Platform group                                                                         | Startup behavior                                                                                                                                                      |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code, Cursor, OpenCode, Engineer, Gemini CLI, Qoder, CodeBuddy, Droid, Pi, Trae | A SessionStart hook, plugin, or extension injects compact startup context automatically.                                                                              |
+| Codex                                                                                  | `AGENTS.md` loads automatically. Suncode installs a `UserPromptSubmit` hook; on no-task turns it can inject a `<suncode-bootstrap>` reminder to read `suncode-start`. |
+| Copilot                                                                                | SessionStart output is diagnostic-only in current Copilot hosts. Suncode relies on prompt hooks and skill files for model-visible context.                            |
+| Kiro                                                                                   | Suncode content is delivered through `.kiro/` skills and agent files; there is no Suncode SessionStart hook by default.                                               |
+| Kilo, Antigravity, Devin                                                               | The main session reads a workflow or skill entry explicitly.                                                                                                          |
 
 After this step, the AI should know where Suncode context lives. Detailed phase
 instructions are loaded on demand through workflow-state breadcrumbs, skills, or
@@ -186,11 +186,11 @@ spec update, commit planning, and finish-work routing.
 Execution always starts from the active task directory. The platform decides how
 context gets into the actor doing the work.
 
-| Execution path          | Platforms                                           | How context loads                                                                                                                                 |
-| ----------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hook-push sub-agent     | Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi | A hook injects JSONL entries, then `prd.md`, `design.md` if present, and `implement.md` if present before the sub-agent starts.                   |
-| Pull-prelude sub-agent  | Codex, Copilot, Gemini CLI, Qoder, Kiro             | The sub-agent definition tells the agent to read the active task, JSONL entries, `prd.md`, `design.md` if present, and `implement.md` if present. |
-| Main-session skill flow | Codex inline, Kilo, Antigravity, Devin              | The main session loads Suncode skills and reads `prd.md`, optional artifacts, and relevant specs inline.                                          |
+| Execution path          | Platforms                                                      | How context loads                                                                                                                                 |
+| ----------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hook-push sub-agent     | Claude Code, Cursor, OpenCode, Engineer, CodeBuddy, Droid, Pi  | A hook injects JSONL entries, then `prd.md`, `design.md` if present, and `implement.md` if present before the sub-agent starts.                   |
+| Pull-prelude sub-agent  | Codex, Copilot, Gemini CLI, Qoder, Kiro, Reasonix, ZCode, Trae | The sub-agent definition tells the agent to read the active task, JSONL entries, `prd.md`, `design.md` if present, and `implement.md` if present. |
+| Main-session skill flow | Codex inline, Kilo, Antigravity, Devin                         | The main session loads Suncode skills and reads `prd.md`, optional artifacts, and relevant specs inline.                                          |
 
 The shared context order is:
 

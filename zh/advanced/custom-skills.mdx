@@ -47,16 +47,17 @@ skill 被触发时 AI 要遵循的指令。
 3. 按以下格式汇报结果：...
 ```
 
-Skill 在全部 14 个配置平台上都可用，位置按平台不同：
+Skill 在全部 18 个配置平台上都可用，位置按平台不同：
 
 | 平台        | 位置                                                                             |
 | ----------- | -------------------------------------------------------------------------------- |
 | Claude Code | `.claude/skills/{name}/SKILL.md`                                                 |
 | Cursor      | `.cursor/skills/{name}/SKILL.md`                                                 |
 | OpenCode    | `.opencode/skills/{name}/SKILL.md`                                               |
+| Engineer    | `.engineer/skills/{name}/SKILL.md`                                               |
 | Codex       | `.codex/skills/{name}/SKILL.md`（同时拷一份到 `.agents/skills/` 给跨平台生态用） |
 | Kiro        | `.kiro/skills/{name}/SKILL.md`                                                   |
-| Gemini CLI  | `.gemini/skills/{name}/SKILL.md`                                                 |
+| Gemini CLI  | `.agents/skills/{name}/SKILL.md`                                                 |
 | Qoder       | `.qoder/skills/{name}/SKILL.md`                                                  |
 | CodeBuddy   | `.codebuddy/skills/{name}/SKILL.md`                                              |
 | Copilot     | `.github/skills/{name}/SKILL.md`                                                 |
@@ -65,6 +66,9 @@ Skill 在全部 14 个配置平台上都可用，位置按平台不同：
 | Kilo        | `.kilocode/skills/{name}/SKILL.md`                                               |
 | Antigravity | `.agent/skills/{name}/SKILL.md`                                                  |
 | Devin       | `.devin/skills/{name}/SKILL.md`                                                  |
+| Reasonix    | `.reasonix/skills/{name}/SKILL.md`                                               |
+| ZCode       | `.agents/skills/{name}/SKILL.md`                                                 |
+| Trae        | `.trae/skills/{name}/SKILL.md`                                                   |
 
 `.agents/skills/{name}/SKILL.md`（[agentskills.io](https://agentskills.io) 跨平台共享层）由 Codex 的 configurator 写入，可被 Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等读该标准的 agent 直接消费。
 

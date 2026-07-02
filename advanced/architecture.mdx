@@ -18,14 +18,14 @@ This document maps that idea to the current Suncode feature set, the modules tha
 
 Suncode treats AI coding as a workflow and knowledge-management problem, not a single chat session.
 
-| Principle                        | Implementation rule                                                                                                                                                    |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Make workflow state explicit     | Task `status` and `[workflow-state:STATUS]` blocks tell the main session what phase it is in.                                                                          |
-| Store durable knowledge in files | Requirements, specs, research, and journals live under `.suncode/`, not only in conversation history.                                                                  |
-| Split work by responsibility     | Research, implementation, and checking use separate agents or skills depending on platform capability.                                                                 |
-| Keep context scoped              | JSONL manifests list the spec/research files needed for the current task instead of dumping the whole repo.                                                            |
-| Preserve the review boundary     | Implement/check agents produce a clean diff; the main session proposes commits, and `/suncode:finish-work` only archives and journals.                                 |
-| Support teams and tool diversity | The same `.suncode/` model is adapted into Claude Code, Cursor, Codex, OpenCode, Kiro, Gemini, Qoder, Copilot, Droid, Pi, Kilo, Antigravity, Devin, and related tools. |
+| Principle                        | Implementation rule                                                                                                                                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Make workflow state explicit     | Task `status` and `[workflow-state:STATUS]` blocks tell the main session what phase it is in.                                                                                                           |
+| Store durable knowledge in files | Requirements, specs, research, and journals live under `.suncode/`, not only in conversation history.                                                                                                   |
+| Split work by responsibility     | Research, implementation, and checking use separate agents or skills depending on platform capability.                                                                                                  |
+| Keep context scoped              | JSONL manifests list the spec/research files needed for the current task instead of dumping the whole repo.                                                                                             |
+| Preserve the review boundary     | Implement/check agents produce a clean diff; the main session proposes commits, and `/suncode:finish-work` only archives and journals.                                                                  |
+| Support teams and tool diversity | The same `.suncode/` model is adapted into Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Gemini, Qoder, Copilot, Droid, Pi, Reasonix, ZCode, Trae, Kilo, Antigravity, Devin, and related tools. |
 
 ## Feature overview
 
@@ -62,18 +62,18 @@ Suncode treats AI coding as a workflow and knowledge-management problem, not a s
 
 ## Feature to module map
 
-| Feature                            | Primary module          | Local files to inspect                                                                                                         |
-| ---------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Workflow phases and routing        | Workflow module         | `.suncode/workflow.md`                                                                                                         |
-| Per-turn next-action injection     | Workflow-state module   | `[workflow-state:STATUS]` blocks, `inject-workflow-state.py` or equivalent plugin                                              |
-| Task creation, status, archive     | Task store module       | `.suncode/tasks/<task>/task.json`, `.suncode/scripts/task.py`, `.suncode/scripts/common/task_store.py`                         |
-| Session-scoped current task        | Active-task runtime     | `.suncode/.runtime/sessions/<session-key>.json`, `.suncode/scripts/common/active_task.py`                                      |
-| Planning artifact/spec injection   | Context-loading module  | `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`, `inject-subagent-context.py`, platform agent preludes |
-| Research / implement / check roles | Agent and skill module  | Platform `agents/`, `skills/`, prompts, workflows                                                                              |
-| Team convention memory             | Spec module             | `.suncode/spec/**/index.md`, guideline files                                                                                   |
-| Developer memory                   | Workspace module        | `.suncode/workspace/<developer>/journal-*.md`                                                                                  |
-| Platform support                   | Platform adapter module | `.claude/`, `.codex/`, `.cursor/`, `.opencode/`, `.kiro/`, `.gemini/`, `.qoder/`, `.github/`, `.pi/`, and related settings     |
-| Finish and archive                 | Finish module           | `/suncode:finish-work`, `.suncode/scripts/add_session.py`, task archive scripts                                                |
+| Feature                            | Primary module          | Local files to inspect                                                                                                                                                      |
+| ---------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workflow phases and routing        | Workflow module         | `.suncode/workflow.md`                                                                                                                                                      |
+| Per-turn next-action injection     | Workflow-state module   | `[workflow-state:STATUS]` blocks, `inject-workflow-state.py` or equivalent plugin                                                                                           |
+| Task creation, status, archive     | Task store module       | `.suncode/tasks/<task>/task.json`, `.suncode/scripts/task.py`, `.suncode/scripts/common/task_store.py`                                                                      |
+| Session-scoped current task        | Active-task runtime     | `.suncode/.runtime/sessions/<session-key>.json`, `.suncode/scripts/common/active_task.py`                                                                                   |
+| Planning artifact/spec injection   | Context-loading module  | `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`, `inject-subagent-context.py`, platform agent preludes                                              |
+| Research / implement / check roles | Agent and skill module  | Platform `agents/`, `skills/`, prompts, workflows                                                                                                                           |
+| Team convention memory             | Spec module             | `.suncode/spec/**/index.md`, guideline files                                                                                                                                |
+| Developer memory                   | Workspace module        | `.suncode/workspace/<developer>/journal-*.md`                                                                                                                               |
+| Platform support                   | Platform adapter module | `.claude/`, `.cursor/`, `.opencode/`, `.engineer/`, `.codex/`, `.kiro/`, `.gemini/`, `.qoder/`, `.github/`, `.pi/`, `.reasonix/`, `.zcode/`, `.trae/`, and related settings |
+| Finish and archive                 | Finish module           | `/suncode:finish-work`, `.suncode/scripts/add_session.py`, task archive scripts                                                                                             |
 
 ## Workflow module
 
@@ -200,13 +200,14 @@ read during implementation and review, not pre-registered in JSONL.
 
 Suncode uses each platform's available primitives. The generated project files are the source of truth for an actual repository, but the default capability groups are:
 
-| Group                         | Platforms                                           | Startup context                                                         | Per-turn workflow-state                                           | Implementation/check context                                                                 |
-| ----------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Hook + hook-push sub-agent    | Claude Code, Cursor, OpenCode, CodeBuddy, Droid, Pi | Hook, plugin, or extension                                              | Hook or equivalent                                                | Hook injects JSONL entries, `prd.md`, `design.md` if present, and `implement.md` if present. |
-| Hook + pull-prelude sub-agent | Gemini CLI, Qoder, Copilot                          | Hook                                                                    | Hook                                                              | Sub-agent reads JSONL entries and task artifacts itself on startup.                          |
-| Codex                         | Codex                                               | `AGENTS.md`; `UserPromptSubmit` can inject a no-task bootstrap reminder | Optional hook when enabled (0.129+ also requires `/hooks` review) | Inline mode reads artifacts through skills; sub-agent mode uses pull-based preludes.         |
-| Kiro                          | Kiro                                                | Skill files under `.kiro/`                                              | No Suncode per-turn hook by default                               | Agent/skill files read Suncode context.                                                      |
-| Main-session workflow/skill   | Kilo, Antigravity, Devin                            | Manual workflow or skill entry                                          | No Suncode per-turn hook by default                               | Main session reads specs and task files inline.                                              |
+| Group                          | Platforms                                                     | Startup context                                                         | Per-turn workflow-state                                           | Implementation/check context                                                                 |
+| ------------------------------ | ------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Hook + hook-push sub-agent     | Claude Code, Cursor, OpenCode, Engineer, CodeBuddy, Droid, Pi | Hook, plugin, or extension                                              | Hook or equivalent                                                | Hook injects JSONL entries, `prd.md`, `design.md` if present, and `implement.md` if present. |
+| Hook + pull-prelude sub-agent  | Gemini CLI, Qoder, Copilot, Trae                              | Hook                                                                    | Hook                                                              | Sub-agent reads JSONL entries and task artifacts itself on startup.                          |
+| No-hook pull-prelude sub-agent | Reasonix, ZCode                                               | Manual command or skill entry                                           | none                                                              | Sub-agent reads JSONL entries and task artifacts itself on startup.                          |
+| Codex                          | Codex                                                         | `AGENTS.md`; `UserPromptSubmit` can inject a no-task bootstrap reminder | Optional hook when enabled (0.129+ also requires `/hooks` review) | Inline mode reads artifacts through skills; sub-agent mode uses pull-based preludes.         |
+| Kiro                           | Kiro                                                          | Skill files under `.kiro/`                                              | No Suncode per-turn hook by default                               | Agent/skill files read Suncode context.                                                      |
+| Main-session workflow/skill    | Kilo, Antigravity, Devin                                      | Manual workflow or skill entry                                          | No Suncode per-turn hook by default                               | Main session reads specs and task files inline.                                              |
 
 If the local settings file disagrees with this table, follow the local settings file. Suncode projects are intentionally customizable.
 

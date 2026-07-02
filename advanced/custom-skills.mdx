@@ -47,16 +47,17 @@ Instructions the AI follows when this skill is triggered.
 3. Report the result in this format: ...
 ```
 
-Skills ship on all 16 configured platforms — the location differs per platform:
+Skills ship on all 18 configured platforms — the location differs per platform:
 
 | Platform    | Location                                                                                              |
 | ----------- | ----------------------------------------------------------------------------------------------------- |
 | Claude Code | `.claude/skills/{name}/SKILL.md`                                                                      |
 | Cursor      | `.cursor/skills/{name}/SKILL.md`                                                                      |
 | OpenCode    | `.opencode/skills/{name}/SKILL.md`                                                                    |
+| Engineer    | `.engineer/skills/{name}/SKILL.md`                                                                    |
 | Codex       | `.codex/skills/{name}/SKILL.md` (plus a copy into `.agents/skills/` for the cross-platform ecosystem) |
 | Kiro        | `.kiro/skills/{name}/SKILL.md`                                                                        |
-| Gemini CLI  | `.gemini/skills/{name}/SKILL.md`                                                                      |
+| Gemini CLI  | `.agents/skills/{name}/SKILL.md`                                                                      |
 | Qoder       | `.qoder/skills/{name}/SKILL.md`                                                                       |
 | CodeBuddy   | `.codebuddy/skills/{name}/SKILL.md`                                                                   |
 | Copilot     | `.github/skills/{name}/SKILL.md`                                                                      |
@@ -65,6 +66,9 @@ Skills ship on all 16 configured platforms — the location differs per platform
 | Kilo        | `.kilocode/skills/{name}/SKILL.md`                                                                    |
 | Antigravity | `.agent/skills/{name}/SKILL.md`                                                                       |
 | Devin       | `.devin/skills/{name}/SKILL.md`                                                                       |
+| Reasonix    | `.reasonix/skills/{name}/SKILL.md`                                                                    |
+| ZCode       | `.agents/skills/{name}/SKILL.md`                                                                      |
+| Trae        | `.trae/skills/{name}/SKILL.md`                                                                        |
 
 `.agents/skills/{name}/SKILL.md` (the [agentskills.io](https://agentskills.io) cross-platform shared layer) is written by the Codex configurator and is directly usable by Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and other agents that read the standard.
 

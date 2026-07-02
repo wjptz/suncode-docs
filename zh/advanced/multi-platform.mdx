@@ -4,7 +4,7 @@ title: '多平台与团队配置'
 
 ## 多平台与团队配置
 
-Suncode 支持 16 个平台（Claude Code、Cursor、OpenCode、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Devin（原 Windsurf）、Qoder、CodeBuddy、GitHub Copilot、Droid、Pi Agent、Reasonix、ZCode），以及任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）。`.suncode/` 核心跨平台一致；差异在于**各平台如何交付 hook、extension、skill、sub-agent、command**。
+Suncode 支持 18 个平台（Claude Code、Cursor、OpenCode、Engineer、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Devin（原 Windsurf）、Qoder、CodeBuddy、GitHub Copilot、Droid、Pi Agent、Reasonix、ZCode、Trae），以及任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）。`.suncode/` 核心跨平台一致；差异在于**各平台如何交付 hook、extension、skill、sub-agent、command**。
 
 ### 加入已初始化的 Suncode 项目
 
@@ -36,23 +36,24 @@ Suncode 支持 16 个平台（Claude Code、Cursor、OpenCode、Codex、Kiro、K
 
 ### 能力矩阵
 
-| 能力                           | Claude Code | Cursor | OpenCode | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid | Pi Agent |
-| ------------------------------ | :---------: | :----: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: | :------: |
-| SessionStart / startup context |     ✅      |   ✅   |    ✅    |  ⚡   |  ⚡  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
-| Sub-agent 上下文注入           |     ✅      |   ✅   |    ✅    |  ❌   |  ❌  |   ❌   |  ❌   |    ✅     |   ❌    |  ✅   |    ✅    |
-| Sub-agent（`suncode-*`）       |     ✅      |   ✅   |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
-| Auto-trigger skill             |     ✅      |   ✅   |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
-| 显式 `/suncode:*` 命令         |     ✅      |   ✅   |    ✅    |   —   |  —   |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
+| 能力                           | Claude Code | Cursor | OpenCode | Engineer | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid | Pi Agent |
+| ------------------------------ | :---------: | :----: | :------: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: | :------: |
+| SessionStart / startup context |     ✅      |   ✅   |    ✅    |    ✅    |  ⚡   |  ⚡  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
+| Sub-agent 上下文注入           |     ✅      |   ✅   |    ✅    |    ✅    |  ❌   |  ❌  |   ❌   |  ❌   |    ✅     |   ❌    |  ✅   |    ✅    |
+| Sub-agent（`suncode-*`）       |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
+| Auto-trigger skill             |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
+| 显式 `/suncode:*` 命令         |     ✅      |   ✅   |    ✅    |    ✅    |   —   |  —   |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
 
 图例：✅ Suncode 写入配置并由平台执行 · ⚡ 部分支持（Codex 使用 `AGENTS.md` 加
 `UserPromptSubmit`；workflow breadcrumb 需要 `features.hooks = true`，0.129+
 还要走一次 `/hooks` 审批；Kiro 在 `suncode` agent 上带了每回合 `userPromptSubmit` hook，但用户需激活该 agent —— `chat.defaultAgent suncode` 或 `/agent swap`） · ❌ 平台不暴露这个事件 ·
 — 该平台没有命令原语，start / finish-work / continue 作为 skill 交付。Qoder 用的是
 `/suncode-{name}`（连字符，不是冒号），通过原生 Custom Commands 交付 `finish-work` /
-`continue`；`start` 由 SessionStart hook 自动注入。Pi Agent 走 extension，不走 Python hook 文件，
-但行为一致：会话上下文、Bash 环境变量传递、sub-agent context 注入都在 agent 动作前完成。
+`continue`；`start` 由 SessionStart hook 自动注入。Engineer 使用和 OpenCode 一样的
+OpenCode-compatible JS plugin surface，只是放在 `.engineer/` 下（OpenCode 放在 `.opencode/`）。
+Pi Agent 走 extension，不走 Python hook 文件，但行为一致：会话上下文、Bash 环境变量传递、sub-agent context 注入都在 agent 动作前完成。
 
-`.kilocode/`、`.agent/`（Antigravity）、`.devin/` 只有 workflow 和 skill，没有 sub-agent 也没有 hook。`.agents/skills/` 在所有平台都会写一份，作为跨平台共享层。
+`.kilocode/`、`.agent/`（Antigravity）、`.devin/` 只有 workflow 和 skill，没有 sub-agent 也没有 hook。`.agents/skills/` 是 Codex、Gemini CLI、ZCode 写入的共享 skill 层。
 
 ### Claude Code
 
@@ -98,6 +99,19 @@ OpenCode 1.2.x 是 class-1 平台（真 hook + 真 sub-agent）：
 - `.opencode/plugins/`：JS 插件：`session-start.js`、`inject-subagent-context.js`、`inject-workflow-state.js`
 
 插件是 factory function（OpenCode 1.2+）。Suncode 生成的版本对齐 Claude Code 行为。
+
+### Engineer
+
+```bash
+suncode init -u your-name --engineer
+```
+
+Engineer 兼容 OpenCode。Suncode 会把同一套 command、sub-agent、skill 和 JS plugin 写到 `.engineer/`，因此同一仓库可以同时保留独立的 `.opencode/` 配置。
+
+- `.engineer/commands/suncode/`：start / finish-work / continue
+- `.engineer/agents/`：`suncode-implement.md`、`suncode-check.md`、`suncode-research.md`
+- `.engineer/skills/`：5 个 suncode skill
+- `.engineer/plugins/`：JS 插件：`session-start.js`、`inject-subagent-context.js`、`inject-workflow-state.js`
 
 ### Codex
 
@@ -159,7 +173,7 @@ suncode init -u your-name --gemini
 布局：
 
 - `.gemini/commands/suncode/{name}.toml`：TOML 命令文件——`start.toml`、`finish-work.toml`、`continue.toml`
-- `.gemini/skills/suncode-{name}/SKILL.md`：5 个 suncode skill
+- `.agents/skills/suncode-{name}/SKILL.md`：Gemini CLI 0.40+ 作为 workspace alias 读取的共享 Suncode skill
 - `.gemini/agents/{name}.md`：带 pull-based prelude 的 sub-agent 定义（sub-agent 自己 `Read` 自己的 JSONL，因为 Gemini 没有 sub-agent `PreToolUse` hook）
 - `.gemini/hooks/session-start.py`：SessionStart hook
 - `.gemini/settings.json`：hook 配置（只有 SessionStart）
@@ -249,8 +263,11 @@ Suncode 还原生带有上面能力矩阵之外几个平台的配置器：
 - **Kilo**（`--kilo`）：写 `.kilocode/workflows/`（命令：`start`、`finish-work`）和 `.kilocode/skills/suncode-{name}/SKILL.md`（5 个 suncode skill）。没有 hook 集成。
 - **Antigravity**（`--antigravity`）：写 Antigravity 原生的 workflow 文件（3 个命令）。
 - **Devin**（`--devin`，原 Windsurf）：写 Devin 原生的 workflow 和 skill 文件。旧的 `--windsurf` flag 仍作为已废弃的别名可用。
+- **Reasonix**（`--reasonix`）：写 `.reasonix/skills/`，其中 workflow 作为 skill，implement/check 用带 `runAs: subagent` frontmatter 的 sub-agent skill。没有 hook 集成。
+- **ZCode**（`--zcode`）：写 `.zcode/commands/suncode/`、`.zcode/cli/agents/` 和 `.agents/skills/`。Sub-agent 走 pull-based prelude。
+- **Trae**（`--trae`）：写 `.trae/commands/`、`.trae/skills/`、`.trae/agents/`、`.trae/hooks/` 和 `.trae/hooks.json`。主会话上下文走 SessionStart/UserPromptSubmit hook，sub-agent 走 pull-based prelude。
 
-除了 16 个已配置平台，Suncode 还能被任何遵循 `.agents/skills/` 约定（[agentskills.io](https://agentskills.io) 规范）的 AI 编码 agent 直接使用。Codex 的 skill 就写在这个目录下，这些文件也能被该生态的其他 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）直接读取。这些平台上你通过 `.suncode/` 核心加上各自 agent 读取的 prelude 文件来管理 Suncode。
+除了 18 个已配置平台，Suncode 还能被任何遵循 `.agents/skills/` 约定（[agentskills.io](https://agentskills.io) 规范）的 AI 编码 agent 直接使用。Codex 的 skill 就写在这个目录下，这些文件也能被该生态的其他 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）直接读取。这些平台上你通过 `.suncode/` 核心加上各自 agent 读取的 prelude 文件来管理 Suncode。
 
 ### 操作系统
 
@@ -260,7 +277,7 @@ Suncode 还原生带有上面能力矩阵之外几个平台的配置器：
 | **Linux**   | ✅ 完整 | 已验证                                                                                            |
 | **Windows** | ✅ 完整 | 脚本全部 Python；Claude Code 通过 `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1` 确保 hook cwd 正确 |
 
-`.suncode/scripts/` 和 Python hook 需要 Python 3.9+。OpenCode 插件需要 Node.js 18+。
+`.suncode/scripts/` 和 Python hook 需要 Python 3.9+。OpenCode 和 Engineer 插件需要 Node.js 18+。
 
 ### 多开发者协作
 

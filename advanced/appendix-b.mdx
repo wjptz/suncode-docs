@@ -10,15 +10,15 @@ Suncode ships only a small session-boundary command surface. Everything else is 
 
 `finish-work` and `continue` are the normal user-invoked commands. `start` is only user-facing on platforms that do not auto-inject session context.
 
-| Platform                                                | Start                                                                     | Finish                 | Continue             | Delivery form                          |
-| ------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------- | -------------------- | -------------------------------------- |
-| Claude Code / OpenCode / Gemini CLI / CodeBuddy / Droid | automatic SessionStart hook                                               | `/suncode:finish-work` | `/suncode:continue`  | Slash command                          |
-| Cursor / Pi Agent / Qoder                               | automatic SessionStart hook or extension                                  | `/suncode-finish-work` | `/suncode-continue`  | Native command / prompt                |
-| Kiro                                                    | `@suncode:start`                                                          | `@suncode:finish-work` | `@suncode:continue`  | Skill via `@` picker                   |
-| Kilo                                                    | `/start.md`                                                               | `/finish-work.md`      | `/continue.md`       | Workflow file (`.kilocode/workflows/`) |
-| Antigravity / Devin                                     | workflow picker → `start` / `finish-work` / `continue`                    |                        |                      | Workflow file                          |
-| GitHub Copilot                                          | Run Prompt → `suncode-start` / `suncode-finish-work` / `suncode-continue` |                        |                      | Prompt file (`.github/prompts/`)       |
-| Codex                                                   | automatic `AGENTS.md` prelude; optional UserPromptSubmit hook             | skill / prompt entry   | skill / prompt entry | Skills + hooks                         |
+| Platform                                                           | Start                                                                     | Finish                 | Continue             | Delivery form                          |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------- | ---------------------- | -------------------- | -------------------------------------- |
+| Claude Code / OpenCode / Engineer / Gemini CLI / CodeBuddy / Droid | automatic SessionStart hook                                               | `/suncode:finish-work` | `/suncode:continue`  | Slash command                          |
+| Cursor / Pi Agent / Qoder                                          | automatic SessionStart hook or extension                                  | `/suncode-finish-work` | `/suncode-continue`  | Native command / prompt                |
+| Kiro                                                               | `@suncode:start`                                                          | `@suncode:finish-work` | `@suncode:continue`  | Skill via `@` picker                   |
+| Kilo                                                               | `/start.md`                                                               | `/finish-work.md`      | `/continue.md`       | Workflow file (`.kilocode/workflows/`) |
+| Antigravity / Devin                                                | workflow picker → `start` / `finish-work` / `continue`                    |                        |                      | Workflow file                          |
+| GitHub Copilot                                                     | Run Prompt → `suncode-start` / `suncode-finish-work` / `suncode-continue` |                        |                      | Prompt file (`.github/prompts/`)       |
+| Codex                                                              | automatic `AGENTS.md` prelude; optional UserPromptSubmit hook             | skill / prompt entry   | skill / prompt entry | Skills + hooks                         |
 
 ### Auto-trigger Skills
 
@@ -42,7 +42,7 @@ Spawned by the main session via the platform's sub-agent / Task primitive.
 | `suncode-implement` | Coding                | No `git commit`        |
 | `suncode-check`     | Verify + self-fix     | Has its own retry loop |
 
-Available as real sub-agents on Claude Code, Cursor, OpenCode, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, and Pi Agent. Kilo, Antigravity, and Devin run the same work inline in the main session. Context is hook/extension-injected on Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent; the other sub-agent platforms use a pull-based prelude.
+Available as real sub-agents on Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, Reasonix, ZCode, and Trae. Kilo, Antigravity, and Devin run the same work inline in the main session. Context is hook/extension-injected on Claude Code, Cursor, OpenCode, Engineer, CodeBuddy, Droid, and Pi Agent; the other sub-agent platforms use a pull-based prelude.
 
 ### Global CLI Commands
 

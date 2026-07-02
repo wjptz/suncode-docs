@@ -60,7 +60,7 @@ suncode upgrade --dry-run    # print the npm command without running it
 
 #### 1.2.3 `/suncode:start`: Start a session
 
-Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable or extension-capable platforms (Claude Code, Cursor, OpenCode, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, plus Codex with `features.hooks = true` — legacy: `codex_hooks = true`), the SessionStart hook or extension does this automatically, so `start` is usually not installed as a user-facing command.
+Run this at the beginning of a session if your platform does not auto-inject context. On hook-capable or extension-capable platforms (Claude Code, Cursor, OpenCode, Engineer, Gemini, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, Trae, plus Codex with `features.hooks = true` — legacy: `codex_hooks = true`), the SessionStart hook or extension does this automatically, so `start` is usually not installed as a user-facing command.
 
 What it does:
 
@@ -162,7 +162,7 @@ Sub-agents are isolated AI sub-processes with their own prompt and (platform-spe
 | `suncode-implement` | Writes code, no commit | Once requirements + plan exist, for the coding phase |
 | `suncode-check`     | Writes code (fixes)    | Verification phase; runs self-fix loop internally    |
 
-On Claude Code, Cursor, OpenCode, CodeBuddy, Droid, and Pi Agent, implementation and check sub-agents get the right JSONL context (`implement.jsonl`, `check.jsonl`) injected automatically before they start. Pi uses its extension rather than a Python hook. On the rest, the main session reads the JSONL files itself and passes the relevant content into sub-agent prompts. Research agents write durable findings under the task's `research/` directory.
+On Claude Code, Cursor, OpenCode, Engineer, CodeBuddy, Droid, and Pi Agent, implementation and check sub-agents get the right JSONL context (`implement.jsonl`, `check.jsonl`) injected automatically before they start. Pi uses its extension rather than a Python hook. On the rest, the actor reads the JSONL files through a pull-based prelude or the main session passes the relevant content into sub-agent prompts. Research agents write durable findings under the task's `research/` directory.
 
 ---
 

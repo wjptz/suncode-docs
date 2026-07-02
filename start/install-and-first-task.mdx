@@ -27,16 +27,16 @@ suncode init -u your-name
 
 # Explicit: configure one or more platforms
 suncode init -u your-name --claude
-suncode init -u your-name --claude --cursor --opencode
+suncode init -u your-name --claude --cursor --opencode --engineer
 suncode init -u your-name --codex --gemini
 suncode init -u your-name --pi
 ```
 
 `your-name` becomes your developer identity and creates your personal workspace at `.suncode/workspace/your-name/`.
 
-Supported flags: `--claude`, `--cursor`, `--opencode`, `--codex`, `--kiro`, `--gemini`, `--qoder`, `--codebuddy`, `--copilot`, `--droid`, `--pi`, `--antigravity`, `--devin` (alias: `--windsurf`, deprecated), `--kilo`, `--reasonix`, `--zcode`.
+Supported flags: `--claude`, `--cursor`, `--opencode`, `--engineer`, `--codex`, `--kiro`, `--gemini`, `--qoder`, `--codebuddy`, `--copilot`, `--droid`, `--pi`, `--antigravity`, `--devin` (alias: `--windsurf`, deprecated), `--kilo`, `--reasonix`, `--zcode`, `--trae`.
 
-Beyond these 16 configured platforms, any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more) can also consume Suncode: Codex writes its skills there, and the files are directly usable by the rest of that ecosystem.
+Beyond these 18 configured platforms, any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more) can also consume Suncode: Codex writes its skills there, and the files are directly usable by the rest of that ecosystem.
 
 ### Platform Configuration
 
@@ -47,9 +47,10 @@ Beyond these 16 configured platforms, any AI coding agent that reads the `.agent
 | **Claude Code** | `.claude/commands/suncode/`, `agents/`, `skills/`, `hooks/`                  |
 | **Cursor**      | `.cursor/commands/`, `agents/`, `skills/`, `hooks/`                          |
 | **OpenCode**    | `.opencode/commands/suncode/`, `agents/`, `skills/`, `plugins/`              |
+| **Engineer**    | `.engineer/commands/suncode/`, `agents/`, `skills/`, `plugins/`              |
 | **Codex**       | `.codex/agents/`, `skills/`, `hooks/` + root `AGENTS.md`                     |
 | **Kiro**        | `.kiro/agents/`, `skills/`, `hooks/`                                         |
-| **Gemini CLI**  | `.gemini/commands/suncode/`, `agents/`, `skills/`, `hooks/`                  |
+| **Gemini CLI**  | `.gemini/commands/suncode/`, `agents/`, `hooks/` + `.agents/skills/`         |
 | **Qoder**       | `.qoder/commands/`, `agents/`, `skills/`, `hooks/`                           |
 | **CodeBuddy**   | `.codebuddy/commands/suncode/`, `agents/`, `skills/`, `hooks/`               |
 | **Copilot**     | `.github/copilot/`, `prompts/`, `agents/`, `skills/`, `hooks/`               |
@@ -58,8 +59,11 @@ Beyond these 16 configured platforms, any AI coding agent that reads the `.agent
 | **Kilo**        | `.kilocode/workflows/`, `skills/`                                            |
 | **Antigravity** | `.agent/workflows/`, `skills/`                                               |
 | **Devin**       | `.devin/workflows/`, `skills/`                                               |
+| **Reasonix**    | `.reasonix/skills/`                                                          |
+| **ZCode**       | `.zcode/commands/suncode/`, `cli/agents/` + `.agents/skills/`                |
+| **Trae**        | `.trae/commands/`, `skills/`, `agents/`, `hooks/`, `hooks.json`              |
 
-`.agents/skills/` is a shared cross-platform layer ([agentskills.io](https://agentskills.io) standard). `suncode init` writes all skills into it too, so any agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, etc.) can consume them.
+`.agents/skills/` is a shared cross-platform layer ([agentskills.io](https://agentskills.io) standard). Codex, Gemini CLI, and ZCode write Suncode skills there, so any agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, etc.) can consume them when that layer is present.
 
 ### init Scenarios
 
@@ -102,8 +106,9 @@ consent question before Suncode creates a task and enters planning.
   Agent-capable platforms load Suncode context through a mix of SessionStart hooks, prompt hooks,
   extensions, agent files, and skills. Codex is different from Claude-style platforms: it relies on
   `AGENTS.md` plus the `UserPromptSubmit` hook, and the no-task breadcrumb can tell the AI to read
-  `suncode-start`. Only agent-less platforms (Kilo, Antigravity, Devin) ship `/suncode:start` (or
-  `/start.md`) as an explicit entry point.
+  `suncode-start`. Agent-less platforms (Kilo, Antigravity, Devin) ship `/suncode:start` (or
+  `/start.md`) as an explicit entry point; OpenCode and Engineer also ship `/suncode:start` as a
+  fallback while their JS plugins handle the normal startup path.
 </Note>
 
 ### Directory Structure
@@ -176,6 +181,7 @@ your-project/
 │
 ├── .cursor/           # Cursor: commands/ + rules/
 ├── .opencode/         # OpenCode: commands/suncode/, agents/, skills/, plugins/
+├── .engineer/         # Engineer: OpenCode-compatible commands, agents, skills, plugins
 ├── .codex/            # Codex: prompts/, skills/ + AGENTS.md at repo root
 ├── .kiro/             # Kiro: steering/, prompts/, skills/
 ├── .gemini/           # Gemini CLI: commands/suncode/
