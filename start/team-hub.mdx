@@ -43,15 +43,21 @@ suncode hub state
   ready or whether you should stay in the local workflow.
 </Tip>
 
-## Start from Hub work
+## Default Hub workflow
 
-After setup, pull available team work into your local Suncode workspace:
+After setup, use the high-level Hub commands for day-to-day work:
 
 ```bash
-suncode hub pull
+suncode hub state
+suncode hub intake --auto
+suncode hub plan-ready --task current
+suncode hub review --task current
+suncode hub finish --task current
 ```
 
-The pulled work becomes a normal Suncode task with Hub binding metadata. From there, the agent can plan, implement, check, and finish using the same Suncode phases you already use locally.
+`hub intake --auto` claims work only when exactly one assigned requirement is available. When multiple requirements are available, Hub returns an ambiguous result; choose the requirement ID explicitly with `suncode hub intake --requirement <id>`. Auto-created Hub tasks use `HUB-REQ-<requirementId>` at the start of `task.json.name` and `task.json.title`; human-facing titles, including Chinese titles, remain after that prefix while the directory slug stays ASCII.
+
+`hub plan-ready` submits planning artifacts, derives structured subtasks from `implement.md` when `subtasks.json` is absent, uploads subtasks, and runs the Hub start preflight. `task.py start` also runs the Hub preflight gate before local status changes for Hub-bound tasks.
 
 ## Review Hub-bound tasks
 
@@ -63,20 +69,20 @@ suncode hub review --task current
 
 When `hub.review.enabled` is true, Suncode creates the next local review round, captures the current diff, calls the configured provider, writes `reviews/round-NNN/review.json` plus a concise `result.md` report, uploads review artifacts through Hub, and syncs the task status. The first supported provider is Engineer, configured with `hub.review.provider: engineer`. The provider transcript is kept in `raw-output.md` only when `hub.review.engineer.saveRawOutput` is true.
 
-By default, `hub.review.required` is `false`: review results sync to Hub but do not block `suncode hub submit-completion`. Teams that require approval before completion can set `hub.review.required: true`; then completion is blocked until the latest approved review still matches the current diff.
+By default, `hub.review.required` is `false`: review results sync to Hub but do not block `suncode hub finish`. Teams that require approval before completion can set `hub.review.required: true`; then completion is blocked until the latest approved review still matches the current diff.
 
 ## How the agent uses Hub state
 
 Suncode injects a compact Hub status summary into supported agent sessions. The agent uses that summary to choose the safe path:
 
-| Hub state                    | Agent behavior                                                        |
-| ---------------------------- | --------------------------------------------------------------------- |
-| Hub is off or not configured | Use the normal local Suncode workflow.                                |
-| Sign-in is required          | Ask you to run `suncode hub login` before using Hub-specific actions. |
-| Hub is not reachable         | Do not start Hub-specific actions; continue locally or retry later.   |
-| Team work is available       | Suggest pulling or selecting Hub work.                                |
-| Current task is local-only   | Do not run Hub submission or status-sync commands for that task.      |
-| Current task is Hub-bound    | Keep local task progress aligned with the shared Hub work item.       |
+| Hub state                    | Agent behavior                                                         |
+| ---------------------------- | ---------------------------------------------------------------------- |
+| Hub is off or not configured | Use the normal local Suncode workflow.                                 |
+| Sign-in is required          | Ask you to run `suncode hub login` before using Hub-specific actions.  |
+| Hub is not reachable         | Do not start Hub-specific actions; continue locally or retry later.    |
+| Team work is available       | Use `hub intake`; do not guess when multiple requirements are present. |
+| Current task is local-only   | Do not run Hub submission or status-sync commands for that task.       |
+| Current task is Hub-bound    | Keep local task progress aligned with the shared Hub work item.        |
 
 This guardrail matters because a local task and a Hub-bound task can look similar in the file tree. The Hub state summary tells the agent which kind of task it is handling before it tries to sync anything.
 
@@ -84,22 +90,22 @@ This guardrail matters because a local task and a Hub-bound task can look simila
 
 Keep Hub documentation and conversations at the workflow level:
 
-| Do                                                         | Avoid                                                                        |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Use `suncode hub init`, `login`, `state`, `pull`, `logout` | Pasting internal service details, credentials, or secret values into prompts |
-| Share the project ID and team Hub location privately       | Publishing team-only Hub configuration in public docs or examples            |
-| Use `hub state` before team task actions                   | Running Hub submission or status-sync actions on ordinary local tasks        |
-| Keep local Suncode tasks for private work                  | Treating every task as team-synced just because Hub is configured            |
+| Do                                                                                   | Avoid                                                                        |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Use `suncode hub init`, `login`, `state`, `intake`, `plan-ready`, `review`, `finish` | Pasting internal service details, credentials, or secret values into prompts |
+| Share the project ID and team Hub location privately                                 | Publishing team-only Hub configuration in public docs or examples            |
+| Use `hub state` before team task actions                                             | Running Hub submission or status-sync actions on ordinary local tasks        |
+| Keep local Suncode tasks for private work                                            | Treating every task as team-synced just because Hub is configured            |
 
 ## Common situations
 
-| Situation                         | What to do                                                                |
-| --------------------------------- | ------------------------------------------------------------------------- |
-| Hub is not enabled                | Keep using local Suncode, or run `suncode hub init` if the team uses Hub. |
-| Sign-in is missing                | Run `suncode hub login`, then `suncode hub state`.                        |
-| Hub cannot be reached             | Continue locally for non-team work, or retry when the service is back.    |
-| There is available team work      | Run `suncode hub pull` and choose the work item you want to take.         |
-| Your current task says local-only | Finish it locally unless you explicitly bind it to team work.             |
+| Situation                         | What to do                                                                                               |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Hub is not enabled                | Keep using local Suncode, or run `suncode hub init` if the team uses Hub.                                |
+| Sign-in is missing                | Run `suncode hub login`, then `suncode hub state`.                                                       |
+| Hub cannot be reached             | Continue locally for non-team work, or retry when the service is back.                                   |
+| There is available team work      | Run `suncode hub intake --auto` for one item, or `suncode hub intake --requirement <id>` after choosing. |
+| Your current task says local-only | Finish it locally unless you explicitly bind it to team work.                                            |
 
 ## Next steps
 

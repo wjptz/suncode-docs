@@ -110,30 +110,32 @@ hub:
       timeoutSeconds: 900
       saveRawOutput: true
   sync:
+    beforeStart: true
     afterCreate: true
     afterStart: true
     afterFinish: false
     afterArchive: true
 ```
 
-| Key                                 | 含义                                                                                        |
-| ----------------------------------- | ------------------------------------------------------------------------------------------- |
-| `hub.enabled`                       | 设为 `true` 时当前项目进入 Hub 团队模式；其它值保持本地模式。                               |
-| `hub.mode`                          | 当前支持值是 `team`。                                                                       |
-| `hub.projectId`                     | 团队提供的项目标识，用来把本地 task 绑定到正确的 Hub 项目。                                 |
-| `hub.developerId`                   | 可选覆盖；保持 `null` 时使用已登录 Hub 身份或本地开发者 ID。                                |
-| `hub.apiBaseUrl`                    | 可选项目级覆盖；保持 `null` 时使用用户级 Hub 默认配置。                                     |
-| `hub.startReviewPolicy`             | Hub task 的开始评审策略，可选 `confirm`、`block` 或 `bypass`。                              |
-| `hub.review.enabled`                | 为 Hub 绑定 task 启用显式 `suncode hub review` 轮次。                                       |
-| `hub.review.provider`               | Review provider。第一版支持 `engineer`。                                                    |
-| `hub.review.required`               | 默认 `false`；设为 `true` 后，`submit-completion` 需要最新 review 对当前 diff 为 approved。 |
-| `hub.review.trigger`                | 默认 `manual`；通过 `suncode hub review` 显式触发。                                         |
-| `hub.review.unavailablePolicy`      | provider 不可用时的策略，可选 `bypass`、`warn` 或 `block`。                                 |
-| `hub.review.engineer.saveRawOutput` | 默认 `true`；设为 `false` 后不把 provider 原始 stdout/stderr 保存到 `raw-output.md`。       |
-| `hub.sync.afterCreate`              | Hub 绑定任务创建后同步任务创建状态。                                                        |
-| `hub.sync.afterStart`               | Hub 绑定任务开始时同步结构化 subtasks 和开始状态。                                          |
-| `hub.sync.afterFinish`              | 给需要 archive 前 finish hook 的团队保留；默认 `false`。                                    |
-| `hub.sync.afterArchive`             | Hub 绑定任务归档时提交完成状态。                                                            |
+| Key                                 | 含义                                                                                                                        |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `hub.enabled`                       | 设为 `true` 时当前项目进入 Hub 团队模式；其它值保持本地模式。                                                               |
+| `hub.mode`                          | 当前支持值是 `team`。                                                                                                       |
+| `hub.projectId`                     | 团队提供的项目 key，用来把本地 task 绑定到正确的 Hub 项目。配置名为兼容保留；Agent Hub API 里同一个值可能叫 `project_key`。 |
+| `hub.developerId`                   | 可选覆盖；保持 `null` 时使用已登录 Hub 身份或本地开发者 ID。                                                                |
+| `hub.apiBaseUrl`                    | 可选项目级覆盖；保持 `null` 时使用用户级 Hub 默认配置。                                                                     |
+| `hub.startReviewPolicy`             | Hub task 的开始评审策略，可选 `confirm`、`block` 或 `bypass`。                                                              |
+| `hub.review.enabled`                | 为 Hub 绑定 task 启用显式 `suncode hub review` 轮次。                                                                       |
+| `hub.review.provider`               | Review provider。第一版支持 `engineer`。                                                                                    |
+| `hub.review.required`               | 默认 `false`；设为 `true` 后，`submit-completion` 需要最新 review 对当前 diff 为 approved。                                 |
+| `hub.review.trigger`                | 默认 `manual`；通过 `suncode hub review` 显式触发。                                                                         |
+| `hub.review.unavailablePolicy`      | provider 不可用时的策略，可选 `bypass`、`warn` 或 `block`。                                                                 |
+| `hub.review.engineer.saveRawOutput` | 默认 `true`；设为 `false` 后不把 provider 原始 stdout/stderr 保存到 `raw-output.md`。                                       |
+| `hub.sync.beforeStart`              | 在 `task.py start` 改变本地状态前运行 Hub start preflight。Hub 关闭、本地任务和未绑定任务会跳过。                           |
+| `hub.sync.afterCreate`              | Hub 绑定任务创建后同步任务创建状态。                                                                                        |
+| `hub.sync.afterStart`               | Hub 绑定任务开始时同步结构化 subtasks 和开始状态。                                                                          |
+| `hub.sync.afterFinish`              | 给需要 archive 前 finish hook 的团队保留；默认 `false`。                                                                    |
+| `hub.sync.afterArchive`             | Hub 绑定任务归档时提交完成状态。                                                                                            |
 
 Hub review 以 task 为中心，由 CLI 编排。启用 review 后运行：
 

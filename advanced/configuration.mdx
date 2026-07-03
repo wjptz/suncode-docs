@@ -110,30 +110,32 @@ hub:
       timeoutSeconds: 900
       saveRawOutput: true
   sync:
+    beforeStart: true
     afterCreate: true
     afterStart: true
     afterFinish: false
     afterArchive: true
 ```
 
-| Key                                 | Meaning                                                                                                            |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `hub.enabled`                       | `true` opts this project into Hub team mode. Any other value keeps the project local.                              |
-| `hub.mode`                          | Current supported value is `team`.                                                                                 |
-| `hub.projectId`                     | Team-provided project identifier used to bind local tasks to the right Hub project.                                |
-| `hub.developerId`                   | Optional override. Leave `null` to use the signed-in Hub identity or local developer ID.                           |
-| `hub.apiBaseUrl`                    | Optional project override. Leave `null` to use the user-level Hub default.                                         |
-| `hub.startReviewPolicy`             | `confirm`, `block`, or `bypass` for start-review gating on Hub tasks.                                              |
-| `hub.review.enabled`                | Enables explicit `suncode hub review` rounds for Hub-bound tasks.                                                  |
-| `hub.review.provider`               | Review provider. The first supported provider is `engineer`.                                                       |
-| `hub.review.required`               | Default `false`. Set `true` to block `submit-completion` until the latest review is approved for the current diff. |
-| `hub.review.trigger`                | Default `manual`; run review explicitly with `suncode hub review`.                                                 |
-| `hub.review.unavailablePolicy`      | `bypass`, `warn`, or `block` when the configured review provider is unavailable.                                   |
-| `hub.review.engineer.saveRawOutput` | Default `true`; set `false` to avoid storing the provider's original stdout/stderr in `raw-output.md`.             |
-| `hub.sync.afterCreate`              | Sync task creation to Hub when a Hub-bound task is created.                                                        |
-| `hub.sync.afterStart`               | Sync structured subtasks and start state when a Hub-bound task starts.                                             |
-| `hub.sync.afterFinish`              | Reserved for teams that want a finish hook before archive. Default is `false`.                                     |
-| `hub.sync.afterArchive`             | Submit completion state when a Hub-bound task is archived.                                                         |
+| Key                                 | Meaning                                                                                                                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `hub.enabled`                       | `true` opts this project into Hub team mode. Any other value keeps the project local.                                                                                          |
+| `hub.mode`                          | Current supported value is `team`.                                                                                                                                             |
+| `hub.projectId`                     | Team-provided project key used to bind local tasks to the right Hub project. The setting name is kept for compatibility; Agent Hub APIs may call the same value `project_key`. |
+| `hub.developerId`                   | Optional override. Leave `null` to use the signed-in Hub identity or local developer ID.                                                                                       |
+| `hub.apiBaseUrl`                    | Optional project override. Leave `null` to use the user-level Hub default.                                                                                                     |
+| `hub.startReviewPolicy`             | `confirm`, `block`, or `bypass` for start-review gating on Hub tasks.                                                                                                          |
+| `hub.review.enabled`                | Enables explicit `suncode hub review` rounds for Hub-bound tasks.                                                                                                              |
+| `hub.review.provider`               | Review provider. The first supported provider is `engineer`.                                                                                                                   |
+| `hub.review.required`               | Default `false`. Set `true` to block `submit-completion` until the latest review is approved for the current diff.                                                             |
+| `hub.review.trigger`                | Default `manual`; run review explicitly with `suncode hub review`.                                                                                                             |
+| `hub.review.unavailablePolicy`      | `bypass`, `warn`, or `block` when the configured review provider is unavailable.                                                                                               |
+| `hub.review.engineer.saveRawOutput` | Default `true`; set `false` to avoid storing the provider's original stdout/stderr in `raw-output.md`.                                                                         |
+| `hub.sync.beforeStart`              | Runs Hub start preflight before `task.py start` changes local task status. Hub off, local-only, and unbound tasks are skipped.                                                 |
+| `hub.sync.afterCreate`              | Sync task creation to Hub when a Hub-bound task is created.                                                                                                                    |
+| `hub.sync.afterStart`               | Sync structured subtasks and start state when a Hub-bound task starts.                                                                                                         |
+| `hub.sync.afterFinish`              | Reserved for teams that want a finish hook before archive. Default is `false`.                                                                                                 |
+| `hub.sync.afterArchive`             | Submit completion state when a Hub-bound task is archived.                                                                                                                     |
 
 Hub review is task-centered and CLI-orchestrated. When review is enabled, run:
 

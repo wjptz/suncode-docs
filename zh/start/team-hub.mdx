@@ -35,15 +35,21 @@ suncode hub state
 
 <Tip>开始团队任务前先运行 `suncode hub state`。这是判断该走 Hub 流程还是本地流程的最快方式。</Tip>
 
-## 从 Hub 开始工作
+## 默认 Hub 流程
 
-配置完成后，把可处理的团队工作拉到本地 Suncode 工作区：
+配置完成后，日常使用这几个高层命令：
 
 ```bash
-suncode hub pull
+suncode hub state
+suncode hub intake --auto
+suncode hub plan-ready --task current
+suncode hub review --task current
+suncode hub finish --task current
 ```
 
-拉取后的工作会变成本地 Suncode task，并带有 Hub 绑定信息。之后 agent 仍然按你熟悉的 Suncode 阶段执行：规划、实现、检查和收尾。
+`hub intake --auto` 只有在恰好一个可接需求时才会接取。多个需求可接时会返回 ambiguous；先选择需求 ID，再运行 `suncode hub intake --requirement <id>`。自动创建的 Hub task 会让 `task.json.name` 和 `task.json.title` 以 `HUB-REQ-<requirementId>` 开头；中文标题保留在这个前缀之后，目录 slug 保持 ASCII。
+
+`hub plan-ready` 会提交规划 artifacts，从 `implement.md` 派生结构化 subtasks（有 `subtasks.json` 时使用 override），上传 subtasks，并运行 Hub start preflight。`task.py start` 也会在本地状态改变前对 Hub-bound task 运行 blocking preflight gate。
 
 ## Review Hub 绑定任务
 
@@ -55,7 +61,7 @@ suncode hub review --task current
 
 当 `hub.review.enabled` 为 `true` 时，Suncode 会创建下一轮本地 review，采集当前 diff，调用配置的 provider，写入 `reviews/round-NNN/review.json` 和简洁的 `result.md` 报告，通过 Hub 上传 review artifacts，并同步 task 状态。第一版支持的 provider 是 Engineer，对应配置是 `hub.review.provider: engineer`。只有 `hub.review.engineer.saveRawOutput` 为 true 时，provider 原始执行输出才会保存在 `raw-output.md`。
 
-默认 `hub.review.required` 是 `false`：review 结果会同步到 Hub，但不会阻塞 `suncode hub submit-completion`。如果团队要求完成前必须审核通过，可以设为 `hub.review.required: true`；此时 completion 会要求最新 approved review 仍然匹配当前 diff。
+默认 `hub.review.required` 是 `false`：review 结果会同步到 Hub，但不会阻塞 `suncode hub finish`。如果团队要求完成前必须审核通过，可以设为 `hub.review.required: true`；此时 completion 会要求最新 approved review 仍然匹配当前 diff。
 
 ## Agent 如何使用 Hub 状态
 
@@ -66,7 +72,7 @@ suncode hub review --task current
 | Hub 关闭或未配置   | 使用普通本地 Suncode 工作流。                 |
 | 需要登录           | 提醒你先运行 `suncode hub login`。            |
 | Hub 当前不可连接   | 不启动 Hub 专用动作；继续本地工作或稍后重试。 |
-| 有可处理团队工作   | 建议拉取或选择 Hub 工作项。                   |
+| 有可处理团队工作   | 使用 `hub intake`；多个需求时不要替用户猜。   |
 | 当前任务是本地任务 | 不对这个任务运行 Hub 提交或状态同步动作。     |
 | 当前任务已绑定 Hub | 让本地进度和团队 Hub 工作项保持一致。         |
 
@@ -76,22 +82,22 @@ suncode hub review --task current
 
 Hub 文档和对话只保留在工作流层面：
 
-| 应该做                                                      | 避免做                                               |
-| ----------------------------------------------------------- | ---------------------------------------------------- |
-| 使用 `suncode hub init`、`login`、`state`、`pull`、`logout` | 把内部服务细节、凭据或敏感值贴进 prompt              |
-| 在团队内部私下共享项目 ID 和 Hub 位置                       | 把团队专用 Hub 配置写进公开文档或公开示例            |
-| 团队任务动作前先看 `hub state`                              | 对普通本地任务运行 Hub 提交或状态同步动作            |
-| 私人工作继续使用本地 Suncode task                           | 因为项目配置了 Hub，就把所有 task 都当作团队同步任务 |
+| 应该做                                                                                | 避免做                                               |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| 使用 `suncode hub init`、`login`、`state`、`intake`、`plan-ready`、`review`、`finish` | 把内部服务细节、凭据或敏感值贴进 prompt              |
+| 在团队内部私下共享项目 ID 和 Hub 位置                                                 | 把团队专用 Hub 配置写进公开文档或公开示例            |
+| 团队任务动作前先看 `hub state`                                                        | 对普通本地任务运行 Hub 提交或状态同步动作            |
+| 私人工作继续使用本地 Suncode task                                                     | 因为项目配置了 Hub，就把所有 task 都当作团队同步任务 |
 
 ## 常见情况
 
-| 情况                   | 处理方式                                                            |
-| ---------------------- | ------------------------------------------------------------------- |
-| Hub 没有启用           | 继续使用本地 Suncode；如果团队使用 Hub，再运行 `suncode hub init`。 |
-| 还没有登录             | 运行 `suncode hub login`，然后再运行 `suncode hub state`。          |
-| Hub 当前不可连接       | 非团队工作可以继续本地推进；团队工作等服务恢复后再处理。            |
-| 有可处理团队工作       | 运行 `suncode hub pull`，选择你要接的工作项。                       |
-| 当前任务显示为本地任务 | 除非明确把它绑定到团队工作，否则按本地任务完成。                    |
+| 情况                   | 处理方式                                                                                                    |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Hub 没有启用           | 继续使用本地 Suncode；如果团队使用 Hub，再运行 `suncode hub init`。                                         |
+| 还没有登录             | 运行 `suncode hub login`，然后再运行 `suncode hub state`。                                                  |
+| Hub 当前不可连接       | 非团队工作可以继续本地推进；团队工作等服务恢复后再处理。                                                    |
+| 有可处理团队工作       | 单个需求运行 `suncode hub intake --auto`；多个需求先选 ID，再运行 `suncode hub intake --requirement <id>`。 |
+| 当前任务显示为本地任务 | 除非明确把它绑定到团队工作，否则按本地任务完成。                                                            |
 
 ## 下一步
 
