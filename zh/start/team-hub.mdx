@@ -33,6 +33,14 @@ suncode hub state
 
 `suncode hub init` 会引导你填写团队提供的 Hub 位置和项目 ID。`suncode hub login` 会让这台机器登录团队工作区。`suncode hub state` 用来确认当前项目是否已配置、已登录、可连接，并且是否可以开始处理 Hub 工作。
 
+非交互初始化可以显式传入必要值：
+
+```bash
+suncode hub init --api-base-url https://hub.example.com --project-id my-project --yes
+```
+
+如果接取需求后不希望自动刷新 `.suncode/spec/`，加上 `--no-auto-pull-spec`。之后仍然可以手动运行 `suncode hub pull-spec`。
+
 <Tip>开始团队任务前先运行 `suncode hub state`。这是判断该走 Hub 流程还是本地流程的最快方式。</Tip>
 
 ## 默认 Hub 流程
@@ -41,6 +49,7 @@ suncode hub state
 
 ```bash
 suncode hub state
+suncode hub pull
 suncode hub intake --auto
 suncode hub plan-ready --task current
 suncode hub review --task current
@@ -49,7 +58,43 @@ suncode hub finish --task current
 
 `hub intake --auto` 只有在恰好一个可接需求时才会接取。多个需求可接时会返回 ambiguous；先选择需求 ID，再运行 `suncode hub intake --requirement <id>`。自动创建的 Hub task 会让 `task.json.name` 和 `task.json.title` 以 `HUB-REQ-<requirementId>` 开头；中文标题保留在这个前缀之后，目录 slug 保持 ASCII。
 
-`hub plan-ready` 会提交规划 artifacts，从 `implement.md` 派生结构化 subtasks（有 `subtasks.json` 时使用 override），上传 subtasks，并运行 Hub start preflight。`task.py start` 也会在本地状态改变前对 Hub-bound task 运行 blocking preflight gate。
+如果 `hub.autoPullSpec` 是 `true`，intake 还会 best-effort 运行一次 `suncode hub pull-spec`。如果是 `false`，intake 输出会提示你在需要时手动运行 `suncode hub pull-spec`。
+
+`hub plan-ready` 会提交规划 artifacts，从 `implement.md` 派生结构化 subtasks（有 `subtasks.json` 时使用 override），上传 subtasks，并为 standard / change 任务运行 Hub start preflight。`task.py start` 也会在本地状态改变前对 Hub-bound standard / change 任务运行 blocking preflight gate。
+
+## Hub 任务类型
+
+Hub requirement 会带任务类型。Suncode 把它写入 `task.json.meta.hub.taskType`。
+
+| 类型       | 本地流程                                                                                                           | Hub 行为                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `standard` | 走常规 Suncode 规划、实施、检查、可选 review、提交和 finish 流程。                                                 | `plan-ready` 提交 plan 和 subtasks，然后运行 Hub start preflight。               |
+| `quick`    | 保持最小规划；跳过 check-agent review 和 Hub code review；记录最小确定性验证，然后仍通过 Hub finish 上传完成产物。 | `plan-ready` 提交已有 plan artifacts 和 subtasks，然后跳过 Hub start preflight。 |
+| `change`   | 以当前 requirement 为唯一权威；实现前阅读 `research/source-task.md` 理解旧需求背景，但不要把旧需求当作新验收标准。 | start 和 review 流程与 `standard` 相同；Hub 提供的 `sourceTask` 只保存安全摘要。 |
+
+quick 任务仍然需要走完成上传：
+
+```bash
+suncode hub plan-ready --task current
+python3 ./.suncode/scripts/task.py start <task-dir>
+# 实施快速变更
+suncode hub finish --task current
+```
+
+quick 任务在 `hub finish` 前必须有 `validation-summary.md`。文件里要么记录已执行的验证证据，要么写明 `未执行` 和具体原因。
+
+## 结构化 subtasks
+
+Hub 展示结构化子任务时，Suncode 会先读 `subtasks.json`。如果这个文件不存在，就从已 review 的 `implement.md` 实施清单派生：
+
+```md
+## 实施清单
+
+- [ ] [P1] 增加 API 契约: 实现命令和 payload 变更。
+- [ ] [P2] 更新文档: 记录新的用户可见行为。
+```
+
+每一项会变成 `{ priority, name, description }`。只有派生结果需要显式覆盖时，才写 `subtasks.json`。
 
 ## Review Hub 绑定任务
 
@@ -57,11 +102,54 @@ suncode hub finish --task current
 
 ```bash
 suncode hub review --task current
+suncode hub review --task current --module packages/cli/src/commands/hub
 ```
 
 当 `hub.review.enabled` 为 `true` 时，Suncode 会创建下一轮本地 review，采集当前 diff，调用配置的 provider，写入 `reviews/round-NNN/review.json` 和简洁的 `result.md` 报告，通过 Hub 上传 review artifacts，并同步 task 状态。第一版支持的 provider 是 Engineer，对应配置是 `hub.review.provider: engineer`。只有 `hub.review.engineer.saveRawOutput` 为 true 时，provider 原始执行输出才会保存在 `raw-output.md`。
 
 默认 `hub.review.required` 是 `false`：review 结果会同步到 Hub，但不会阻塞 `suncode hub finish`。如果团队要求完成前必须审核通过，可以设为 `hub.review.required: true`；此时 completion 会要求最新 approved review 仍然匹配当前 diff。
+
+Review 是只报告流程。Provider 收到的是精简 prompt：指向 `task.json`、`prd.md`、可选 `design.md`、可选 `implement.md`、可选 `subtasks.json`，以及从当前 diff 派生出的目录级范围提示。Provider 只需要返回一个 fenced JSON 结果；Suncode 会把它渲染成 `result.md` 和 `review.json`。
+
+远端 task 状态按 review 结果同步：
+
+| Review 结果         | Review 后 Hub task 状态 |
+| ------------------- | ----------------------- |
+| `approved`          | `in_review`             |
+| `changes_requested` | `in_progress`           |
+| `blocked`           | `in_progress`           |
+| quick task          | review 命令直接跳过     |
+
+使用 `suncode hub latest-review --task current` 读取最新本地 review 结果；使用 `suncode hub pull-review --task current` 拉取 Hub 侧 plan/start review 评论。
+
+## Finish 和产物
+
+`suncode hub finish --task current` 会提交项目 spec artifacts 和 completion artifacts。Completion artifacts 按存在即收集：
+
+| 文件                        | Artifact 类型            |
+| --------------------------- | ------------------------ |
+| `implementation-summary.md` | `implementation_summary` |
+| `validation-summary.md`     | `validation_summary`     |
+| `retrospective.md`          | `retrospective`          |
+| `reuse-assessment.md`       | `reuse_assessment`       |
+
+不是每个任务都必须生成四个文件；只生成本次工作有意义的文件即可。quick 任务例外：始终需要 `validation-summary.md`，并且要有验证证据或明确的未执行原因。
+
+如果只想上传特定 spec 文件，可以在 `hub finish` 或 `hub submit-spec` 里使用 `--file <path>`。
+
+## Knowledge 和共享包
+
+Hub 也可以分发团队知识和 AI package 文件：
+
+```bash
+suncode hub knowledge "retry policy"
+suncode hub skill-push my-skill
+suncode hub skill-pull my-skill
+suncode hub agent-push reviewer
+suncode hub agent-pull reviewer
+```
+
+Skill 位于 `.agents/skills/<name>/`。Agent package 位于 `.suncode/agents/<name>.md`。
 
 ## Agent 如何使用 Hub 状态
 

@@ -38,6 +38,7 @@ When a key is absent, Suncode uses its built-in default. Keep indentation consis
 | `session_auto_commit`    | `true`                    | Whether `add_session.py` and `task.py archive` auto-stage and auto-commit Suncode journal / task archive changes. |
 | `hooks`                  | unset                     | Shell commands that run after task lifecycle events.                                                              |
 | `hub`                    | disabled                  | Optional team collaboration block for binding local Suncode tasks to Suncode Hub work.                            |
+| `hub.autoPullSpec`       | `true`                    | Whether `suncode hub intake` automatically runs a best-effort `suncode hub pull-spec`.                            |
 | `packages`               | unset                     | Package declarations for monorepos, submodules, and polyrepo-style directories.                                   |
 | `default_package`        | unset                     | Fallback package when a command or task does not specify one.                                                     |
 | `update.skip`            | unset                     | Legacy update exclusion list that `suncode update` still honors during normal updates.                            |
@@ -68,10 +69,12 @@ Accepted values are `true`, `false`, `yes`, `no`, `1`, `0`, `on`, and `off` (cas
 
 ### Task lifecycle hooks
 
-`hooks` runs shell commands after task lifecycle events. Each command receives `TASK_JSON_PATH`, pointing at the task's `task.json`.
+`hooks` runs shell commands around task lifecycle events. Each command receives `TASK_JSON_PATH`, pointing at the task's `task.json`.
 
 ```yaml
 hooks:
+  before_start:
+    - "echo 'Task start preflight'"
   after_create:
     - "echo 'Task created'"
   after_start:
@@ -82,7 +85,7 @@ hooks:
     - "echo 'Task archived'"
 ```
 
-Supported events are `after_create`, `after_start`, `after_finish`, and `after_archive`. Hook failures print a warning but do not block the main task operation.
+Supported events are `before_start`, `after_create`, `after_start`, `after_finish`, and `after_archive`. `before_start` runs before `task.py start` mutates local state and can block the start operation. Other hook failures print a warning but do not block the main task operation.
 
 ### Hub team collaboration
 
@@ -98,6 +101,7 @@ hub:
   developerId: null
   apiBaseUrl: null
   startReviewPolicy: confirm
+  autoPullSpec: true
   review:
     enabled: false
     provider: engineer
@@ -117,25 +121,29 @@ hub:
     afterArchive: true
 ```
 
-| Key                                 | Meaning                                                                                                                                                                        |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `hub.enabled`                       | `true` opts this project into Hub team mode. Any other value keeps the project local.                                                                                          |
-| `hub.mode`                          | Current supported value is `team`.                                                                                                                                             |
-| `hub.projectId`                     | Team-provided project key used to bind local tasks to the right Hub project. The setting name is kept for compatibility; Agent Hub APIs may call the same value `project_key`. |
-| `hub.developerId`                   | Optional override. Leave `null` to use the signed-in Hub identity or local developer ID.                                                                                       |
-| `hub.apiBaseUrl`                    | Optional project override. Leave `null` to use the user-level Hub default.                                                                                                     |
-| `hub.startReviewPolicy`             | `confirm`, `block`, or `bypass` for start-review gating on Hub tasks.                                                                                                          |
-| `hub.review.enabled`                | Enables explicit `suncode hub review` rounds for Hub-bound tasks.                                                                                                              |
-| `hub.review.provider`               | Review provider. The first supported provider is `engineer`.                                                                                                                   |
-| `hub.review.required`               | Default `false`. Set `true` to block `submit-completion` until the latest review is approved for the current diff.                                                             |
-| `hub.review.trigger`                | Default `manual`; run review explicitly with `suncode hub review`.                                                                                                             |
-| `hub.review.unavailablePolicy`      | `bypass`, `warn`, or `block` when the configured review provider is unavailable.                                                                                               |
-| `hub.review.engineer.saveRawOutput` | Default `true`; set `false` to avoid storing the provider's original stdout/stderr in `raw-output.md`.                                                                         |
-| `hub.sync.beforeStart`              | Runs Hub start preflight before `task.py start` changes local task status. Hub off, local-only, and unbound tasks are skipped.                                                 |
-| `hub.sync.afterCreate`              | Sync task creation to Hub when a Hub-bound task is created.                                                                                                                    |
-| `hub.sync.afterStart`               | Sync structured subtasks and start state when a Hub-bound task starts.                                                                                                         |
-| `hub.sync.afterFinish`              | Reserved for teams that want a finish hook before archive. Default is `false`.                                                                                                 |
-| `hub.sync.afterArchive`             | Submit completion state when a Hub-bound task is archived.                                                                                                                     |
+| Key                                  | Meaning                                                                                                                                                                        |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `hub.enabled`                        | `true` opts this project into Hub team mode. Any other value keeps the project local.                                                                                          |
+| `hub.mode`                           | Current supported value is `team`.                                                                                                                                             |
+| `hub.projectId`                      | Team-provided project key used to bind local tasks to the right Hub project. The setting name is kept for compatibility; Agent Hub APIs may call the same value `project_key`. |
+| `hub.developerId`                    | Optional override. Leave `null` to use the signed-in Hub identity or local developer ID.                                                                                       |
+| `hub.apiBaseUrl`                     | Optional project override. Leave `null` to use the user-level Hub default.                                                                                                     |
+| `hub.startReviewPolicy`              | `confirm`, `block`, or `bypass` for start-review gating on Hub tasks.                                                                                                          |
+| `hub.autoPullSpec`                   | Default `true`. Set `false` to skip the automatic `suncode hub pull-spec` run after `suncode hub intake`; manual `pull-spec` still works.                                      |
+| `hub.review.enabled`                 | Enables explicit `suncode hub review` rounds for Hub-bound tasks.                                                                                                              |
+| `hub.review.provider`                | Review provider. The first supported provider is `engineer`.                                                                                                                   |
+| `hub.review.required`                | Default `false`. Set `true` to block `submit-completion` until the latest review is approved for the current diff.                                                             |
+| `hub.review.trigger`                 | Default `manual`; run review explicitly with `suncode hub review`.                                                                                                             |
+| `hub.review.unavailablePolicy`       | `bypass`, `warn`, or `block` when the configured review provider is unavailable.                                                                                               |
+| `hub.review.engineer.command`        | Executable used for the Engineer review provider. Default is `engineer`.                                                                                                       |
+| `hub.review.engineer.args`           | Argument array passed before the generated review instruction. Default is `["run"]`.                                                                                           |
+| `hub.review.engineer.timeoutSeconds` | Provider timeout in seconds. Default is `900`.                                                                                                                                 |
+| `hub.review.engineer.saveRawOutput`  | Default `true`; set `false` to avoid storing the provider's original stdout/stderr in `raw-output.md`.                                                                         |
+| `hub.sync.beforeStart`               | Runs Hub start preflight before `task.py start` changes local task status. Hub off, local-only, unbound, and quick tasks are skipped.                                          |
+| `hub.sync.afterCreate`               | Sync task creation to Hub when a Hub-bound task is created.                                                                                                                    |
+| `hub.sync.afterStart`                | Sync structured subtasks and start state when a Hub-bound task starts.                                                                                                         |
+| `hub.sync.afterFinish`               | Reserved for teams that want a finish hook before archive. Default is `false`.                                                                                                 |
+| `hub.sync.afterArchive`              | Submit completion state when a Hub-bound task is archived.                                                                                                                     |
 
 Hub review is task-centered and CLI-orchestrated. When review is enabled, run:
 
@@ -143,7 +151,9 @@ Hub review is task-centered and CLI-orchestrated. When review is enabled, run:
 suncode hub review --task current
 ```
 
-Suncode creates the next `reviews/round-NNN/` directory, captures the current diff, invokes the provider, writes `review.json` and a concise `result.md` review report, uploads review artifacts through the existing Hub artifact upload flow, and syncs task status. When `saveRawOutput` is true, Suncode also keeps the provider transcript in `raw-output.md` for diagnostics. The AI should read the result and fix `changes_requested` items; it should not hand-maintain review status or uploads.
+Suncode creates the next `reviews/round-NNN/` directory, captures the current diff, invokes the provider, writes `review.json` and a concise `result.md` review report, uploads review artifacts through the existing Hub artifact upload flow, and syncs task status. When `saveRawOutput` is true, Suncode also keeps the provider transcript in `raw-output.md` for diagnostics. Quick Hub tasks skip this command. The AI should read the result and fix `changes_requested` items; it should not hand-maintain review status or uploads.
+
+During review, Suncode marks the remote task `in_review`. If the provider returns `approved`, the task remains `in_review`; if it returns `changes_requested` or `blocked`, Suncode moves the remote task back to `in_progress`.
 
 Hub sign-in is separate from project configuration:
 

@@ -273,9 +273,11 @@ Phase 1 — Plan（和你互动）
  1.1 激活 suncode-brainstorm skill，和你一问一答澄清需求，迭代 prd.md
  1.2 复杂任务在实现前写 design.md 和 implement.md
  1.3 需要调研时，结论写到 research/
- 1.4 Sub-agent mode curate implement.jsonl / check.jsonl，只放 spec + research
-     路径，不放源码路径
- 1.5 Review 后 task.py start 把 status 改成 in_progress
+ 1.4 复杂任务的 implement.md 包含可解析的 "## 实施清单"；Hub 默认从这里派生
+     structured subtasks，除非 subtasks.json 显式覆盖。Sub-agent mode 还会
+     curate implement.jsonl / check.jsonl，只放 spec + research 路径，不放源码路径
+ 1.5 Review 后，Hub 任务先运行 suncode hub plan-ready，再用 task.py start
+     把 status 改成 in_progress。quick Hub task 保持最小规划，并跳过 Hub start preflight
 
 Phase 2 — Execute
  2.1 按 prd.md、存在时的 design.md、存在时的 implement.md 和相关 spec 实现。
@@ -287,8 +289,9 @@ Phase 3 — Finish
  3.1 激活 suncode-check skill，做最终验证
  3.2（按需）激活 suncode-break-loop skill 做 debug 复盘
  3.3 激活 suncode-update-spec skill，把新知识写回 .suncode/spec/
- 3.4 提出工作 commit 计划，提交确认的批次，然后运行 /suncode:finish-work
-     做 archive 和 journal 记账
+ 3.4 如果 standard/change Hub task 启用了 Hub code review，AI 在工作提交前运行
+     suncode hub review。quick Hub task 跳过 Hub review。然后 AI 提出工作 commit
+     计划，提交确认的批次，并运行 /suncode:finish-work 做 archive 和 journal 记账
 ```
 
 **AI 停下或跳步骤时**：跑 `/suncode:continue`，AI 根据当前 task 的 status、
@@ -331,7 +334,7 @@ suncode init -u your-name
 suncode init -u your-name --template electron-fullstack
 ```
 
-交互选择器会列出 [官方 marketplace](https://github.com/wjptz/suncode/tree/main/marketplace) 的所有模板，选一个或者直接从空 spec 开始。
+交互选择器会列出内置官方 marketplace 的所有模板，选一个或者直接从空 spec 开始。
 
 ### 自定义 Registry（`--registry`）
 

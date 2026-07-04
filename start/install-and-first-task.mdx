@@ -283,9 +283,13 @@ Phase 1 — Plan (interactive)
      one question at a time, iterating prd.md
  1.2 For complex tasks, AI writes design.md and implement.md before implementation
  1.3 When research is needed, findings land in research/
- 1.4 Sub-agent mode curates implement.jsonl / check.jsonl with spec + research
-     paths only, not source paths
- 1.5 After review, task.py start flips status to in_progress
+ 1.4 Complex implement.md includes a parseable "## 实施清单"; Hub derives
+     structured subtasks from it unless subtasks.json overrides it. Sub-agent
+     mode also curates implement.jsonl / check.jsonl with spec + research paths
+     only, not source paths
+ 1.5 After review, Hub tasks run suncode hub plan-ready, then task.py start
+     flips status to in_progress. Quick Hub tasks keep planning minimal and skip
+     Hub start preflight.
 
 Phase 2 — Execute
  2.1 AI implements against prd.md, design.md if present, implement.md if present,
@@ -299,8 +303,10 @@ Phase 3 — Finish
  3.2 (on demand) AI activates the suncode-break-loop skill for debug retrospective
  3.3 AI activates the suncode-update-spec skill and writes new learnings to
      .suncode/spec/
- 3.4 AI proposes the work commit plan, commits approved batches, then runs
-     /suncode:finish-work for archive and journal bookkeeping
+ 3.4 If Hub code review is enabled for a standard/change task, AI runs
+     suncode hub review before the work commit. Quick Hub tasks skip Hub review.
+     AI then proposes the work commit plan, commits approved batches, and runs
+     /suncode:finish-work for archive and journal bookkeeping.
 ```
 
 **When AI stalls or is skipping ahead**: run `/suncode:continue`. AI uses the
@@ -344,7 +350,7 @@ suncode init -u your-name
 suncode init -u your-name --template electron-fullstack
 ```
 
-The interactive picker shows all templates from the [official marketplace](https://github.com/wjptz/suncode/tree/main/marketplace). Choose one or start with blank specs.
+The interactive picker shows all templates from the bundled official marketplace. Choose one or start with blank specs.
 
 ### Custom Registry (`--registry`)
 

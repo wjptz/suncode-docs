@@ -146,6 +146,18 @@ human-readable plan; the JSONL file is a manifest for stable context files.
 Lightweight tasks can be PRD-only. Complex tasks need `prd.md`, `design.md`, and
 `implement.md` before they can start.
 
+Every complex `implement.md` should include a parseable implementation checklist:
+
+```md
+## 实施清单
+
+- [ ] [P1] Subtask name: Subtask description
+- [ ] [P2] Subtask name: Subtask description
+```
+
+Hub uses this checklist as the default source for structured subtasks. Write
+`subtasks.json` only when the derived structure needs an explicit override.
+
 ## 6. Context manifests stay narrow
 
 `implement.jsonl` and `check.jsonl` list stable context files to read before
@@ -176,6 +188,10 @@ python3 ./.suncode/scripts/task.py start <task-dir>
 ```
 
 This changes `task.json.status` from `planning` to `in_progress`.
+
+For Hub-bound tasks, run `suncode hub plan-ready --task current` before
+`task.py start`. Standard and change tasks run Hub start preflight; quick tasks
+upload available plan artifacts but skip Hub start preflight and plan approval.
 
 On the next prompt, the workflow-state hook injects the matching
 `[workflow-state:in_progress]` block. That block covers implementation, check,

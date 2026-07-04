@@ -38,6 +38,14 @@ suncode hub state
 
 `suncode hub init` guides you through the team Hub location and project ID your team provides. `suncode hub login` signs this machine into that team workspace. `suncode hub state` confirms whether the project is configured, signed in, reachable, and ready for Hub work.
 
+For non-interactive setup, pass the required values explicitly:
+
+```bash
+suncode hub init --api-base-url https://hub.example.com --project-id my-project --yes
+```
+
+Add `--no-auto-pull-spec` when requirement intake should not automatically refresh `.suncode/spec/`. Manual spec sync is still available with `suncode hub pull-spec`.
+
 <Tip>
   Run `suncode hub state` before starting team work. It is the quickest way to tell whether Hub is
   ready or whether you should stay in the local workflow.
@@ -49,6 +57,7 @@ After setup, use the high-level Hub commands for day-to-day work:
 
 ```bash
 suncode hub state
+suncode hub pull
 suncode hub intake --auto
 suncode hub plan-ready --task current
 suncode hub review --task current
@@ -57,7 +66,43 @@ suncode hub finish --task current
 
 `hub intake --auto` claims work only when exactly one assigned requirement is available. When multiple requirements are available, Hub returns an ambiguous result; choose the requirement ID explicitly with `suncode hub intake --requirement <id>`. Auto-created Hub tasks use `HUB-REQ-<requirementId>` at the start of `task.json.name` and `task.json.title`; human-facing titles, including Chinese titles, remain after that prefix while the directory slug stays ASCII.
 
-`hub plan-ready` submits planning artifacts, derives structured subtasks from `implement.md` when `subtasks.json` is absent, uploads subtasks, and runs the Hub start preflight. `task.py start` also runs the Hub preflight gate before local status changes for Hub-bound tasks.
+If `hub.autoPullSpec` is `true`, intake also runs a best-effort `suncode hub pull-spec`. If it is `false`, the intake output tells you to run `suncode hub pull-spec` when you want the latest Hub-managed specs.
+
+`hub plan-ready` submits planning artifacts, derives structured subtasks from `implement.md` when `subtasks.json` is absent, uploads subtasks, and runs the Hub start preflight for standard and change tasks. `task.py start` also runs the Hub preflight gate before local status changes for Hub-bound standard and change tasks.
+
+## Hub task types
+
+Hub requirements include a task type. Suncode stores it under `task.json.meta.hub.taskType`.
+
+| Type       | Local workflow                                                                                                                                                        | Hub behavior                                                                                     |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `standard` | Use the normal Suncode planning, implementation, check, optional review, commit, and finish flow.                                                                     | `plan-ready` submits plan and subtasks, then runs Hub start preflight.                           |
+| `quick`    | Keep planning minimal. Skip the check-agent review and Hub code review. Record minimal deterministic validation, then finish through Hub so artifacts still upload.   | `plan-ready` submits available plan artifacts and subtasks, then skips Hub start preflight.      |
+| `change`   | Treat the current requirement as authoritative. Read `research/source-task.md` only to understand the previous requirement background before implementing the change. | Same start and review flow as `standard`; Hub-provided `sourceTask` is stored as a safe summary. |
+
+For quick tasks, completion still goes through:
+
+```bash
+suncode hub plan-ready --task current
+python3 ./.suncode/scripts/task.py start <task-dir>
+# implement the quick change
+suncode hub finish --task current
+```
+
+Quick tasks must include `validation-summary.md` before `hub finish`. The file must contain either executed validation evidence, or `未执行` plus a concrete reason.
+
+## Structured subtasks
+
+For Hub display, Suncode first checks `subtasks.json`. When that file is absent, it derives structured subtasks from the reviewed `implement.md` checklist:
+
+```md
+## 实施清单
+
+- [ ] [P1] Add API contract: Implement the command and payload changes.
+- [ ] [P2] Update docs: Document the new user-facing behavior.
+```
+
+Each item becomes `{ priority, name, description }`. Write `subtasks.json` only when the derived checklist needs an explicit override.
 
 ## Review Hub-bound tasks
 
@@ -65,11 +110,54 @@ Projects can opt into a task-centered review round without enabling a full branc
 
 ```bash
 suncode hub review --task current
+suncode hub review --task current --module packages/cli/src/commands/hub
 ```
 
 When `hub.review.enabled` is true, Suncode creates the next local review round, captures the current diff, calls the configured provider, writes `reviews/round-NNN/review.json` plus a concise `result.md` report, uploads review artifacts through Hub, and syncs the task status. The first supported provider is Engineer, configured with `hub.review.provider: engineer`. The provider transcript is kept in `raw-output.md` only when `hub.review.engineer.saveRawOutput` is true.
 
 By default, `hub.review.required` is `false`: review results sync to Hub but do not block `suncode hub finish`. Teams that require approval before completion can set `hub.review.required: true`; then completion is blocked until the latest approved review still matches the current diff.
+
+Review is report-only. The provider receives a compact prompt that points at `task.json`, `prd.md`, optional `design.md`, optional `implement.md`, optional `subtasks.json`, and directory-level hints derived from the current diff. It must return one fenced JSON result; Suncode renders that into `result.md` and `review.json`.
+
+Remote task status follows the review result:
+
+| Review result       | Hub task status after review |
+| ------------------- | ---------------------------- |
+| `approved`          | `in_review`                  |
+| `changes_requested` | `in_progress`                |
+| `blocked`           | `in_progress`                |
+| quick task          | review command is skipped    |
+
+Use `suncode hub latest-review --task current` to read the latest local review result, and `suncode hub pull-review --task current` to pull Hub-side plan/start review comments.
+
+## Finish and artifacts
+
+`suncode hub finish --task current` submits project spec artifacts and completion artifacts. Completion artifacts are collected only when the files exist:
+
+| File                        | Artifact type            |
+| --------------------------- | ------------------------ |
+| `implementation-summary.md` | `implementation_summary` |
+| `validation-summary.md`     | `validation_summary`     |
+| `retrospective.md`          | `retrospective`          |
+| `reuse-assessment.md`       | `reuse_assessment`       |
+
+You do not have to create all four files for every task. Create the files that are meaningful for the work. Quick tasks are the exception: they always need `validation-summary.md` with evidence or an explicit not-run reason.
+
+Use `--file <path>` with `hub finish` or `hub submit-spec` when you want to upload only specific spec files.
+
+## Knowledge and shared packages
+
+Hub can also distribute team knowledge and AI package files:
+
+```bash
+suncode hub knowledge "retry policy"
+suncode hub skill-push my-skill
+suncode hub skill-pull my-skill
+suncode hub agent-push reviewer
+suncode hub agent-pull reviewer
+```
+
+Skills live under `.agents/skills/<name>/`. Agent packages live under `.suncode/agents/<name>.md`.
 
 ## How the agent uses Hub state
 

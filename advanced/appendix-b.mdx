@@ -51,6 +51,42 @@ Available as real sub-agents on Claude Code, Cursor, OpenCode, Engineer, Codex, 
 | `suncode upgrade` | Upgrade the globally installed Suncode CLI package   | `suncode upgrade [--tag <tag>]`                |
 | `suncode update`  | Sync the current project's Suncode files to this CLI | `suncode update [--dry-run] [--migrate] [...]` |
 
+### Hub CLI Commands
+
+Hub commands are optional. They are active only when `.suncode/config.yaml` contains `hub.enabled: true` and the project is signed in with `suncode hub login`.
+
+| Command                         | Purpose                                                                   | Usage                                                              |
+| ------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `suncode hub init`              | Write Hub project config and user-level default Hub URL                   | `suncode hub init [--no-auto-pull-spec] [--yes] [...]`             |
+| `suncode hub login`             | Sign in to the configured Hub service                                     | `suncode hub login [--api-base-url <url>] [--email <email>]`       |
+| `suncode hub logout`            | Remove the local Hub session for a service                                | `suncode hub logout [--api-base-url <url>]`                        |
+| `suncode hub state`             | Show config, login, service, work, and current-task state                 | `suncode hub state [--json] [--prompt] [--hook]`                   |
+| `suncode hub status`            | Show whether Hub is enabled for this project                              | `suncode hub status`                                               |
+| `suncode hub pull`              | List requirements assigned to the current developer                       | `suncode hub pull`                                                 |
+| `suncode hub intake`            | Claim a Hub requirement into a local Suncode task                         | `suncode hub intake --auto` or `--requirement <id>`                |
+| `suncode hub pull-spec`         | Pull the authoritative project spec bundle from Hub                       | `suncode hub pull-spec [--json]`                                   |
+| `suncode hub sync`              | Pull latest requirement details and requirement changes                   | `suncode hub sync --task current [--cursor <cursor>]`              |
+| `suncode hub plan-ready`        | Submit plan artifacts and structured subtasks                             | `suncode hub plan-ready --task current [--debug]`                  |
+| `suncode hub review`            | Run a post-implementation Hub code review round                           | `suncode hub review --task current [--module <path>]`              |
+| `suncode hub latest-review`     | Read the latest local Hub review result                                   | `suncode hub latest-review --task current`                         |
+| `suncode hub pull-review`       | Pull Hub-side plan/start review comments                                  | `suncode hub pull-review --task current [--cursor <cursor>]`       |
+| `suncode hub finish`            | Submit final spec and completion artifacts                                | `suncode hub finish --task current [--file <path>]`                |
+| `suncode hub submit-plan`       | Upload current task planning artifacts                                    | `suncode hub submit-plan --task current [--force]`                 |
+| `suncode hub submit-subtasks`   | Upload structured subtasks derived from `subtasks.json` or `implement.md` | `suncode hub submit-subtasks --task current [--force]`             |
+| `suncode hub submit-spec`       | Upload project-level spec artifacts                                       | `suncode hub submit-spec --task current [--file <path>] [--force]` |
+| `suncode hub submit-completion` | Upload completion artifacts                                               | `suncode hub submit-completion --task current [--force]`           |
+| `suncode hub create-task`       | Create or bind the remote Hub task for a local task                       | `suncode hub create-task --task current [--best-effort]`           |
+| `suncode hub preflight-start`   | Ask Hub whether the task can start development                            | `suncode hub preflight-start --task current`                       |
+| `suncode hub mark-started`      | Mark a bound Hub task as started                                          | `suncode hub mark-started --task current [--status in_progress]`   |
+| `suncode hub sync-pending`      | Retry queued best-effort Hub lifecycle sync failures                      | `suncode hub sync-pending`                                         |
+| `suncode hub knowledge`         | Search the current project's Hub knowledge base                           | `suncode hub knowledge "<query>" [--top-k <n>]`                    |
+| `suncode hub skill-push`        | Upload a local `.agents/skills/<name>/` package                           | `suncode hub skill-push <skill-name>`                              |
+| `suncode hub skill-pull`        | Download a Hub skill package into `.agents/skills/`                       | `suncode hub skill-pull <skill-name>`                              |
+| `suncode hub agent-push`        | Upload a local `.suncode/agents/<name>.md` package                        | `suncode hub agent-push <agent-name>`                              |
+| `suncode hub agent-pull`        | Download a Hub agent package into `.suncode/agents/`                      | `suncode hub agent-pull <agent-name>`                              |
+
+`suncode hub spec-deletions list|keep|discard` manages local spec candidates that Hub deleted but Suncode preserved for review. `suncode hub download-document` is a lower-level helper for signed Hub document payloads.
+
 ### `task.py` Subcommands
 
 | Subcommand        | Purpose                                                                                           | Usage                                                              |
@@ -60,6 +96,7 @@ Available as real sub-agents on Claude Code, Cursor, OpenCode, Engineer, Codex, 
 | `validate`        | Validate JSONL                                                                                    | `task.py validate "$DIR"`                                          |
 | `list-context`    | View all entries                                                                                  | `task.py list-context "$DIR"`                                      |
 | `start`           | Set as current task for this AI session/window                                                    | `task.py start "$DIR"`                                             |
+| `current`         | Show the current task for this AI session/window                                                  | `task.py current [--source]`                                       |
 | `finish`          | Clear current task for this AI session/window                                                     | `task.py finish`                                                   |
 | `set-branch`      | Set branch name                                                                                   | `task.py set-branch "$DIR" "feature/xxx"`                          |
 | `set-base-branch` | Set PR target branch                                                                              | `task.py set-base-branch "$DIR" "main"`                            |
@@ -69,6 +106,8 @@ Available as real sub-agents on Claude Code, Cursor, OpenCode, Engineer, Codex, 
 | `archive`         | Archive task                                                                                      | `task.py archive <name>`                                           |
 | `list`            | List active tasks                                                                                 | `task.py list [--mine] [--status <s>]`                             |
 | `list-archive`    | List archived tasks                                                                               | `task.py list-archive [YYYY-MM]`                                   |
+
+`task.py create` also accepts Hub metadata options such as `--hub-project-id`, `--hub-developer-id`, `--hub-requirement-id`, `--hub-requirement-revision`, `--hub-task-role`, `--hub-parent-local-task-id`, and `--hub-parent-remote-task-id`. Normal Hub intake should still use `suncode hub intake`; these flags are for advanced binding and tests.
 
 ### Python Scripts
 
