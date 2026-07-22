@@ -291,6 +291,11 @@ TASK_DIR=$(./.suncode/scripts/task.py create "新增用户登录" \
 ./.suncode/scripts/task.py list --mine            # 只看自己的
 ./.suncode/scripts/task.py list --status review   # 按状态过滤
 
+# 稳定的机器可读状态
+./.suncode/scripts/task.py current --json
+./.suncode/scripts/task.py list --json
+./.suncode/scripts/task.py list --mine --json
+
 # 归档完成的任务
 ./.suncode/scripts/task.py archive user-login
 # 移动到 archive/2026-02/
@@ -299,6 +304,15 @@ TASK_DIR=$(./.suncode/scripts/task.py create "新增用户登录" \
 ./.suncode/scripts/task.py list-archive
 ./.suncode/scripts/task.py list-archive 2026-02  # 按月过滤
 ```
+
+`current --json` 返回 `{current_task, source, stale}`，无当前任务时 exit 1。
+`list --json` 返回 `{tasks:[...]}`；每项同时有持久化 `status` 和派生
+`display_status`，所以子任务已启动时，父任务可显示为 `active` 而不修改
+`task.json`。
+
+新任务会把仓库默认分支记为 `base_branch`。无法解析远程默认分支时，
+Suncode 会警告并回退到当前 checkout 分支。可用
+`task.py create "title" --base-branch <branch>` 显式覆盖。
 
 ### 2.3 `task.json` Schema
 

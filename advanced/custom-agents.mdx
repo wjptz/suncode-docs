@@ -7,14 +7,16 @@ title: 'Custom Sub-agents'
 Suncode ships three sub-agents (`suncode-implement`, `suncode-check`, `suncode-research`). You can modify them or add your own. This chapter walks through the Claude Code format as the main example, then lists the frontmatter differences on other platforms.
 
 <Note>
-  Sub-agents ship on 15 of 18 configured platforms: Claude Code, Cursor, OpenCode, Engineer, Codex,
-  Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, Reasonix, ZCode, Trae. The agent
-  file format varies by platform (Markdown / TOML / JSON), and on platforms without a `PreToolUse`
-  hook or extension equivalent the sub-agents read their JSONL manifest plus `prd.md`, `design.md`
-  if present, and `implement.md` if present via a pull-based prelude instead of having that context
-  injected. Codex can also run in inline mode, where the main session reads the same artifacts
-  through skills. Kilo, Antigravity, and Devin do not expose a sub-agent primitive — the implement /
-  check work runs inline in the main session.
+  Sub-agent workflows ship on 18 of 21 configured platforms: Claude Code, Cursor, OpenCode,
+  Engineer, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, Oh My Pi, Reasonix,
+  ZCode, Trae, Grok Build, and Kimi Code. The agent file format varies by platform (Markdown / TOML
+  / JSON), and on platforms without a `PreToolUse` hook or extension equivalent the sub-agents read
+  their JSONL manifest plus `prd.md`, `design.md` if present, and `implement.md` if present via a
+  pull-based prelude instead of having that context injected. Codex `SubagentStart` provides native
+  role context when dispatch is enabled and keeps a pull fallback; Codex can also run in its default
+  inline mode, where the main session reads the same artifacts through skills. Kimi uses built-in
+  `coder` / `explore` agents with Suncode role skills. Kilo, Antigravity, and Devin do not expose a
+  sub-agent primitive — the implement / check work runs inline in the main session.
 </Note>
 
 ### Sub-agent definition (Claude Code example)

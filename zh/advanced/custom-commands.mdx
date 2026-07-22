@@ -8,7 +8,7 @@ Suncode 原生带的 slash 命令留得很少。Hook-backed agent-capable 平台
 
 ### 命令文件格式和位置
 
-18 个平台按交付形态分三组：
+21 个平台按交付形态分三组：
 
 **显式 slash 命令**——用户输入 `/suncode:<name>`，平台把命令文件内容注入为 prompt。
 
@@ -24,9 +24,11 @@ Suncode 原生带的 slash 命令留得很少。Hook-backed agent-capable 平台
 | CodeBuddy   | `.codebuddy/commands/suncode/{name}.md`                                           | `/suncode:{name}` |
 | Droid       | `.factory/commands/suncode/{name}.md`                                             | `/suncode:{name}` |
 | Pi Agent    | `.pi/prompts/suncode-{name}.md`                                                   | `/suncode-{name}` |
+| Oh My Pi    | `.omp/commands/suncode-{name}.md`                                                 | `/suncode:{name}` |
 | Copilot     | `.github/prompts/suncode-{name}.prompt.md`                                        | prompt 文件选择器 |
 | ZCode       | `.zcode/commands/suncode/{name}.md`                                               | `/suncode:{name}` |
 | Trae        | `.trae/commands/suncode-{name}.md`                                                | `/suncode-{name}` |
+| Grok Build  | `.grok/commands/suncode-{name}.md`                                                | `/suncode-{name}` |
 
 命令文件是 Markdown；Gemini 用 TOML（`prompt = """..."""` 字段）。
 
@@ -40,10 +42,11 @@ Suncode 原生带的 slash 命令留得很少。Hook-backed agent-capable 平台
 
 **Skill-only**——完全没有 slash 命令原语的平台，`start` / `finish-work` / `continue` 全都做成 auto-trigger skill。
 
-| 平台     | 命令在哪里                                 | 调用方式                           |
-| -------- | ------------------------------------------ | ---------------------------------- |
-| Kiro     | `.kiro/skills/suncode-{name}/SKILL.md`     | skill 匹配（或 `@suncode:{name}`） |
-| Reasonix | `.reasonix/skills/suncode-{name}/SKILL.md` | `/skill suncode-{name}`            |
+| 平台      | 命令在哪里                                  | 调用方式                           |
+| --------- | ------------------------------------------- | ---------------------------------- |
+| Kiro      | `.kiro/skills/suncode-{name}/SKILL.md`      | skill 匹配（或 `@suncode:{name}`） |
+| Kimi Code | `.kimi-code/skills/suncode-{name}/SKILL.md` | `/skill:suncode-{name}`            |
+| Reasonix  | `.reasonix/skills/suncode-{name}/SKILL.md`  | `/skill suncode-{name}`            |
 
 ### 什么时候用命令，什么时候用 skill
 

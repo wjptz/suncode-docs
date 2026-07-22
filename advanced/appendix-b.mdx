@@ -10,15 +10,17 @@ Suncode ships only a small session-boundary command surface. Everything else is 
 
 `finish-work` and `continue` are the normal user-invoked commands. `start` is only user-facing on platforms that do not auto-inject session context.
 
-| Platform                                                           | Start                                                                     | Finish                 | Continue             | Delivery form                          |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------- | ---------------------- | -------------------- | -------------------------------------- |
-| Claude Code / OpenCode / Engineer / Gemini CLI / CodeBuddy / Droid | automatic SessionStart hook                                               | `/suncode:finish-work` | `/suncode:continue`  | Slash command                          |
-| Cursor / Pi Agent / Qoder                                          | automatic SessionStart hook or extension                                  | `/suncode-finish-work` | `/suncode-continue`  | Native command / prompt                |
-| Kiro                                                               | `@suncode:start`                                                          | `@suncode:finish-work` | `@suncode:continue`  | Skill via `@` picker                   |
-| Kilo                                                               | `/start.md`                                                               | `/finish-work.md`      | `/continue.md`       | Workflow file (`.kilocode/workflows/`) |
-| Antigravity / Devin                                                | workflow picker → `start` / `finish-work` / `continue`                    |                        |                      | Workflow file                          |
-| GitHub Copilot                                                     | Run Prompt → `suncode-start` / `suncode-finish-work` / `suncode-continue` |                        |                      | Prompt file (`.github/prompts/`)       |
-| Codex                                                              | automatic `AGENTS.md` prelude; optional UserPromptSubmit hook             | skill / prompt entry   | skill / prompt entry | Skills + hooks                         |
+| Platform                                                           | Start                                                                     | Finish                       | Continue                  | Delivery form                          |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------- | ---------------------------- | ------------------------- | -------------------------------------- |
+| Claude Code / OpenCode / Engineer / Gemini CLI / CodeBuddy / Droid | automatic SessionStart hook                                               | `/suncode:finish-work`       | `/suncode:continue`       | Slash command                          |
+| Cursor / Pi Agent / Qoder                                          | automatic SessionStart hook or extension                                  | `/suncode-finish-work`       | `/suncode-continue`       | Native command / prompt                |
+| Kiro                                                               | `@suncode:start`                                                          | `@suncode:finish-work`       | `@suncode:continue`       | Skill via `@` picker                   |
+| Kilo                                                               | `/start.md`                                                               | `/finish-work.md`            | `/continue.md`            | Workflow file (`.kilocode/workflows/`) |
+| Antigravity / Devin                                                | workflow picker → `start` / `finish-work` / `continue`                    |                              |                           | Workflow file                          |
+| GitHub Copilot                                                     | Run Prompt → `suncode-start` / `suncode-finish-work` / `suncode-continue` |                              |                           | Prompt file (`.github/prompts/`)       |
+| Codex                                                              | automatic `AGENTS.md` prelude; optional UserPromptSubmit hook             | skill / prompt entry         | skill / prompt entry      | Skills + hooks                         |
+| Oh My Pi / Grok Build                                              | platform-specific Suncode command                                         | Suncode command              | Suncode command           | Native command files                   |
+| Kimi Code                                                          | `/skill:suncode-start`                                                    | `/skill:suncode-finish-work` | `/skill:suncode-continue` | Private Kimi skills                    |
 
 ### Auto-trigger Skills
 
@@ -42,14 +44,23 @@ Spawned by the main session via the platform's sub-agent / Task primitive.
 | `suncode-implement` | Coding                | No `git commit`        |
 | `suncode-check`     | Verify + self-fix     | Has its own retry loop |
 
-Available as real sub-agents on Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, Reasonix, ZCode, and Trae. Kilo, Antigravity, and Devin run the same work inline in the main session. Context is hook/extension-injected on Claude Code, Cursor, OpenCode, Engineer, CodeBuddy, Droid, and Pi Agent; the other sub-agent platforms use a pull-based prelude.
+Available as sub-agent workflows on Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, Oh My Pi, Reasonix, ZCode, Trae, Grok Build, and Kimi Code. Kilo, Antigravity, and Devin run the same work inline in the main session. Codex uses native `SubagentStart` context when dispatch is enabled and retains a pull fallback; Grok and Kimi are pull-based.
 
 ### Global CLI Commands
 
-| Command           | Purpose                                              | Usage                                          |
-| ----------------- | ---------------------------------------------------- | ---------------------------------------------- |
-| `suncode upgrade` | Upgrade the globally installed Suncode CLI package   | `suncode upgrade [--tag <tag>]`                |
-| `suncode update`  | Sync the current project's Suncode files to this CLI | `suncode update [--dry-run] [--migrate] [...]` |
+| Command                 | Purpose                                                           | Usage                                                              |
+| ----------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `suncode upgrade`       | Upgrade the globally installed Suncode CLI package                | `suncode upgrade [--tag <tag>]`                                    |
+| `suncode update`        | Sync the current project's Suncode files to this CLI              | `suncode update [--dry-run] [--migrate] [...]`                     |
+| `suncode platforms`     | Report configured Suncode platforms                               | `suncode platforms [--json]`                                       |
+| `suncode channel spawn` | Register a collaboration worker; Codex accepts a sandbox override | `suncode channel spawn <name> --provider codex [--sandbox <mode>]` |
+
+`suncode platforms --json` prints a stable
+`{"platforms":[{"id":"codex","displayName":"Codex","configDir":".codex"}]}`
+document. The empty
+result is `{"platforms":[]}` with exit 0. Codex channel sandbox modes are
+`read-only`, `workspace-write` (default), and `danger-full-access`; other
+providers ignore the option.
 
 ### Hub CLI Commands
 
@@ -96,7 +107,7 @@ Hub commands are optional. They are active only when `.suncode/config.yaml` cont
 | `validate`        | Validate JSONL                                                                                    | `task.py validate "$DIR"`                                          |
 | `list-context`    | View all entries                                                                                  | `task.py list-context "$DIR"`                                      |
 | `start`           | Set as current task for this AI session/window                                                    | `task.py start "$DIR"`                                             |
-| `current`         | Show the current task for this AI session/window                                                  | `task.py current [--source]`                                       |
+| `current`         | Show the current task for this AI session/window                                                  | `task.py current [--source] [--json]`                              |
 | `finish`          | Clear current task for this AI session/window                                                     | `task.py finish`                                                   |
 | `set-branch`      | Set branch name                                                                                   | `task.py set-branch "$DIR" "feature/xxx"`                          |
 | `set-base-branch` | Set PR target branch                                                                              | `task.py set-base-branch "$DIR" "main"`                            |
@@ -104,10 +115,15 @@ Hub commands are optional. They are active only when `.suncode/config.yaml` cont
 | `add-subtask`     | Link child to parent                                                                              | `task.py add-subtask <parent-dir> <child-dir>`                     |
 | `remove-subtask`  | Unlink child from parent                                                                          | `task.py remove-subtask <parent-dir> <child-dir>`                  |
 | `archive`         | Archive task                                                                                      | `task.py archive <name>`                                           |
-| `list`            | List active tasks                                                                                 | `task.py list [--mine] [--status <s>]`                             |
+| `list`            | List active tasks                                                                                 | `task.py list [--mine] [--status <s>] [--json]`                    |
 | `list-archive`    | List archived tasks                                                                               | `task.py list-archive [YYYY-MM]`                                   |
 
 `task.py create` also accepts Hub metadata options such as `--hub-project-id`, `--hub-developer-id`, `--hub-requirement-id`, `--hub-requirement-revision`, `--hub-task-role`, `--hub-parent-local-task-id`, and `--hub-parent-remote-task-id`. Normal Hub intake should still use `suncode hub intake`; these flags are for advanced binding and tests.
+
+`task.py current --json` emits `{current_task, source, stale}` and exits 1
+when `current_task` is `null`. `task.py list --json` emits `{tasks:[...]}`;
+each item includes both stored `status` and derived `display_status`, so a
+parent can display as `active` while its persisted status remains `planning`.
 
 ### Python Scripts
 

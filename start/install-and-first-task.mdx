@@ -29,41 +29,49 @@ suncode init -u your-name
 suncode init -u your-name --claude
 suncode init -u your-name --claude --cursor --opencode --engineer
 suncode init -u your-name --codex --gemini
-suncode init -u your-name --pi
+suncode init -u your-name --pi --omp --grok --kimi
 ```
 
 `your-name` becomes your developer identity and creates your personal workspace at `.suncode/workspace/your-name/`.
 
-Supported flags: `--claude`, `--cursor`, `--opencode`, `--engineer`, `--codex`, `--kiro`, `--gemini`, `--qoder`, `--codebuddy`, `--copilot`, `--droid`, `--pi`, `--antigravity`, `--devin` (alias: `--windsurf`, deprecated), `--kilo`, `--reasonix`, `--zcode`, `--trae`.
+Supported flags: `--claude`, `--cursor`, `--opencode`, `--engineer`, `--codex`, `--kiro`, `--gemini`, `--qoder`, `--codebuddy`, `--copilot`, `--droid`, `--pi`, `--omp`, `--antigravity`, `--devin` (alias: `--windsurf`, deprecated), `--kilo`, `--reasonix`, `--zcode`, `--trae`, `--grok`, `--kimi`.
 
-Beyond these 18 configured platforms, any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more) can also consume Suncode: Codex writes its skills there, and the files are directly usable by the rest of that ecosystem.
+Beyond these 21 configured platforms, any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Warp, and more) can also consume Suncode. Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode write neutral shared skills there.
 
 ### Platform Configuration
 
 `suncode init` writes platform-specific config directories. Core concepts (`.suncode/`) are identical across platforms; the differences sit in how commands, skills, sub-agents, and hooks are delivered.
 
-| Platform        | Config Directory                                                             |
-| --------------- | ---------------------------------------------------------------------------- |
-| **Claude Code** | `.claude/commands/suncode/`, `agents/`, `skills/`, `hooks/`                  |
-| **Cursor**      | `.cursor/commands/`, `agents/`, `skills/`, `hooks/`                          |
-| **OpenCode**    | `.opencode/commands/suncode/`, `agents/`, `skills/`, `plugins/`              |
-| **Engineer**    | `.engineer/commands/suncode/`, `agents/`, `skills/`, `plugins/`              |
-| **Codex**       | `.codex/agents/`, `skills/`, `hooks/` + root `AGENTS.md`                     |
-| **Kiro**        | `.kiro/agents/`, `skills/`, `hooks/`                                         |
-| **Gemini CLI**  | `.gemini/commands/suncode/`, `agents/`, `hooks/` + `.agents/skills/`         |
-| **Qoder**       | `.qoder/commands/`, `agents/`, `skills/`, `hooks/`                           |
-| **CodeBuddy**   | `.codebuddy/commands/suncode/`, `agents/`, `skills/`, `hooks/`               |
-| **Copilot**     | `.github/copilot/`, `prompts/`, `agents/`, `skills/`, `hooks/`               |
-| **Droid**       | `.factory/commands/suncode/`, `droids/`, `skills/`, `hooks/`                 |
-| **Pi Agent**    | `.pi/prompts/`, `skills/`, `agents/`, `extensions/suncode/`, `settings.json` |
-| **Kilo**        | `.kilocode/workflows/`, `skills/`                                            |
-| **Antigravity** | `.agent/workflows/`, `skills/`                                               |
-| **Devin**       | `.devin/workflows/`, `skills/`                                               |
-| **Reasonix**    | `.reasonix/skills/`                                                          |
-| **ZCode**       | `.zcode/commands/suncode/`, `cli/agents/` + `.agents/skills/`                |
-| **Trae**        | `.trae/commands/`, `skills/`, `agents/`, `hooks/`, `hooks.json`              |
+| Platform        | Config Directory                                                                      |
+| --------------- | ------------------------------------------------------------------------------------- |
+| **Claude Code** | `.claude/commands/suncode/`, `agents/`, `skills/`, `hooks/`                           |
+| **Cursor**      | `.cursor/commands/`, `agents/`, `skills/`, `hooks/`                                   |
+| **OpenCode**    | `.opencode/commands/suncode/`, `agents/`, `skills/`, `plugins/`                       |
+| **Engineer**    | `.engineer/commands/suncode/`, `agents/`, `skills/`, `plugins/`                       |
+| **Codex**       | `.codex/agents/`, `skills/`, `hooks/` + `.agents/skills/` + root `AGENTS.md`          |
+| **Kiro**        | `.kiro/agents/`, `skills/`, `hooks/`                                                  |
+| **Gemini CLI**  | `.gemini/commands/suncode/`, `agents/`, `hooks/` + `.agents/skills/`                  |
+| **Qoder**       | `.qoder/commands/`, `agents/`, `skills/`, `hooks/`                                    |
+| **CodeBuddy**   | `.codebuddy/commands/suncode/`, `agents/`, `skills/`, `hooks/`                        |
+| **Copilot**     | `.github/copilot/`, `prompts/`, `agents/`, `skills/`, `hooks/`                        |
+| **Droid**       | `.factory/commands/suncode/`, `droids/`, `skills/`, `hooks/`                          |
+| **Pi Agent**    | `.pi/prompts/`, `agents/`, `extensions/suncode/`, `settings.json` + `.agents/skills/` |
+| **Oh My Pi**    | `.omp/commands/`, `skills/`, `agents/`, `extensions/suncode/`                         |
+| **Kilo**        | `.kilocode/workflows/`, `skills/`                                                     |
+| **Antigravity** | `.agent/workflows/`, `skills/`                                                        |
+| **Devin**       | `.devin/workflows/`, `skills/`                                                        |
+| **Reasonix**    | `.reasonix/skills/`                                                                   |
+| **ZCode**       | `.zcode/commands/suncode/`, `cli/agents/` + `.agents/skills/`                         |
+| **Trae**        | `.trae/commands/`, `skills/`, `agents/`, `hooks/`, `hooks.json`                       |
+| **Grok Build**  | `.grok/commands/`, `skills/`, `agents/`                                               |
+| **Kimi Code**   | `.kimi-code/skills/` + `.agents/skills/`                                              |
 
-`.agents/skills/` is a shared cross-platform layer ([agentskills.io](https://agentskills.io) standard). Codex, Gemini CLI, and ZCode write Suncode skills there, so any agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, etc.) can consume them when that layer is present.
+`.agents/skills/` is a shared cross-platform layer ([agentskills.io](https://agentskills.io) standard). Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode write byte-compatible Suncode skills there, so any agent that reads the standard (Amp, Cline, Deep Agents, Firebender, Warp, etc.) can consume them when that layer is present.
+
+Use `suncode platforms` for a human-readable configured-platform list, or
+`suncode platforms --json` for the stable
+`{"platforms":[{"id":"codex","displayName":"Codex","configDir":".codex"}]}`
+machine interface.
 
 ### init Scenarios
 

@@ -26,41 +26,49 @@ suncode init -u your-name
 suncode init -u your-name --claude
 suncode init -u your-name --claude --cursor --opencode --engineer
 suncode init -u your-name --codex --gemini
-suncode init -u your-name --pi
+suncode init -u your-name --pi --omp --grok --kimi
 ```
 
 `your-name` 会成为你的开发者身份，在 `.suncode/workspace/your-name/` 创建个人工作区。
 
-支持的 flag：`--claude`、`--cursor`、`--opencode`、`--engineer`、`--codex`、`--kiro`、`--gemini`、`--qoder`、`--codebuddy`、`--copilot`、`--droid`、`--pi`、`--antigravity`、`--devin`（别名：`--windsurf`，已废弃）、`--kilo`、`--reasonix`、`--zcode`、`--trae`。
+支持的 flag：`--claude`、`--cursor`、`--opencode`、`--engineer`、`--codex`、`--kiro`、`--gemini`、`--qoder`、`--codebuddy`、`--copilot`、`--droid`、`--pi`、`--omp`、`--antigravity`、`--devin`（别名：`--windsurf`，已废弃）、`--kilo`、`--reasonix`、`--zcode`、`--trae`、`--grok`、`--kimi`。
 
-除了这 18 个已配置平台，任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等）也能直接消费 Suncode：Codex 的 skill 就写在这个目录下，这些文件能被该生态的其他 agent 直接读取。
+除了这 21 个已配置平台，任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Warp 等）也能直接消费 Suncode。Codex、Gemini CLI、Pi Agent、Kimi Code 和 ZCode 会向该共享目录写入中立渲染的 skill。
 
 ### 平台配置
 
 `suncode init` 为每个平台写入各自的配置目录。`.suncode/` 下的核心概念跨平台一致，差异在于 command、skill、sub-agent、hook 的交付方式。
 
-| 平台            | 配置目录                                                                     |
-| --------------- | ---------------------------------------------------------------------------- |
-| **Claude Code** | `.claude/commands/suncode/`、`agents/`、`skills/`、`hooks/`                  |
-| **Cursor**      | `.cursor/commands/`、`agents/`、`skills/`、`hooks/`                          |
-| **OpenCode**    | `.opencode/commands/suncode/`、`agents/`、`skills/`、`plugins/`              |
-| **Engineer**    | `.engineer/commands/suncode/`、`agents/`、`skills/`、`plugins/`              |
-| **Codex**       | `.codex/agents/`、`skills/`、`hooks/` + 仓库根 `AGENTS.md`                   |
-| **Kiro**        | `.kiro/agents/`、`skills/`、`hooks/`                                         |
-| **Gemini CLI**  | `.gemini/commands/suncode/`、`agents/`、`hooks/` + `.agents/skills/`         |
-| **Qoder**       | `.qoder/commands/`、`agents/`、`skills/`、`hooks/`                           |
-| **CodeBuddy**   | `.codebuddy/commands/suncode/`、`agents/`、`skills/`、`hooks/`               |
-| **Copilot**     | `.github/copilot/`、`prompts/`、`agents/`、`skills/`、`hooks/`               |
-| **Droid**       | `.factory/commands/suncode/`、`droids/`、`skills/`、`hooks/`                 |
-| **Pi Agent**    | `.pi/prompts/`、`skills/`、`agents/`、`extensions/suncode/`、`settings.json` |
-| **Kilo**        | `.kilocode/workflows/`、`skills/`                                            |
-| **Antigravity** | `.agent/workflows/`、`skills/`                                               |
-| **Devin**       | `.devin/workflows/`、`skills/`                                               |
-| **Reasonix**    | `.reasonix/skills/`                                                          |
-| **ZCode**       | `.zcode/commands/suncode/`、`cli/agents/` + `.agents/skills/`                |
-| **Trae**        | `.trae/commands/`、`skills/`、`agents/`、`hooks/`、`hooks.json`              |
+| 平台            | 配置目录                                                                              |
+| --------------- | ------------------------------------------------------------------------------------- |
+| **Claude Code** | `.claude/commands/suncode/`、`agents/`、`skills/`、`hooks/`                           |
+| **Cursor**      | `.cursor/commands/`、`agents/`、`skills/`、`hooks/`                                   |
+| **OpenCode**    | `.opencode/commands/suncode/`、`agents/`、`skills/`、`plugins/`                       |
+| **Engineer**    | `.engineer/commands/suncode/`、`agents/`、`skills/`、`plugins/`                       |
+| **Codex**       | `.codex/agents/`、`skills/`、`hooks/` + `.agents/skills/` + 仓库根 `AGENTS.md`        |
+| **Kiro**        | `.kiro/agents/`、`skills/`、`hooks/`                                                  |
+| **Gemini CLI**  | `.gemini/commands/suncode/`、`agents/`、`hooks/` + `.agents/skills/`                  |
+| **Qoder**       | `.qoder/commands/`、`agents/`、`skills/`、`hooks/`                                    |
+| **CodeBuddy**   | `.codebuddy/commands/suncode/`、`agents/`、`skills/`、`hooks/`                        |
+| **Copilot**     | `.github/copilot/`、`prompts/`、`agents/`、`skills/`、`hooks/`                        |
+| **Droid**       | `.factory/commands/suncode/`、`droids/`、`skills/`、`hooks/`                          |
+| **Pi Agent**    | `.pi/prompts/`、`agents/`、`extensions/suncode/`、`settings.json` + `.agents/skills/` |
+| **Oh My Pi**    | `.omp/commands/`、`skills/`、`agents/`、`extensions/suncode/`                         |
+| **Kilo**        | `.kilocode/workflows/`、`skills/`                                                     |
+| **Antigravity** | `.agent/workflows/`、`skills/`                                                        |
+| **Devin**       | `.devin/workflows/`、`skills/`                                                        |
+| **Reasonix**    | `.reasonix/skills/`                                                                   |
+| **ZCode**       | `.zcode/commands/suncode/`、`cli/agents/` + `.agents/skills/`                         |
+| **Trae**        | `.trae/commands/`、`skills/`、`agents/`、`hooks/`、`hooks.json`                       |
+| **Grok Build**  | `.grok/commands/`、`skills/`、`agents/`                                               |
+| **Kimi Code**   | `.kimi-code/skills/` + `.agents/skills/`                                              |
 
-`.agents/skills/` 是一份跨平台共享层（[agentskills.io](https://agentskills.io) 规范）。Codex、Gemini CLI、ZCode 会把 Suncode skill 写到这里；Amp、Cline、Deep Agents、Firebender、Kimi Code CLI、Warp 等遵循 `.agents/skills/` 规范的 agent 可在该层存在时直接读取。
+`.agents/skills/` 是一份跨平台共享层（[agentskills.io](https://agentskills.io) 规范）。Codex、Gemini CLI、Pi Agent、Kimi Code 和 ZCode 会写入字节兼容的 Suncode skill；Amp、Cline、Deep Agents、Firebender、Warp 等遵循该规范的 agent 可直接读取。
+
+`suncode platforms` 输出人类可读的已配置平台列表；
+`suncode platforms --json` 提供稳定的
+`{"platforms":[{"id":"codex","displayName":"Codex","configDir":".codex"}]}`
+机器接口。
 
 ### init 场景对照
 

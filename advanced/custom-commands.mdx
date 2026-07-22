@@ -8,7 +8,7 @@ Suncode ships a deliberately small set of slash commands. On hook-backed agent-c
 
 ### Command File Format and Location
 
-Suncode groups the 18 configured platforms into three delivery models:
+Suncode groups the 21 configured platforms into three delivery models:
 
 **Explicit slash commands** — the user types `/suncode:<name>`; the platform injects the command file's content as a prompt.
 
@@ -24,9 +24,11 @@ Suncode groups the 18 configured platforms into three delivery models:
 | CodeBuddy   | `.codebuddy/commands/suncode/{name}.md`                                            | `/suncode:{name}`  |
 | Droid       | `.factory/commands/suncode/{name}.md`                                              | `/suncode:{name}`  |
 | Pi Agent    | `.pi/prompts/suncode-{name}.md`                                                    | `/suncode-{name}`  |
+| Oh My Pi    | `.omp/commands/suncode-{name}.md`                                                  | `/suncode:{name}`  |
 | Copilot     | `.github/prompts/suncode-{name}.prompt.md`                                         | prompt-file picker |
 | ZCode       | `.zcode/commands/suncode/{name}.md`                                                | `/suncode:{name}`  |
 | Trae        | `.trae/commands/suncode-{name}.md`                                                 | `/suncode-{name}`  |
+| Grok Build  | `.grok/commands/suncode-{name}.md`                                                 | `/suncode-{name}`  |
 
 Command files are Markdown; Gemini uses TOML (with a `prompt = """..."""` field).
 
@@ -40,10 +42,11 @@ Command files are Markdown; Gemini uses TOML (with a `prompt = """..."""` field)
 
 **Skill-only** — platforms that do not expose a slash-command primitive at all; `start` / `finish-work` / `continue` are shipped as auto-trigger skills.
 
-| Platform | `start` / `finish-work` / `continue` as…   | Invoked as                         |
-| -------- | ------------------------------------------ | ---------------------------------- |
-| Kiro     | `.kiro/skills/suncode-{name}/SKILL.md`     | skill match (or `@suncode:{name}`) |
-| Reasonix | `.reasonix/skills/suncode-{name}/SKILL.md` | `/skill suncode-{name}`            |
+| Platform  | `start` / `finish-work` / `continue` as…    | Invoked as                         |
+| --------- | ------------------------------------------- | ---------------------------------- |
+| Kiro      | `.kiro/skills/suncode-{name}/SKILL.md`      | skill match (or `@suncode:{name}`) |
+| Kimi Code | `.kimi-code/skills/suncode-{name}/SKILL.md` | `/skill:suncode-{name}`            |
+| Reasonix  | `.reasonix/skills/suncode-{name}/SKILL.md`  | `/skill suncode-{name}`            |
 
 ### When to use a command vs. a skill
 

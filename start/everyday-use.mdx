@@ -296,6 +296,11 @@ Effects on `task.json`:
 ./.suncode/scripts/task.py list --mine            # Only your own
 ./.suncode/scripts/task.py list --status review   # Filter by status
 
+# Stable machine-readable state
+./.suncode/scripts/task.py current --json
+./.suncode/scripts/task.py list --json
+./.suncode/scripts/task.py list --mine --json
+
 # Archive completed tasks
 ./.suncode/scripts/task.py archive user-login
 # Moves to archive/2026-02/
@@ -304,6 +309,15 @@ Effects on `task.json`:
 ./.suncode/scripts/task.py list-archive
 ./.suncode/scripts/task.py list-archive 2026-02  # Filter by month
 ```
+
+`current --json` returns `{current_task, source, stale}` and exits 1 when no
+task is active. `list --json` returns `{tasks:[...]}`. Each list item contains
+the stored `status` plus a derived `display_status`; a planning parent with an
+active child can display as `active` without mutating `task.json`.
+
+New tasks record the repository default branch as `base_branch`. When a remote
+default cannot be resolved, Suncode warns and falls back to the checked-out
+branch. Use `task.py create "title" --base-branch <branch>` to override it.
 
 ### 2.3 `task.json` Schema
 

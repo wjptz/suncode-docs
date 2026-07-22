@@ -4,7 +4,7 @@ title: 'Multi-Platform and Team Configuration'
 
 ## Multi-Platform and Team Configuration
 
-Suncode ships on 18 platforms (Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Kilo, Gemini CLI, Antigravity, Devin (formerly Windsurf), Qoder, CodeBuddy, GitHub Copilot, Droid, Pi Agent, Reasonix, ZCode, Trae) and additionally supports any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more). The `.suncode/` core is identical everywhere; what differs is **how hooks, extensions, skills, sub-agents, and commands are delivered** on each platform.
+Suncode ships on 21 platforms (Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Kilo, Gemini CLI, Antigravity, Devin (formerly Windsurf), Qoder, CodeBuddy, GitHub Copilot, Droid, Pi Agent, Oh My Pi, Reasonix, ZCode, Trae, Grok Build, and Kimi Code) and additionally supports any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Warp, and more). The `.suncode/` core is identical everywhere; what differs is **how hooks, extensions, skills, sub-agents, and commands are delivered** on each platform.
 
 ### Joining an Already-Initialized Suncode Project
 
@@ -37,13 +37,13 @@ After that, on platforms with a SessionStart hook or extension, opening a new se
 
 ### Capability Matrix
 
-| Capability                     | Claude Code | Cursor | OpenCode | Engineer | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid | Pi Agent |
-| ------------------------------ | :---------: | :----: | :------: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: | :------: |
-| SessionStart / startup context |     ✅      |   ✅   |    ✅    |    ✅    |  ⚡   |  ⚡  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
-| Sub-agent context injection    |     ✅      |   ✅   |    ✅    |    ✅    |  ❌   |  ❌  |   ❌   |  ❌   |    ✅     |   ❌    |  ✅   |    ✅    |
-| Sub-agents (`suncode-*`)       |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
-| Auto-trigger skills            |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
-| Explicit `/suncode:*` commands |     ✅      |   ✅   |    ✅    |    ✅    |   —   |  —   |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    |
+| Capability                     | Claude Code | Cursor | OpenCode | Engineer | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid | Pi Agent | OMP | Grok | Kimi |
+| ------------------------------ | :---------: | :----: | :------: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: | :------: | :-: | :--: | :--: |
+| SessionStart / startup context |     ✅      |   ✅   |    ✅    |    ✅    |  ⚡   |  ⚡  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |
+| Sub-agent context injection    |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ❌  |   ❌   |  ❌   |    ✅     |   ❌    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |
+| Sub-agents (`suncode-*`)       |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |
+| Auto-trigger skills            |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |
+| Explicit command entry         |     ✅      |   ✅   |    ✅    |    ✅    |   —   |  —   |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |
 
 Legend: ✅ Suncode wires the config and the platform executes it · ⚡ Partial
 (Codex uses `AGENTS.md` plus `UserPromptSubmit`; workflow breadcrumbs require
@@ -54,12 +54,13 @@ platform does not expose this event · — the platform has no command primitive
 continue are delivered as skills instead. Qoder uses `/suncode-{name}` (hyphen,
 not colon) via its native Custom Commands for `finish-work` / `continue`; `start`
 is covered by its SessionStart hook. Engineer uses the same OpenCode-compatible
-JS plugin surface under `.engineer/` as OpenCode uses under `.opencode/`. Pi
-Agent uses an extension rather than Python hook files, but the behavior is the
+JS plugin surface under `.engineer/` as OpenCode uses under `.opencode/`. Kimi
+uses `/skill:suncode-*` command skills rather than `/suncode:*`. Pi Agent and Oh My
+Pi use extensions rather than Python hook files, but the behavior is the
 same: session context, Bash environment propagation, and sub-agent context
 injection are handled before the agent acts.
 
-`.kilocode/`, `.agent/` (Antigravity), and `.devin/` are workflow-and-skill only: no sub-agents and no hooks. `.agents/skills/` is the shared skill layer written by Codex, Gemini CLI, and ZCode.
+`.kilocode/`, `.agent/` (Antigravity), and `.devin/` are workflow-and-skill only: no sub-agents and no hooks. `.agents/skills/` is the shared skill layer written by Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode.
 
 ### Claude Code
 
@@ -128,10 +129,11 @@ suncode init -u your-name --codex
 Layout:
 
 - `AGENTS.md` (repo root): entry file; Codex auto-reads it every session (acts as the prelude)
-- `.codex/prompts/`: `suncode-start.md`, `suncode-finish-work.md`, `suncode-continue.md`
-- `.codex/skills/`: the 5 suncode skills
+- `.agents/skills/`: neutral shared Suncode commands and workflow skills
+- `.codex/skills/`: Codex-specific skill overrides
 - `.codex/agents/`: TOML sub-agents: `suncode-implement.toml`, `suncode-check.toml`, `suncode-research.toml`
-- `.codex/hooks/inject-workflow-state.py` + `.codex/hooks.json`: `UserPromptSubmit` workflow-state hook
+- `.codex/hooks/` + `.codex/hooks.json`: `UserPromptSubmit` workflow-state plus native `SubagentStart` context for the three Suncode roles
+- `.codex/config.toml`: project defaults including `[agents].max_depth = 1`
 - `.codex/hooks/session-start.py`: retained compact SessionStart compatibility script, not wired by default
 
 <Note>
@@ -142,7 +144,9 @@ Codex hooks require enabling. Add to `~/.codex/config.toml`:
 hooks = true   # Codex 0.129+. Older versions: `codex_hooks = true`.
 ```
 
-Codex 0.129+ also gates each installed hook behind a one-time `/hooks` TUI review — run `/hooks` once in Codex and approve the Suncode `UserPromptSubmit` hook, otherwise the workflow breadcrumb won't auto-inject. Without these, Codex falls back to prelude-only (reads `AGENTS.md` every session): same content, just no event-driven injection.
+Codex 0.129+ also gates each installed hook behind a one-time `/hooks` TUI review — run `/hooks` once and approve the Suncode hooks. Suncode keeps `codex.dispatch_mode: inline` as the default and missing/invalid fallback. Set it to `auto` (legacy alias: `sub-agent`) to use native sub-agent dispatch; `SubagentStart` injects strict parent-session context and agent profiles keep a pull fallback when hooks are unavailable.
+
+For channel workers, `suncode channel spawn <channel> --provider codex --sandbox <mode>` accepts `read-only`, `workspace-write` (default), or `danger-full-access`. The option is ignored by non-Codex providers.
 
 </Note>
 
@@ -256,12 +260,31 @@ Pi Agent is extension-backed rather than Python-hook-backed. Suncode writes the 
 Layout:
 
 - `.pi/prompts/suncode-{name}.md`: session-boundary prompts (`finish-work`, `continue`; `start` only where applicable)
-- `.pi/skills/suncode-{name}/SKILL.md`: the five Suncode workflow skills
+- `.agents/skills/suncode-{name}/SKILL.md`: the five neutral shared Suncode workflow skills
 - `.pi/agents/{name}.md`: `suncode-implement`, `suncode-check`, `suncode-research`
 - `.pi/extensions/suncode/index.ts`: session context, Bash `SUNCODE_CONTEXT_ID` propagation, and sub-agent JSONL injection
 - `.pi/settings.json`: extension registration
 
 The extension stores active task state under `.suncode/.runtime/sessions/<session-key>.json`, so each Pi window/session can work on its own task without taking over another window.
+
+### Oh My Pi, Grok Build, and Kimi Code
+
+```bash
+suncode init -u your-name --omp --grok --kimi
+```
+
+- **Oh My Pi** writes namespaced commands, skills, agents, and
+  `.omp/extensions/suncode/index.ts`. The shared `.omp/` root is considered
+  configured only when a Suncode ownership marker exists. Its Bash bridge adds
+  `SUNCODE_CONTEXT_ID` to the per-call environment while preserving an explicit
+  user value and leaving the command unchanged.
+- **Grok Build** is pull-based and hook-free. It writes flat
+  `.grok/commands/suncode-*.md`, `.grok/skills/`, and `.grok/agents/`; dispatch
+  uses `spawn_subagent` with the Suncode role name.
+- **Kimi Code** writes shared workflow skills to `.agents/skills/` and private
+  command/role skills to `.kimi-code/skills/`. It installs no project hooks or
+  settings and uses Kimi's built-in `coder` / `explore` agents with the matching
+  Suncode role instructions.
 
 ### Other supported platforms
 
@@ -274,7 +297,7 @@ Suncode also ships configurators for platforms not covered by the capability mat
 - **ZCode** (`--zcode`): writes `.zcode/commands/suncode/`, `.zcode/cli/agents/`, and `.agents/skills/`. Sub-agents use a pull-based prelude.
 - **Trae** (`--trae`): writes `.trae/commands/`, `.trae/skills/`, `.trae/agents/`, `.trae/hooks/`, and `.trae/hooks.json`. Main-session context uses SessionStart/UserPromptSubmit hooks; sub-agents use a pull-based prelude.
 
-Beyond the 18 configured platforms, Suncode can be consumed by any AI coding agent that follows the `.agents/skills/` convention (the [agentskills.io](https://agentskills.io) standard). Codex writes its skills there, and the files are directly usable by other agents in that ecosystem (Amp, Cline, Deep Agents, Firebender, Kimi Code CLI, Warp, and more). On those platforms you manage Suncode through the `.suncode/` core plus whatever prelude file the agent reads.
+Beyond the 21 configured platforms, Suncode can be consumed by any AI coding agent that follows the `.agents/skills/` convention (the [agentskills.io](https://agentskills.io) standard). Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode write byte-compatible skills there, and the files are directly usable by other agents in that ecosystem (Amp, Cline, Deep Agents, Firebender, Warp, and more).
 
 ### Operating Systems
 
