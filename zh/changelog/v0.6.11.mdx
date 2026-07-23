@@ -1,0 +1,55 @@
+---
+title: 'v0.6.11'
+description: '2026-07-23'
+---
+
+稳定补丁版本，新增 Grok Build、Kimi Code、Oh My Pi 集成、可机读的平台发现、Codex channel sandbox 控制和 ZCode 记忆检索，并加强 channel、update、uninstall 与模板安全性。升级后运行 `suncode update`，无需 `--migrate`。
+
+## Enhancements
+
+### Platform integrations
+
+`suncode init` 新增三个平台参数：
+
+- `--grok` 在 `.grok/` 下安装 Grok Build commands、skills 和 agents。
+- `--kimi` 在 `.kimi-code/skills/` 下安装 Kimi Code skills 和 agents。
+- `--omp` 在 `.omp/` 下安装 Oh My Pi commands、skills、agents 和 Suncode extension。
+
+这些集成进入统一的 init、update、ownership tracking 和 uninstall 流程。
+
+### Platform inventory and Codex sandbox
+
+`suncode platforms` 列出当前项目已配置的 AI 平台。`suncode platforms --json` 输出各平台的 `id`、`displayName` 和 `configDir`，供脚本和集成读取。
+
+`suncode channel spawn --provider codex --sandbox <mode>` 支持 `read-only`、`workspace-write` 和 `danger-full-access`；默认值仍为 `workspace-write`。
+
+### ZCode session memory
+
+`suncode mem` 通过零依赖、只读的 SQLite parser 读取 `~/.zcode/cli/db/db.sqlite`。Session list、search、context、extract、compaction handling 和 task-phase slicing 现在会像 Claude、Codex、OpenCode、Pi 一样覆盖 ZCode。
+
+## Bug Fixes
+
+### Channel and template reliability
+
+Channel 和 worker names 现在会拒绝可逃逸存储目录的 path segments。Worker stdout 使用 backpressure 串行处理，异步 handler 不再打乱 event 顺序。
+
+模板 overwrite 会先下载到临时目录，成功后再替换当前 spec；下载失败时保留现有内容。
+
+### Update and uninstall safety
+
+生成文件、template hashes 和 registry configuration 现在通过 atomic replacement 写入。Update migrations 会保留未被 Suncode 追踪的用户目录，并阻止 legacy template 覆盖当前 canonical content。
+
+Uninstall 只删除 `AGENTS.md` 中的 managed block，保留前后的用户指令。非交互 uninstall 遇到 `.suncode/spec`、`.suncode/tasks` 或 `.suncode/workspace` 下的未提交数据时也会拒绝继续，除非设置专用 override。
+
+## Upgrade
+
+```bash
+npm install -g @wjptz/suncode@latest
+suncode update
+```
+
+无需 `--migrate`。
+
+- 运行 `suncode init --grok`、`suncode init --kimi` 或 `suncode init --omp` 配置新的平台集成。
+- 当 ZCode SQLite store 存在时，已有 ZCode sessions 会自动出现在 `suncode mem` 中。
+- 未指定 `--sandbox` 时，Codex channel workers 继续使用 `workspace-write`。

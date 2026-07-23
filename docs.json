@@ -59,6 +59,10 @@
                   "advanced/appendix-c",
                   "advanced/appendix-d"
                 ]
+              },
+              {
+                "group": "Changelog",
+                "pages": ["changelog/v0.6.11"]
               }
             ],
             "default": true
@@ -99,6 +103,10 @@
                   "zh/advanced/appendix-c",
                   "zh/advanced/appendix-d"
                 ]
+              },
+              {
+                "group": "更新日志",
+                "pages": ["zh/changelog/v0.6.11"]
               }
             ],
             "default": true
@@ -112,7 +120,12 @@
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": []
+    "links": [
+      {
+        "label": "Changelog",
+        "href": "/changelog/v0.6.11"
+      }
+    ]
   },
   "contextual": {
     "options": ["chatgpt", "claude", "perplexity"]

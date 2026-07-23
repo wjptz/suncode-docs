@@ -1,0 +1,55 @@
+---
+title: 'v0.6.11'
+description: '2026-07-23'
+---
+
+Stable patch release with Grok Build, Kimi Code, and Oh My Pi integrations; machine-readable platform discovery; Codex channel sandbox controls; ZCode memory search; and stronger channel, update, uninstall, and template safety. Run `suncode update` after upgrading. No `--migrate` is required.
+
+## Enhancements
+
+### Platform integrations
+
+`suncode init` adds three platform flags:
+
+- `--grok` installs Grok Build commands, skills, and agents under `.grok/`.
+- `--kimi` installs Kimi Code skills and agents under `.kimi-code/skills/`.
+- `--omp` installs Oh My Pi commands, skills, agents, and the Suncode extension under `.omp/`.
+
+The integrations participate in normal init, update, ownership tracking, and uninstall flows.
+
+### Platform inventory and Codex sandbox
+
+`suncode platforms` lists configured AI platforms. `suncode platforms --json` emits each platform's `id`, `displayName`, and `configDir` for scripts and integrations.
+
+`suncode channel spawn --provider codex --sandbox <mode>` accepts `read-only`, `workspace-write`, or `danger-full-access`. The default remains `workspace-write`.
+
+### ZCode session memory
+
+`suncode mem` reads current ZCode sessions from `~/.zcode/cli/db/db.sqlite` through a zero-dependency, read-only SQLite parser. Session listing, search, context, extraction, compaction handling, and task-phase slicing now include ZCode alongside Claude, Codex, OpenCode, and Pi.
+
+## Bug Fixes
+
+### Channel and template reliability
+
+Channel and worker names now reject path-escaping segments. Worker stdout is processed serially with backpressure, preserving event order when handlers are asynchronous.
+
+Template overwrite downloads complete in a temporary directory before replacing the current spec. A failed download therefore leaves existing content intact.
+
+### Update and uninstall safety
+
+Generated files, template hashes, and registry configuration now use atomic replacement. Update migrations preserve untracked user-owned directories and prevent legacy template copies from replacing canonical current content.
+
+Uninstall removes only the managed block from `AGENTS.md`, preserving surrounding user instructions. Non-interactive uninstall also refuses to delete uncommitted `.suncode/spec`, `.suncode/tasks`, or `.suncode/workspace` data unless the dedicated override is set.
+
+## Upgrade
+
+```bash
+npm install -g @wjptz/suncode@latest
+suncode update
+```
+
+No `--migrate` is required.
+
+- Run `suncode init --grok`, `suncode init --kimi`, or `suncode init --omp` to configure a new platform integration.
+- Existing ZCode sessions become available to `suncode mem` when the ZCode SQLite store exists.
+- Codex channel workers keep `workspace-write` unless `--sandbox` is specified.
