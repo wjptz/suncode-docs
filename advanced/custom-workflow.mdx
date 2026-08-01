@@ -20,6 +20,29 @@ Before 0.5, workflow behavior was scattered across three places: hook Python scr
 
 All injection paths read `workflow.md` at runtime — you don't need to rebuild anything after editing.
 
+### Preserve the execution contract
+
+You can change phase wording and routing, but execution planning has a platform-neutral runtime
+contract. A task's plan is materialized once as `.suncode/tasks/<task>/execution.json`; inline,
+native sub-agent, and channel modes all consume that same DAG.
+
+When customizing Plan or Execute, preserve these invariants:
+
+- express ordering with explicit `dependsOn` edges, not list order or tree position;
+- give independently runnable work separate nodes, with honest read/write/resource declarations;
+- keep one final barrier reachable from every branch;
+- dispatch every selected conflict-free ready node before waiting, then resume when any node
+  completes and recompute readiness immediately;
+- treat the main session as coordinator while delegated work is active;
+- deliver each delegated node through its generated context manifest and bounded content rather
+  than forwarding the parent conversation transcript;
+- keep check nodes read-only and route repairs through a single write-owning fix node.
+
+Inline execution is the compatibility path, not a second workflow: it lowers effective
+concurrency to `1` while preserving the same nodes, dependencies, context, and results. Legacy
+tasks without `execution.json` are normalized conservatively; a custom workflow should not create
+different inline and sub-agent plans.
+
 ### Changing the per-turn breadcrumbs
 
 The per-turn `<workflow-state>` block is what nudges the AI at each message based on the current task's `status` field. The blocks live colocated with each phase under `## Phase Index` in `workflow.md` — edit them in place. The hook script is parser-only; it never embeds fallback content of its own.
@@ -129,6 +152,7 @@ A handful of conventions are consumed by scripts and shouldn't drift:
 | The tag format `[workflow-state:STATUS]…[/workflow-state:STATUS]` | `inject-workflow-state.py` parses this literally                           |
 | Heading depth for Phase / step (`## Phase X` + `#### X.Y`)        | `get_context.py --mode phase --step X.Y` depends on it                     |
 | `task.py` subcommand names in the task lifecycle list             | They must match the actual CLI; renaming in docs doesn't rename the script |
+| The single-DAG and fan-out-before-wait execution invariants       | All executor modes share `execution.json` and its persisted run state      |
 
 Everything else — phrasing, ordering, adding sections, rewriting how-to text — is fair game.
 

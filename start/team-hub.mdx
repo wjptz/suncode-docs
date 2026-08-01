@@ -68,7 +68,13 @@ suncode hub finish --task current
 
 If `hub.autoPullSpec` is `true`, intake also runs a best-effort `suncode hub pull-spec`. If it is `false`, the intake output tells you to run `suncode hub pull-spec` when you want the latest Hub-managed specs.
 
-`hub plan-ready` submits planning artifacts, derives structured subtasks from `implement.md` when `subtasks.json` is absent, uploads subtasks, and runs the Hub start preflight for standard and change tasks. `task.py start` also runs the Hub preflight gate before local status changes for Hub-bound standard and change tasks.
+`hub plan-ready` submits planning artifacts and structured display subtasks. It
+uses an explicit `subtasks.json` v1 override first, otherwise projects the
+reviewed `execution.json` in stable topological order, and finally falls back to
+the `implement.md` checklist. It then uploads those items and runs the Hub start
+preflight for standard and change tasks. `task.py start` also runs the Hub
+preflight gate before local status changes for Hub-bound standard and change
+tasks.
 
 ## Hub task types
 
@@ -93,7 +99,13 @@ Quick tasks must include `validation-summary.md` before `hub finish`. The file m
 
 ## Structured subtasks
 
-For Hub display, Suncode first checks `subtasks.json`. When that file is absent, it derives structured subtasks from the reviewed `implement.md` checklist:
+For Hub display, Suncode reads sources in this order:
+
+1. Explicit `subtasks.json` v1 override.
+2. Stable topological projection of reviewed `execution.json` nodes.
+3. Reviewed `implement.md` checklist fallback.
+
+The legacy checklist format is:
 
 ```md
 ## 实施清单
@@ -102,7 +114,9 @@ For Hub display, Suncode first checks `subtasks.json`. When that file is absent,
 - [ ] [P2] Update docs: Document the new user-facing behavior.
 ```
 
-Each item becomes `{ priority, name, description }`. Write `subtasks.json` only when the derived checklist needs an explicit override.
+Each projected or parsed item becomes `{ priority, name, description }`. Write
+`subtasks.json` only when the graph/checklist-derived display needs an explicit
+override. It is not the execution graph and does not control scheduling.
 
 ## Review Hub-bound tasks
 

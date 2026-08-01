@@ -4,7 +4,7 @@ title: '多平台与团队配置'
 
 ## 多平台与团队配置
 
-Suncode 支持 21 个平台（Claude Code、Cursor、OpenCode、Engineer、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Devin（原 Windsurf）、Qoder、CodeBuddy、GitHub Copilot、Droid、Pi Agent、Oh My Pi、Reasonix、ZCode、Trae、Grok Build 和 Kimi Code），以及任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Warp 等）。`.suncode/` 核心跨平台一致；差异在于**各平台如何交付 hook、extension、skill、sub-agent、command**。
+Suncode 支持 22 个平台（Claude Code、Cursor、OpenCode、Engineer、Codex、Kiro、Kilo、Gemini CLI、Antigravity、Devin（原 Windsurf）、Qoder、CodeBuddy、GitHub Copilot、Droid、Pi Agent、Oh My Pi、Reasonix、ZCode、Trae、Grok Build、Kimi Code 和 Snow CLI），以及任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Warp 等）。`.suncode/` 核心跨平台一致；差异在于**各平台如何交付 hook、extension、skill、sub-agent、command**。
 
 ### 加入已初始化的 Suncode 项目
 
@@ -36,13 +36,13 @@ Suncode 支持 21 个平台（Claude Code、Cursor、OpenCode、Engineer、Codex
 
 ### 能力矩阵
 
-| 能力                           | Claude Code | Cursor | OpenCode | Engineer | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid | Pi Agent | OMP | Grok | Kimi |
-| ------------------------------ | :---------: | :----: | :------: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: | :------: | :-: | :--: | :--: |
-| SessionStart / startup context |     ✅      |   ✅   |    ✅    |    ✅    |  ⚡   |  ⚡  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |
-| Sub-agent 上下文注入           |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ❌  |   ❌   |  ❌   |    ✅     |   ❌    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |
-| Sub-agent（`suncode-*`）       |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |
-| Auto-trigger skill             |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |
-| 显式命令入口                   |     ✅      |   ✅   |    ✅    |    ✅    |   —   |  —   |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |
+| 能力                           | Claude Code | Cursor | OpenCode | Engineer | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid | Pi Agent | OMP | Grok | Kimi | Snow |
+| ------------------------------ | :---------: | :----: | :------: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: | :------: | :-: | :--: | :--: | :--: |
+| SessionStart / startup context |     ✅      |   ✅   |    ✅    |    ✅    |  ⚡   |  ⚡  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |  ✅  |
+| Sub-agent 上下文注入           |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ❌  |   ❌   |  ❌   |    ✅     |   ❌    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |  ✅  |
+| Sub-agent（`suncode-*`）       |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |  ✅  |
+| Auto-trigger skill             |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |  ✅  |
+| 显式命令入口                   |     ✅      |   ✅   |    ✅    |    ✅    |   —   |  —   |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |  ✅  |
 
 图例：✅ Suncode 写入配置并由平台执行 · ⚡ 部分支持（Codex 使用 `AGENTS.md` 加
 `UserPromptSubmit`；workflow breadcrumb 需要 `features.hooks = true`，0.129+
@@ -53,6 +53,26 @@ Suncode 支持 21 个平台（Claude Code、Cursor、OpenCode、Engineer、Codex
 OpenCode-compatible JS plugin surface，只是放在 `.engineer/` 下（OpenCode 放在 `.opencode/`）。Kimi 通过 `/skill:suncode-*` 命令 skill 调用。Pi Agent 和 Oh My Pi 走 extension，不走 Python hook 文件；会话上下文、Bash 环境变量传递和 sub-agent context 都在 agent 动作前完成。
 
 `.kilocode/`、`.agent/`（Antigravity）、`.devin/` 只有 workflow 和 skill，没有 sub-agent 也没有 hook。`.agents/skills/` 是 Codex、Gemini CLI、Pi Agent、Kimi Code 和 ZCode 写入的共享 skill 层。
+
+### 跨平台共用一张执行 DAG
+
+平台适配器不会分别生成 inline 计划和 sub-agent 计划。每个任务只有一份
+`execution.json` DAG：依赖关系决定节点何时 ready，当前执行器声明的能力决定这些
+ready 节点如何运行。
+
+- **Inline** 执行同一张图，有效并发度固定为 `1`。
+- **原生 sub-agent 和 channel 执行器**可以并行派发互相独立且无资源冲突的 ready
+  节点，并发上限取配置值和平台限制。
+- 协调器先派发本轮选中的全部 ready 节点，再进入等待；任一节点完成后，立即记录
+  结构化结果并重新计算 ready 集合，不等待整批节点结束。
+- v0.6.12 bundled adapter 使用 `shared-worktree` isolation。自定义 adapter 若选择
+  `worktree` 或 `sandbox`，必须把 claimed runtime context artifact 传入目标环境；
+  bundled runtime 不会自动复制。
+
+每个被派发的节点都会收到生成的 context manifest 和有预算上限的正文，其中包含
+节点目标、约束、相关 spec / 文件，以及仅来自直接依赖且已成功节点的结果。原生注入、
+pull-based prelude 和 channel 的 `--context-file` 都消费同一套 manifest-first 契约；
+没有 manifest 的旧任务才回退到 legacy task context。
 
 ### Claude Code
 
@@ -83,6 +103,24 @@ Cursor 是完整 class-1 平台：真 hook、真 sub-agent、真 skill。
 - `.cursor/agents/`：`suncode-implement.md`、`suncode-check.md`、`suncode-research.md`
 - `.cursor/hooks/`：共享 Python hook 脚本（与 Claude Code 兼容）
 - `.cursor/hooks.json`：hook 配置（Cursor 用独立文件，不是 `settings.json`）
+
+### Snow CLI
+
+```bash
+suncode init -u your-name --snow
+```
+
+Snow CLI 是支持 project-agent discovery 和原生 context hook 的 class-1 平台：
+
+- `.snow/skills/suncode-{name}/SKILL.md`：Suncode workflow skill
+- `.snow/commands/suncode-{name}.json`：prompt-type command，例如 `/suncode-continue`
+- `.snow/agents/`：`suncode-implement.md`、`suncode-check.md`、`suncode-research.md`
+- `.snow/hooks/`：`onSessionStart`、`onUserMessage`、`beforeSubAgentStart` hook definition
+- `.snow/SNOW.md`：生成的 operator guide 和 Snow-native tool map
+
+Snow 会把 `SNOW_SESSION_ID`、`SUNCODE_CONTEXT_ID`、`SNOW_CWD`、
+`SNOW_PLATFORM` 传给 hook、terminal call 和 sub-agent child。Project agent 会自动
+发现；不要再添加旧版 `sub-agents.suncode.json` merge file。
 
 ### OpenCode
 
@@ -286,7 +324,7 @@ Suncode 还原生带有上面能力矩阵之外几个平台的配置器：
 - **ZCode**（`--zcode`）：写 `.zcode/commands/suncode/`、`.zcode/cli/agents/` 和 `.agents/skills/`。Sub-agent 走 pull-based prelude。
 - **Trae**（`--trae`）：写 `.trae/commands/`、`.trae/skills/`、`.trae/agents/`、`.trae/hooks/` 和 `.trae/hooks.json`。主会话上下文走 SessionStart/UserPromptSubmit hook，sub-agent 走 pull-based prelude。
 
-除了 21 个已配置平台，Suncode 还能被任何遵循 `.agents/skills/` 约定（[agentskills.io](https://agentskills.io) 规范）的 AI 编码 agent 直接使用。Codex、Gemini CLI、Pi Agent、Kimi Code 和 ZCode 会向该目录写入字节兼容的 skill，Amp、Cline、Deep Agents、Firebender、Warp 等生态 agent 可直接读取。
+除了 22 个已配置平台，Suncode 还能被任何遵循 `.agents/skills/` 约定（[agentskills.io](https://agentskills.io) 规范）的 AI 编码 agent 直接使用。Codex、Gemini CLI、Pi Agent、Kimi Code 和 ZCode 会向该目录写入字节兼容的 skill，Amp、Cline、Deep Agents、Firebender、Warp 等生态 agent 可直接读取。
 
 ### 操作系统
 

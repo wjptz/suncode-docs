@@ -62,7 +62,7 @@
               },
               {
                 "group": "Changelog",
-                "pages": ["changelog/v0.6.11"]
+                "pages": ["changelog/v0.6.12", "changelog/v0.6.11"]
               }
             ],
             "default": true
@@ -106,7 +106,7 @@
               },
               {
                 "group": "更新日志",
-                "pages": ["zh/changelog/v0.6.11"]
+                "pages": ["zh/changelog/v0.6.12", "zh/changelog/v0.6.11"]
               }
             ],
             "default": true
@@ -123,7 +123,7 @@
     "links": [
       {
         "label": "Changelog",
-        "href": "/changelog/v0.6.11"
+        "href": "/changelog/v0.6.12"
       }
     ]
   },

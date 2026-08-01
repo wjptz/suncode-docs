@@ -4,7 +4,7 @@ title: 'Multi-Platform and Team Configuration'
 
 ## Multi-Platform and Team Configuration
 
-Suncode ships on 21 platforms (Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Kilo, Gemini CLI, Antigravity, Devin (formerly Windsurf), Qoder, CodeBuddy, GitHub Copilot, Droid, Pi Agent, Oh My Pi, Reasonix, ZCode, Trae, Grok Build, and Kimi Code) and additionally supports any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Warp, and more). The `.suncode/` core is identical everywhere; what differs is **how hooks, extensions, skills, sub-agents, and commands are delivered** on each platform.
+Suncode ships on 22 platforms (Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Kilo, Gemini CLI, Antigravity, Devin (formerly Windsurf), Qoder, CodeBuddy, GitHub Copilot, Droid, Pi Agent, Oh My Pi, Reasonix, ZCode, Trae, Grok Build, Kimi Code, and Snow CLI) and additionally supports any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Warp, and more). The `.suncode/` core is identical everywhere; what differs is **how hooks, extensions, skills, sub-agents, and commands are delivered** on each platform.
 
 ### Joining an Already-Initialized Suncode Project
 
@@ -37,13 +37,13 @@ After that, on platforms with a SessionStart hook or extension, opening a new se
 
 ### Capability Matrix
 
-| Capability                     | Claude Code | Cursor | OpenCode | Engineer | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid | Pi Agent | OMP | Grok | Kimi |
-| ------------------------------ | :---------: | :----: | :------: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: | :------: | :-: | :--: | :--: |
-| SessionStart / startup context |     ✅      |   ✅   |    ✅    |    ✅    |  ⚡   |  ⚡  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |
-| Sub-agent context injection    |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ❌  |   ❌   |  ❌   |    ✅     |   ❌    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |
-| Sub-agents (`suncode-*`)       |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |
-| Auto-trigger skills            |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |
-| Explicit command entry         |     ✅      |   ✅   |    ✅    |    ✅    |   —   |  —   |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |
+| Capability                     | Claude Code | Cursor | OpenCode | Engineer | Codex | Kiro | Gemini | Qoder | CodeBuddy | Copilot | Droid | Pi Agent | OMP | Grok | Kimi | Snow |
+| ------------------------------ | :---------: | :----: | :------: | :------: | :---: | :--: | :----: | :---: | :-------: | :-----: | :---: | :------: | :-: | :--: | :--: | :--: |
+| SessionStart / startup context |     ✅      |   ✅   |    ✅    |    ✅    |  ⚡   |  ⚡  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |  ✅  |
+| Sub-agent context injection    |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ❌  |   ❌   |  ❌   |    ✅     |   ❌    |  ✅   |    ✅    | ✅  |  ❌  |  ❌  |  ✅  |
+| Sub-agents (`suncode-*`)       |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |  ✅  |
+| Auto-trigger skills            |     ✅      |   ✅   |    ✅    |    ✅    |  ✅   |  ✅  |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |  ✅  |
+| Explicit command entry         |     ✅      |   ✅   |    ✅    |    ✅    |   —   |  —   |   ✅   |  ✅   |    ✅     |   ✅    |  ✅   |    ✅    | ✅  |  ✅  |  ✅  |  ✅  |
 
 Legend: ✅ Suncode wires the config and the platform executes it · ⚡ Partial
 (Codex uses `AGENTS.md` plus `UserPromptSubmit`; workflow breadcrumbs require
@@ -61,6 +61,28 @@ same: session context, Bash environment propagation, and sub-agent context
 injection are handled before the agent acts.
 
 `.kilocode/`, `.agent/` (Antigravity), and `.devin/` are workflow-and-skill only: no sub-agents and no hooks. `.agents/skills/` is the shared skill layer written by Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode.
+
+### One Execution DAG Across Platforms
+
+Platform adapters do not create separate inline and sub-agent plans. Each task has one
+`execution.json` DAG: dependencies determine when nodes become ready, while the active
+executor's declared capabilities determine how those ready nodes run.
+
+- **Inline** executes the same graph with effective concurrency `1`.
+- **Native sub-agent and channel executors** may dispatch independent, conflict-free ready
+  nodes in parallel, up to the configured concurrency and platform limit.
+- The coordinator dispatches the selected ready set before waiting. When any node finishes,
+  it records the structured result and immediately recomputes readiness instead of waiting
+  for the whole batch.
+- Bundled v0.6.12 adapters execute these nodes in `shared-worktree` isolation. A custom
+  adapter that selects `worktree` or `sandbox` must transport the claimed runtime context
+  artifact into that environment; the bundled runtime does not copy it automatically.
+
+Every dispatched node receives a generated context manifest plus bounded content containing
+its objective, constraints, relevant specs/files, and only the succeeded results of its direct
+dependencies. Native injection, pull-based preludes, and channel `--context-file` delivery all
+consume that same manifest-first contract; legacy task context remains a fallback for tasks
+without a manifest.
 
 ### Claude Code
 
@@ -91,6 +113,24 @@ Layout:
 - `.cursor/agents/`: `suncode-implement.md`, `suncode-check.md`, `suncode-research.md`
 - `.cursor/hooks/`: shared Python hook scripts (Claude-Code-compatible)
 - `.cursor/hooks.json`: hook configuration (Cursor uses a separate file, not `settings.json`)
+
+### Snow CLI
+
+```bash
+suncode init -u your-name --snow
+```
+
+Snow CLI is a class-1 platform with project-agent discovery and native context hooks:
+
+- `.snow/skills/suncode-{name}/SKILL.md`: Suncode workflow skills
+- `.snow/commands/suncode-{name}.json`: prompt-type commands such as `/suncode-continue`
+- `.snow/agents/`: `suncode-implement.md`, `suncode-check.md`, `suncode-research.md`
+- `.snow/hooks/`: `onSessionStart`, `onUserMessage`, and `beforeSubAgentStart` hook definitions
+- `.snow/SNOW.md`: generated operator guide and Snow-native tool map
+
+Snow propagates `SNOW_SESSION_ID`, `SUNCODE_CONTEXT_ID`, `SNOW_CWD`, and
+`SNOW_PLATFORM` to hooks, terminal calls, and sub-agent children. Project agents are
+auto-discovered; do not add a legacy `sub-agents.suncode.json` merge file.
 
 ### OpenCode
 
@@ -297,7 +337,7 @@ Suncode also ships configurators for platforms not covered by the capability mat
 - **ZCode** (`--zcode`): writes `.zcode/commands/suncode/`, `.zcode/cli/agents/`, and `.agents/skills/`. Sub-agents use a pull-based prelude.
 - **Trae** (`--trae`): writes `.trae/commands/`, `.trae/skills/`, `.trae/agents/`, `.trae/hooks/`, and `.trae/hooks.json`. Main-session context uses SessionStart/UserPromptSubmit hooks; sub-agents use a pull-based prelude.
 
-Beyond the 21 configured platforms, Suncode can be consumed by any AI coding agent that follows the `.agents/skills/` convention (the [agentskills.io](https://agentskills.io) standard). Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode write byte-compatible skills there, and the files are directly usable by other agents in that ecosystem (Amp, Cline, Deep Agents, Firebender, Warp, and more).
+Beyond the 22 configured platforms, Suncode can be consumed by any AI coding agent that follows the `.agents/skills/` convention (the [agentskills.io](https://agentskills.io) standard). Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode write byte-compatible skills there, and the files are directly usable by other agents in that ecosystem (Amp, Cline, Deep Agents, Firebender, Warp, and more).
 
 ### Operating Systems
 

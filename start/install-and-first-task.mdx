@@ -7,7 +7,7 @@ title: 'Install & First Task'
 ### Installation
 
 ```bash
-# Global install (beta channel)
+# Global install (stable channel)
 npm install -g @wjptz/suncode@latest
 
 # Navigate to your project directory
@@ -29,14 +29,14 @@ suncode init -u your-name
 suncode init -u your-name --claude
 suncode init -u your-name --claude --cursor --opencode --engineer
 suncode init -u your-name --codex --gemini
-suncode init -u your-name --pi --omp --grok --kimi
+suncode init -u your-name --pi --omp --grok --kimi --snow
 ```
 
 `your-name` becomes your developer identity and creates your personal workspace at `.suncode/workspace/your-name/`.
 
-Supported flags: `--claude`, `--cursor`, `--opencode`, `--engineer`, `--codex`, `--kiro`, `--gemini`, `--qoder`, `--codebuddy`, `--copilot`, `--droid`, `--pi`, `--omp`, `--antigravity`, `--devin` (alias: `--windsurf`, deprecated), `--kilo`, `--reasonix`, `--zcode`, `--trae`, `--grok`, `--kimi`.
+Supported flags: `--claude`, `--cursor`, `--opencode`, `--engineer`, `--codex`, `--kiro`, `--gemini`, `--qoder`, `--codebuddy`, `--copilot`, `--droid`, `--pi`, `--omp`, `--antigravity`, `--devin` (alias: `--windsurf`, deprecated), `--kilo`, `--reasonix`, `--zcode`, `--trae`, `--grok`, `--kimi`, `--snow`.
 
-Beyond these 21 configured platforms, any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Warp, and more) can also consume Suncode. Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode write neutral shared skills there.
+Beyond these 22 configured platforms, any AI coding agent that reads the `.agents/skills/` standard (Amp, Cline, Deep Agents, Firebender, Warp, and more) can also consume Suncode. Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode write neutral shared skills there.
 
 ### Platform Configuration
 
@@ -65,6 +65,7 @@ Beyond these 21 configured platforms, any AI coding agent that reads the `.agent
 | **Trae**        | `.trae/commands/`, `skills/`, `agents/`, `hooks/`, `hooks.json`                       |
 | **Grok Build**  | `.grok/commands/`, `skills/`, `agents/`                                               |
 | **Kimi Code**   | `.kimi-code/skills/` + `.agents/skills/`                                              |
+| **Snow CLI**    | `.snow/skills/`, `commands/`, `agents/`, `hooks/` + `.snow/SNOW.md`                   |
 
 `.agents/skills/` is a shared cross-platform layer ([agentskills.io](https://agentskills.io) standard). Codex, Gemini CLI, Pi Agent, Kimi Code, and ZCode write byte-compatible Suncode skills there, so any agent that reads the standard (Amp, Cline, Deep Agents, Firebender, Warp, etc.) can consume them when that layer is present.
 
@@ -197,6 +198,7 @@ your-project/
 ├── .codebuddy/        # CodeBuddy: commands/suncode/
 ├── .factory/          # Droid: commands/suncode/, skills/, hooks/
 ├── .pi/               # Pi Agent: prompts/, skills/, agents/, extensions/suncode/
+├── .snow/             # Snow CLI: skills/, commands/, agents/, hooks/, SNOW.md
 └── .github/           # Copilot: copilot-instructions.md, prompts/
 ```
 
@@ -291,20 +293,25 @@ Phase 1 — Plan (interactive)
      one question at a time, iterating prd.md
  1.2 For complex tasks, AI writes design.md and implement.md before implementation
  1.3 When research is needed, findings land in research/
- 1.4 Complex implement.md includes a parseable "## 实施清单"; Hub derives
-     structured subtasks from it unless subtasks.json overrides it. Sub-agent
-     mode also curates implement.jsonl / check.jsonl with spec + research paths
-     only, not source paths
- 1.5 After review, Hub tasks run suncode hub plan-ready, then task.py start
+ 1.4 When execution.dag.enabled, AI writes and validates execution.json. It keeps
+     independent nodes dependency-free when scopes/resources are safe and makes
+     every branch converge on a final integration/check barrier. Inline and
+     sub-agent modes use this same graph.
+ 1.5 Hub projects derive display subtasks from execution.json, then the parseable
+     "## 实施清单" fallback. subtasks.json is only an explicit display override.
+     Stable spec + research paths can be curated in implement.jsonl / check.jsonl.
+ 1.6 After review, Hub tasks run suncode hub plan-ready, then task.py start
      flips status to in_progress. Quick Hub tasks keep planning minimal and skip
      Hub start preflight.
 
 Phase 2 — Execute
- 2.1 AI implements against prd.md, design.md if present, implement.md if present,
-     and relevant specs. Depending on platform/mode, this may be a sub-agent
-     or inline main-session work.
- 2.2 AI runs suncode-check → reviews diff vs artifacts + specs and runs
-     lint / typecheck / test, self-fixing when possible
+ 2.1 The main session freezes the plan hash, claims every conflict-free ready
+     node, dispatches all selected nodes before waiting, records the first
+     NodeResult returned, and immediately recomputes the ready set. Inline runs
+     the same graph with concurrency one.
+ 2.2 Every worker receives a bounded immutable context manifest instead of the
+     parent transcript. Check nodes report read-only; one explicit fix node owns
+     any required writes before lint / typecheck / test reruns.
 
 Phase 3 — Finish
  3.1 AI activates the suncode-check skill for final verification

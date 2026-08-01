@@ -124,27 +124,36 @@ when the task is complex enough to need them.
 
 The initial `task.json` status is `planning`. `task.py create` also best-effort
 sets the current session's active-task pointer, so the next prompt can receive
-the `[workflow-state:planning]` block without waiting for `task.py start`.
+the `[workflow-state:planning]` block without waiting for `task.py start`. New
+tasks also snapshot the current execution-DAG policy under
+`task.json.meta.execution`; changing project configuration later therefore does
+not retroactively make an existing complex task stricter.
 
 ## 5. Planning writes the right artifacts
 
 Planning converts the request into files that implementation and review can
 trust.
 
-| Artifact          | Required when               | Purpose                                                                                 |
-| ----------------- | --------------------------- | --------------------------------------------------------------------------------------- |
-| `prd.md`          | every task                  | Requirements, constraints, acceptance criteria, and out-of-scope items.                 |
-| `design.md`       | complex tasks               | Technical design: boundaries, contracts, data flow, compatibility, tradeoffs, rollback. |
-| `implement.md`    | complex tasks               | Execution plan: ordered checklist, validation commands, review gates, rollback points.  |
-| `research/*.md`   | when investigation matters  | Durable facts discovered during planning.                                               |
-| `implement.jsonl` | when context manifests help | Spec/research files for implementation context.                                         |
-| `check.jsonl`     | when context manifests help | Spec/research files for review and verification context.                                |
+| Artifact          | Required when                          | Purpose                                                                                          |
+| ----------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `prd.md`          | every task                             | Requirements, constraints, acceptance criteria, and out-of-scope items.                          |
+| `design.md`       | complex tasks                          | Technical design: boundaries, contracts, data flow, compatibility, tradeoffs, rollback.          |
+| `implement.md`    | complex tasks                          | Human-readable ordered checklist, validation commands, review gates, and legacy serial fallback. |
+| `execution.json`  | when `execution.dag.enabled`           | Canonical versioned dependency graph shared by inline, native sub-agent, and channel executors.  |
+| `research/*.md`   | when investigation matters             | Durable facts discovered during planning.                                                        |
+| `implement.jsonl` | when stable implementation input helps | Spec/research sources that a node context may include.                                           |
+| `check.jsonl`     | when stable verification input helps   | Spec/research sources that a verification node context may include.                              |
 
-`implement.md` does not replace `implement.jsonl`. The markdown file is the
-human-readable plan; the JSONL file is a manifest for stable context files.
+These files have separate responsibilities. `implement.md` is the human and
+legacy serial view. `execution.json` is the execution source of truth. The
+JSONL files are reusable source lists, not schedulers.
 
-Lightweight tasks can be PRD-only. Complex tasks need `prd.md`, `design.md`, and
-`implement.md` before they can start.
+Human documentation for a lightweight task can remain PRD-only, but a DAG-enabled
+task still receives a reviewed one-node `execution.json` before implementation.
+Complex tasks need `prd.md`, `design.md`, `implement.md`, and a real dependency
+graph whose branches converge on a final integration/check barrier. Do not turn
+independent work into a serial chain merely because it appears later in the
+checklist.
 
 Every complex `implement.md` should include a parseable implementation checklist:
 
@@ -155,8 +164,9 @@ Every complex `implement.md` should include a parseable implementation checklist
 - [ ] [P2] Subtask name: Subtask description
 ```
 
-Hub uses this checklist as the default source for structured subtasks. Write
-`subtasks.json` only when the derived structure needs an explicit override.
+For Hub display, Suncode prefers an explicit `subtasks.json` v1 override, then a
+stable projection of `execution.json`, then this checklist. `subtasks.json` is
+display data, never the execution graph.
 
 ## 6. Context manifests stay narrow
 
@@ -176,18 +186,30 @@ Rules:
 - Put implementation-writing context in `implement.jsonl`.
 - Put verification and quality context in `check.jsonl`.
 
-Inline modes can skip JSONL curation when the main session directly reads the
-needed artifacts and specs.
+Before a DAG node is claimed, Suncode builds an immutable, bounded context
+package under `.suncode/.runtime/execution/`. Its manifest records the node
+contract, read/write/resource boundaries, selected sources, direct succeeded
+dependency results, byte budgets, truncation/redaction decisions, and SHA-256
+hashes. The dispatch prompt points at this manifest; it does not copy the main
+conversation transcript. Codex dispatches with `fork_turns = "none"`, and
+channel workers receive the manifest and rendered content as context files.
+
+Inline consumes the same node manifest and the same dependency graph. Its only
+scheduling difference is `maxConcurrency = 1`.
 
 ## 7. Activation enters implementation
 
 After artifact review, Suncode activates the task:
 
 ```bash
+python3 ./.suncode/scripts/task.py execution validate <task-dir>
 python3 ./.suncode/scripts/task.py start <task-dir>
 ```
 
-This changes `task.json.status` from `planning` to `in_progress`.
+This changes `task.json.status` from `planning` to `in_progress`. When the DAG
+feature is enabled, a malformed explicit plan always blocks activation. A new
+complex task also requires the plan when its creation-time policy snapshot has
+`requireForComplexTasks: true`; older tasks remain compatible.
 
 For Hub-bound tasks, run `suncode hub plan-ready --task current` before
 `task.py start`. Standard and change tasks run Hub start preflight; quick tasks
@@ -199,27 +221,27 @@ spec update, commit planning, and finish-work routing.
 
 ## 8. Implementation reads task artifacts and specs
 
-Execution always starts from the active task directory. The platform decides how
-context gets into the actor doing the work.
+Execution starts by freezing the reviewed plan hash:
 
-| Execution path          | Platforms                                                      | How context loads                                                                                                                                 |
-| ----------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hook-push sub-agent     | Claude Code, Cursor, OpenCode, Engineer, CodeBuddy, Droid, Pi  | A hook injects JSONL entries, then `prd.md`, `design.md` if present, and `implement.md` if present before the sub-agent starts.                   |
-| Pull-prelude sub-agent  | Codex, Copilot, Gemini CLI, Qoder, Kiro, Reasonix, ZCode, Trae | The sub-agent definition tells the agent to read the active task, JSONL entries, `prd.md`, `design.md` if present, and `implement.md` if present. |
-| Main-session skill flow | Codex inline, Kilo, Antigravity, Devin                         | The main session loads Suncode skills and reads `prd.md`, optional artifacts, and relevant specs inline.                                          |
-
-The shared context order is:
-
-```text
-jsonl entries -> prd.md -> design.md if present -> implement.md if present
+```bash
+python3 ./.suncode/scripts/task.py execution start-run <task-dir> --executor native-subagent
+python3 ./.suncode/scripts/task.py execution ready <task-dir> --run-id <run-id>
 ```
+
+The coordinator claims every conflict-free ready node selected for the current
+capacity and dispatches all of them before waiting. It records the first returned
+`NodeResult` v1, immediately recomputes the ready set, and continues until the
+final barrier succeeds. Read/write glob overlap, resource locks, unsupported
+roles, and shared global lock files prevent unsafe concurrency. Runtime state,
+events, attempts, results, and contexts are persisted so orphaned work can be
+recovered without trusting transcript text.
 
 Codex can run in two modes:
 
-| Mode        | Meaning                                                                                                                                   |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `inline`    | The main session implements and checks directly; it does not dispatch implement/check sub-agents.                                         |
-| `sub-agent` | Implement/check work defaults to Suncode sub-agents; the main session still coordinates, clarifies, updates specs, commits, and finishes. |
+| Mode        | Meaning                                                                                                                     |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `inline`    | The main session executes the same DAG one ready node at a time (`maxConcurrency = 1`).                                     |
+| `sub-agent` | The main session coordinates the DAG and fans out safe ready nodes; each worker receives only its claimed context manifest. |
 
 ## 9. Check reviews and self-fixes
 
@@ -235,8 +257,10 @@ The check path reads:
 - the changed files
 - local test, lint, type-check, or format commands
 
-The goal is not only to report issues. `suncode-check` is allowed to fix
-findings directly, then rerun checks.
+In a DAG, check nodes are read-only reporters so parallel verification cannot
+race on the shared worktree. When a finding needs a write, the graph routes it
+to one explicit fix node and then reruns the affected checks. The legacy direct
+`suncode-check` skill can still self-fix in a bounded loop outside DAG dispatch.
 
 ## 10. Finish updates durable knowledge
 

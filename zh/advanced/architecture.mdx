@@ -18,27 +18,29 @@ Suncode 是 **Team-level Agent Harness with built-in LLM wiki**。
 
 Suncode 把 AI coding 当成工作流和知识管理问题，而不是一次聊天。
 
-| 理念               | 实现规则                                                                                                                                                                      |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 显式记录工作流状态 | Task `status` 和 `[workflow-state:STATUS]` block 告诉主会话当前在哪个阶段。                                                                                                   |
-| 把持久知识放进文件 | 需求、spec、research、journal 存在 `.suncode/` 下，不只存在对话历史里。                                                                                                       |
-| 按职责拆分工作     | 调研、实现、验收分别走不同 agent 或 skill，取决于平台能力。                                                                                                                   |
-| 控制上下文范围     | JSONL 只列当前任务需要的 spec/research 文件，不把整个仓库塞进上下文。                                                                                                         |
-| 保留 review 边界   | Implement/check agent 产出干净 diff；主会话提出 commit 计划；`/suncode:finish-work` 只归档和写 journal。                                                                      |
-| 支持团队和多工具   | 同一套 `.suncode/` 模型适配 Claude Code、Cursor、OpenCode、Engineer、Codex、Kiro、Gemini、Qoder、Copilot、Droid、Pi、Reasonix、ZCode、Trae、Kilo、Antigravity、Devin 等工具。 |
+| 理念                 | 实现规则                                                                                                                                                                                |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 显式记录工作流状态   | Task `status` 和 `[workflow-state:STATUS]` block 告诉主会话当前在哪个阶段。                                                                                                             |
+| 一次规划，按能力执行 | `execution.json` 是 inline、原生 sub-agent、channel executor 共用的 canonical DAG；只有并发和隔离能力不同。                                                                             |
+| 把持久知识放进文件   | 需求、spec、research、journal 存在 `.suncode/` 下，不只存在对话历史里。                                                                                                                 |
+| 按职责拆分工作       | 调研、实现、验收分别走不同 agent 或 skill，取决于平台能力。                                                                                                                             |
+| 控制上下文范围       | JSONL 只列当前任务需要的 spec/research 文件，不把整个仓库塞进上下文。                                                                                                                   |
+| 保留 review 边界     | Implement/check agent 产出干净 diff；主会话提出 commit 计划；`/suncode:finish-work` 只归档和写 journal。                                                                                |
+| 支持团队和多工具     | 同一套 `.suncode/` 模型适配 Claude Code、Cursor、OpenCode、Engineer、Codex、Kiro、Gemini、Qoder、Copilot、Droid、Pi、Reasonix、ZCode、Trae、Snow CLI、Kilo、Antigravity、Devin 等工具。 |
 
 ## Feature 全景
 
 ### Agent Harness
 
-| Feature                           | 作用                                                                                |
-| --------------------------------- | ----------------------------------------------------------------------------------- |
-| 三阶段工作流                      | 在 `.suncode/workflow.md` 里定义 Plan、Execute、Finish。                            |
-| 每轮 workflow-state breadcrumb    | 在支持 hook 的平台上，把当前 next-action 规则注入主会话。                           |
-| Task lifecycle                    | 在 `.suncode/tasks/<task>/` 中保存需求、状态、负责人、分支、PR 元数据和子任务关系。 |
-| Research / implement / check 角色 | 分开调研、写代码、验收。                                                            |
-| Read-before-write                 | 让 implement/check 路径在改文件前读取 PRD 和相关 spec。                             |
-| Finish 边界                       | 分开最终验证、spec 更新、工作 commit、任务归档和 journal 写入。                     |
+| Feature                           | 作用                                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------------- |
+| 三阶段工作流                      | 在 `.suncode/workflow.md` 里定义 Plan、Execute、Finish。                                 |
+| 每轮 workflow-state breadcrumb    | 在支持 hook 的平台上，把当前 next-action 规则注入主会话。                                |
+| Task lifecycle                    | 在 `.suncode/tasks/<task>/` 中保存需求、状态、负责人、分支、PR 元数据和子任务关系。      |
+| 可恢复 execution DAG              | 按依赖调度节点，检查 scope/resource 冲突，生成不可变上下文、结构化结果并持久化恢复状态。 |
+| Research / implement / check 角色 | 分开调研、写代码、验收。                                                                 |
+| Read-before-write                 | 让 implement/check 路径在改文件前读取 PRD 和相关 spec。                                  |
+| Finish 边界                       | 分开最终验证、spec 更新、工作 commit、任务归档和 journal 写入。                          |
 
 ### Built-in LLM wiki
 
@@ -68,6 +70,7 @@ Suncode 把 AI coding 当成工作流和知识管理问题，而不是一次聊�
 | 每轮 next-action 注入             | Workflow-state module   | `[workflow-state:STATUS]` blocks、`inject-workflow-state.py` 或等价 plugin                                                                               |
 | 任务创建、状态、归档              | Task store module       | `.suncode/tasks/<task>/task.json`、`.suncode/scripts/task.py`、`.suncode/scripts/common/task_store.py`                                                   |
 | Session-scoped current task       | Active-task runtime     | `.suncode/.runtime/sessions/<session-key>.json`、`.suncode/scripts/common/active_task.py`                                                                |
+| DAG 规划与调度                    | Execution runtime       | `execution.json`、`.suncode/scripts/common/execution_model.py`、`execution_runtime.py`、`execution_context.py`、`task_execution.py`                      |
 | Planning artifact / spec 注入     | Context-loading module  | `prd.md`、`design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`、`inject-subagent-context.py`、平台 agent prelude                                |
 | Research / implement / check 角色 | Agent and skill module  | 平台 `agents/`、`skills/`、prompt、workflow                                                                                                              |
 | 团队规范记忆                      | Spec module             | `.suncode/spec/**/index.md` 和 guideline 文件                                                                                                            |
@@ -81,7 +84,7 @@ Suncode 把 AI coding 当成工作流和知识管理问题，而不是一次聊�
 
 ```text
 Phase 1: Plan    -> 判断当前 turn，取得创建任务确认，写 planning artifacts
-Phase 2: Execute -> 实现、验收，直到检查通过
+Phase 2: Execute -> 运行 dependency-ready nodes，最终汇入 check barrier
 Phase 3: Finish  -> 最终验证、更新 spec、提交工作改动、归档
 ```
 
@@ -117,12 +120,12 @@ Hook 脚本只负责解析，不保存 breadcrumb 文案副本。缺少匹配 bl
 
 默认状态：
 
-| Status        | 写入者            | 说明                                                                                                         |
-| ------------- | ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| `no_task`     | Hook 合成         | 当前 session 没有 active task pointer。                                                                      |
-| `planning`    | `task.py create`  | 需求和 planning artifact 阶段；轻量任务可以只有 PRD，复杂任务在 start 前需要 `design.md` 和 `implement.md`。 |
-| `in_progress` | `task.py start`   | 实现、验收、收尾阶段。                                                                                       |
-| `completed`   | `task.py archive` | 归档前瞬间写入；正常流程里不会作为 live breadcrumb 出现。                                                    |
+| Status        | 写入者            | 说明                                                                                                        |
+| ------------- | ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| `no_task`     | Hook 合成         | 当前 session 没有 active task pointer。                                                                     |
+| `planning`    | `task.py create`  | 需求和 planning artifact 阶段；启用 DAG 时增加 review 过的 `execution.json`，复杂任务强制策略在创建时快照。 |
+| `in_progress` | `task.py start`   | 实现、验收、收尾阶段。                                                                                      |
+| `completed`   | `task.py archive` | 归档前瞬间写入；正常流程里不会作为 live breadcrumb 出现。                                                   |
 
 `task.py create` 会尽量设置当前 session 的 active-task pointer，所以 brainstorm 和 JSONL 整理阶段可以看到 `planning`。
 
@@ -136,6 +139,7 @@ Hook 脚本只负责解析，不保存 breadcrumb 文案副本。缺少匹配 bl
 ├── prd.md
 ├── design.md
 ├── implement.md
+├── execution.json
 ├── implement.jsonl
 ├── check.jsonl
 └── research/
@@ -143,15 +147,16 @@ Hook 脚本只负责解析，不保存 breadcrumb 文案副本。缺少匹配 bl
 
 关键文件：
 
-| 文件              | 作用                                                                |
-| ----------------- | ------------------------------------------------------------------- |
-| `task.json`       | 状态、优先级、负责人、分支、PR URL、父子任务关系和扩展元数据。      |
-| `prd.md`          | 需求、约束、验收标准和 out-of-scope。                               |
-| `design.md`       | 复杂任务的技术设计：边界、contract、数据流、兼容性、取舍。          |
-| `implement.md`    | 复杂任务的执行计划：有序 checklist、验证命令、review gate、回滚点。 |
-| `implement.jsonl` | 实现上下文使用的 spec / research manifest。                         |
-| `check.jsonl`     | Review 和验证上下文使用的 spec / research manifest。                |
-| `research/`       | `suncode-research` 或规划流程写入的调研产物。                       |
+| 文件              | 作用                                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `task.json`       | 状态、优先级、负责人、分支、PR URL、父子任务关系和扩展元数据。                                                         |
+| `prd.md`          | 需求、约束、验收标准和 out-of-scope。                                                                                  |
+| `design.md`       | 复杂任务的技术设计：边界、contract、数据流、兼容性、取舍。                                                             |
+| `implement.md`    | 复杂任务的执行计划：有序 checklist、验证命令、review gate、回滚点。                                                    |
+| `execution.json`  | Canonical versioned dependency DAG：role、scope、resource、validation、context budget、executor 约束和 final barrier。 |
+| `implement.jsonl` | 实现上下文使用的 spec / research manifest。                                                                            |
+| `check.jsonl`     | Review 和验证上下文使用的 spec / research manifest。                                                                   |
+| `research/`       | `suncode-research` 或规划流程写入的调研产物。                                                                          |
 
 Task lifecycle hook 是命令事件，不是通用 status watcher：
 
@@ -174,15 +179,37 @@ Current task 按 session 隔离：
 
 `.suncode/.current-task` 是命令行场景的 fallback。平台能提供 session identity 时，session runtime pointer 优先。
 
+## Execution runtime module
+
+Planning 只产出一份 executor-neutral `execution.json`。轻量任务可以是单节点；
+复杂图要保留安全的独立分支，并让所有分支汇入 final integration/check barrier。
+`implement.md` 保留人可读/旧版串行视图；`subtasks.json` 只用于 Hub 展示 override。
+
+`task.py execution start-run` 冻结 plan hash 和 executor capabilities。Ready-set
+scheduler 根据真实依赖、读写 glob 重叠、resource locks、role support、共享
+worktree 全局锁和剩余容量，选择最大无冲突 fan-out。协调者先 claim 并派发整个
+selected set，再等待；首个 `NodeResult` v1 返回后落盘并立刻重算 ready set。
+Inline 使用同一算法，但并发为一。
+
+v0.6.12 bundled executor 使用 `shared-worktree` isolation。Plan schema 也接受给
+自定义 adapter 使用的 `worktree` 和 `sandbox`，但只声明这些值不会把 runtime
+manifest/content 复制进其他 checkout；adapter 必须自行提供 artifact transport。
+
+Runtime state 位于 `.suncode/.runtime/execution/`，包括 state、append-only
+events、attempts、不可变 context packages、structured results 和声明的
+artifacts。Plan-hash drift 会阻止 resume。Recovery 会对账已完成结果，把失联
+worker 标成 orphaned；只有声明可安全重试的节点才自动 retry。
+
 ## Context-loading module
 
 Suncode 通过三条路径加载上下文：
 
-| 上下文类型                   | 来源                                                                                    | 使用者                                                |
-| ---------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| 启动上下文                   | `.suncode/scripts/get_context.py`                                                       | 主会话启动报告。                                      |
-| 每轮 workflow state          | `.suncode/workflow.md` blocks                                                           | 主会话 next-action 指引。                             |
-| Task artifact / spec context | `prd.md`、`design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`、research files | Research、implement、check 角色和 inline skill 流程。 |
+| 上下文类型             | 来源                                                                                    | 使用者                                         |
+| ---------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 启动上下文             | `.suncode/scripts/get_context.py`                                                       | 主会话启动报告。                               |
+| 每轮 workflow state    | `.suncode/workflow.md` blocks                                                           | 主会话 next-action 指引。                      |
+| Claimed node context   | `.suncode/.runtime/execution/**/contexts/**/manifest.json` 和 `content.md`              | Inline、原生 sub-agent、channel node workers。 |
+| 旧版 task/spec context | `prd.md`、`design.md`、`implement.md`、`implement.jsonl`、`check.jsonl`、research files | 没有 claimed execution manifest 的 dispatch。  |
 
 JSONL 行是普通文件引用：
 
@@ -190,11 +217,11 @@ JSONL 行是普通文件引用：
 {"file": ".suncode/spec/docs-site/docs/style-guide.md", "reason": "Docs writing style"}
 ```
 
-标准流程里，task artifact 和 JSONL manifest 分开读取。统一顺序是
-`jsonl entries -> prd.md -> design.md if present -> implement.md if present`。
-`implement.jsonl` 和 `check.jsonl` 列 spec 和 research 文件。没有 `file` 字段的
-seed row 会被 reader 跳过。源文件由实现和 review 时按需读取，不预先登记在
-JSONL 里。
+标准流程是 manifest-first。Context builder 合并 node contract、显式选择的 task
+artifacts/JSONL sources，以及直接且已成功的 dependency structured results；
+同时执行仓库边界、敏感路径拒绝与脱敏、单来源/总字节预算、确定顺序、截断记录和
+SHA-256 完整性校验。Parent conversation 不是 context source。没有 manifest 的
+旧派发才使用 `jsonl entries -> prd.md -> design.md -> implement.md` fallback。
 
 ## Platform adapter module
 
@@ -215,11 +242,11 @@ Suncode 使用每个平台可用的原语。真实项目以本地生成文件为
 
 平台支持 sub-agent 时，Suncode 默认提供三个角色：
 
-| Sub-agent           | 角色                                                 | 主要上下文                                                                 |
-| ------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------- |
-| `suncode-research`  | 调研代码、文档、API 和方案；把结论写到 `research/`。 | 调研 prompt，以及按需读取的 task/repo context。                            |
-| `suncode-implement` | 按 planning artifacts 和相关 spec 写改动。           | `implement.jsonl`、`prd.md`、可选 `design.md`、可选 `implement.md`。       |
-| `suncode-check`     | Review、跑检查、能修则自修。                         | `check.jsonl`、`prd.md`、可选 `design.md`、可选 `implement.md`、改动文件。 |
+| Sub-agent           | 角色                                                              | 主要上下文                                                           |
+| ------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `suncode-research`  | 调研代码、文档、API 和方案；把结论写到 `research/`。              | 调研 prompt，以及按需读取的 task/repo context。                      |
+| `suncode-implement` | 按 planning artifacts 和相关 spec 写改动。                        | `implement.jsonl`、`prd.md`、可选 `design.md`、可选 `implement.md`。 |
+| `suncode-check`     | Review 和跑检查；DAG check node 只读报告，写入交给一个 fix node。 | Claimed node manifest；旧派发 fallback 到 JSONL/task artifacts。     |
 
 Skill 覆盖主会话需要指导的阶段：brainstorm、before-dev、check、update-spec、finish-work 和 meta customization。没有 sub-agent 的平台上，skill 会承担更多主会话内执行逻辑。
 

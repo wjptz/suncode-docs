@@ -21,6 +21,7 @@ Suncode 只保留很少的会话边界命令，其他都是 auto-trigger skill �
 | Codex                                                              | 自动读取 `AGENTS.md` prelude；可选 UserPromptSubmit hook                  | skill / prompt 入口          | skill / prompt 入口       | Skills + hooks                          |
 | Oh My Pi / Grok Build                                              | 平台专用 Suncode 命令                                                     | Suncode 命令                 | Suncode 命令              | 原生命令文件                            |
 | Kimi Code                                                          | `/skill:suncode-start`                                                    | `/skill:suncode-finish-work` | `/skill:suncode-continue` | Kimi 私有 skill                         |
+| Snow CLI                                                           | 自动 `onSessionStart` hook                                                | `/suncode-finish-work`       | `/suncode-continue`       | Prompt JSON + hook                      |
 
 ### Auto-trigger Skill
 
@@ -44,7 +45,7 @@ Suncode 只保留很少的会话边界命令，其他都是 auto-trigger skill �
 | `suncode-implement` | 编码          | 不 `git commit` |
 | `suncode-check`     | 验证 + 自修复 | 自带重试循环    |
 
-Sub-agent 工作流在 Claude Code、Cursor、OpenCode、Engineer、Codex、Kiro、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi Agent、Oh My Pi、Reasonix、ZCode、Trae、Grok Build 和 Kimi Code 可用。Kilo、Antigravity、Devin 在主会话内联运行。Codex 启用 dispatch 时走原生 `SubagentStart` 且保留 pull fallback；Grok 和 Kimi 走 pull-based。
+Sub-agent 工作流在 Claude Code、Cursor、OpenCode、Engineer、Codex、Kiro、Gemini CLI、Qoder、CodeBuddy、Copilot、Droid、Pi Agent、Oh My Pi、Reasonix、ZCode、Trae、Grok Build、Kimi Code 和 Snow CLI 可用。Kilo、Antigravity、Devin 在主会话内联运行。Codex 启用 dispatch 时走原生 `SubagentStart` 且保留 pull fallback；Snow 使用 `beforeSubAgentStart`；Grok 和 Kimi 走 pull-based。
 
 ### 全局 CLI 命令
 
@@ -104,7 +105,7 @@ Hub 命令是可选能力。只有 `.suncode/config.yaml` 包含 `hub.enabled: t
 | `add-context`     | 追加上下文条目（create 之后填 jsonl 的主要入口）                           | `task.py add-context "$DIR" <target> "<path>" "<reason>"`          |
 | `validate`        | 校验 JSONL                                                                 | `task.py validate "$DIR"`                                          |
 | `list-context`    | 查看所有条目                                                               | `task.py list-context "$DIR"`                                      |
-| `start`           | 置为当前 AI 会话/窗口的任务                                                | `task.py start "$DIR"`                                             |
+| `start`           | 置为当前任务并进入 `in_progress`；启用时校验显式/必需 DAG plan             | `task.py start "$DIR"`                                             |
 | `current`         | 查看当前 AI 会话/窗口的任务                                                | `task.py current [--source] [--json]`                              |
 | `finish`          | 清除当前 AI 会话/窗口的任务                                                | `task.py finish`                                                   |
 | `set-branch`      | 设置分支名                                                                 | `task.py set-branch "$DIR" "feature/xxx"`                          |
@@ -122,6 +123,23 @@ Hub 命令是可选能力。只有 `.suncode/config.yaml` 包含 `hub.enabled: t
 `current_task` 为 `null` 时 exit 1。`task.py list --json` 输出
 `{tasks:[...]}`，每项同时有持久化 `status` 和派生 `display_status`；
 因此父任务可显示为 `active`，但磁盘上仍保持 `planning`。
+
+### `task.py execution` 子命令
+
+| 子命令      | 作用                                                               | 常见用法                                                                           |
+| ----------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `validate`  | 严格校验 `execution.json`；`--allow-legacy` 允许兼容 normalization | `task.py execution validate "$DIR" [--allow-legacy] [--json]`                      |
+| `show`      | 显示显式图或 normalized compatibility graph                        | `task.py execution show "$DIR" [--json]`                                           |
+| `scaffold`  | 从旧 artifacts 写出保守串行 `execution.json`                       | `task.py execution scaffold "$DIR" [--force]`                                      |
+| `start-run` | 把 plan hash 和 executor capabilities 冻结进可恢复 run             | `task.py execution start-run "$DIR" --executor <inline\|native-subagent\|channel>` |
+| `ready`     | 返回最大安全 fan-out set                                           | `task.py execution ready "$DIR" [--run-id id] [--json]`                            |
+| `claim`     | 原子 claim ready node，并创建不可变 context package                | `task.py execution claim "$DIR" <node> [--run-id id] [--json]`                     |
+| `running`   | 把 dispatched node 标成 running                                    | `task.py execution running "$DIR" <node> [--executor-ref ref]`                     |
+| `complete`  | 持久化并校验 `NodeResult` v1                                       | `task.py execution complete "$DIR" <node> --result <file\|->`                      |
+| `status`    | 显示持久化的 run/node state                                        | `task.py execution status "$DIR" [--run-id id] [--json]`                           |
+| `recover`   | 对账 result 和 orphaned worker；可显式 retry node                  | `task.py execution recover "$DIR" [--retry node] [--json]`                         |
+| `cancel`    | 取消 non-terminal node                                             | `task.py execution cancel "$DIR" <node> [--reason text]`                           |
+| `context`   | 完整性校验并打印不可变 node context manifest                       | `task.py execution context <manifest.json> [--json]`                               |
 
 ### Python 脚本
 

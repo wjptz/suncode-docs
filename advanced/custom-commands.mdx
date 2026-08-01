@@ -4,11 +4,11 @@ title: 'Custom Slash Commands'
 
 ## Custom Slash Commands
 
-Suncode ships a deliberately small set of slash commands. On hook-backed agent-capable platforms (Claude Code, Cursor, Gemini CLI, Qoder, CodeBuddy, Droid, Pi Agent, Trae, etc.), only `finish-work` and `continue` are installed. `start` is usually not user-facing because startup context is loaded through a SessionStart hook, extension, `AGENTS.md`, or prompt-hook bootstrap at the top of the session. OpenCode and Engineer also install `start` as an OpenCode-compatible fallback for manual reloads or plugin failures. Agent-less platforms (Kilo, Antigravity, Devin) have no hook, so `start` is shipped there as a slash command. Everything else that used to be a command has moved to auto-trigger skills (see [Custom Skills](./custom-skills)). Add your own slash command when you have a specific entry point you want the user to invoke on demand.
+Suncode ships a deliberately small set of slash commands. On hook-backed agent-capable platforms (Claude Code, Cursor, Gemini CLI, Qoder, CodeBuddy, Droid, Pi Agent, Trae, Snow CLI, etc.), only `finish-work` and `continue` are installed. `start` is usually not user-facing because startup context is loaded through a SessionStart hook, extension, `AGENTS.md`, or prompt-hook bootstrap at the top of the session. OpenCode and Engineer also install `start` as an OpenCode-compatible fallback for manual reloads or plugin failures. Agent-less platforms (Kilo, Antigravity, Devin) have no hook, so `start` is shipped there as a slash command. Everything else that used to be a command has moved to auto-trigger skills (see [Custom Skills](./custom-skills)). Add your own slash command when you have a specific entry point you want the user to invoke on demand.
 
 ### Command File Format and Location
 
-Suncode groups the 21 configured platforms into three delivery models:
+Suncode groups the 22 configured platforms into three delivery models:
 
 **Explicit slash commands** — the user types `/suncode:<name>`; the platform injects the command file's content as a prompt.
 
@@ -29,8 +29,9 @@ Suncode groups the 21 configured platforms into three delivery models:
 | ZCode       | `.zcode/commands/suncode/{name}.md`                                                | `/suncode:{name}`  |
 | Trae        | `.trae/commands/suncode-{name}.md`                                                 | `/suncode-{name}`  |
 | Grok Build  | `.grok/commands/suncode-{name}.md`                                                 | `/suncode-{name}`  |
+| Snow CLI    | `.snow/commands/suncode-{name}.json`                                               | `/suncode-{name}`  |
 
-Command files are Markdown; Gemini uses TOML (with a `prompt = """..."""` field).
+Command files are Markdown; Gemini uses TOML (with a `prompt = """..."""` field), and Snow uses prompt-type JSON.
 
 **Workflow files** — platforms without a dedicated slash-command primitive; the user runs a "workflow" by name.
 

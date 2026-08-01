@@ -7,7 +7,7 @@ title: '安装 && 快速上手使用'
 ### 安装
 
 ```bash
-# 全局安装（beta 通道）
+# 全局安装（stable 通道）
 npm install -g @wjptz/suncode@latest
 
 # 进入你的项目目录
@@ -26,14 +26,14 @@ suncode init -u your-name
 suncode init -u your-name --claude
 suncode init -u your-name --claude --cursor --opencode --engineer
 suncode init -u your-name --codex --gemini
-suncode init -u your-name --pi --omp --grok --kimi
+suncode init -u your-name --pi --omp --grok --kimi --snow
 ```
 
 `your-name` 会成为你的开发者身份，在 `.suncode/workspace/your-name/` 创建个人工作区。
 
-支持的 flag：`--claude`、`--cursor`、`--opencode`、`--engineer`、`--codex`、`--kiro`、`--gemini`、`--qoder`、`--codebuddy`、`--copilot`、`--droid`、`--pi`、`--omp`、`--antigravity`、`--devin`（别名：`--windsurf`，已废弃）、`--kilo`、`--reasonix`、`--zcode`、`--trae`、`--grok`、`--kimi`。
+支持的 flag：`--claude`、`--cursor`、`--opencode`、`--engineer`、`--codex`、`--kiro`、`--gemini`、`--qoder`、`--codebuddy`、`--copilot`、`--droid`、`--pi`、`--omp`、`--antigravity`、`--devin`（别名：`--windsurf`，已废弃）、`--kilo`、`--reasonix`、`--zcode`、`--trae`、`--grok`、`--kimi`、`--snow`。
 
-除了这 21 个已配置平台，任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Warp 等）也能直接消费 Suncode。Codex、Gemini CLI、Pi Agent、Kimi Code 和 ZCode 会向该共享目录写入中立渲染的 skill。
+除了这 22 个已配置平台，任何读取 `.agents/skills/` 规范的 AI 编码 agent（Amp、Cline、Deep Agents、Firebender、Warp 等）也能直接消费 Suncode。Codex、Gemini CLI、Pi Agent、Kimi Code 和 ZCode 会向该共享目录写入中立渲染的 skill。
 
 ### 平台配置
 
@@ -62,6 +62,7 @@ suncode init -u your-name --pi --omp --grok --kimi
 | **Trae**        | `.trae/commands/`、`skills/`、`agents/`、`hooks/`、`hooks.json`                       |
 | **Grok Build**  | `.grok/commands/`、`skills/`、`agents/`                                               |
 | **Kimi Code**   | `.kimi-code/skills/` + `.agents/skills/`                                              |
+| **Snow CLI**    | `.snow/skills/`、`commands/`、`agents/`、`hooks/` + `.snow/SNOW.md`                   |
 
 `.agents/skills/` 是一份跨平台共享层（[agentskills.io](https://agentskills.io) 规范）。Codex、Gemini CLI、Pi Agent、Kimi Code 和 ZCode 会写入字节兼容的 Suncode skill；Amp、Cline、Deep Agents、Firebender、Warp 等遵循该规范的 agent 可直接读取。
 
@@ -192,6 +193,7 @@ your-project/
 ├── .codebuddy/        # CodeBuddy：commands/suncode/
 ├── .factory/          # Droid：commands/suncode/、skills/、hooks/
 ├── .pi/               # Pi Agent：prompts/、skills/、agents/、extensions/suncode/
+├── .snow/             # Snow CLI：skills/、commands/、agents/、hooks/、SNOW.md
 └── .github/           # Copilot：copilot-instructions.md、prompts/
 ```
 
@@ -281,17 +283,21 @@ Phase 1 — Plan（和你互动）
  1.1 激活 suncode-brainstorm skill，和你一问一答澄清需求，迭代 prd.md
  1.2 复杂任务在实现前写 design.md 和 implement.md
  1.3 需要调研时，结论写到 research/
- 1.4 复杂任务的 implement.md 包含可解析的 "## 实施清单"；Hub 默认从这里派生
-     structured subtasks，除非 subtasks.json 显式覆盖。Sub-agent mode 还会
-     curate implement.jsonl / check.jsonl，只放 spec + research 路径，不放源码路径
- 1.5 Review 后，Hub 任务先运行 suncode hub plan-ready，再用 task.py start
+ 1.4 execution.dag.enabled 时，AI 写入并验证 execution.json。读写范围和 resource
+     安全的独立节点不添加虚假依赖；所有分支最终汇入 integration/check barrier。
+     Inline 和 sub-agent 使用同一张图。
+ 1.5 Hub 先从 execution.json 派生展示 subtasks，再 fallback 到可解析的
+     "## 实施清单"。subtasks.json 只用于显式展示 override。稳定的 spec + research
+     路径可以整理进 implement.jsonl / check.jsonl。
+ 1.6 Review 后，Hub 任务先运行 suncode hub plan-ready，再用 task.py start
      把 status 改成 in_progress。quick Hub task 保持最小规划，并跳过 Hub start preflight
 
 Phase 2 — Execute
- 2.1 按 prd.md、存在时的 design.md、存在时的 implement.md 和相关 spec 实现。
-     具体是 sub-agent 还是主会话 inline，取决于平台和模式
- 2.2 运行 suncode-check → 对照 artifacts + spec 审 diff，跑 lint / typecheck / test，
-     能修则自修
+ 2.1 主会话冻结 plan hash，claim 所有无冲突 ready nodes，先派发完再等待；首个
+     NodeResult 返回后落盘并立刻重算 ready set。Inline 运行同一张图，并发为一。
+ 2.2 每个 worker 获得有界、不可变的 context manifest，不继承 parent transcript。
+     Check nodes 只读报告；需要写入时只有一个显式 fix node 负责，再重跑
+     lint / typecheck / test。
 
 Phase 3 — Finish
  3.1 激活 suncode-check skill，做最终验证

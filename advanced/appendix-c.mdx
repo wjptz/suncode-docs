@@ -31,7 +31,13 @@ Matches `task.py create` in `.suncode/scripts/common/task_store.py`:
   "parent": "string", // Parent task directory name (null if top-level)
   "relatedFiles": [], // Related files list
   "notes": "string", // Notes ("" by default)
-  "meta": {} // Arbitrary per-project metadata (e.g. Linear issue id)
+  "meta": {
+    "execution": {
+      "policyVersion": 1,
+      "dagEnabled": true,
+      "requireForComplexTasks": false
+    }
+  } // Creation-time execution policy snapshot; other namespaces such as meta.hub may coexist
 }
 ```
 
@@ -44,6 +50,13 @@ Field order above matches `.suncode/scripts/common/task_store.py` verbatim — `
 </Note>
 
 Older tasks may be missing newer fields (e.g., pre-`package` tasks have no `"package"` key); `task.py` treats missing keys as null.
+
+`meta.execution` is written for new tasks from the current
+`execution.dag.enabled` and `execution.dag.require_for_complex_tasks` settings.
+The snapshot prevents later configuration changes from retroactively enforcing
+new planning gates on existing tasks. Older tasks without this namespace use
+the compatibility path. `meta` remains extensible; Hub binding data, for
+example, lives under `meta.hub` beside `meta.execution`.
 
 ### Parent-child vs `subtasks` — know the difference
 

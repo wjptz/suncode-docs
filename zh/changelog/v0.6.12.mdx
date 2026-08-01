@@ -1,0 +1,77 @@
+---
+title: 'v0.6.12'
+description: '2026-08-02'
+---
+
+v0.6.12 新增 execution DAG runtime、不可变 node context package、Snow CLI
+支持和 planning convergence gate。已有任务保留保守串行兼容路径。无需
+`--migrate`。
+
+## Enhancements
+
+### Execution DAG runtime
+
+任务可以使用严格的 `execution.json` v1，声明依赖、role、读写 scope、resource
+lock、validation、context budget、executor 约束、retry policy 和 final
+integration/check barrier。Runtime 会 hash review 过的计划，先派发每组无冲突
+ready nodes 再等待，记录 `NodeResult` v1，并把可恢复状态持久化在
+`.suncode/.runtime/execution/`。Inline、原生 sub-agent 和 channel 使用同一张
+图；inline 并发为一。
+
+v0.6.12 bundled adapter 从 shared worktree 读取 context artifact。`worktree` 和
+`sandbox` 是给自定义 adapter 使用的 schema/capability 值；adapter 必须自行传输
+`.suncode/.runtime/execution` artifact。
+
+### Node context manifests
+
+每个 claimed node 获得有界 manifest 和 rendered content，内容包括 objective、
+边界、validation、选中的 task/spec/research source，以及直接且已成功依赖的
+structured result。Manifest 记录脱敏、截断、字节预算和 SHA-256 完整性。Codex
+原生派发使用 `fork_turns = "none"`；channel 和 inline 消费同一份 claimed
+artifact，不复制 parent transcript。
+
+### Snow CLI platform
+
+`suncode init --snow` 现在会写入 project skill、prompt command、3 个 project
+agent、`onSessionStart` / `onUserMessage` / `beforeSubAgentStart` hook 和
+`.snow/SNOW.md`。Snow session identity 通过 `SNOW_SESSION_ID` 和
+`SUNCODE_CONTEXT_ID` 传递。
+
+### Hub display projection
+
+Hub 保持 subtasks v1 payload 和 hash。展示 items 依次来自显式
+`subtasks.json` override、`execution.json` 的稳定拓扑投影，以及可解析的
+`implement.md` checklist。
+
+## Bug Fixes
+
+### Planning convergence gate
+
+Workflow 不再在每个 planning turn 都重新 scaffold 和 validate DAG。只有 blocking
+question 已解决且 PRD/design/implementation view 收敛后，才创建并校验一次图。
+未变化的 reviewed graph 会直接复用；material planning change 只更新受影响 node，
+并要求重新 review。
+
+### Runtime contract hardening
+
+Recovery 不再假设所有 active worker 都已失联。Scope path 会先 canonicalize 再做
+冲突检测；显式重试依赖后可重新解锁 blocked descendant；成功结果必须带通过的
+validation 且 changes 不越界；执行前还会校验 lifecycle/final-barrier gate 和
+dispatch role metadata。
+
+### Windows context integrity and Hub diagnostics
+
+不可变 context file 现在在所有 OS 上都按精确 LF UTF-8 bytes 写入，Windows 文本
+模式换行转换不会再让文件刚创建就与声明的 SHA-256 失配。Hub upload error 现在会
+包含失败的 upload URL。
+
+## Upgrade
+
+```bash
+npm install -g @wjptz/suncode@latest
+suncode update
+```
+
+`suncode update` 会刷新 workflow、hook、agent、script、Snow template 和新增的
+`execution:` 配置段。为新建复杂任务启用
+`execution.dag.require_for_complex_tasks` 前请先 review 该策略。

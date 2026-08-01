@@ -31,7 +31,13 @@ title: '附录 C：task.json Schema 参考'
   "parent": "string", // 父任务目录名（顶层任务为 null）
   "relatedFiles": [], // 相关文件列表
   "notes": "string", // 备注（默认 ""）
-  "meta": {} // 项目级元数据（如 Linear issue id）
+  "meta": {
+    "execution": {
+      "policyVersion": 1,
+      "dagEnabled": true,
+      "requireForComplexTasks": false
+    }
+  } // 创建时的 execution policy 快照；meta.hub 等其他 namespace 可以并存
 }
 ```
 
@@ -44,6 +50,11 @@ title: '附录 C：task.json Schema 参考'
 </Note>
 
 早期版本创建的老任务可能少某些新字段（如 `package` 支持前的任务没有 `"package"` 键），`task.py` 把缺失字段按 null 处理，不会出错。
+
+新任务的 `meta.execution` 来自当时的 `execution.dag.enabled` 和
+`execution.dag.require_for_complex_tasks`。这个快照避免之后的配置变更倒过来
+给已有任务增加 planning gate。没有这个 namespace 的旧任务走兼容路径。
+`meta` 仍可扩展，例如 Hub binding data 与 `meta.execution` 并列放在 `meta.hub`。
 
 ### 父子关系 vs `subtasks`——别混
 

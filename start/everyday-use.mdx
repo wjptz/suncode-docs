@@ -101,8 +101,9 @@ A typical task conversation:
 
 1. Describe the work in natural language → the AI classifies the request and asks for task-creation consent when Suncode is useful. After you agree, `suncode-brainstorm` creates the task and drafts `prd.md`.
 2. Once `prd.md` looks right, type `continue` → it decides whether the task is lightweight or needs `design.md` and `implement.md`.
-3. After planning artifacts are reviewed, type `continue` → it starts the task and moves into implement/check. Sub-agent mode also curates `implement.jsonl` / `check.jsonl`; inline mode reads artifacts/specs directly.
-4. When the sub-agents finish, type `continue` → it routes to `suncode-update-spec`, and finally `finish-work`.
+3. Type `continue` again → it creates and validates `execution.json` when DAG execution is enabled. Complex tasks preserve real independent branches and converge on a final integration/check barrier. JSONL context sources are curated when useful.
+4. After plan review, type `continue` → it starts the task. Sub-agent/channel executors claim and fan out all safe ready nodes before waiting; inline consumes the same DAG with concurrency one.
+5. When the final barrier passes, type `continue` → it routes to `suncode-update-spec`, and finally `finish-work`.
 
 Previously you had to learn the workflow yourself and remember which slash command belonged to each phase. With `continue`, the whole workflow falls out of an ordinary conversation — type `continue` to move on, and Suncode keeps the phases straight on your behalf.
 
@@ -119,6 +120,7 @@ Turns an approved planning request into concrete artifacts:
 - Drafts and iterates `prd.md` with requirements and acceptance criteria.
 - Asks one question at a time, including the recommended answer.
 - For complex tasks, adds `design.md` and `implement.md` before implementation starts.
+- When DAG execution is enabled, creates and validates the canonical `execution.json` used by every executor.
 
 #### 1.3.2 `suncode-before-dev`
 
@@ -154,15 +156,15 @@ Invoked after resolving a hard bug. Produces a 5-dimension analysis:
 
 ### 1.4 Sub-agents
 
-Sub-agents are isolated AI sub-processes with their own prompt and (platform-specific) their own tool / hook wiring. Implementation and check agents receive stable spec/research context via JSONL files per task; research agents write findings into the task's `research/` directory.
+Sub-agents are isolated AI sub-processes with their own prompt and platform-specific tool/hook wiring. The main session is the DAG coordinator: it claims every conflict-free ready node, dispatches all selected workers before waiting, records the first returned structured result, and immediately fills newly available capacity. Each worker receives a bounded immutable node context manifest rather than a copy of the parent transcript.
 
-| Sub-agent           | Restriction            | When main session spawns it                          |
-| ------------------- | ---------------------- | ---------------------------------------------------- |
-| `suncode-research`  | Read-only              | Codebase search / pattern discovery / doc lookup     |
-| `suncode-implement` | Writes code, no commit | Once requirements + plan exist, for the coding phase |
-| `suncode-check`     | Writes code (fixes)    | Verification phase; runs self-fix loop internally    |
+| Sub-agent           | Restriction            | When main session spawns it                                |
+| ------------------- | ---------------------- | ---------------------------------------------------------- |
+| `suncode-research`  | Read-only              | Codebase search / pattern discovery / doc lookup           |
+| `suncode-implement` | Writes code, no commit | Once requirements + plan exist, for the coding phase       |
+| `suncode-check`     | Read-only in DAG runs  | Verification nodes report findings; a fix node owns writes |
 
-On Claude Code, Cursor, OpenCode, Engineer, CodeBuddy, Droid, and Pi Agent, implementation and check sub-agents get the right JSONL context (`implement.jsonl`, `check.jsonl`) injected automatically before they start. Pi uses its extension rather than a Python hook. On the rest, the actor reads the JSONL files through a pull-based prelude or the main session passes the relevant content into sub-agent prompts. Research agents write durable findings under the task's `research/` directory.
+Hook-push and pull-prelude adapters both prefer the claimed node's context manifest. Legacy dispatch without a manifest keeps the JSONL + task-artifact fallback. Codex uses a clean `fork_turns = "none"` dispatch; channel workers receive the manifest and rendered content through context files. Research agents write durable findings under the task's `research/` directory.
 
 ---
 
@@ -171,18 +173,18 @@ On Claude Code, Cursor, OpenCode, Engineer, CodeBuddy, Droid, and Pi Agent, impl
 ### 2.1 Task Lifecycle
 
 ```
-create → plan artifacts → optional jsonl context → start → implement/check → finish → archive
+create → plan artifacts + execution DAG → start → scheduled nodes + final barrier → finish → archive
 
 create:                task directory + task.json + default prd.md
 plan artifacts:        prd.md for every task; design.md + implement.md before complex work starts
-optional jsonl context: AI fills implement/check context when stable spec or research files must be injected
+execution DAG:         canonical execution.json; optional JSONL sources feed bounded node contexts
 start:                 marks the task in_progress for this AI session/window
 implement/check:       development and verification loop
 finish:                clears this AI session/window's current task
 archive:               moves completed task to archive/
 ```
 
-`task.py create` starts the task in `planning`, creates a default `prd.md`, and best-effort points the current AI session at the new task. It also auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / Pi / etc.); agent-less platforms (Kilo / Antigravity / Devin) skip this and load specs via the `suncode-before-dev` skill in Phase 2.
+`task.py create` starts the task in `planning`, creates a default `prd.md`, snapshots the current DAG policy under `task.json.meta.execution`, and best-effort points the current AI session at the new task. It also auto-seeds `implement.jsonl` + `check.jsonl` when a sub-agent-capable platform is installed (Claude / Cursor / Codex / Kiro / Pi / etc.).
 
 ### 2.2 `task.py` Subcommands
 
@@ -236,7 +238,28 @@ TASK_DIR=$(./.suncode/scripts/task.py create "Add user login" \
   sub-agent must read them before working.
 </Note>
 
-#### 2.2.3 Task Control
+#### 2.2.3 Execution DAG
+
+```bash
+# Create a conservative compatibility graph, then edit it to expose real dependencies.
+./.suncode/scripts/task.py execution scaffold "$TASK_DIR"
+./.suncode/scripts/task.py execution validate "$TASK_DIR"
+./.suncode/scripts/task.py execution show "$TASK_DIR" --json
+
+# Freeze a recoverable run, then repeatedly claim every selected ready node
+# before waiting for the first NodeResult v1.
+./.suncode/scripts/task.py execution start-run "$TASK_DIR" --executor native-subagent
+./.suncode/scripts/task.py execution ready "$TASK_DIR" --json
+./.suncode/scripts/task.py execution claim "$TASK_DIR" <node-id> --json
+./.suncode/scripts/task.py execution complete "$TASK_DIR" <node-id> --result <result.json>
+./.suncode/scripts/task.py execution recover "$TASK_DIR" --json
+```
+
+`start-run` stores state, events, context manifests, attempts, and structured
+results under `.suncode/.runtime/execution/`. It refuses to run when
+`execution.dag.enabled` is false and never deletes the reviewed plan.
+
+#### 2.2.4 Task Control
 
 ```bash
 # Set as the current task for this AI session/window

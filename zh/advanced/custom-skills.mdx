@@ -47,7 +47,7 @@ skill 被触发时 AI 要遵循的指令。
 3. 按以下格式汇报结果：...
 ```
 
-Skill 在全部 21 个配置平台上都可用，位置按平台不同：
+Skill 在全部 22 个配置平台上都可用，位置按平台不同：
 
 | 平台        | 位置                                                                            |
 | ----------- | ------------------------------------------------------------------------------- |
@@ -72,6 +72,7 @@ Skill 在全部 21 个配置平台上都可用，位置按平台不同：
 | Trae        | `.trae/skills/{name}/SKILL.md`                                                  |
 | Grok Build  | `.grok/skills/{name}/SKILL.md`                                                  |
 | Kimi Code   | `.agents/skills/{name}/SKILL.md`（私有命令/角色 skill 在 `.kimi-code/skills/`） |
+| Snow CLI    | `.snow/skills/{name}/SKILL.md`                                                  |
 
 `.agents/skills/{name}/SKILL.md`（[agentskills.io](https://agentskills.io) 跨平台共享层）由 Codex、Gemini CLI、Pi Agent、Kimi Code 和 ZCode 使用中立 placeholder 写入，各平台输出必须字节一致；Amp、Cline、Deep Agents、Firebender、Warp 等 agent 可直接消费。
 

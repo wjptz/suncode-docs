@@ -21,6 +21,7 @@ Suncode ships only a small session-boundary command surface. Everything else is 
 | Codex                                                              | automatic `AGENTS.md` prelude; optional UserPromptSubmit hook             | skill / prompt entry         | skill / prompt entry      | Skills + hooks                         |
 | Oh My Pi / Grok Build                                              | platform-specific Suncode command                                         | Suncode command              | Suncode command           | Native command files                   |
 | Kimi Code                                                          | `/skill:suncode-start`                                                    | `/skill:suncode-finish-work` | `/skill:suncode-continue` | Private Kimi skills                    |
+| Snow CLI                                                           | automatic `onSessionStart` hook                                           | `/suncode-finish-work`       | `/suncode-continue`       | Prompt JSON + hooks                    |
 
 ### Auto-trigger Skills
 
@@ -44,7 +45,7 @@ Spawned by the main session via the platform's sub-agent / Task primitive.
 | `suncode-implement` | Coding                | No `git commit`        |
 | `suncode-check`     | Verify + self-fix     | Has its own retry loop |
 
-Available as sub-agent workflows on Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, Oh My Pi, Reasonix, ZCode, Trae, Grok Build, and Kimi Code. Kilo, Antigravity, and Devin run the same work inline in the main session. Codex uses native `SubagentStart` context when dispatch is enabled and retains a pull fallback; Grok and Kimi are pull-based.
+Available as sub-agent workflows on Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Gemini CLI, Qoder, CodeBuddy, Copilot, Droid, Pi Agent, Oh My Pi, Reasonix, ZCode, Trae, Grok Build, Kimi Code, and Snow CLI. Kilo, Antigravity, and Devin run the same work inline in the main session. Codex uses native `SubagentStart` context when dispatch is enabled and retains a pull fallback; Snow uses `beforeSubAgentStart`; Grok and Kimi are pull-based.
 
 ### Global CLI Commands
 
@@ -106,7 +107,7 @@ Hub commands are optional. They are active only when `.suncode/config.yaml` cont
 | `add-context`     | Add context entry (primary way to populate jsonl after `create`)                                  | `task.py add-context "$DIR" <target> "<path>" "<reason>"`          |
 | `validate`        | Validate JSONL                                                                                    | `task.py validate "$DIR"`                                          |
 | `list-context`    | View all entries                                                                                  | `task.py list-context "$DIR"`                                      |
-| `start`           | Set as current task for this AI session/window                                                    | `task.py start "$DIR"`                                             |
+| `start`           | Set current task and enter `in_progress`; validate required/explicit DAG plans when enabled       | `task.py start "$DIR"`                                             |
 | `current`         | Show the current task for this AI session/window                                                  | `task.py current [--source] [--json]`                              |
 | `finish`          | Clear current task for this AI session/window                                                     | `task.py finish`                                                   |
 | `set-branch`      | Set branch name                                                                                   | `task.py set-branch "$DIR" "feature/xxx"`                          |
@@ -124,6 +125,23 @@ Hub commands are optional. They are active only when `.suncode/config.yaml` cont
 when `current_task` is `null`. `task.py list --json` emits `{tasks:[...]}`;
 each item includes both stored `status` and derived `display_status`, so a
 parent can display as `active` while its persisted status remains `planning`.
+
+### `task.py execution` Subcommands
+
+| Subcommand  | Purpose                                                                    | Typical usage                                                                      |
+| ----------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `validate`  | Strictly validate `execution.json`; `--allow-legacy` permits normalization | `task.py execution validate "$DIR" [--allow-legacy] [--json]`                      |
+| `show`      | Show the explicit or normalized compatibility graph                        | `task.py execution show "$DIR" [--json]`                                           |
+| `scaffold`  | Write a conservative serial `execution.json` from legacy artifacts         | `task.py execution scaffold "$DIR" [--force]`                                      |
+| `start-run` | Freeze plan hash and executor capabilities into a recoverable run          | `task.py execution start-run "$DIR" --executor <inline\|native-subagent\|channel>` |
+| `ready`     | Return the maximal safe fan-out set                                        | `task.py execution ready "$DIR" [--run-id id] [--json]`                            |
+| `claim`     | Atomically claim a ready node and create its immutable context package     | `task.py execution claim "$DIR" <node> [--run-id id] [--json]`                     |
+| `running`   | Mark a dispatched node as running                                          | `task.py execution running "$DIR" <node> [--executor-ref ref]`                     |
+| `complete`  | Persist and validate a `NodeResult` v1                                     | `task.py execution complete "$DIR" <node> --result <file\|->`                      |
+| `status`    | Show persisted run and node state                                          | `task.py execution status "$DIR" [--run-id id] [--json]`                           |
+| `recover`   | Reconcile results and orphaned workers; optionally retry explicit nodes    | `task.py execution recover "$DIR" [--retry node] [--json]`                         |
+| `cancel`    | Cancel a non-terminal node                                                 | `task.py execution cancel "$DIR" <node> [--reason text]`                           |
+| `context`   | Integrity-check and print an immutable node context manifest               | `task.py execution context <manifest.json> [--json]`                               |
 
 ### Python Scripts
 

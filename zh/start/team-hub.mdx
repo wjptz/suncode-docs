@@ -60,7 +60,11 @@ suncode hub finish --task current
 
 如果 `hub.autoPullSpec` 是 `true`，intake 还会 best-effort 运行一次 `suncode hub pull-spec`。如果是 `false`，intake 输出会提示你在需要时手动运行 `suncode hub pull-spec`。
 
-`hub plan-ready` 会提交规划 artifacts，从 `implement.md` 派生结构化 subtasks（有 `subtasks.json` 时使用 override），上传 subtasks，并为 standard / change 任务运行 Hub start preflight。`task.py start` 也会在本地状态改变前对 Hub-bound standard / change 任务运行 blocking preflight gate。
+`hub plan-ready` 会提交 planning artifacts 和 structured display subtasks。
+它先用显式 `subtasks.json` v1 override；不存在时按稳定拓扑顺序投影 review 过的
+`execution.json`；再不存在才 fallback 到 `implement.md` checklist。随后上传这些
+items，并为 standard / change 任务运行 Hub start preflight。`task.py start` 也会
+在本地状态改变前对 Hub-bound standard / change 任务运行 blocking preflight gate。
 
 ## Hub 任务类型
 
@@ -85,7 +89,13 @@ quick 任务在 `hub finish` 前必须有 `validation-summary.md`。文件里要
 
 ## 结构化 subtasks
 
-Hub 展示结构化子任务时，Suncode 会先读 `subtasks.json`。如果这个文件不存在，就从已 review 的 `implement.md` 实施清单派生：
+Hub 展示结构化子任务时，按这个顺序读：
+
+1. 显式 `subtasks.json` v1 override。
+2. Review 过的 `execution.json` nodes 的稳定拓扑投影。
+3. Review 过的 `implement.md` checklist fallback。
+
+旧版 checklist 格式是：
 
 ```md
 ## 实施清单
@@ -94,7 +104,8 @@ Hub 展示结构化子任务时，Suncode 会先读 `subtasks.json`。如果这�
 - [ ] [P2] 更新文档: 记录新的用户可见行为。
 ```
 
-每一项会变成 `{ priority, name, description }`。只有派生结果需要显式覆盖时，才写 `subtasks.json`。
+投影或解析出的每一项都会变成 `{ priority, name, description }`。只有 graph/checklist
+派生展示需要显式覆盖时才写 `subtasks.json`。它不是 execution graph，不控制调度。
 
 ## Review Hub 绑定任务
 

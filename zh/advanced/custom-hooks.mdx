@@ -112,14 +112,15 @@ Suncode 默认不安装 Claude Code 的 `statusLine`。新项目不会创建 `.c
 **行为**：
 
 - 拦截 Task 调用。
-- 按 `subagent_type` 读对应 JSONL（`implement.jsonl` 或 `check.jsonl`）。
-- 读 JSONL 中引用的所有文件。
-- 读取 `prd.md`、存在时的 `design.md`、存在时的 `implement.md`。
-- 组装 sub-agent 的 prompt（spec + task artifacts + 原始指令）。
+- 检测已 claim node 的 `Suncode context manifest:` 引用。
+- 校验 manifest、rendered content、hash 和字节预算的完整性。
+- 在原始指令前注入不可变 node contract/context。
+- 只有旧派发没有 manifest 时，才 fallback 到对应 JSONL、`prd.md`、可选 `design.md` 和可选 `implement.md`。
 
 设计决策：
 
-- 每个 sub-agent 在启动时一次性拿到完整上下文，没有 resume。
+- 每个 DAG worker 启动时只拿有界 node context，不复制 parent transcript。
+- Manifest 是 task/run/node/attempt、objective、读写/resource 边界、validation 和 direct dependency results 的事实源。
 - 只 hook `suncode-*` sub-agent；自定义 sub-agent 要想享受注入，必须自己改这个文件或自建注入逻辑。
 
 #### Pi extension：等价 hook 行为
@@ -128,7 +129,7 @@ Pi Agent 不加载 `.py` hook 脚本。Suncode 写入 `.pi/extensions/suncode/in
 
 - 会话启动上下文注入
 - workflow-state 面包屑注入
-- sub-agent JSONL 和 task artifact 上下文注入
+- manifest-first node context 注入；旧派发 fallback 到 JSONL/task artifacts
 
 它还会把 `SUNCODE_CONTEXT_ID` 传给 Bash 命令，让 `task.py start/current/finish` 能解析当前 Pi 会话对应的 `.suncode/.runtime/sessions/<session-key>.json`。
 

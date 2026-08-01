@@ -84,8 +84,9 @@ AI 做的任务分类：
 
 1. 你用自然语言描述需求 → AI 先分类请求；当 Suncode 有价值时，先询问是否创建 task。你同意后，`suncode-brainstorm` 创建 task 并起草 `prd.md`。
 2. `prd.md` 跟你确认完，你输入 `continue` → 它判断任务是轻量任务，还是需要补 `design.md` 和 `implement.md`。
-3. Planning artifacts review 通过后再输入 `continue` → 它 start task 并进入 implement/check。Sub-agent mode 会整理 `implement.jsonl` / `check.jsonl`；inline mode 直接读取 artifacts/specs。
-4. sub-agent 跑完你再 `continue` → 它知道该走 `suncode-update-spec`，最后 `finish-work`。
+3. 再输入 `continue` → 启用 DAG 时创建并验证 `execution.json`。复杂任务保留真实独立分支，并最终汇入 integration/check barrier；需要时整理 JSONL context sources。
+4. Plan review 通过后输入 `continue` → start task。Sub-agent/channel executor 先 claim 并派发所有安全 ready nodes，再等待；inline 使用同一张 DAG，并发为一。
+5. Final barrier 通过后再输入 `continue` → 进入 `suncode-update-spec`，最后 `finish-work`。
 
 以前你得自己学 workflow、记住每个阶段该调哪个 slash command 让 AI 干对应的事；现在一路自然对话 + `continue`，几乎零学习成本就能跑完整个 suncode 工作流。
 
@@ -115,6 +116,7 @@ Skill 不需要显式命令，平台根据用户意图自动匹配。匹配不�
 - 起草并迭代 `prd.md`，记录需求和验收标准。
 - 一次只问一个问题，并给出推荐答案。
 - 复杂任务在实现前补齐 `design.md` 和 `implement.md`。
+- 启用 DAG 时，为所有 executor 创建并验证 canonical `execution.json`。
 
 #### 1.3.2 `suncode-before-dev`
 
@@ -150,15 +152,15 @@ Skill 不需要显式命令，平台根据用户意图自动匹配。匹配不�
 
 ### 1.4 Sub-agents
 
-Sub-agent 是独立的 AI 子进程，各自有 prompt 和（视平台而定）各自的 tool / hook 挂接。implement 和 check agent 通过 task 目录下的 JSONL 文件拿稳定的 spec/research 上下文；research agent 把发现写进任务的 `research/` 目录。
+Sub-agent 是独立的 AI 子进程，各自有 prompt 和平台相关的 tool / hook 挂接。主会话承担 DAG coordinator：claim 所有无冲突 ready nodes，先派发完再等待；首个 structured result 返回后落盘，并立即补满新释放的容量。每个 worker 获得有界、不可变的 node context manifest，不复制 parent transcript。
 
-| Sub-agent           | 约束              | 主会话何时 spawn               |
-| ------------------- | ----------------- | ------------------------------ |
-| `suncode-research`  | 只读              | 代码搜索 / 模式发现 / 文档查阅 |
-| `suncode-implement` | 写代码，不 commit | 需求 + 计划就绪后的编码阶段    |
-| `suncode-check`     | 可写（修复）      | 验证阶段；内部自带自修复循环   |
+| Sub-agent           | 约束              | 主会话何时 spawn                        |
+| ------------------- | ----------------- | --------------------------------------- |
+| `suncode-research`  | 只读              | 代码搜索 / 模式发现 / 文档查阅          |
+| `suncode-implement` | 写代码，不 commit | 需求 + 计划就绪后的编码阶段             |
+| `suncode-check`     | DAG run 中只读    | 验证节点报告 finding；fix node 独占写入 |
 
-在 Claude Code、Cursor、OpenCode、Engineer、CodeBuddy、Droid、Pi Agent 上，implement 和 check sub-agent 启动前会自动拿到对应 JSONL（`implement.jsonl`、`check.jsonl`）。Pi 走 extension，不是 Python hook。其他平台由执行者通过 pull-based prelude 读取 JSONL，或由主会话把相关内容传给 sub-agent。research agent 把可持久化发现写到任务的 `research/` 目录。
+Hook-push 和 pull-prelude adapter 都优先读取已 claim 节点的 context manifest；没有 manifest 的旧派发才 fallback 到 JSONL + task artifacts。Codex 用干净的 `fork_turns = "none"` 派发；channel worker 通过 context files 收到 manifest 和正文。Research agent 把可持久化发现写到任务的 `research/` 目录。
 
 ---
 
@@ -167,18 +169,18 @@ Sub-agent 是独立的 AI 子进程，各自有 prompt 和（视平台而定）�
 ### 2.1 任务生命周期
 
 ```
-create → plan artifacts → optional jsonl context → start → implement/check → finish → archive
+create → plan artifacts + execution DAG → start → scheduled nodes + final barrier → finish → archive
 
 create：                任务目录 + task.json + 默认 prd.md
 plan artifacts：        每个任务都有 prd.md；复杂任务 start 前补 design.md + implement.md
-optional jsonl context： 需要稳定注入 spec 或 research 文件时，AI 填 implement/check 上下文
+execution DAG：         canonical execution.json；可选 JSONL sources 进入有界 node context
 start：                 把当前 AI 会话/窗口的任务标记为 in_progress
 implement/check：       开发与验证循环
 finish：                清除当前 AI 会话/窗口的任务
 archive：               把完成任务移动到 archive/
 ```
 
-`task.py create` 会让任务从 `planning` 开始，创建默认 `prd.md`，并尽力把当前 AI session 指向新任务。它也会在检测到 sub-agent 平台（Claude / Cursor / Codex / Kiro / Pi 等）时 seed 出 `implement.jsonl` + `check.jsonl`；agent-less 平台（Kilo / Antigravity / Devin）跳过 seed，改由 Phase 2 的 `suncode-before-dev` skill 加载 spec。
+`task.py create` 会让任务从 `planning` 开始，创建默认 `prd.md`，把当前 DAG policy 快照写到 `task.json.meta.execution`，并尽力把当前 AI session 指向新任务。检测到 sub-agent 平台（Claude / Cursor / Codex / Kiro / Pi 等）时，它还会 seed `implement.jsonl` + `check.jsonl`。
 
 ### 2.2 `task.py` 子命令
 
@@ -231,7 +233,27 @@ TASK_DIR=$(./.suncode/scripts/task.py create "新增用户登录" \
   /research/*.md`；只有后续 sub-agent 工作前必须读取时，才把这些文件加入 implement/check manifest。
 </Note>
 
-#### 2.2.3 任务控制
+#### 2.2.3 Execution DAG
+
+```bash
+# 先生成保守兼容图，再编辑成真实依赖关系。
+./.suncode/scripts/task.py execution scaffold "$TASK_DIR"
+./.suncode/scripts/task.py execution validate "$TASK_DIR"
+./.suncode/scripts/task.py execution show "$TASK_DIR" --json
+
+# 冻结可恢复 run；每轮先 claim 所有选中的 ready node，再等待首个 NodeResult v1。
+./.suncode/scripts/task.py execution start-run "$TASK_DIR" --executor native-subagent
+./.suncode/scripts/task.py execution ready "$TASK_DIR" --json
+./.suncode/scripts/task.py execution claim "$TASK_DIR" <node-id> --json
+./.suncode/scripts/task.py execution complete "$TASK_DIR" <node-id> --result <result.json>
+./.suncode/scripts/task.py execution recover "$TASK_DIR" --json
+```
+
+`start-run` 把 state、events、context manifests、attempts 和 structured results
+写到 `.suncode/.runtime/execution/`。`execution.dag.enabled` 为 false 时拒绝启动，
+但不会删除 review 过的计划。
+
+#### 2.2.4 任务控制
 
 ```bash
 # 设为当前 AI 会话/窗口的任务

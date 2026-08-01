@@ -4,11 +4,11 @@ title: '定制 Slash 命令'
 
 ## 定制 Slash 命令
 
-Suncode 原生带的 slash 命令留得很少。Hook-backed agent-capable 平台（Claude Code、Cursor、Gemini CLI、Qoder、CodeBuddy、Droid、Pi Agent、Trae 等）只发 `finish-work` 和 `continue`；`start` 通常不作为用户可见命令，因为会话启动上下文会通过 SessionStart hook、extension、`AGENTS.md` 或 prompt-hook bootstrap 在开会话时加载。OpenCode 和 Engineer 也会安装 `start`，作为手动 reload 或 plugin 失败时的 OpenCode-compatible fallback。agent-less 平台（Kilo、Antigravity、Devin）没有 hook，`start` 才会作为 slash 命令发出来。过去的其他命令全部迁成 auto-trigger skill（见[定制 Skill](./custom-skills)）。自己加 slash 命令的时机：有一个明确想让用户显式调用的入口。
+Suncode 原生带的 slash 命令留得很少。Hook-backed agent-capable 平台（Claude Code、Cursor、Gemini CLI、Qoder、CodeBuddy、Droid、Pi Agent、Trae、Snow CLI 等）只发 `finish-work` 和 `continue`；`start` 通常不作为用户可见命令，因为会话启动上下文会通过 SessionStart hook、extension、`AGENTS.md` 或 prompt-hook bootstrap 在开会话时加载。OpenCode 和 Engineer 也会安装 `start`，作为手动 reload 或 plugin 失败时的 OpenCode-compatible fallback。agent-less 平台（Kilo、Antigravity、Devin）没有 hook，`start` 才会作为 slash 命令发出来。过去的其他命令全部迁成 auto-trigger skill（见[定制 Skill](./custom-skills)）。自己加 slash 命令的时机：有一个明确想让用户显式调用的入口。
 
 ### 命令文件格式和位置
 
-21 个平台按交付形态分三组：
+22 个平台按交付形态分三组：
 
 **显式 slash 命令**——用户输入 `/suncode:<name>`，平台把命令文件内容注入为 prompt。
 
@@ -29,8 +29,9 @@ Suncode 原生带的 slash 命令留得很少。Hook-backed agent-capable 平台
 | ZCode       | `.zcode/commands/suncode/{name}.md`                                               | `/suncode:{name}` |
 | Trae        | `.trae/commands/suncode-{name}.md`                                                | `/suncode-{name}` |
 | Grok Build  | `.grok/commands/suncode-{name}.md`                                                | `/suncode-{name}` |
+| Snow CLI    | `.snow/commands/suncode-{name}.json`                                              | `/suncode-{name}` |
 
-命令文件是 Markdown；Gemini 用 TOML（`prompt = """..."""` 字段）。
+命令文件是 Markdown；Gemini 用 TOML（`prompt = """..."""` 字段），Snow 使用 prompt-type JSON。
 
 **Workflow 文件**——没有独立 slash 命令原语的平台，用户按名字跑 workflow。
 

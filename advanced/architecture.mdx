@@ -18,27 +18,29 @@ This document maps that idea to the current Suncode feature set, the modules tha
 
 Suncode treats AI coding as a workflow and knowledge-management problem, not a single chat session.
 
-| Principle                        | Implementation rule                                                                                                                                                                                     |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Make workflow state explicit     | Task `status` and `[workflow-state:STATUS]` blocks tell the main session what phase it is in.                                                                                                           |
-| Store durable knowledge in files | Requirements, specs, research, and journals live under `.suncode/`, not only in conversation history.                                                                                                   |
-| Split work by responsibility     | Research, implementation, and checking use separate agents or skills depending on platform capability.                                                                                                  |
-| Keep context scoped              | JSONL manifests list the spec/research files needed for the current task instead of dumping the whole repo.                                                                                             |
-| Preserve the review boundary     | Implement/check agents produce a clean diff; the main session proposes commits, and `/suncode:finish-work` only archives and journals.                                                                  |
-| Support teams and tool diversity | The same `.suncode/` model is adapted into Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Gemini, Qoder, Copilot, Droid, Pi, Reasonix, ZCode, Trae, Kilo, Antigravity, Devin, and related tools. |
+| Principle                        | Implementation rule                                                                                                                                                                                               |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Make workflow state explicit     | Task `status` and `[workflow-state:STATUS]` blocks tell the main session what phase it is in.                                                                                                                     |
+| Plan once, execute by capability | `execution.json` is the canonical DAG for inline, native sub-agent, and channel executors; only concurrency and isolation capabilities differ.                                                                    |
+| Store durable knowledge in files | Requirements, specs, research, and journals live under `.suncode/`, not only in conversation history.                                                                                                             |
+| Split work by responsibility     | Research, implementation, and checking use separate agents or skills depending on platform capability.                                                                                                            |
+| Keep context scoped              | JSONL manifests list the spec/research files needed for the current task instead of dumping the whole repo.                                                                                                       |
+| Preserve the review boundary     | Implement/check agents produce a clean diff; the main session proposes commits, and `/suncode:finish-work` only archives and journals.                                                                            |
+| Support teams and tool diversity | The same `.suncode/` model is adapted into Claude Code, Cursor, OpenCode, Engineer, Codex, Kiro, Gemini, Qoder, Copilot, Droid, Pi, Reasonix, ZCode, Trae, Snow CLI, Kilo, Antigravity, Devin, and related tools. |
 
 ## Feature overview
 
 ### Agent Harness
 
-| Feature                            | What it does                                                                                                       |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Three-phase workflow               | Defines Plan, Execute, and Finish in `.suncode/workflow.md`.                                                       |
-| Per-turn workflow-state breadcrumb | Injects the current next-action rule into the main session on hook-capable platforms.                              |
-| Task lifecycle                     | Stores requirements, status, assignee, branch, PR metadata, and subtask relationships in `.suncode/tasks/<task>/`. |
-| Research / implement / check roles | Separates investigation, code writing, and verification.                                                           |
-| Read-before-write enforcement      | Makes implement/check paths read PRD and relevant specs before changing files.                                     |
-| Finish boundary                    | Separates final verification, spec update, work commit, task archive, and journal writing.                         |
+| Feature                            | What it does                                                                                                                          |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Three-phase workflow               | Defines Plan, Execute, and Finish in `.suncode/workflow.md`.                                                                          |
+| Per-turn workflow-state breadcrumb | Injects the current next-action rule into the main session on hook-capable platforms.                                                 |
+| Task lifecycle                     | Stores requirements, status, assignee, branch, PR metadata, and subtask relationships in `.suncode/tasks/<task>/`.                    |
+| Recoverable execution DAG          | Schedules dependency-ready nodes with scope/resource conflict checks, immutable contexts, structured results, and persisted recovery. |
+| Research / implement / check roles | Separates investigation, code writing, and verification.                                                                              |
+| Read-before-write enforcement      | Makes implement/check paths read PRD and relevant specs before changing files.                                                        |
+| Finish boundary                    | Separates final verification, spec update, work commit, task archive, and journal writing.                                            |
 
 ### Built-in LLM wiki
 
@@ -68,6 +70,7 @@ Suncode treats AI coding as a workflow and knowledge-management problem, not a s
 | Per-turn next-action injection     | Workflow-state module   | `[workflow-state:STATUS]` blocks, `inject-workflow-state.py` or equivalent plugin                                                                                           |
 | Task creation, status, archive     | Task store module       | `.suncode/tasks/<task>/task.json`, `.suncode/scripts/task.py`, `.suncode/scripts/common/task_store.py`                                                                      |
 | Session-scoped current task        | Active-task runtime     | `.suncode/.runtime/sessions/<session-key>.json`, `.suncode/scripts/common/active_task.py`                                                                                   |
+| DAG planning and scheduling        | Execution runtime       | `execution.json`, `.suncode/scripts/common/execution_model.py`, `execution_runtime.py`, `execution_context.py`, `task_execution.py`                                         |
 | Planning artifact/spec injection   | Context-loading module  | `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`, `inject-subagent-context.py`, platform agent preludes                                              |
 | Research / implement / check roles | Agent and skill module  | Platform `agents/`, `skills/`, prompts, workflows                                                                                                                           |
 | Team convention memory             | Spec module             | `.suncode/spec/**/index.md`, guideline files                                                                                                                                |
@@ -81,7 +84,7 @@ Suncode treats AI coding as a workflow and knowledge-management problem, not a s
 
 ```text
 Phase 1: Plan    -> classify the turn, get task-creation consent, write planning artifacts
-Phase 2: Execute -> implement, check, and repeat until green
+Phase 2: Execute -> run dependency-ready nodes, converge on the final check barrier
 Phase 3: Finish  -> final verification, spec update, work commit, archive
 ```
 
@@ -117,12 +120,12 @@ The hook scripts are parser-only. They do not contain fallback copies of the bre
 
 Default statuses:
 
-| Status        | Writer                  | Notes                                                                                                                                                    |
-| ------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `no_task`     | Synthesized by the hook | No active task pointer for the current session.                                                                                                          |
-| `planning`    | `task.py create`        | Requirements and planning artifacts are active; lightweight tasks can be PRD-only, while complex tasks need `design.md` and `implement.md` before start. |
-| `in_progress` | `task.py start`         | Implementation, checking, and finish steps are active.                                                                                                   |
-| `completed`   | `task.py archive`       | Written immediately before archive move; not normally visible as a live breadcrumb.                                                                      |
+| Status        | Writer                  | Notes                                                                                                                                                              |
+| ------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `no_task`     | Synthesized by the hook | No active task pointer for the current session.                                                                                                                    |
+| `planning`    | `task.py create`        | Requirements and planning artifacts are active; DAG-enabled tasks add a reviewed `execution.json`, with optional complex-task enforcement snapshotted at creation. |
+| `in_progress` | `task.py start`         | Implementation, checking, and finish steps are active.                                                                                                             |
+| `completed`   | `task.py archive`       | Written immediately before archive move; not normally visible as a live breadcrumb.                                                                                |
 
 `task.py create` best-effort sets the current session's active-task pointer, so `planning` is reachable during brainstorm and JSONL curation.
 
@@ -136,6 +139,7 @@ Each task is one directory:
 ├── prd.md
 ├── design.md
 ├── implement.md
+├── execution.json
 ├── implement.jsonl
 ├── check.jsonl
 └── research/
@@ -143,15 +147,16 @@ Each task is one directory:
 
 Important files:
 
-| File              | Purpose                                                                                                  |
-| ----------------- | -------------------------------------------------------------------------------------------------------- |
-| `task.json`       | Status, priority, assignee, branch, PR URL, parent/child relationships, and extension metadata.          |
-| `prd.md`          | Requirements, constraints, acceptance criteria, and out-of-scope items.                                  |
-| `design.md`       | Technical design for complex tasks: boundaries, contracts, data flow, compatibility, tradeoffs.          |
-| `implement.md`    | Execution plan for complex tasks: ordered checklist, validation commands, review gates, rollback points. |
-| `implement.jsonl` | Spec and research manifest for implementation context.                                                   |
-| `check.jsonl`     | Spec and research manifest for review and verification context.                                          |
-| `research/`       | Research artifacts written by `suncode-research` or the main planning flow.                              |
+| File              | Purpose                                                                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `task.json`       | Status, priority, assignee, branch, PR URL, parent/child relationships, and extension metadata.                                     |
+| `prd.md`          | Requirements, constraints, acceptance criteria, and out-of-scope items.                                                             |
+| `design.md`       | Technical design for complex tasks: boundaries, contracts, data flow, compatibility, tradeoffs.                                     |
+| `implement.md`    | Execution plan for complex tasks: ordered checklist, validation commands, review gates, rollback points.                            |
+| `execution.json`  | Canonical versioned dependency DAG: roles, scopes, resources, validation, context budgets, executor constraints, and final barrier. |
+| `implement.jsonl` | Spec and research manifest for implementation context.                                                                              |
+| `check.jsonl`     | Spec and research manifest for review and verification context.                                                                     |
+| `research/`       | Research artifacts written by `suncode-research` or the main planning flow.                                                         |
 
 Task lifecycle hooks are command events, not generic status watchers:
 
@@ -174,15 +179,43 @@ That file points one AI session or window at one task. Different windows can wor
 
 `.suncode/.current-task` is a fallback for command-line contexts. Session-scoped runtime pointers take precedence when the platform provides a session identity.
 
+## Execution runtime module
+
+Planning produces one executor-neutral `execution.json`. A lightweight task may
+use one node; a complex graph must preserve safe independent branches and make
+every branch feed the final integration/check barrier. `implement.md` remains
+the human/legacy serial view, while `subtasks.json` is only a Hub display
+override.
+
+`task.py execution start-run` freezes the plan hash and executor capabilities.
+The ready-set scheduler selects a maximal conflict-free fan-out based on real
+dependencies, read/write glob overlap, resource locks, role support, global
+shared-worktree locks, and available capacity. A coordinator claims and
+dispatches the whole selected set before waiting, records the first returned
+`NodeResult` v1, then immediately recomputes readiness. Inline follows the same
+algorithm with concurrency one.
+
+Bundled v0.6.12 executors use `shared-worktree` isolation. The plan schema also
+accepts `worktree` and `sandbox` for custom adapters, but declaring either value
+does not copy runtime manifests or content into another checkout; that adapter
+must provide artifact transport.
+
+Runtime state lives under `.suncode/.runtime/execution/`: state, append-only
+events, attempts, immutable context packages, structured results, and declared
+artifacts. Plan-hash drift blocks resume. Recovery reconciles finished results
+and marks lost workers orphaned; automatic retry is limited to nodes declared
+safe for retry.
+
 ## Context-loading module
 
 Suncode loads context through three paths:
 
-| Context type               | Source                                                                                  | Used by                                                   |
-| -------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Startup context            | `.suncode/scripts/get_context.py`                                                       | Main session startup report.                              |
-| Per-turn workflow state    | `.suncode/workflow.md` blocks                                                           | Main session next-action guidance.                        |
-| Task artifact/spec context | `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`, research files | Research, implement, check roles, and inline skill flows. |
+| Context type             | Source                                                                                  | Used by                                             |
+| ------------------------ | --------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Startup context          | `.suncode/scripts/get_context.py`                                                       | Main session startup report.                        |
+| Per-turn workflow state  | `.suncode/workflow.md` blocks                                                           | Main session next-action guidance.                  |
+| Claimed node context     | `.suncode/.runtime/execution/**/contexts/**/manifest.json` and `content.md`             | Inline, native sub-agent, and channel node workers. |
+| Legacy task/spec context | `prd.md`, `design.md`, `implement.md`, `implement.jsonl`, `check.jsonl`, research files | Dispatches without a claimed execution manifest.    |
 
 JSONL rows are plain file references:
 
@@ -190,11 +223,13 @@ JSONL rows are plain file references:
 {"file": ".suncode/spec/docs-site/docs/style-guide.md", "reason": "Docs writing style"}
 ```
 
-In the standard flow, task artifacts are read separately from JSONL manifests.
-The shared order is `jsonl entries -> prd.md -> design.md if present ->
-implement.md if present`. `implement.jsonl` and `check.jsonl` list spec and
-research files. Seed rows without a `file` field are ignored. Source files are
-read during implementation and review, not pre-registered in JSONL.
+Manifest-first dispatch is the standard flow. The context builder combines the
+node contract, explicitly selected task artifacts/JSONL sources, and structured
+results from direct succeeded dependencies. It enforces repository containment,
+secret-path denial and redaction, per-source/total byte budgets, deterministic
+ordering, truncation records, and SHA-256 integrity. The parent conversation is
+not a context source. Legacy dispatch without a manifest keeps the earlier
+`jsonl entries -> prd.md -> design.md -> implement.md` fallback.
 
 ## Platform adapter module
 
@@ -215,11 +250,11 @@ If the local settings file disagrees with this table, follow the local settings 
 
 Suncode ships three sub-agent roles when the platform supports sub-agents:
 
-| Sub-agent           | Role                                                                              | Primary context                                                                        |
-| ------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `suncode-research`  | Investigate code, docs, APIs, and alternatives; write findings under `research/`. | Research prompt plus task/repo context as needed.                                      |
-| `suncode-implement` | Write the change against the planning artifacts and relevant specs.               | `implement.jsonl`, `prd.md`, optional `design.md`, optional `implement.md`.            |
-| `suncode-check`     | Review, run checks, and self-fix findings.                                        | `check.jsonl`, `prd.md`, optional `design.md`, optional `implement.md`, changed files. |
+| Sub-agent           | Role                                                                                      | Primary context                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `suncode-research`  | Investigate code, docs, APIs, and alternatives; write findings under `research/`.         | Research prompt plus task/repo context as needed.                                 |
+| `suncode-implement` | Write the change against the planning artifacts and relevant specs.                       | `implement.jsonl`, `prd.md`, optional `design.md`, optional `implement.md`.       |
+| `suncode-check`     | Review and run checks; DAG check nodes report read-only and route writes to one fix node. | Claimed node manifest, with the JSONL/task-artifact fallback for legacy dispatch. |
 
 Skills cover phases where the main session needs guidance: brainstorm, before-dev, check, update-spec, finish-work, and meta customization. On platforms without sub-agents, skills carry more of the execution path directly in the main session.
 

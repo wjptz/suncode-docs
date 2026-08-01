@@ -112,14 +112,15 @@ To customize per-turn wording, edit the `[workflow-state:STATUS]` block in `.sun
 **What it does**:
 
 - Intercepts Task tool calls.
-- Reads the JSONL matching the `subagent_type` (`implement.jsonl` or `check.jsonl`).
-- Reads all files referenced in the JSONL.
-- Reads `prd.md`, `design.md` if present, and `implement.md` if present.
-- Assembles the sub-agent prompt (specs + task artifacts + original instructions).
+- Detects the claimed node's `Suncode context manifest:` reference.
+- Integrity-checks the manifest and rendered content, including hashes and byte budget.
+- Injects that immutable node contract/context before the original instructions.
+- Falls back to the matching JSONL plus `prd.md`, optional `design.md`, and optional `implement.md` only for legacy dispatches without a manifest.
 
 Design decisions:
 
-- Each sub-agent receives its full context at launch; there is no resume.
+- Each DAG worker receives only its bounded node context at launch; the parent transcript is not copied.
+- The manifest is authoritative for task/run/node/attempt, objective, read/write/resource boundaries, validation, and direct dependency results.
 - Only `suncode-*` sub-agents are hooked; custom sub-agents must opt in by editing this file or using their own injection.
 
 #### Pi extension: equivalent hook behavior
@@ -128,7 +129,7 @@ Pi Agent does not load `.py` hook scripts. Suncode writes `.pi/extensions/suncod
 
 - session start context injection
 - workflow-state breadcrumb injection
-- sub-agent JSONL and task artifact context injection
+- manifest-first node context injection, with the legacy JSONL/task-artifact fallback
 
 It also passes `SUNCODE_CONTEXT_ID` into Bash commands so `task.py start/current/finish` can resolve the correct `.suncode/.runtime/sessions/<session-key>.json` file for the current Pi session.
 

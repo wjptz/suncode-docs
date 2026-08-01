@@ -6,7 +6,7 @@ description: 'Learn how Suncode reads .suncode/config.yaml, which keys matter, a
 
 ## Configure `.suncode/config.yaml`
 
-`.suncode/config.yaml` is the project-level configuration file for Suncode runtime behavior. It controls session journal commits, task lifecycle hooks, optional Hub team collaboration, package mapping, and Codex dispatch mode.
+`.suncode/config.yaml` is the project-level configuration file for Suncode runtime behavior. It controls session journal commits, task lifecycle hooks, optional Hub team collaboration, package mapping, execution DAG policy, and Codex dispatch mode.
 
 Track this file with the repo. Treat it as shared team configuration, not as a place for per-machine identity or secrets. Per-machine identity belongs in `.suncode/.developer`. Hub sign-in is managed by `suncode hub login`; do not put Hub credentials in `.suncode/config.yaml`.
 
@@ -22,7 +22,7 @@ max_journal_lines: 2000
 session_auto_commit: false
 ```
 
-When a key is absent, Suncode uses its built-in default. Keep indentation consistent for nested blocks such as `hooks`, `packages`, and `codex`.
+When a key is absent, Suncode uses its built-in default. Keep indentation consistent for nested blocks such as `hooks`, `packages`, `execution`, and `codex`.
 
 <Warning>
   Hook commands live in tracked project configuration. Do not put credentials, secrets, or
@@ -31,18 +31,21 @@ When a key is absent, Suncode uses its built-in default. Keep indentation consis
 
 ## Current keys
 
-| Key                      | Default                   | What it controls                                                                                                  |
-| ------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `session_commit_message` | `"chore: record journal"` | Commit message used by `add_session.py` when it auto-commits journal and index changes.                           |
-| `max_journal_lines`      | `2000`                    | Maximum lines per journal file before Suncode rotates to the next journal file.                                   |
-| `session_auto_commit`    | `true`                    | Whether `add_session.py` and `task.py archive` auto-stage and auto-commit Suncode journal / task archive changes. |
-| `hooks`                  | unset                     | Shell commands that run after task lifecycle events.                                                              |
-| `hub`                    | disabled                  | Optional team collaboration block for binding local Suncode tasks to Suncode Hub work.                            |
-| `hub.autoPullSpec`       | `true`                    | Whether `suncode hub intake` automatically runs a best-effort `suncode hub pull-spec`.                            |
-| `packages`               | unset                     | Package declarations for monorepos, submodules, and polyrepo-style directories.                                   |
-| `default_package`        | unset                     | Fallback package when a command or task does not specify one.                                                     |
-| `update.skip`            | unset                     | Legacy update exclusion list that `suncode update` still honors during normal updates.                            |
-| `codex.dispatch_mode`    | `inline`                  | Codex-only choice between main-agent implementation and legacy `suncode-*` sub-agent dispatch.                    |
+| Key                                       | Default                   | What it controls                                                                                                  |
+| ----------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `session_commit_message`                  | `"chore: record journal"` | Commit message used by `add_session.py` when it auto-commits journal and index changes.                           |
+| `max_journal_lines`                       | `2000`                    | Maximum lines per journal file before Suncode rotates to the next journal file.                                   |
+| `session_auto_commit`                     | `true`                    | Whether `add_session.py` and `task.py archive` auto-stage and auto-commit Suncode journal / task archive changes. |
+| `hooks`                                   | unset                     | Shell commands that run after task lifecycle events.                                                              |
+| `hub`                                     | disabled                  | Optional team collaboration block for binding local Suncode tasks to Suncode Hub work.                            |
+| `hub.autoPullSpec`                        | `true`                    | Whether `suncode hub intake` automatically runs a best-effort `suncode hub pull-spec`.                            |
+| `packages`                                | unset                     | Package declarations for monorepos, submodules, and polyrepo-style directories.                                   |
+| `default_package`                         | unset                     | Fallback package when a command or task does not specify one.                                                     |
+| `update.skip`                             | unset                     | Legacy update exclusion list that `suncode update` still honors during normal updates.                            |
+| `execution.dag.enabled`                   | `true`                    | Enables the canonical execution DAG runtime; false keeps the legacy serial workflow without deleting plans.       |
+| `execution.dag.require_for_complex_tasks` | `false`                   | Snapshots whether newly created complex tasks must have an explicit valid `execution.json` before start.          |
+| `execution.dag.max_concurrency`           | `6`                       | Default native-sub-agent/channel capacity; inline is always clamped to one.                                       |
+| `codex.dispatch_mode`                     | `inline`                  | Codex-only choice between inline execution and native sub-agent dispatch (`auto`; `sub-agent` is an alias).       |
 
 ### Session recording
 
@@ -201,18 +204,49 @@ update:
 
 During normal `suncode update` runs, skipped paths are excluded from template writes and safe-file-delete cleanup. During breaking migrations that you run with `--migrate`, Suncode can bypass `update.skip` for migration-required cleanup so the project does not stay half-updated; the update command prints a warning before doing this.
 
+### Execution DAG
+
+```yaml
+execution:
+  dag:
+    enabled: true
+    require_for_complex_tasks: false
+    max_concurrency: 6
+```
+
+Every executor reads the same reviewed `execution.json`. Native sub-agent and
+channel executors may fan out dependency-ready nodes when their read/write and
+resource scopes do not conflict. Inline runs the same graph with concurrency
+one. `max_concurrency` must be an integer from 1 through 64.
+
+<Note>
+  Bundled v0.6.12 executors are verified with `shared-worktree` isolation. A custom adapter
+  selecting `worktree` or `sandbox` must transport `.suncode/.runtime/execution` manifests and
+  content into that environment; the bundled runtime does not copy them.
+</Note>
+
+`require_for_complex_tasks` is copied into each newly created task's
+`task.json.meta.execution`. Enabling it affects only new complex tasks; existing
+tasks retain compatibility. A malformed explicit plan is still an error whenever
+DAG execution is enabled. Setting `enabled: false` disables runtime scheduling
+without deleting `execution.json`, so rollback is reversible.
+
 ### Codex dispatch mode
 
 `codex.dispatch_mode` is only read by Codex workflows. Other platforms ignore it.
 
 ```yaml
 codex:
-  dispatch_mode: inline # or "sub-agent" to dispatch suncode-* sub-agents
+  dispatch_mode: inline # or "auto" for native sub-agent dispatch
 ```
 
-`inline` keeps implementation and checking in the main Codex agent. `sub-agent` opts into the older dispatch model where the main agent launches `suncode-implement`, `suncode-check`, or `suncode-research` sub-agents.
+`inline` keeps node execution in the main Codex agent. `auto` enables native
+sub-agent dispatch with manifest-first context injection. The older
+`sub-agent` value remains a backwards-compatible alias for `auto`.
 
-The default is `inline` because Codex sub-agents run in isolated turns and cannot inherit the parent session's full task context. Use `sub-agent` only when you explicitly want that legacy split.
+Both modes consume the same DAG. Native workers use `fork_turns = "none"` and
+receive the claimed node's bounded context manifest, so they do not need to
+inherit the parent transcript.
 
 ## Update behavior
 
@@ -220,6 +254,9 @@ The default is `inline` because Codex sub-agents run in isolated turns and canno
 
 When a release adds a new config section, the migration manifest can declare it through `configSectionsAdded`. During `suncode update`, Suncode checks whether the configured sentinel text already appears in the target file. If the sentinel is missing, Suncode appends the matching section from the bundled template to the end of `.suncode/config.yaml`.
 
-This append-only path is idempotent and preserves your existing values. The `session_auto_commit` section was delivered this way for existing projects: if `session_auto_commit:` was missing, `suncode update` appended the commented section; if it was already present, update skipped it.
+This append-only path is idempotent and preserves your existing values. The
+execution DAG block uses this path in v0.6.12: if `execution:` is missing,
+`suncode update` appends the bundled section; if it already exists, update skips
+it.
 
 After an update, review any appended commented section and uncomment only the keys you want to activate.

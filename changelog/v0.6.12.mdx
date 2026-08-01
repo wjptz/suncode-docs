@@ -1,0 +1,83 @@
+---
+title: 'v0.6.12'
+description: '2026-08-02'
+---
+
+v0.6.12 adds the execution DAG runtime, immutable node context packages, Snow
+CLI support, and a planning-convergence gate. Existing tasks retain a
+conservative serial compatibility path. No `--migrate` is required.
+
+## Enhancements
+
+### Execution DAG runtime
+
+Tasks can use a strict `execution.json` v1 plan with dependencies, roles,
+read/write scopes, resource locks, validation, context budgets, executor
+constraints, retry policy, and a final integration/check barrier. The runtime
+hashes the reviewed plan, dispatches each conflict-free ready set before
+waiting, records `NodeResult` v1 results, and persists recoverable state under
+`.suncode/.runtime/execution/`. Inline, native sub-agent, and channel modes
+consume the same graph; inline runs with concurrency one.
+
+Bundled v0.6.12 adapters read context artifacts from the shared worktree.
+`worktree` and `sandbox` are schema/capability values for custom adapters; such
+an adapter must transport `.suncode/.runtime/execution` artifacts itself.
+
+### Node context manifests
+
+Every claimed node receives a bounded manifest and rendered content containing
+its objective, boundaries, validation, selected task/spec/research sources, and
+structured results from direct succeeded dependencies. The manifest records
+redaction, truncation, byte budgets, and SHA-256 integrity. Codex native
+dispatch uses `fork_turns = "none"`; channel and inline execution consume the
+same claimed artifact without copying the parent transcript.
+
+### Snow CLI platform
+
+`suncode init --snow` now writes project skills, prompt commands, three project
+agents, `onSessionStart` / `onUserMessage` / `beforeSubAgentStart` hooks, and
+`.snow/SNOW.md`. Snow session identity is propagated through
+`SNOW_SESSION_ID` and `SUNCODE_CONTEXT_ID`.
+
+### Hub display projection
+
+Hub keeps the subtasks v1 payload and hash. Display items resolve from an
+explicit `subtasks.json` override, then a stable `execution.json` topological
+projection, then the parseable `implement.md` checklist.
+
+## Bug Fixes
+
+### Planning convergence gate
+
+The workflow no longer scaffolds and validates a new DAG on every planning
+turn. It waits until blocking questions are resolved and the PRD/design/
+implementation view has converged, then creates and validates the graph once.
+An unchanged reviewed graph is reused; material planning changes update the
+affected nodes and require fresh review.
+
+### Runtime contract hardening
+
+Recovery no longer assumes every active worker is orphaned. Scope paths are
+canonicalized before conflict checks; explicit dependency retries can unlock
+blocked descendants; successful results require passing validation and
+in-scope changes; lifecycle/final-barrier gates and dispatch role metadata are
+validated before execution proceeds.
+
+### Windows context integrity and Hub diagnostics
+
+Immutable context files are now written as exact LF UTF-8 bytes on every OS, so
+Windows text-mode newline conversion cannot invalidate their declared SHA-256
+immediately after creation. Hub upload errors now include the failing upload
+URL.
+
+## Upgrade
+
+```bash
+npm install -g @wjptz/suncode@latest
+suncode update
+```
+
+`suncode update` refreshes workflow, hooks, agents, scripts, Snow templates,
+and the additive `execution:` configuration section. Review
+`execution.dag.require_for_complex_tasks` before enabling it for newly created
+complex tasks.
